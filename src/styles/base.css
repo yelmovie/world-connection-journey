@@ -38,11 +38,12 @@ body {
 
 h1, h2, h3 { font-family: var(--font-head); font-weight: 400; margin: 0; }
 p { margin: 0; }
-button { font-family: inherit; font-size: inherit; cursor: pointer; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; }
 img { max-width: 100%; user-select: none; -webkit-user-drag: none; }
 
 /* 한글 어절 단위 줄바꿈 */
-h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wrap: break-word; }
+body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wrap: break-word; }
 
 :focus-visible {
   outline: 3px solid var(--c-gold);
@@ -74,6 +75,43 @@ h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wrap: br
   align-items: center; justify-content: center;
   background: var(--c-cream); text-align: center; padding: var(--sp-6);
 }
+
+.loading-screen {
+  position: absolute; inset: 0; z-index: 300;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-4); padding: var(--sp-6); text-align: center;
+  background: var(--c-cream); color: var(--c-navy);
+  font-family: var(--font-head); font-size: var(--fs-title);
+}
+.loading-spinner {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 5px solid rgba(37, 136, 232, 0.2);
+  border-top-color: var(--c-sky);
+  animation: loading-spin 700ms linear infinite;
+}
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loading-spinner { animation: none; } }
+:root[data-reduced-motion="true"] .loading-spinner { animation: none; }
+
+/* 세로 모드 안내 — 태블릿 세로 파지 시 전체 오버레이 (데스크톱 세로창 오탐 방지: max-width 유지) */
+@media (orientation: portrait) and (max-width: 820px) {
+  body::after {
+    content: "\21bb\a태블릿을 가로로 돌려 주세요";
+    white-space: pre-line;
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    background: var(--c-navy); color: var(--c-cream);
+    font-family: var(--font-head);
+    font-size: var(--fs-title);
+    line-height: 1.6;
+    padding: var(--sp-6);
+    animation: rotate-hint 2s ease-in-out infinite;
+  }
+}
+@keyframes rotate-hint { 0%, 100% { opacity: 1; } 50% { opacity: 0.75; } }
+@media (prefers-reduced-motion: reduce) { body::after { animation: none; } }
+:root[data-reduced-motion="true"] body::after { animation: none; }
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px;

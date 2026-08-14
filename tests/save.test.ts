@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultSave, validateSave } from '../src/core/SaveRepository';
+import { defaultSave, isRestorableSaveDocument, migrateSave, validateSave } from '../src/core/SaveRepository';
 
 describe('저장 데이터 검증·복구', () => {
   it('완전한 저장 데이터는 그대로 살아남는다', () => {
@@ -42,5 +42,53 @@ describe('저장 데이터 검증·복구', () => {
       completion: { unlocked: true, reflection: '', actionPrinciples: [], certificateIssued: false }
     });
     expect(restored.completion.unlocked).toBe(false);
+  });
+
+  it('schemaVersion 도입 전 저장을 v1으로 마이그레이션한다', () => {
+    const migrated = migrateSave({
+      profile: { nickname: '예전기록', avatarId: 'a1', airplaneId: 'plane1', inquiryQuestionId: 'q1' },
+      missions: {}
+    });
+    expect(migrated).toMatchObject({ schemaVersion: 1, profile: { nickname: '예전기록' } });
+    expect(validateSave(migrated).profile?.nickname).toBe('예전기록');
+  });
+
+  it('완료 상태와 도장·미션 보상 불변식을 복구한다', () => {
+    const restored = validateSave({
+      schemaVersion: 1,
+      missions: { asia: { status: 'completed' }, europe: { status: 'available' } },
+      stamps: ['europe'],
+      rewardClaimedById: { 'mission.asia': true, 'mission.europe': true }
+    });
+    expect(restored.stamps).toEqual(['asia']);
+    expect(restored.rewardClaimedById['mission.asia']).toBe(true);
+    expect(restored.rewardClaimedById['mission.europe']).toBeUndefined();
+  });
+
+  it('volume 하위호환: 구 저장에 volume이 없으면 0.8, 범위 밖은 클램프된다', () => {
+    // volume 필드가 없던 구 v1 저장
+    const legacy = validateSave({
+      schemaVersion: 1,
+      settings: { bgm: false, sfx: true, reducedMotion: false }
+    });
+    expect(legacy.settings.volume).toBe(0.8);
+    expect(legacy.settings.bgm).toBe(false);
+
+    // 정상 범위 값은 유지
+    expect(validateSave({ schemaVersion: 1, settings: { volume: 0.3 } }).settings.volume).toBe(0.3);
+    // 범위 밖·비정상 값은 클램프 또는 기본값
+    expect(validateSave({ schemaVersion: 1, settings: { volume: 5 } }).settings.volume).toBe(1);
+    expect(validateSave({ schemaVersion: 1, settings: { volume: -1 } }).settings.volume).toBe(0);
+    expect(validateSave({ schemaVersion: 1, settings: { volume: Number.NaN } }).settings.volume).toBe(0.8);
+    expect(validateSave({ schemaVersion: 1, settings: { volume: '크게' } }).settings.volume).toBe(0.8);
+  });
+
+  it('parse 가능한 v1이라도 핵심 컨테이너가 손상되면 원본 백업 대상으로 본다', () => {
+    expect(isRestorableSaveDocument(defaultSave())).toBe(true);
+    expect(isRestorableSaveDocument({
+      schemaVersion: 1,
+      profile: { nickname: '너무긴닉네임으로손상' },
+      missions: 'broken'
+    })).toBe(false);
   });
 });

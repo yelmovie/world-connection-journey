@@ -11,6 +11,13 @@ export interface ModalOptions {
 }
 
 let openId: string | null = null;
+let modalSequence = 0;
+let activeClose: (() => void) | null = null;
+
+/** 라우트 전환처럼 모달 소유 페이지가 사라질 때 남은 backdrop과 포커스 trap을 정리한다. */
+export function closeActiveModal(): void {
+  activeClose?.();
+}
 
 /** 모달은 동시에 1개만. 중복 열기 무시(빠른 연속 클릭 방지). */
 export function openModal(opts: ModalOptions): () => void {
@@ -18,18 +25,28 @@ export function openModal(opts: ModalOptions): () => void {
   openId = opts.id;
   void audio.playSfx('tap');
 
+  const previouslyFocused = document.activeElement instanceof HTMLElement
+    ? document.activeElement
+    : null;
+  const sceneRoot = document.getElementById('scene-root');
+  const sceneWasInert = sceneRoot?.inert ?? false;
+  const previousSceneAriaHidden = sceneRoot?.getAttribute('aria-hidden') ?? null;
+
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   const modal = document.createElement('div');
   modal.className = 'modal';
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
+  modal.tabIndex = -1;
 
   if (opts.title) {
     const h = document.createElement('h2');
+    const titleId = `modal-title-${++modalSequence}`;
+    h.id = titleId;
     h.textContent = opts.title;
     modal.appendChild(h);
-    modal.setAttribute('aria-label', opts.title);
+    modal.setAttribute('aria-labelledby', titleId);
   }
   if (opts.bodyHtml) {
     const body = document.createElement('div');
@@ -38,10 +55,52 @@ export function openModal(opts: ModalOptions): () => void {
   }
   if (opts.bodyEl) modal.appendChild(opts.bodyEl);
 
+  const focusableSelector = [
+    'button:not([disabled])',
+    '[href]',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && opts.dismissible !== false) {
+      event.preventDefault();
+      close();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector));
+    if (focusable.length === 0) {
+      event.preventDefault();
+      modal.focus();
+      return;
+    }
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   const close = () => {
     if (openId !== opts.id) return;
     openId = null;
+    activeClose = null;
+    document.removeEventListener('keydown', onKeyDown);
     backdrop.remove();
+    if (sceneRoot) {
+      sceneRoot.inert = sceneWasInert;
+      if (previousSceneAriaHidden === null) sceneRoot.removeAttribute('aria-hidden');
+      else sceneRoot.setAttribute('aria-hidden', previousSceneAriaHidden);
+    }
+    if (previouslyFocused?.isConnected) previouslyFocused.focus();
     bus.emit('MODAL_CLOSED', { id: opts.id });
   };
 
@@ -68,7 +127,17 @@ export function openModal(opts: ModalOptions): () => void {
     });
   }
   backdrop.appendChild(modal);
+  activeClose = close;
+  if (sceneRoot) {
+    sceneRoot.inert = true;
+    sceneRoot.setAttribute('aria-hidden', 'true');
+  }
   document.getElementById('overlay-root')?.appendChild(backdrop);
+  document.addEventListener('keydown', onKeyDown);
+  queueMicrotask(() => {
+    if (openId !== opts.id || modal.contains(document.activeElement)) return;
+    (modal.querySelector<HTMLElement>(focusableSelector) ?? modal).focus();
+  });
   bus.emit('MODAL_OPENED', { id: opts.id });
   return close;
 }

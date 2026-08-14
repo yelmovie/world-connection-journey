@@ -18,8 +18,15 @@ export function defaultSave(): GameSaveV1 {
     profile: null,
     missions,
     stamps: [],
-    settings: { bgm: true, sfx: true, reducedMotion: false },
-    completion: { unlocked: false, reflection: '', actionPrinciples: [], certificateIssued: false },
+    settings: { bgm: true, sfx: true, reducedMotion: false, volume: 0.8 },
+    completion: {
+      unlocked: false,
+      reflection: '',
+      placedPuzzlePieceIds: [],
+      reflectionDrafts: { initialThought: '', evidenceLearned: '', revisedThought: '' },
+      actionPrinciples: [],
+      certificateIssued: false
+    },
     rewardClaimedById: {},
     lastRoute: '#/',
     updatedAt: new Date().toISOString()
@@ -69,13 +76,36 @@ export function validateSave(raw: unknown): GameSaveV1 {
     if (typeof s.bgm === 'boolean') base.settings.bgm = s.bgm;
     if (typeof s.sfx === 'boolean') base.settings.sfx = s.sfx;
     if (typeof s.reducedMotion === 'boolean') base.settings.reducedMotion = s.reducedMotion;
+    // volume이 없는 구 저장은 기본값 0.8 유지, 범위 밖 값은 0~1로 클램프
+    if (typeof s.volume === 'number' && Number.isFinite(s.volume)) {
+      base.settings.volume = Math.max(0, Math.min(1, s.volume));
+    }
   }
   const c = r.completion as Record<string, unknown> | undefined;
   if (c && typeof c === 'object') {
     if (typeof c.unlocked === 'boolean') base.completion.unlocked = c.unlocked;
     if (typeof c.reflection === 'string') base.completion.reflection = c.reflection.slice(0, 2000);
-    if (Array.isArray(c.actionPrinciples)) base.completion.actionPrinciples = c.actionPrinciples.filter((x): x is string => typeof x === 'string');
+    if (Array.isArray(c.placedPuzzlePieceIds)) {
+      base.completion.placedPuzzlePieceIds = [...new Set(c.placedPuzzlePieceIds.filter(
+        (id): id is MissionId => typeof id === 'string' && MISSION_IDS.includes(id as MissionId)
+      ))];
+    }
+    const drafts = c.reflectionDrafts as Record<string, unknown> | undefined;
+    if (drafts && typeof drafts === 'object' && !Array.isArray(drafts)) {
+      if (typeof drafts.initialThought === 'string') base.completion.reflectionDrafts.initialThought = drafts.initialThought.slice(0, 60);
+      if (typeof drafts.evidenceLearned === 'string') base.completion.reflectionDrafts.evidenceLearned = drafts.evidenceLearned.slice(0, 60);
+      if (typeof drafts.revisedThought === 'string') base.completion.reflectionDrafts.revisedThought = drafts.revisedThought.slice(0, 60);
+    }
+    if (Array.isArray(c.actionPrinciples)) {
+      base.completion.actionPrinciples = [...new Set(c.actionPrinciples
+        .filter((x): x is string => typeof x === 'string')
+        .map((x) => x.slice(0, 60))
+        .filter(Boolean))].slice(0, 2);
+    }
     if (typeof c.certificateIssued === 'boolean') base.completion.certificateIssued = c.certificateIssued;
+    // Older v1 saves did not persist puzzle/draft progress. A previously issued
+    // certificate is authoritative proof that the puzzle had been completed.
+    if (base.completion.certificateIssued) base.completion.placedPuzzlePieceIds = [...MISSION_IDS];
   }
   if (r.rewardClaimedById && typeof r.rewardClaimedById === 'object') {
     for (const [k, v] of Object.entries(r.rewardClaimedById as Record<string, unknown>)) {
@@ -87,21 +117,69 @@ export function validateSave(raw: unknown): GameSaveV1 {
 
   // 파생 상태 재계산: 대화 해금·완료 해금은 저장값을 그대로 믿지 않는다.
   recomputeUnlocks(base);
+  normalizeMissionRewards(base);
   return base;
+}
+
+function normalizeMissionRewards(save: GameSaveV1): void {
+  save.stamps = MISSION_IDS.filter((id) => save.missions[id].status === 'completed');
+  for (const id of MISSION_IDS) {
+    const key = `mission.${id}`;
+    if (save.missions[id].status === 'completed') save.rewardClaimedById[key] = true;
+    else delete save.rewardClaimedById[key];
+  }
 }
 
 /** 해금 규칙 단일 소스: 대화는 5대륙 완료 시, 완료 화면은 대화까지 완료 시. */
 export function recomputeUnlocks(save: GameSaveV1): void {
   const continentsDone = CONTINENT_IDS.every((id) => save.missions[id].status === 'completed');
   const d = save.missions.dialogue;
-  if (d.status === 'locked' && continentsDone) d.status = 'available';
-  if (!continentsDone && d.status !== 'completed') d.status = 'locked';
+  if (!continentsDone) {
+    // 완료/해금 값을 직접 주입한 저장 데이터도 선행 미션 없이는 인정하지 않는다.
+    d.status = 'locked';
+  } else if (d.status === 'locked') {
+    d.status = 'available';
+  }
   save.completion.unlocked = continentsDone && d.status === 'completed';
 }
 
-/** 버전 마이그레이션 자리 — v2 도입 시 migrateSaveV1ToV2 추가 */
-function migrate(raw: unknown): unknown {
+/** schemaVersion 도입 전 저장(v0)을 v1 envelope로 올린다. */
+export function migrateSave(raw: unknown): unknown {
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+    const record = raw as Record<string, unknown>;
+    const looksLikeLegacySave = record.schemaVersion === undefined
+      && ('profile' in record || 'missions' in record || 'settings' in record);
+    if (looksLikeLegacySave) return validateSave({ ...record, schemaVersion: 1 });
+  }
   return raw;
+}
+
+function isSupportedSave(raw: unknown): boolean {
+  return typeof raw === 'object'
+    && raw !== null
+    && !Array.isArray(raw)
+    && (raw as Record<string, unknown>).schemaVersion === 1;
+}
+
+/** 필드 단위 정리 전에 원본 보존이 필요한 구조 손상인지 판별한다. */
+export function isRestorableSaveDocument(raw: unknown): boolean {
+  if (!isSupportedSave(raw)) return false;
+  const record = raw as Record<string, unknown>;
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+  if (!(record.profile === null || isRecord(record.profile))) return false;
+  if (!isRecord(record.missions) || !isRecord(record.settings) || !isRecord(record.completion)) return false;
+  if (!Array.isArray(record.stamps) || !isRecord(record.rewardClaimedById)) return false;
+  if (typeof record.lastRoute !== 'string' || typeof record.updatedAt !== 'string') return false;
+  const missions = record.missions;
+  return MISSION_IDS.every((id) => {
+    const mission = missions[id];
+    if (!isRecord(mission)) return false;
+    return mission.status === 'locked'
+      || mission.status === 'available'
+      || mission.status === 'in_progress'
+      || mission.status === 'completed';
+  });
 }
 
 class SaveRepository {
@@ -117,6 +195,7 @@ class SaveRepository {
   }
 
   hasValidSave(): boolean {
+    if (typeof localStorage === 'undefined') return false;
     try {
       return localStorage.getItem(SAVE_KEY) !== null && this.state.profile !== null;
     } catch {
@@ -125,6 +204,7 @@ class SaveRepository {
   }
 
   private load(): GameSaveV1 {
+    if (typeof localStorage === 'undefined') return defaultSave();
     let text: string | null = null;
     try {
       text = localStorage.getItem(SAVE_KEY);
@@ -134,7 +214,17 @@ class SaveRepository {
     }
     if (text === null) return defaultSave();
     try {
-      const raw = migrate(JSON.parse(text));
+      const raw = migrateSave(JSON.parse(text));
+      if (!isSupportedSave(raw)) throw new Error('지원하지 않는 저장 형식');
+      if (!isRestorableSaveDocument(raw)) {
+        // parse 가능한 v1은 원문을 백업한 뒤, 유효한 필드만 최대한 살린다.
+        console.warn('[Save] 일부 구조가 손상된 저장 데이터 — 원본 백업 후 복구');
+        try {
+          localStorage.setItem(BACKUP_KEY, text);
+        } catch {
+          /* 백업 실패해도 필드 단위 복구는 계속 */
+        }
+      }
       return validateSave(raw);
     } catch (err) {
       console.warn('[Save] 손상된 저장 데이터 — 백업 후 기본값 복구', err);
@@ -175,7 +265,8 @@ class SaveRepository {
       const m = s.missions[missionId];
       if (m.status === 'available') m.status = 'in_progress';
       m.checkpointId = checkpointId;
-      if (data) m.data = { ...m.data, ...data };
+      // 체크포인트는 스냅샷이다. 이전 회차의 필드가 새 회차에 섞이지 않도록 교체한다.
+      m.data = data ? { ...data } : {};
     });
     bus.emit('MISSION_CHECKPOINT', { missionId, checkpointId });
   }
@@ -186,13 +277,17 @@ class SaveRepository {
     this.update((s) => {
       const m = s.missions[missionId];
       m.attempts += 1;
-      m.bestScore = Math.max(m.bestScore, Math.round(score));
-      m.scoreDimensions = dimensions;
+      const roundedScore = Math.round(score);
+      if (roundedScore >= m.bestScore) {
+        m.bestScore = roundedScore;
+        m.scoreDimensions = { ...dimensions };
+      }
       if (m.status !== 'completed') {
         m.status = 'completed';
         m.completedAt = new Date().toISOString();
       }
       m.checkpointId = null;
+      m.data = {};
       if (!s.rewardClaimedById[rewardKey]) {
         s.rewardClaimedById[rewardKey] = true;
         if (!s.stamps.includes(missionId)) s.stamps.push(missionId);

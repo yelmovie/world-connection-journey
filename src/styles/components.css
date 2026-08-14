@@ -5,10 +5,10 @@
   padding: 10px 22px;
   border: none; border-radius: var(--radius-m);
   font-family: var(--font-head); font-size: var(--fs-body);
-  color: #fff; background: var(--c-sky);
+  color: var(--c-ink); background: var(--c-sky);
   box-shadow: var(--edge) #1a67b5, var(--shadow-card);
   transition: transform var(--t-fast), box-shadow var(--t-fast), filter var(--t-fast);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  text-shadow: none;
 }
 .btn:hover { filter: brightness(1.06); }
 .btn:active { transform: translateY(3px); box-shadow: 0 0 0 #1a67b5, var(--shadow-card); }
@@ -48,8 +48,9 @@
   cursor: pointer;
   transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast);
   border-width: 2px;
-  touch-action: none;
+  touch-action: manipulation;
 }
+.card-pick.dnd-item { touch-action: none; }
 .card-pick:hover { transform: translateY(-2px); }
 .card-pick[aria-pressed="true"], .card-pick.is-selected {
   border-color: var(--c-violet);
@@ -73,6 +74,7 @@
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.92); border-radius: 999px;
+  color: var(--c-ink);
   padding: 6px 14px; font-size: var(--fs-small); font-weight: 700;
   box-shadow: var(--shadow-card);
 }
@@ -121,7 +123,7 @@
   max-width: min(560px, 90vw);
 }
 .toast.warn { background: var(--c-warning); color: #4b3200; }
-.toast.success { background: var(--c-success); }
+.toast.success { background: var(--c-success); color: var(--c-ink); }
 @keyframes toast-in { from { transform: translateY(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* ===== 진행 표시 ===== */
@@ -152,6 +154,27 @@
 .feedback.partial { background: #fdf3e0; border-color: var(--c-warning); color: #6b4a00; }
 .feedback.retry { background: #fdeeee; border-color: var(--c-coral); color: #7c2a2a; }
 
+/* ===== 승격 클래스 — 반복 인라인 패턴 3종 ===== */
+/* ① 게이지/미터 바: 라벨 + 트랙(.progress-track/.progress-fill) + 값 */
+.meter-row { display: flex; align-items: center; gap: var(--sp-3); }
+.meter-row .meter-label { font-weight: 700; flex-shrink: 0; }
+.meter-row .meter-value { font-weight: 700; text-align: right; white-space: nowrap; }
+.meter-row.is-over .meter-value { color: var(--c-danger); }
+.meter-row.is-over .progress-fill { background: var(--c-danger); }
+
+/* ② 2열 카드 그리드(미션 좌우 분할, 좁으면 1열) */
+.grid-2col {
+  display: grid; gap: var(--sp-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  height: 100%; overflow-y: auto; min-height: 0;
+}
+
+/* ③ 라벨+값 행 */
+.row-between {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: var(--sp-2);
+}
+
 /* ===== 게임 표면(미션 공통 골격) ===== */
 .mission-frame {
   flex: 1; min-height: 0;
@@ -165,17 +188,18 @@
 }
 .drop-zone.is-over { border-color: var(--c-turquoise); background: rgba(16,195,200,0.12); }
 .drop-zone.is-filled { border-style: solid; border-color: var(--c-line); }
+.ref-input { min-height: var(--touch-min); }
 
 /* 도장 */
 .stamp {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 64px; height: 64px; border-radius: 50%;
+  width: 72px; height: 72px; border-radius: 50%;
   border: 3px solid currentColor; font-family: var(--font-head);
   transform: rotate(-8deg); font-size: var(--fs-small);
   text-align: center; line-height: 1.1; padding: 4px;
 }
-.stamp.is-earned { color: var(--c-coral); background: rgba(242,109,109,0.1); }
-.stamp.is-empty { color: rgba(25,50,77,0.35); border-style: dashed; }
+.stamp.is-earned { color: var(--c-coral-ink); background: rgba(242,109,109,0.1); }
+.stamp.is-empty { color: var(--c-ink-soft); border-style: dashed; }
 
 @keyframes stamp-slam {
   0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
@@ -189,3 +213,129 @@
 .bob { animation: bob 3.2s ease-in-out infinite; }
 :root[data-reduced-motion="true"] .bob, :root[data-reduced-motion="true"] .stamp.is-new { animation: none; }
 @media (prefers-reduced-motion: reduce) { .bob, .stamp.is-new { animation: none; } }
+
+@media (max-height: 500px), (max-width: 600px) {
+  .title-page .page-body {
+    justify-content: flex-start !important;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-bar { gap: var(--sp-2); padding-inline: var(--sp-3); }
+  .top-bar-title { min-width: 0; font-size: clamp(20px, 5vw, 26px); line-height: 1.05; }
+  .top-bar-title > .chip { display: none; }
+  .top-bar .btn { padding-inline: var(--sp-3); }
+  .step-dots { gap: 5px; padding-inline: 10px; }
+}
+
+/* 브라우저 200% 확대·아주 좁은 화면: 지도 좌표는 유지하되 조작은 겹치지 않는 목록으로 대체 */
+@media (max-width: 600px) {
+  .map-canvas { display: none; }
+  .map-stage { align-items: stretch !important; justify-content: stretch !important; }
+  .map-overlay {
+    position: relative !important; inset: auto !important;
+    left: auto !important; top: auto !important;
+    width: 100% !important; height: 100% !important;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3);
+    overflow-y: auto; overscroll-behavior: contain; pointer-events: auto !important;
+  }
+  .map-hotspot {
+    position: relative !important; left: auto !important; top: auto !important;
+    transform: none !important; width: 100%; min-height: 48px !important;
+    border-radius: var(--radius-s) !important; flex-direction: row !important;
+    justify-content: center; padding: var(--sp-2) !important;
+  }
+  .map-progress-chip,
+  .map-completion-link {
+    position: relative !important; left: auto !important; right: auto !important;
+    top: auto !important; bottom: auto !important; grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .map-preview { min-height: 76px; padding: var(--sp-2) var(--sp-3); }
+  .map-preview .btn-big { font-size: var(--fs-body); padding: var(--sp-2) var(--sp-4); }
+  .map-preview-desc { display: none; }
+}
+
+/* 좁은 화면에서 시작했거나 확대 중 renderer를 정리한 지도는 다시 넓어져도 목록 모드를 유지한다. */
+.map-compact .map-canvas { display: none; }
+.map-compact .map-stage { align-items: stretch !important; justify-content: stretch !important; }
+.map-compact .map-overlay {
+  position: relative !important; inset: auto !important;
+  left: auto !important; top: auto !important;
+  width: 100% !important; height: 100% !important;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3);
+  overflow-y: auto; overscroll-behavior: contain; pointer-events: auto !important;
+}
+.map-compact .map-hotspot {
+  position: relative !important; left: auto !important; top: auto !important;
+  transform: none !important; width: 100%; min-height: 48px !important;
+  border-radius: var(--radius-s) !important; flex-direction: row !important;
+  justify-content: center; padding: var(--sp-2) !important;
+}
+.map-compact .map-progress-chip,
+.map-compact .map-completion-link {
+  position: relative !important; left: auto !important; right: auto !important;
+  top: auto !important; bottom: auto !important; grid-column: 1 / -1;
+  justify-self: start;
+}
+.map-compact .map-preview { min-height: 76px; padding: var(--sp-2) var(--sp-3); }
+.map-compact .map-preview .btn-big { font-size: var(--fs-body); padding: var(--sp-2) var(--sp-4); }
+.map-compact .map-preview-desc { display: none; }
+
+/* ===== 마스코트 가이드 (말풍선 타이핑 안내) ===== */
+.guide-wrap {
+  position: absolute; bottom: calc(var(--bottom-bar-h) + 8px); z-index: 40;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  pointer-events: none; max-width: min(360px, 34vw);
+}
+.guide-left { left: clamp(8px, 1.5vw, 24px); }
+.guide-right { right: clamp(8px, 1.5vw, 24px); align-items: flex-end; }
+.guide-mascot { width: clamp(72px, 8vw, 120px); filter: drop-shadow(0 6px 14px rgba(10,25,45,0.35)); }
+.guide-bubble {
+  pointer-events: auto; cursor: pointer;
+  background: var(--c-paper); color: var(--c-ink);
+  border: 2px solid var(--c-line); border-radius: var(--radius-m);
+  padding: 10px 14px; font-size: var(--fs-body); font-weight: 700;
+  box-shadow: var(--shadow-card); position: relative;
+  min-height: var(--touch-min); display: flex; align-items: center;
+}
+.guide-bubble::after {
+  content: ''; position: absolute; bottom: -10px; left: 28px;
+  border: 10px solid transparent; border-top-color: var(--c-paper);
+  border-bottom: 0; filter: drop-shadow(0 2px 0 var(--c-line));
+}
+.guide-right .guide-bubble::after { left: auto; right: 28px; }
+.guide-caret { display: none; width: 3px; height: 1.1em; background: var(--c-violet); margin-left: 2px; }
+.guide-wrap.is-typing .guide-caret { display: inline-block; animation: caret-blink 0.7s step-end infinite; }
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+/* 화면이 좁으면 말풍선을 하단 전폭 배너로 (겹침 방지) */
+@media (max-width: 1100px) {
+  .guide-wrap { max-width: min(320px, 46vw); }
+  .guide-mascot { width: 64px; }
+}
+
+/* ===== "여기를 눌러요" 탭 큐 ===== */
+.tap-cue {
+  position: relative;
+  animation: cue-pulse 1.4s ease-in-out infinite;
+  outline: 3px solid var(--c-gold);
+  outline-offset: 3px;
+}
+@keyframes cue-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 193, 78, 0.55); }
+  50% { box-shadow: 0 0 0 10px rgba(242, 193, 78, 0); }
+}
+:root[data-reduced-motion="true"] .tap-cue { animation: none; }
+@media (prefers-reduced-motion: reduce) { .tap-cue { animation: none; } }
+
+/* 가이드 자동 접힘 — 읽을 시간 후 말풍선을 숨기고 마스코트만 반투명하게 남긴다 */
+.guide-wrap.is-idle .guide-bubble {
+  opacity: 0; pointer-events: none; transform: translateY(6px);
+}
+.guide-bubble { transition: opacity var(--t-med), transform var(--t-med); }
+.guide-wrap.is-idle .guide-mascot { opacity: 0.55; width: clamp(48px, 5vw, 72px); }
+.guide-mascot { pointer-events: auto; cursor: pointer; transition: opacity var(--t-med), width var(--t-med); }

@@ -28,8 +28,11 @@ class AudioManager {
   private currentId: BgmId | null = null;
   private pendingBgm: BgmId | null = null;
   private sfxBuffers = new Map<SfxId, AudioBuffer | null>();
+  private sfxLoads = new Map<SfxId, Promise<AudioBuffer | null>>();
+  private activeSfx = new Map<SfxId, AudioBufferSourceNode>();
   private lastSfxAt = new Map<SfxId, number>();
   private fadeTimer: number | null = null;
+  private fadingFrom: HTMLAudioElement | null = null;
 
   init(): void {
     const unlock = () => {
@@ -45,6 +48,21 @@ class AudioManager {
 
   get settings() {
     return saveRepo.get().settings;
+  }
+
+  /** 마스터 볼륨 0~1. BGM은 0.6×, SFX는 0.8× 기본 게인에 곱한다. */
+  private get masterVolume(): number {
+    const v = this.settings.volume;
+    return typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0.8;
+  }
+
+  setVolume(value: number): void {
+    const v = Math.max(0, Math.min(1, value));
+    saveRepo.update((s) => {
+      s.settings.volume = v;
+    });
+    // 페이드 중이 아니면 현재 BGM에 즉시 반영
+    if (this.current && this.fadeTimer === null) this.current.volume = 0.6 * v;
   }
 
   setSettings(bgm: boolean, sfx: boolean): void {
@@ -85,21 +103,36 @@ class AudioManager {
   }
 
   private crossfade(from: HTMLAudioElement | null, to: HTMLAudioElement | null): void {
-    if (this.fadeTimer !== null) window.clearInterval(this.fadeTimer);
+    if (this.fadeTimer !== null) {
+      window.clearInterval(this.fadeTimer);
+      this.fadeTimer = null;
+    }
+    // 이전 crossfade 도중 다시 이동하면 최초 트랙이 고아 재생되지 않게 즉시 정리한다.
+    if (this.fadingFrom && this.fadingFrom !== from && this.fadingFrom !== to) {
+      this.disposeTrack(this.fadingFrom);
+    }
+    this.fadingFrom = from;
     const start = performance.now();
     this.fadeTimer = window.setInterval(() => {
       const t = Math.min(1, (performance.now() - start) / FADE_MS);
-      if (from) from.volume = Math.max(0, 0.6 * (1 - t));
-      if (to) to.volume = 0.6 * t;
+      const bgmVol = 0.6 * this.masterVolume;
+      if (from) from.volume = Math.max(0, bgmVol * (1 - t));
+      if (to) to.volume = bgmVol * t;
       if (t >= 1) {
         if (this.fadeTimer !== null) window.clearInterval(this.fadeTimer);
         this.fadeTimer = null;
         if (from) {
-          from.pause();
-          from.src = '';
+          this.disposeTrack(from);
+          if (this.fadingFrom === from) this.fadingFrom = null;
         }
       }
     }, 30);
+  }
+
+  private disposeTrack(track: HTMLAudioElement): void {
+    track.pause();
+    track.removeAttribute('src');
+    track.load();
   }
 
   async playSfx(id: SfxId): Promise<void> {
@@ -111,15 +144,32 @@ class AudioManager {
 
     let buffer = this.sfxBuffers.get(id);
     if (buffer === undefined) {
-      buffer = await this.loadSfx(id);
+      let pending = this.sfxLoads.get(id);
+      if (!pending) {
+        pending = this.loadSfx(id);
+        this.sfxLoads.set(id, pending);
+      }
+      buffer = await pending;
+      this.sfxLoads.delete(id);
       this.sfxBuffers.set(id, buffer);
     }
     if (!buffer || !this.ctx) return;
+    const previous = this.activeSfx.get(id);
+    if (previous) {
+      try { previous.stop(); } catch { /* 이미 종료됨 */ }
+      previous.disconnect();
+    }
     const src = this.ctx.createBufferSource();
     src.buffer = buffer;
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.8;
+    gain.gain.value = 0.8 * this.masterVolume;
     src.connect(gain).connect(this.ctx.destination);
+    this.activeSfx.set(id, src);
+    src.addEventListener('ended', () => {
+      if (this.activeSfx.get(id) === src) this.activeSfx.delete(id);
+      src.disconnect();
+      gain.disconnect();
+    }, { once: true });
     src.start();
   }
 
@@ -138,18 +188,20 @@ class AudioManager {
   /** 리듬 시퀀서용 — SFX 파일과 무관하게 WebAudio 합성 타악기 재생 (결정론적). */
   playBeat(kind: 'low' | 'high', when = 0): void {
     if (!this.ctx || !this.settings.sfx) return;
+    const vol = this.masterVolume;
+    if (vol <= 0) return;
     const t = this.ctx.currentTime + when;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     if (kind === 'low') {
       osc.frequency.setValueAtTime(150, t);
       osc.frequency.exponentialRampToValueAtTime(55, t + 0.12);
-      gain.gain.setValueAtTime(0.9, t);
+      gain.gain.setValueAtTime(0.9 * vol, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
     } else {
       osc.frequency.setValueAtTime(420, t);
       osc.frequency.exponentialRampToValueAtTime(180, t + 0.06);
-      gain.gain.setValueAtTime(0.6, t);
+      gain.gain.setValueAtTime(0.6 * vol, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
     }
     osc.connect(gain).connect(this.ctx.destination);

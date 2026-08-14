@@ -8,6 +8,7 @@ import { buildTopBar } from '../ui/chrome';
 import { showToast } from '../ui/toast';
 import { CONTINENT_IDS } from '../types';
 import { threeSlot } from '../ui/threeSlot';
+import { createGuide, type GuideController } from '../ui/guide';
 
 interface CommonContent {
   nickname?: { minLen: number; maxLen: number; banned: string[] };
@@ -28,6 +29,8 @@ const AVATAR_COLORS = ['#6C4CE8', '#2588E8', '#10C3C8', '#F26D6D', '#F2C14E', '#
 const PLANES = ['plane.main', 'plane.alt1', 'plane.alt2'];
 
 export function createPage(): Page {
+  let guide: GuideController | null = null;
+
   return {
     async mount(root: HTMLElement) {
       let common: CommonContent = {};
@@ -70,7 +73,7 @@ export function createPage(): Page {
       const questionsHtml = questions
         .map(
           (q, i) => `<label class="card" style="display:flex;gap:10px;align-items:center;cursor:pointer">
-            <input type="radio" name="inquiry" value="q${i + 1}" ${i === 0 ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--c-violet)">
+            <input type="radio" name="inquiry" value="q${i + 1}" ${(profile?.inquiryQuestionId ?? 'q1') === `q${i + 1}` ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--c-violet)">
             <span>${q}</span></label>`
         )
         .join('');
@@ -82,9 +85,9 @@ export function createPage(): Page {
         <div class="panel" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);align-items:start;overflow-y:auto;max-height:100%">
           <section style="display:flex;flex-direction:column;gap:var(--sp-4)">
             <h2 style="color:var(--c-navy)">여행자 정보</h2>
-            <label style="font-weight:700">별명 (진짜 이름이 아니어도 돼요)
+            <label style="font-weight:700">별명
               <input id="nickname" type="text" maxlength="${maxLen}" autocomplete="off"
-                value="${profile?.nickname ?? ''}" placeholder="예: 씩씩한여행자"
+                placeholder="예: 씩씩한여행자"
                 style="display:block;width:100%;margin-top:6px;padding:12px;font-size:var(--fs-body);border:2px solid var(--c-line);border-radius:var(--radius-s);min-height:var(--touch-min)">
             </label>
             <p id="nick-msg" class="chip" style="display:none"></p>
@@ -149,6 +152,7 @@ export function createPage(): Page {
 
       const input = page.querySelector<HTMLInputElement>('#nickname');
       const msg = page.querySelector<HTMLElement>('#nick-msg');
+      if (input) input.value = profile?.nickname ?? '';
       const validate = (): string | null => {
         const v = (input?.value ?? '').trim();
         if (v.length < 1) return '별명을 1자 이상 적어 주세요.';
@@ -182,10 +186,31 @@ export function createPage(): Page {
         navigate('#/map');
       });
 
+      // 마스코트 가이드 — 별명 → 아바타·비행기 → 질문 선택 후 저장 버튼 순으로 안내
+      guide = createGuide({});
+      page.appendChild(guide.el);
+      let guideStep = 0;
+      guide.say('별명을 먼저 지어 볼까요?', { cue: input });
+      input?.addEventListener('input', () => {
+        if (guideStep === 0 && input.value.trim().length > 0) {
+          guideStep = 1;
+          guide?.say('아바타랑 비행기도 골라 봐요!', { cue: null });
+        }
+      });
+      page.querySelectorAll<HTMLInputElement>('input[name="inquiry"]').forEach((radio) =>
+        radio.addEventListener('change', () => {
+          guideStep = 2;
+          guide?.say('다 골랐으면 아래 버튼을 눌러요!', {
+            cue: bottom.querySelector<HTMLElement>('[data-act="save"]')
+          });
+        })
+      );
+
       root.appendChild(page);
     },
     unmount() {
-      /* no-op */
+      guide?.dispose();
+      guide = null;
     }
   };
 }

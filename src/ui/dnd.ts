@@ -21,6 +21,7 @@ export function enablePickPlace(opts: {
   let selected: HTMLElement | null = null;
   let dragging: HTMLElement | null = null;
   let ghost: HTMLElement | null = null;
+  let activeDragCleanup: (() => void) | null = null;
   const cleanups: Array<() => void> = [];
 
   const canPlace = (itemId: string, zoneId: string) => opts.canPlace?.(itemId, zoneId) ?? true;
@@ -50,6 +51,7 @@ export function enablePickPlace(opts: {
 
   const onPointerDown = (item: HTMLElement) => (e: PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    activeDragCleanup?.();
     dragging = item;
     const startX = e.clientX;
     const startY = e.clientY;
@@ -74,19 +76,13 @@ export function enablePickPlace(opts: {
       ev.preventDefault();
     };
 
+    let cleanupDrag = () => undefined;
     const onUp = (ev: PointerEvent) => {
-      window.removeEventListener('pointermove', onMove);
-      window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
-      item.classList.remove('is-dragging');
-      zones.forEach((z) => z.classList.remove('is-over'));
-      ghost?.remove();
-      ghost = null;
+      const zone = moved ? zoneAt(ev.clientX, ev.clientY) : null;
+      cleanupDrag();
       if (moved) {
-        const zone = zoneAt(ev.clientX, ev.clientY);
         if (zone) place(item, zone);
       } else {
-        // 탭 = 선택 토글
         if (selected === item) {
           clearSelection();
         } else {
@@ -97,16 +93,28 @@ export function enablePickPlace(opts: {
           void audio.playSfx('pickup');
         }
       }
-      dragging = null;
     };
 
+    cleanupDrag = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      item.classList.remove('is-dragging');
+      zones.forEach((z) => z.classList.remove('is-over'));
+      ghost?.remove();
+      ghost = null;
+      dragging = null;
+      if (activeDragCleanup === cleanupDrag) activeDragCleanup = null;
+    };
+
+    activeDragCleanup = cleanupDrag;
     window.addEventListener('pointermove', onMove, { passive: false });
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
   };
 
   const bindItem = (item: HTMLElement) => {
-    item.classList.add('card-pick');
+    item.classList.add('card-pick', 'dnd-item');
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
     item.setAttribute('aria-pressed', 'false');
@@ -128,6 +136,7 @@ export function enablePickPlace(opts: {
     cleanups.push(() => {
       item.removeEventListener('pointerdown', down);
       item.removeEventListener('keydown', key);
+      item.classList.remove('dnd-item');
     });
   };
 
@@ -158,6 +167,7 @@ export function enablePickPlace(opts: {
 
   return {
     refresh(newItems, newZones) {
+      activeDragCleanup?.();
       cleanups.forEach((c) => c());
       cleanups.length = 0;
       clearSelection();
@@ -166,6 +176,7 @@ export function enablePickPlace(opts: {
       bindAll();
     },
     dispose() {
+      activeDragCleanup?.();
       cleanups.forEach((c) => c());
       cleanups.length = 0;
       ghost?.remove();

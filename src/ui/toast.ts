@@ -1,5 +1,9 @@
 let wrap: HTMLDivElement | null = null;
 
+export function clearToasts(): void {
+  wrap?.replaceChildren();
+}
+
 export function showToast(message: string, kind: 'info' | 'warn' | 'success' = 'info', ms = 2600): void {
   if (!wrap) {
     wrap = document.createElement('div');

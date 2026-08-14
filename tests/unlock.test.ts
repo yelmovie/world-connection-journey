@@ -36,4 +36,13 @@ describe('미션 해금 규칙', () => {
     recomputeUnlocks(s);
     expect(s.missions.dialogue.status).toBe('locked');
   });
+
+  it('저장 조작으로 대화를 completed로 바꿔도 5대륙 미완이면 다시 잠긴다', () => {
+    const s = defaultSave();
+    s.missions.dialogue.status = 'completed';
+    s.completion.unlocked = true;
+    recomputeUnlocks(s);
+    expect(s.missions.dialogue.status).toBe('locked');
+    expect(s.completion.unlocked).toBe(false);
+  });
 });

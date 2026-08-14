@@ -118,7 +118,7 @@
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "교실(원탁 세계지도) — 예비"
+      "note": "교실(원탁 세계지도) — 예비 — 미사용 — 향후 확장용"
     },
     "title.logo": {
       "type": "image",
@@ -181,13 +181,11 @@
       "type": "image",
       "src": "assets/prop_globe.webp",
       "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (6).png",
-      "pages": [
-        "p02"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "비행기 궤도 지구본"
+      "note": "비행기 궤도 지구본 — 미사용 — 향후 확장용"
     },
     "prop.stamp": {
       "type": "image",
@@ -205,13 +203,11 @@
       "type": "image",
       "src": "assets/prop_suitcase.webp",
       "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (5).png",
-      "pages": [
-        "p03"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "여행 가방(스티커 트렁크)"
+      "note": "여행 가방(스티커 트렁크) — 미사용 — 향후 확장용"
     },
     "icon.compass": {
       "type": "image",
@@ -326,61 +322,51 @@
       "type": "image",
       "src": "assets/asia_child1.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (2).png",
-      "pages": [
-        "p04"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "한복 소녀"
+      "note": "한복 소녀 — 미사용 — 향후 확장용"
     },
     "asia.child2": {
       "type": "image",
       "src": "assets/asia_child2.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png",
-      "pages": [
-        "p04"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "중국 전통복 소년"
+      "note": "중국 전통복 소년 — 미사용 — 향후 확장용"
     },
     "asia.child3": {
       "type": "image",
       "src": "assets/asia_child3.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (5).png",
-      "pages": [
-        "p04"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "태국 전통복 소녀"
+      "note": "태국 전통복 소녀 — 미사용 — 향후 확장용"
     },
     "europe.guide": {
       "type": "image",
       "src": "assets/europe_guide.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (2).png",
-      "pages": [
-        "p05"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "추정: 지도 든 탐험 복장 소녀 가이드"
+      "note": "추정: 지도 든 탐험 복장 소녀 가이드 — 미사용 — 향후 확장용"
     },
     "europe.heritage": {
       "type": "image",
       "src": "assets/europe_heritage.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png",
-      "pages": [
-        "p05"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "콜로세움 미니어처"
+      "note": "콜로세움 미니어처 — 미사용 — 향후 확장용"
     },
     "africa.host": {
       "type": "image",
@@ -410,25 +396,21 @@
       "type": "image",
       "src": "assets/africa_instrument2.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_53 (5).png",
-      "pages": [
-        "p06"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "토킹드럼(장구형 북)"
+      "note": "토킹드럼(장구형 북) — 미사용 — 향후 확장용"
     },
     "africa.instrument3": {
       "type": "image",
       "src": "assets/africa_instrument3.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_54 (6).png",
-      "pages": [
-        "p06"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "셰케레(구슬 박)"
+      "note": "셰케레(구슬 박) — 미사용 — 향후 확장용"
     },
     "americas.student1": {
       "type": "image",
@@ -530,13 +512,11 @@
       "type": "image",
       "src": "assets/oceania_island.webp",
       "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png",
-      "pages": [
-        "p08"
-      ],
+      "pages": [],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "산호초·바다거북 섬"
+      "note": "산호초·바다거북 섬 — 미사용 — 향후 확장용"
     }
   }
 }

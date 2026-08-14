@@ -1,16 +1,16 @@
 # ASSET_AUDIT — 15worldmap 에셋 감사
 
-생성일: 2026-08-14 / 도구: scripts/contact-sheet.mjs + scripts/build-assets.mjs (sharp)
-원본 폴더는 읽기 전용으로 유지했고, 산출물은 public/assets/ 와 src/content/asset-manifest.json 에만 생성했다.
+최초 생성: 2026-08-14 / 최종 참조 대조: 2026-08-15 / 에셋 정리 반영: 2026-08-15 / 도구: scripts/contact-sheet.mjs + scripts/build-assets.mjs (sharp)
+변환 과정에서 원본 픽셀 파일은 수정하지 않았고, 동일 중복 23장만 `_unused/duplicates/`로 이동 보관했다. 산출물은 public/assets/ 와 src/content/asset-manifest.json 에 생성했다.
 
 ## 1. 배정표 (semantic ID 45건)
 
 | semantic id | 원본 파일 | 원본 해상도 | 알파 | 변환 KB | 사용 페이지 |
 |---|---|---|---|---|---|
-| bg.title | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (1).png | 1672x941 | X | 131 | p01 |
+| bg.title | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (1).png | 1672x941 | X | 131 | p01 p03 |
 | bg.completion | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (10).png | 1672x941 | X | 198 | p10 |
 | bg.dialogue | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (2).png | 1672x941 | X | 86 | p09 |
-| bg.map | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (3).png | 1672x941 | X | 230 | p02 p03 |
+| bg.map | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (3).png | 1672x941 | X | 230 | p02 |
 | bg.asia | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (4).png | 1672x941 | X | 212 | p04 |
 | bg.americas | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (5).png | 1672x941 | X | 291 | p07 |
 | bg.africa | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (6).png | 1672x941 | X | 192 | p06 |
@@ -18,31 +18,31 @@
 | bg.oceania | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (8).png | 1672x941 | X | 222 | p08 |
 | bg.spare | background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (9).png | 1672x941 | X | 173 | - |
 | title.logo | title/ChatGPT Image 2026년 8월 14일 오후 04_16_10.png | 2172x724 | O | 105 | p01 |
-| plane.main | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png | 1254x1254 | O | 56 | p01 p02 |
-| plane.alt1 | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (2).png | 1254x1254 | O | 52 | - |
-| plane.alt2 | assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (1).png | 1254x1254 | O | 57 | - |
+| plane.main | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png | 1254x1254 | O | 56 | p01 p02 p03 |
+| plane.alt1 | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (2).png | 1254x1254 | O | 52 | p03 |
+| plane.alt2 | assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (1).png | 1254x1254 | O | 57 | p03 |
 | prop.passport | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (4).png | 1254x1254 | O | 52 | p03 |
-| prop.globe | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (6).png | 1254x1254 | O | 55 | p02 |
+| prop.globe | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (6).png | 1254x1254 | O | 55 | - |
 | prop.stamp | 3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (9).png | 1224x1285 | O | 28 | p03 |
-| prop.suitcase | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (5).png | 1254x1254 | O | 53 | p03 |
-| icon.compass | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (3).png | 1254x1254 | O | 18 | p02 |
+| prop.suitcase | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (5).png | 1254x1254 | O | 53 | - |
+| icon.compass | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (3).png | 1254x1254 | O | 18 | p09 |
 | greeting.morocco | assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (4).png | 1254x1254 | O | 40 | p09 |
 | greeting.colombia | assets/ChatGPT Image 2026년 8월 13일 오후 06_17_33 (3).png | 1254x1254 | O | 47 | p09 |
 | greeting.japan | assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (3).png | 1254x1254 | O | 31 | p09 |
 | greeting.tanzania | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (2).png | 1254x1254 | O | 35 | p09 |
 | greeting.australia | assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (2).png | 1254x1254 | O | 43 | p09 |
 | greeting.nepal | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (3).png | 1254x1254 | O | 43 | p09 |
-| reward.globe_puzzle | assets/ChatGPT Image 2026년 8월 14일 오후 06_39_03 (10).png | 1254x1254 | O | 46 | p02 p10 |
-| reward.badge | assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (2).png | 1254x1254 | O | 73 | p10 |
-| asia.child1 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (2).png | 1254x1254 | O | 45 | p04 |
-| asia.child2 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png | 1254x1254 | O | 35 | p04 |
-| asia.child3 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (5).png | 1254x1254 | O | 36 | p04 |
-| europe.guide | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (2).png | 1254x1254 | O | 45 | p05 |
-| europe.heritage | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png | 1254x1254 | O | 66 | p05 |
+| reward.globe_puzzle | assets/ChatGPT Image 2026년 8월 14일 오후 06_39_03 (10).png | 1254x1254 | O | 46 | p10 |
+| reward.badge | assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (2).png | 1254x1254 | O | 73 | preload only |
+| asia.child1 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (2).png | 1254x1254 | O | 45 | - |
+| asia.child2 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png | 1254x1254 | O | 35 | - |
+| asia.child3 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (5).png | 1254x1254 | O | 36 | - |
+| europe.guide | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (2).png | 1254x1254 | O | 45 | - |
+| europe.heritage | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png | 1254x1254 | O | 66 | - |
 | africa.host | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (3).png | 1254x1254 | O | 49 | p06 |
-| africa.instrument1 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_52 (4).png | 1254x1254 | O | 46 | p06 |
-| africa.instrument2 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_53 (5).png | 1254x1254 | O | 66 | p06 |
-| africa.instrument3 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_54 (6).png | 1254x1254 | O | 70 | p06 |
+| africa.instrument1 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_52 (4).png | 1254x1254 | O | 46 | preload only |
+| africa.instrument2 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_53 (5).png | 1254x1254 | O | 66 | - |
+| africa.instrument3 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_54 (6).png | 1254x1254 | O | 70 | - |
 | americas.student1 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_41 (4).png | 1254x1254 | O | 38 | p07 |
 | americas.student2 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_42 (5).png | 1254x1254 | O | 46 | p07 |
 | americas.student3 | assets/ChatGPT Image 2026년 8월 14일 오전 03_23_43 (6).png | 1254x1254 | O | 47 | p07 |
@@ -51,11 +51,21 @@
 | oceania.researcher | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (3).png | 1254x1254 | O | 44 | p08 |
 | oceania.fisher | assets/ChatGPT Image 2026년 8월 14일 오후 06_38_58 (5).png | 1254x1254 | O | 48 | p08 |
 | oceania.visitor | assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (1).png | 1254x1254 | O | 39 | p08 |
-| oceania.island | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png | 1254x1254 | O | 98 | p08 |
+| oceania.island | assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png | 1254x1254 | O | 98 | - |
 | (og) | og.png | 1536x1024 | X | 161 | 메타태그 |
 | (favicon) | assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png | - | O | 4 | 전역 |
 
 "추정" 표시가 note 에 있는 항목(인사 6종, 유럽 가이드, 아프리카 호스트, 오세아니아 인물 4종)은 원본에 국가·역할 단서가 없어 이미지 내용(자세·복장)으로 추정 배정한 것이다. 상세 note 는 src/content/asset-manifest.json 참고.
+
+위 마지막 열은 manifest의 기획상 `pages` 값이 아니라 **현재 코드의 실제 참조**를 다시 대조한 결과다. `preload only`는 로드 목록에는 있으나 화면에 렌더링하지 않는 항목이다.
+
+### 빌드에 남았지만 화면에서 참조하지 않는 semantic ID
+
+`bg.spare`, `prop.globe`, `prop.suitcase`, `asia.child1`, `asia.child2`, `asia.child3`, `europe.guide`, `europe.heritage`, `africa.instrument2`, `africa.instrument3`, `oceania.island`가 미참조다. `reward.badge`, `africa.instrument1`은 preload만 하고 렌더링하지 않는다.
+
+**2026-08-15 정리 반영**: 위 미참조 11개 semantic ID는 manifest에서 항목을 삭제하지 않고 `pages: []`와 note "미사용 — 향후 확장용"으로 표시했다. 삭제 후보의 상세 목록(경로·용량·근거)은 `_unused/DELETE-CANDIDATES.md`에 기록했다 — 중복 23장(33.3MiB), 미배정 원본 93장(144.6MiB), 미참조 WebP 11개(0.72MiB), 실제 삭제는 하지 않음.
+
+추가 발견: `src/pages/missionEurope.ts`가 `europe.map` ID를 `hasAsset()` 가드와 함께 참조하지만 manifest에 해당 항목이 없다. 현재는 가드 덕에 항상 SVG 대체 표현이 나오며, 유럽 지도 이미지를 추가할 때 이 ID로 등록하면 된다(아래 3. missing 목록과 같은 성격).
 
 ## 2. 미사용(unused) 목록
 
@@ -170,10 +180,22 @@
 ## 5. 사운드 목록
 
 BGM 6곡 (sound/): maintheme.mp3, stage1_asia.mp3, stage2_Europe.mp3, stage3_Africa.mp3, stage4_America.mp3, stage5_Oceania.mp3
-효과음 (sound/bfx/): sfx_tap.mp3
+효과음 10종 (public/sound/sfx/): sfx_tap.mp3, sfx_pickup.mp3, sfx_drop.mp3, sfx_success.mp3, sfx_partial.mp3, sfx_stamp.mp3, sfx_complete.mp3, sfx_whoosh.mp3, sfx_beat_low.mp3, sfx_beat_high.mp3
+
+리듬 미션은 `beat_low`·`beat_high` 파일 대신 WebAudio 합성 박자를 현재 사용하고, 두 파일은 이후 교체용으로 보존한다. 합성 박자와 함께 시각 박자점을 표시한다.
 
 ## 6. 변환 결과 총량
 
-- public/assets/ 총 47개 파일, 3.80 MB (예산 8MB 이내 → 재변환 불필요)
-- preload=core 합계: 0.60 MB (초기 다운로드)
+- `public/assets/`: WebP 47개, 3.797MiB
+- `public/fonts/`: 3개, 1.836MiB
+- `public/sound/bgm/`: 6개, 13.733MiB
+- `public/sound/sfx/`: 10개, 0.417MiB
+- production `dist/`: 총 92파일, 21.219MiB. 전체 파일 합계이며 초기 화면 전송량과는 다르다.
+- 앱 초기 JS 청크 20.40kB(gzip 7.56kB), Phaser lazy 청크 1208.48kB(gzip 332.40kB)
 - 변환 설정: 배경 1600px q78 / 캐릭터·소품 512px q82 / 아이콘 256px / 로고 1024px, 알파 보존
+
+## 7. Three.js 예약 위치
+
+- `passport-stamp` 슬롯: 현재 `prop.stamp` WebP 폴백
+- `completion-globe` 슬롯: 현재 `reward.globe_puzzle` WebP 폴백
+- Three.js 패키지와 GLB 파일은 없다. `3d assets/` 이름의 원본은 3D 모델이 아니라 래스터 렌더 이미지다.

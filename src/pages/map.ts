@@ -5,6 +5,7 @@ import { audio } from '../core/AudioManager';
 import { saveRepo, recomputeUnlocks } from '../core/SaveRepository';
 import { createPhaserHost, GAME_W, GAME_H, type PhaserHost } from '../core/phaserHost';
 import { buildTopBar } from '../ui/chrome';
+import { createGuide, type GuideController } from '../ui/guide';
 import type { MissionId, MissionStatus } from '../types';
 import { CONTINENT_IDS } from '../types';
 
@@ -34,31 +35,41 @@ export function createPage(): Page {
   let host: PhaserHost | null = null;
   let flyTo: ((x: number, y: number) => void) | null = null;
   let resizeObs: ResizeObserver | null = null;
+  let compactMedia: MediaQueryList | null = null;
+  let compactListener: ((event: MediaQueryListEvent) => void) | null = null;
+  let guide: GuideController | null = null;
   let disposed = false;
 
   return {
     async mount(root: HTMLElement) {
-      await preloadImages(['bg.map', 'plane.main']);
+      compactMedia = window.matchMedia('(max-width: 600px)');
+      const compactMap = compactMedia.matches;
+      if (!compactMap) await preloadImages(['bg.map', 'plane.main']);
       audio.playBgm('main');
       const save = saveRepo.get();
       recomputeUnlocks(save);
 
       const page = document.createElement('div');
       page.className = 'page';
+      page.classList.toggle('map-compact', compactMap);
       page.style.background = 'linear-gradient(#0e2440, #19324d)';
       page.appendChild(
         buildTopBar({
           title: '세계 항로 지도',
           subtitle: save.profile ? `${save.profile.nickname}의 여행` : undefined,
-          backTo: '#/'
+          backTo: '#/',
+          showPassport: true
         })
       );
 
       const bodyWrap = document.createElement('div');
+      bodyWrap.className = 'map-stage';
       bodyWrap.style.cssText = 'flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center';
       const canvasWrap = document.createElement('div');
+      canvasWrap.className = 'map-canvas';
       canvasWrap.style.cssText = 'position:absolute;inset:0';
       const overlay = document.createElement('div');
+      overlay.className = 'map-overlay';
       overlay.style.cssText = 'position:absolute;pointer-events:none';
       bodyWrap.appendChild(canvasWrap);
       bodyWrap.appendChild(overlay);
@@ -66,18 +77,53 @@ export function createPage(): Page {
 
       // 하단 미리보기 패널
       const preview = document.createElement('div');
-      preview.className = 'bottom-bar';
-      preview.innerHTML = `<span class="chip">가고 싶은 지역을 골라 보세요. 순서는 자유예요!</span>`;
+      preview.className = 'bottom-bar map-preview';
+      preview.innerHTML = `<span class="chip">순서는 자유예요!</span>`;
       page.appendChild(preview);
       root.appendChild(page);
+
+      // 마스코트 가이드 — 다음에 누를 곳 안내
+      guide = createGuide({});
+      page.appendChild(guide.el);
 
       // ---- Phaser 배경·항로·비행기 ----
       const bgUrl = assetUrl('bg.map');
       const planeUrl = hasAsset('plane.main') ? assetUrl('plane.main') : null;
-      host = await createPhaserHost(canvasWrap, (Phaser) => {
+      if (!compactMap) {
+        host = await createPhaserHost(canvasWrap, (Phaser) => {
         class MapScene extends Phaser.Scene {
+          private plane?: Phaser.GameObjects.Image;
+          private bobTween?: Phaser.Tweens.Tween;
+          private flying = false;
+
           constructor() {
             super('map');
+          }
+
+          private reducedMotion(): boolean {
+            return saveRepo.get().settings.reducedMotion
+              || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          }
+
+          private syncBob(): void {
+            if (!this.plane || this.flying) return;
+            if (this.reducedMotion()) {
+              if (this.bobTween) {
+                this.tweens.killTweensOf(this.plane);
+                this.bobTween = undefined;
+              }
+              return;
+            }
+            if (!this.bobTween) {
+              this.bobTween = this.tweens.add({
+                targets: this.plane,
+                y: this.plane.y - 10,
+                duration: 1600,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+              });
+            }
           }
           preload() {
             this.load.image('bg', bgUrl);
@@ -101,18 +147,16 @@ export function createPage(): Page {
             if (planeUrl) {
               const start = done.length > 0 ? done[done.length - 1]! : SPOTS[0]!;
               const plane = this.add.image(start.x * GAME_W, start.y * GAME_H - 40, 'plane');
+              this.plane = plane;
               plane.setScale(Math.min(1, 120 / plane.width));
-              this.tweens.add({
-                targets: plane,
-                y: plane.y - 10,
-                duration: 1600,
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-              });
+              this.syncBob();
               flyTo = (x, y) => {
-                if (saveRepo.get().settings.reducedMotion) {
+                this.tweens.killTweensOf(plane);
+                this.bobTween = undefined;
+                this.flying = true;
+                if (this.reducedMotion()) {
                   plane.setPosition(x * GAME_W, y * GAME_H - 40);
+                  this.flying = false;
                   return;
                 }
                 this.tweens.add({
@@ -120,10 +164,23 @@ export function createPage(): Page {
                   x: x * GAME_W,
                   y: y * GAME_H - 40,
                   duration: 700,
-                  ease: 'Cubic.easeInOut'
+                  ease: 'Cubic.easeInOut',
+                  onComplete: () => {
+                    this.flying = false;
+                    this.syncBob();
+                  }
                 });
               };
             }
+          }
+
+          override update() {
+            if (this.flying && this.plane && this.reducedMotion()) {
+              this.tweens.killTweensOf(this.plane);
+              this.flying = false;
+              this.bobTween = undefined;
+            }
+            this.syncBob();
           }
         }
         function drawDashedLine(g: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number) {
@@ -137,28 +194,45 @@ export function createPage(): Page {
           }
         }
         return new MapScene();
-      });
-      if (disposed) {
-        host.destroy();
-        return;
+        });
+        if (disposed) {
+          host.destroy();
+          return;
+        }
+
+        // import/텍스처 로드 사이에 확대·회전이 바뀐 경우 change 이벤트를 놓칠 수 있다.
+        if (compactMedia.matches) {
+          host.destroy();
+          host = null;
+          flyTo = null;
+          page.classList.add('map-compact');
+        } else {
+          // ---- DOM 핫스폿(캔버스 표시 영역에 맞춰 배치) ----
+          const syncOverlay = () => {
+            const canvas = canvasWrap.querySelector('canvas');
+            if (!canvas) return;
+            const wrapRect = bodyWrap.getBoundingClientRect();
+            const rect = canvas.getBoundingClientRect();
+            overlay.style.left = `${rect.left - wrapRect.left}px`;
+            overlay.style.top = `${rect.top - wrapRect.top}px`;
+            overlay.style.width = `${rect.width}px`;
+            overlay.style.height = `${rect.height}px`;
+          };
+          resizeObs = new ResizeObserver(syncOverlay);
+          resizeObs.observe(bodyWrap);
+          window.setTimeout(syncOverlay, 50);
+        }
       }
 
-      // ---- DOM 핫스폿(캔버스 표시 영역에 맞춰 배치) ----
-      const syncOverlay = () => {
-        const canvas = canvasWrap.querySelector('canvas');
-        if (!canvas) return;
-        const wrapRect = bodyWrap.getBoundingClientRect();
-        const rect = canvas.getBoundingClientRect();
-        overlay.style.left = `${rect.left - wrapRect.left}px`;
-        overlay.style.top = `${rect.top - wrapRect.top}px`;
-        overlay.style.width = `${rect.width}px`;
-        overlay.style.height = `${rect.height}px`;
+      compactListener = () => {
+        if (disposed) return;
+        // 같은 URL이어도 페이지를 다시 마운트해 compact↔지도 전환 양쪽을 완전하게 맞춘다.
+        window.dispatchEvent(new Event('hashchange'));
       };
-      resizeObs = new ResizeObserver(syncOverlay);
-      resizeObs.observe(bodyWrap);
-      window.setTimeout(syncOverlay, 50);
+      compactMedia.addEventListener('change', compactListener);
 
       let selectedId: MissionId | null = null;
+      let firstCue: HTMLElement | null = null; // 미완료(도전 가능·진행 중) 첫 핫스폿 — 5대륙 완료 직후엔 대화 노드가 됨
       for (const spot of SPOTS) {
         const m = saveRepo.get().missions[spot.id];
         const btn = document.createElement('button');
@@ -171,7 +245,7 @@ export function createPage(): Page {
           pointer-events:auto;min-width:var(--hotspot-min);min-height:var(--hotspot-min);
           border-radius:${isDialogue ? 'var(--radius-m)' : '999px'};
           border:3px solid #fff;cursor:${m.status === 'locked' ? 'not-allowed' : 'pointer'};
-          font-family:var(--font-head);font-size:var(--fs-small);color:#fff;
+          font-family:var(--font-head);font-size:var(--fs-small);color:${statusTextColor(m.status)};
           padding:8px 14px;display:flex;flex-direction:column;align-items:center;gap:2px;
           box-shadow:var(--shadow-pop);
           background:${statusColor(m.status)};
@@ -181,6 +255,7 @@ export function createPage(): Page {
           <span aria-hidden="true" style="font-size:1.15em">${statusMark(m.status)}</span>
           <span>${spot.name}</span>`;
         btn.setAttribute('aria-label', `${spot.name} — ${STATUS_LABEL[m.status]}`);
+        if (!firstCue && (m.status === 'available' || m.status === 'in_progress')) firstCue = btn;
         btn.addEventListener('click', () => {
           if (m.status === 'locked') return;
           void audio.playSfx('tap');
@@ -191,20 +266,22 @@ export function createPage(): Page {
           selectedId = spot.id;
           flyTo?.(spot.x, spot.y);
           preview.innerHTML = `
-            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+            <div class="map-preview-info" style="display:flex;flex-direction:column;gap:4px;min-width:0">
               <strong style="font-family:var(--font-head);font-size:var(--fs-body)">${spot.name} · ${STATUS_LABEL[m.status]}${m.bestScore > 0 ? ` · 최고 ${m.bestScore}점` : ''}</strong>
-              <span style="font-size:var(--fs-small);color:var(--c-cream)">${spot.desc}</span>
+              <span class="map-preview-desc" style="font-size:var(--fs-small);color:var(--c-cream)">${spot.desc}</span>
             </div>
             <button class="btn btn-primary btn-big" data-act="enter">${m.status === 'completed' ? '다시 도전' : m.status === 'in_progress' ? '이어서 하기' : '출발!'}</button>`;
           preview.querySelector('[data-act="enter"]')?.addEventListener('click', () => navigate(spot.route));
+          guide?.say('한 번 더 누르면 출발!', { cue: preview.querySelector<HTMLElement>('[data-act="enter"]') });
         });
         overlay.appendChild(btn);
       }
+      guide.say('가고 싶은 대륙을 눌러 봐요!', { cue: firstCue });
 
       // 완료 화면 포털
       if (saveRepo.get().completion.unlocked) {
         const doneBtn = document.createElement('button');
-        doneBtn.className = 'btn btn-success';
+        doneBtn.className = 'btn btn-success map-completion-link';
         doneBtn.textContent = '여행 완료 확인하러 가기';
         doneBtn.style.cssText = 'position:absolute;right:16px;bottom:16px;pointer-events:auto';
         doneBtn.addEventListener('click', () => navigate('#/completion'));
@@ -213,7 +290,7 @@ export function createPage(): Page {
 
       const doneCount = CONTINENT_IDS.filter((id) => saveRepo.get().missions[id].status === 'completed').length;
       const chip = document.createElement('span');
-      chip.className = 'chip';
+      chip.className = 'chip map-progress-chip';
       chip.style.cssText = 'position:absolute;left:16px;bottom:16px;pointer-events:none';
       chip.textContent = `대륙 미션 ${doneCount}/5 완료`;
       overlay.appendChild(chip);
@@ -221,8 +298,13 @@ export function createPage(): Page {
 
     unmount() {
       disposed = true;
+      guide?.dispose();
+      guide = null;
       resizeObs?.disconnect();
       resizeObs = null;
+      if (compactMedia && compactListener) compactMedia.removeEventListener('change', compactListener);
+      compactMedia = null;
+      compactListener = null;
       flyTo = null;
       host?.destroy();
       host = null;
@@ -235,7 +317,7 @@ function statusColor(s: MissionStatus): string {
     case 'completed': return 'var(--c-success)';
     case 'in_progress': return 'var(--c-violet)';
     case 'available': return 'var(--c-coral)';
-    case 'locked': return '#5b6b7d';
+    case 'locked': return 'var(--c-ink-soft)';
   }
 }
 function statusMark(s: MissionStatus): string {
@@ -243,6 +325,9 @@ function statusMark(s: MissionStatus): string {
     case 'completed': return '✓';
     case 'in_progress': return '◐';
     case 'available': return '★';
-    case 'locked': return '🔒';
+    case 'locked': return '잠김';
   }
+}
+function statusTextColor(s: MissionStatus): string {
+  return s === 'in_progress' || s === 'locked' ? '#fff' : 'var(--c-ink)';
 }

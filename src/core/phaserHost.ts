@@ -23,6 +23,9 @@ export async function createPhaserHost(
     type: Phaser.AUTO,
     parent,
     transparent: true,
+    // 사운드는 AudioManager가 전담 — Phaser가 자체 AudioContext를 만들고
+    // destroy 후 visibility 핸들러로 닫힌 컨텍스트를 resume하는 오류를 차단한다.
+    audio: { noAudio: true },
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,

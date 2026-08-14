@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import rawContent from '../public/content/v1/ko/dialogue.json';
 
 interface DialogueContent {
   greetings: Array<{ id: string; country: string; caution?: string }>;
@@ -14,9 +13,7 @@ interface DialogueContent {
   };
 }
 
-const content = JSON.parse(
-  readFileSync(join(__dirname, '..', 'public', 'content', 'v1', 'ko', 'dialogue.json'), 'utf-8')
-) as DialogueContent;
+const content = rawContent as unknown as DialogueContent;
 
 describe('대화 미션 콘텐츠 (분기 도달성·문화 안전성)', () => {
   it('인사 사례 6개국 전부 caution(단정 금지) 문구가 있다', () => {

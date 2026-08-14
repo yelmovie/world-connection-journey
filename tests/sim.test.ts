@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import rawContent from '../public/content/v1/ko/oceania.json';
 
 interface Effects {
   [control: string]: { [option: string]: { eco: number; community: number; economy: number; culture: number } };
@@ -14,9 +13,7 @@ interface OceaniaContent {
   };
 }
 
-const content = JSON.parse(
-  readFileSync(join(__dirname, '..', 'public', 'content', 'v1', 'ko', 'oceania.json'), 'utf-8')
-) as OceaniaContent;
+const content = rawContent as unknown as OceaniaContent;
 
 type Metrics = { eco: number; community: number; economy: number; culture: number };
 

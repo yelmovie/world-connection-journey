@@ -35,10 +35,18 @@ export interface GameSaveV1 {
     bgm: boolean;
     sfx: boolean;
     reducedMotion: boolean;
+    /** 마스터 볼륨 0~1 (기본 0.8) — BGM·SFX 모두에 곱해진다 */
+    volume: number;
   };
   completion: {
     unlocked: boolean;
     reflection: string;
+    placedPuzzlePieceIds: MissionId[];
+    reflectionDrafts: {
+      initialThought: string;
+      evidenceLearned: string;
+      revisedThought: string;
+    };
     actionPrinciples: string[];
     certificateIssued: boolean;
   };

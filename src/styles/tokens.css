@@ -10,8 +10,12 @@
   --c-success: #2EAD78;
   --c-warning: #E7A52E;
   --c-danger: #D95C5C;
+  --c-coral-ink: #8A2630;
+  --c-sky-ink: #174A8B;
+  --c-success-ink: #17633F;
+  --c-violet-ink: #4C2BBF;
 
-  --c-ink: #22344a;
+  --c-ink: #0F172A;
   --c-ink-soft: #52657e;
   --c-paper: #ffffff;
   --c-line: rgba(25, 50, 77, 0.14);
@@ -19,8 +23,8 @@
   --font-head: 'Jua', 'Pretendard', system-ui, sans-serif;
   --font-body: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 
-  --fs-body: clamp(16px, 1.35vw, 19px);
-  --fs-small: clamp(13px, 1.05vw, 15px);
+  --fs-body: clamp(18px, 1.6vw, 22px);
+  --fs-small: clamp(16px, 1.05vw, 17px);
   --fs-title: clamp(22px, 2.4vw, 34px);
   --fs-hero: clamp(28px, 3.6vw, 52px);
 
@@ -35,7 +39,7 @@
   --shadow-pop: 0 10px 30px rgba(25, 50, 77, 0.28);
   --edge: 0 3px 0;
 
-  --touch-min: 44px;
+  --touch-min: 48px;
   --hotspot-min: 56px;
 
   --top-bar-h: 72px;

@@ -9,11 +9,20 @@
   <meta property="og:image" content="./assets/og.webp" />
   <title>세계를 잇는 여행</title>
   <link rel="icon" type="image/webp" href="./assets/favicon.webp" />
+  <link rel="manifest" href="./manifest.webmanifest" />
 </head>
 <body>
   <div id="app">
     <main id="scene-root" aria-live="polite"></main>
     <div id="overlay-root"></div>
+  </div>
+  <!-- 부팅 스플래시: 외부 요청 없이 인라인 스타일만 사용. main.ts가 진행률을 갱신하고 첫 화면 준비 후 제거한다. -->
+  <div id="boot-splash" role="status" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#19324D;color:#FFFDF4;font-family:'Jua','Pretendard',sans-serif;transition:opacity .35s ease">
+    <p style="margin:0;font-size:1.8rem;font-weight:700;letter-spacing:.02em">세계를 잇는 여행</p>
+    <div style="width:min(60vw,320px);height:10px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden">
+      <div id="boot-bar" style="width:8%;height:100%;border-radius:999px;background:#F2C14E;transition:width .3s ease"></div>
+    </div>
+    <p id="boot-msg" style="margin:0;font-size:1rem;opacity:.85">여행을 준비하고 있어요...</p>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

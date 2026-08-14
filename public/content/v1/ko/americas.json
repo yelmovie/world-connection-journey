@@ -3,6 +3,26 @@
   "missionId": "americas_shared_day",
   "needsReview": true,
   "reviewNote": "사실 정보 교사 검수 필요",
+  "standards": [
+    {
+      "code": "[6사10-01]",
+      "alignmentLevel": "부분 연계",
+      "activityEvidence": [
+        "아메리카 여러 나라에서 온 친구들의 서로 다른 생활상 필요(식사·이동·언어 등)를 자료로 확인한다.",
+        "필요와 국적을 고정관념으로 연결하지 않고, 개인의 사정으로 파악해 계획에 반영한다."
+      ],
+      "assessmentEvidence": [
+        "네 친구의 필요를 모두 충족하는 하루 계획을 시간·예산 제약 안에서 구성한다.",
+        "서로 다른 두 계획을 비교해 각 계획의 장단점을 근거로 말한다."
+      ],
+      "scopeNote": "다양한 삶의 모습 이해와 공동체 조정 활동을 부분적으로 다룬다. 지형 경관 탐구는 포함하지 않으므로 이 미션만으로 성취기준 전체 달성을 판단하지 않는다."
+    }
+  ],
+  "learningObjectives": [
+    "친구의 필요를 출신 국가의 특징으로 단정하지 않고 개인의 사정과 선호에 근거해 이해하는 연습을 한다.",
+    "시간, 예산, 이동, 개인별 필요 조건을 확인해 공동 일정을 구성하는 연습을 한다.",
+    "충돌하는 요구를 조정하고 여러 가능한 계획의 장점과 보완점을 비교하는 연습을 한다."
+  ],
   "intro": {
     "title": "아메리카: 함께 만드는 하루",
     "subtitle": "국제 어울림 학급의 하루 계획 세우기",
@@ -13,32 +33,56 @@
       "id": "noah",
       "name": "노아",
       "from": "캐나다",
-      "needs": ["nut_free_meal", "prayer_time"],
-      "prefs": ["pref_soccer", "pref_drawing"],
+      "needs": [
+        "nut_free_meal",
+        "prayer_time"
+      ],
+      "prefs": [
+        "pref_soccer",
+        "pref_drawing"
+      ],
       "note": "땅콩 알레르기가 있어서 견과류가 들어가지 않은 음식이 꼭 필요해요. 하루 중 조용히 기도할 짧은 시간도 필요해요. 축구와 그림 그리기를 좋아해요."
     },
     {
       "id": "valeria",
       "name": "발레리아",
       "from": "멕시코",
-      "needs": ["wheelchair_access", "quiet_break"],
-      "prefs": ["pref_boardgame", "pref_music"],
+      "needs": [
+        "wheelchair_access",
+        "quiet_break"
+      ],
+      "prefs": [
+        "pref_boardgame",
+        "pref_music"
+      ],
       "note": "휠체어를 타고 이동해서 경사로나 평평한 길이 있는 활동이 필요해요. 소리가 큰 활동 뒤에는 조용히 쉬는 시간이 필요해요. 보드게임과 음악을 좋아해요."
     },
     {
       "id": "lucas",
       "name": "루카스",
       "from": "브라질",
-      "needs": ["hearing_support", "veggie_option"],
-      "prefs": ["pref_reading", "pref_gardening"],
+      "needs": [
+        "hearing_support",
+        "veggie_option"
+      ],
+      "prefs": [
+        "pref_reading",
+        "pref_gardening"
+      ],
       "note": "보청기를 쓰고 있어서 자막이나 그림 카드처럼 눈으로 확인할 수 있는 자료가 필요해요. 채식을 하고 있어서 채소 중심 메뉴 선택지가 필요해요. 책 읽기와 식물 가꾸기를 좋아해요."
     },
     {
       "id": "camila",
       "name": "카밀라",
       "from": "페루",
-      "needs": ["language_support", "movement_break"],
-      "prefs": ["pref_photo", "pref_cooking"],
+      "needs": [
+        "language_support",
+        "movement_break"
+      ],
+      "prefs": [
+        "pref_photo",
+        "pref_cooking"
+      ],
       "note": "이 프로그램의 공용어를 배우는 중이라 그림이나 몸짓으로 함께 소통할 수 있는 도움이 필요해요. 오래 앉아 있으면 힘들어서 몸을 움직이는 시간이 필요해요. 사진 찍기와 요리를 좋아해요."
     }
   ],
@@ -49,7 +93,10 @@
       "minutes": 60,
       "cost": 15,
       "category": "meal",
-      "covers": ["nut_free_meal", "veggie_option"]
+      "covers": [
+        "nut_free_meal",
+        "veggie_option"
+      ]
     },
     {
       "id": "food_truck_lunch",
@@ -57,7 +104,9 @@
       "minutes": 60,
       "cost": 25,
       "category": "meal",
-      "covers": ["veggie_option"]
+      "covers": [
+        "veggie_option"
+      ]
     },
     {
       "id": "quiet_room_time",
@@ -65,7 +114,10 @@
       "minutes": 30,
       "cost": 0,
       "category": "rest",
-      "covers": ["quiet_break", "prayer_time"]
+      "covers": [
+        "quiet_break",
+        "prayer_time"
+      ]
     },
     {
       "id": "paved_park_walk",
@@ -73,7 +125,10 @@
       "minutes": 45,
       "cost": 0,
       "category": "activity",
-      "covers": ["movement_break", "wheelchair_access"]
+      "covers": [
+        "movement_break",
+        "wheelchair_access"
+      ]
     },
     {
       "id": "team_mural",
@@ -81,7 +136,9 @@
       "minutes": 60,
       "cost": 20,
       "category": "activity",
-      "covers": ["language_support"]
+      "covers": [
+        "language_support"
+      ]
     },
     {
       "id": "picture_story_exchange",
@@ -89,7 +146,10 @@
       "minutes": 45,
       "cost": 5,
       "category": "learn",
-      "covers": ["language_support", "hearing_support"]
+      "covers": [
+        "language_support",
+        "hearing_support"
+      ]
     },
     {
       "id": "subtitle_movie_time",
@@ -97,7 +157,9 @@
       "minutes": 60,
       "cost": 10,
       "category": "learn",
-      "covers": ["hearing_support"]
+      "covers": [
+        "hearing_support"
+      ]
     },
     {
       "id": "board_game_corner",
@@ -105,7 +167,9 @@
       "minutes": 45,
       "cost": 10,
       "category": "activity",
-      "covers": ["quiet_break"]
+      "covers": [
+        "quiet_break"
+      ]
     },
     {
       "id": "open_gym_games",
@@ -113,7 +177,9 @@
       "minutes": 60,
       "cost": 15,
       "category": "activity",
-      "covers": ["movement_break"]
+      "covers": [
+        "movement_break"
+      ]
     },
     {
       "id": "garden_snack_time",
@@ -121,10 +187,16 @@
       "minutes": 30,
       "cost": 5,
       "category": "meal",
-      "covers": ["nut_free_meal"]
+      "covers": [
+        "nut_free_meal"
+      ]
     }
   ],
-  "constraints": { "budget": 60, "totalMinutes": 360, "mustCoverAllNeeds": true },
+  "constraints": {
+    "budget": 60,
+    "totalMinutes": 360,
+    "mustCoverAllNeeds": true
+  },
   "altCompare": {
     "guide": "네 친구의 필요를 모두 챙기는 하루 계획은 하나가 아니에요. 서로 다른 두 계획을 비교하면서, 무엇을 얻고 무엇을 포기했는지 이야기해 볼까요?",
     "questions": [

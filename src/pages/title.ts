@@ -5,11 +5,14 @@ import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import { confirmDialog } from '../ui/modal';
 import { openSettings } from '../ui/chrome';
+import { createGuide, type GuideController } from '../ui/guide';
 
 export function createPage(): Page {
+  let guide: GuideController | null = null;
+
   return {
     async mount(root: HTMLElement) {
-      await preloadImages(['bg.title', 'title.logo', 'plane.main']);
+      await preloadImages(['bg.title', 'title.logo', 'plane.main', 'plane.alt2']);
       audio.playBgm('main');
 
       const hasSave = saveRepo.hasValidSave();
@@ -21,10 +24,9 @@ export function createPage(): Page {
           <img class="title-logo" src="${assetUrl('title.logo')}" alt="세계를 잇는 여행"
                style="width:min(680px,72vw);filter:drop-shadow(0 8px 24px rgba(10,25,45,0.4))">
           ${hasAsset('plane.main') ? `<img class="bob" src="${assetUrl('plane.main')}" alt="" aria-hidden="true" style="width:clamp(120px,16vw,220px);margin-top:calc(-1 * var(--sp-5))">` : ''}
-          <p class="chip" style="font-size:var(--fs-body)">세계 여러 지역의 생활을 조사하고, 존중하는 대화를 배워요</p>
           <div style="display:flex;gap:var(--sp-4);flex-wrap:wrap;justify-content:center">
             <button class="btn btn-primary btn-big" data-act="new">새 여행 시작</button>
-            <button class="btn btn-big" data-act="continue" ${hasSave ? '' : 'disabled aria-disabled="true" title="저장된 여행이 없어요"'}>이어하기</button>
+            <button class="btn btn-big" data-act="continue" ${hasSave ? '' : 'disabled aria-disabled="true" title="저장된 여행이 없어요"'}>${hasSave ? '이어하기' : '이어하기 · 기록 없음'}</button>
             <button class="btn btn-ghost btn-big" data-act="settings">설정</button>
           </div>
           <p style="color:rgba(255,255,255,0.9);font-size:var(--fs-small);text-shadow:0 1px 4px rgba(0,0,0,0.4)">
@@ -55,10 +57,20 @@ export function createPage(): Page {
       });
       page.querySelector('[data-act="settings"]')?.addEventListener('click', () => openSettings());
 
+      // 마스코트 가이드 — 중앙 마스코트(plane.main)와 겹치지 않게 돋보기 변형 사용
+      guide = createGuide({ assetId: hasAsset('plane.alt2') ? 'plane.alt2' : 'plane.main' });
+      page.appendChild(guide.el);
+      guide.say(
+        hasSave ? '이어하기를 누르면 하던 여행으로 돌아가요!' : '새 여행 시작을 눌러 떠나요!',
+        { cue: page.querySelector<HTMLElement>(hasSave ? '[data-act="continue"]' : '[data-act="new"]') }
+      );
+
       root.appendChild(page);
     },
     unmount() {
       /* DOM은 라우터가 정리, BGM은 다음 장면에서 crossfade */
+      guide?.dispose();
+      guide = null;
     }
   };
 }

@@ -1,6 +1,8 @@
 import { bus } from './core/EventBus';
 import { saveRepo, recomputeUnlocks } from './core/SaveRepository';
 import { audio } from './core/AudioManager';
+import { clearToasts } from './ui/toast';
+import { closeActiveModal } from './ui/modal';
 
 export interface Page {
   mount(root: HTMLElement): void | Promise<void>;
@@ -69,11 +71,19 @@ class Router {
       return;
     }
     try {
+      closeActiveModal();
       if (this.currentPage) {
         await this.currentPage.unmount();
         this.currentPage = null;
       }
+      clearToasts();
       this.root.replaceChildren();
+      this.root.setAttribute('aria-busy', 'true');
+      const loading = document.createElement('div');
+      loading.className = 'loading-screen';
+      loading.setAttribute('role', 'status');
+      loading.innerHTML = '<span class="loading-spinner" aria-hidden="true"></span><span>다음 목적지로 이동하고 있어요...</span>';
+      this.root.appendChild(loading);
       this.root.className = `route-${route.replace(/[#/]+/g, '-').replace(/^-|-$/g, '') || 'title'}`;
       const loader = routes[route];
       if (!loader) throw new Error(`알 수 없는 경로: ${route}`);
@@ -81,6 +91,7 @@ class Router {
       const page = mod.createPage();
       this.currentPage = page;
       await page.mount(this.root);
+      loading.remove();
       if (route !== '#/') {
         saveRepo.update((s) => {
           s.lastRoute = route;
@@ -93,9 +104,19 @@ class Router {
         <div class="error-fallback">
           <h1>화면을 불러오지 못했어요</h1>
           <p>네트워크 상태를 확인하고 다시 시도해 주세요.</p>
-          <button class="btn btn-primary" onclick="location.hash='#/';location.reload()">처음으로</button>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary" data-act="retry">다시 시도</button>
+            <button class="btn btn-ghost" data-act="home">처음으로</button>
+          </div>
         </div>`;
+      // 다시 시도: 현재 해시(라우트)를 유지한 채 새로고침 → 같은 라우트를 재시도한다.
+      this.root.querySelector('[data-act="retry"]')?.addEventListener('click', () => location.reload());
+      this.root.querySelector('[data-act="home"]')?.addEventListener('click', () => {
+        location.hash = '#/';
+        location.reload();
+      });
     } finally {
+      this.root.removeAttribute('aria-busy');
       this.isTransitioning = false;
       // 전환 중 해시가 다시 바뀐 경우 재동기화
       if ((location.hash || '#/') !== route) void this.sync();

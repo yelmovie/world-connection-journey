@@ -1,5 +1,10 @@
 # 에셋 출처 기록 (CREDITS)
 
+## 이미지·BGM (자체 제작)
+
+- **이미지**: 전량 프로젝트 자체 AI 생성(ChatGPT 이미지 생성) 원본이며 외부 저작물을 포함하지 않는다. 원본→semantic ID 매핑과 라이선스 표기는 `src/content/asset-manifest.json`(`"license": "AI-generated (project original)"`) 참조.
+- **BGM**: 6곡(`sound/` 원본 → `public/sound/bgm/`) 모두 프로젝트 자체 제작(AI 생성)으로 외부 출처 없음.
+
 ## 효과음 (sound/bfx/)
 
 모든 효과음은 Pixabay에서 다운로드했으며, [Pixabay Content License](https://pixabay.com/service/license-summary/) 적용 대상입니다.
