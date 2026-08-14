@@ -1,0 +1,14 @@
+/* 수료증 인쇄 — A4 가로 */
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  #app, #scene-root { position: static; }
+  body.printing-certificate #scene-root > * { display: none !important; }
+  body.printing-certificate .certificate-print {
+    display: flex !important;
+    position: static;
+    width: 100%; height: 100vh;
+  }
+  #overlay-root { display: none !important; }
+}
+.certificate-print { display: none; }

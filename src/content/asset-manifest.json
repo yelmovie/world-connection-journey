@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "bg.title": {
+      "type": "image",
+      "src": "assets/bg_title.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (1).png",
+      "pages": [
+        "p01"
+      ],
+      "preload": "core",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "구름 위 세계지도 파노라마"
+    },
+    "bg.completion": {
+      "type": "image",
+      "src": "assets/bg_completion.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (10).png",
+      "pages": [
+        "p10"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "지구 위 축하 폭죽·컨페티"
+    },
+    "bg.dialogue": {
+      "type": "image",
+      "src": "assets/bg_dialogue.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (2).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "공항 라운지 실내(관제탑 창)"
+    },
+    "bg.map": {
+      "type": "image",
+      "src": "assets/bg_map.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (3).png",
+      "pages": [
+        "p02",
+        "p03"
+      ],
+      "preload": "core",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "평면 세계지도(대륙 아이콘)"
+    },
+    "bg.asia": {
+      "type": "image",
+      "src": "assets/bg_asia.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (4).png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "벚꽃·전통 건축 아시아 풍경"
+    },
+    "bg.americas": {
+      "type": "image",
+      "src": "assets/bg_americas.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (5).png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "미주 대륙 조감(금문교·자유의여신상·리우)"
+    },
+    "bg.africa": {
+      "type": "image",
+      "src": "assets/bg_africa.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (6).png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "사바나 석양 무대·바오밥"
+    },
+    "bg.europe": {
+      "type": "image",
+      "src": "assets/bg_europe.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (7).png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "유럽 랜드마크 수변(에펠탑·콜로세움)"
+    },
+    "bg.oceania": {
+      "type": "image",
+      "src": "assets/bg_oceania.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (8).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "열대 섬·산호해 조감"
+    },
+    "bg.spare": {
+      "type": "image",
+      "src": "assets/bg_spare.webp",
+      "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (9).png",
+      "pages": [],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "교실(원탁 세계지도) — 예비"
+    },
+    "title.logo": {
+      "type": "image",
+      "src": "assets/title_logo.webp",
+      "original": "title/ChatGPT Image 2026년 8월 14일 오후 04_16_10.png",
+      "pages": [
+        "p01"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "세계를 잇는 여행 한글 로고"
+    },
+    "plane.main": {
+      "type": "image",
+      "src": "assets/plane_main.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png",
+      "pages": [
+        "p01",
+        "p02"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "로봇 비행기 마스코트(배낭·서있는 자세)"
+    },
+    "plane.alt1": {
+      "type": "image",
+      "src": "assets/plane_alt1.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (2).png",
+      "pages": [],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "로봇 비행기 비행 자세 변형"
+    },
+    "plane.alt2": {
+      "type": "image",
+      "src": "assets/plane_alt2.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (1).png",
+      "pages": [],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "로봇 비행기 돋보기 든 변형"
+    },
+    "prop.passport": {
+      "type": "image",
+      "src": "assets/prop_passport.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (4).png",
+      "pages": [
+        "p03"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "지구본 여권·티켓"
+    },
+    "prop.globe": {
+      "type": "image",
+      "src": "assets/prop_globe.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (6).png",
+      "pages": [
+        "p02"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "비행기 궤도 지구본"
+    },
+    "prop.stamp": {
+      "type": "image",
+      "src": "assets/prop_stamp.webp",
+      "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (9).png",
+      "pages": [
+        "p03"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "3D 도장(스탬프)"
+    },
+    "prop.suitcase": {
+      "type": "image",
+      "src": "assets/prop_suitcase.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (5).png",
+      "pages": [
+        "p03"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "여행 가방(스티커 트렁크)"
+    },
+    "icon.compass": {
+      "type": "image",
+      "src": "assets/icon_compass.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (3).png",
+      "pages": [
+        "p02"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "지구본 나침반 장식 아이콘"
+    },
+    "greeting.morocco": {
+      "type": "image",
+      "src": "assets/greeting_morocco.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (4).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 손 들어 인사하는 소년(국가 단서 없음)"
+    },
+    "greeting.colombia": {
+      "type": "image",
+      "src": "assets/greeting_colombia.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_33 (3).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 밝게 손 흔드는 소녀"
+    },
+    "greeting.japan": {
+      "type": "image",
+      "src": "assets/greeting_japan.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (3).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 두 손 모아 목례하는 소녀(현대 복장)"
+    },
+    "greeting.tanzania": {
+      "type": "image",
+      "src": "assets/greeting_tanzania.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (2).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 흥겹게 인사하는 소년"
+    },
+    "greeting.australia": {
+      "type": "image",
+      "src": "assets/greeting_australia.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (2).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 손 흔드는 소년"
+    },
+    "greeting.nepal": {
+      "type": "image",
+      "src": "assets/greeting_nepal.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (3).png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 나마스테 합장 소녀(의상은 인도풍 사리)"
+    },
+    "reward.globe_puzzle": {
+      "type": "image",
+      "src": "assets/reward_globe_puzzle.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_39_03 (10).png",
+      "pages": [
+        "p02",
+        "p10"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "퍼즐 조각 지구본(웃는 얼굴)"
+    },
+    "reward.badge": {
+      "type": "image",
+      "src": "assets/reward_badge.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (2).png",
+      "pages": [
+        "p10"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "월계수·리본 지구 메달"
+    },
+    "asia.child1": {
+      "type": "image",
+      "src": "assets/asia_child1.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (2).png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "한복 소녀"
+    },
+    "asia.child2": {
+      "type": "image",
+      "src": "assets/asia_child2.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "중국 전통복 소년"
+    },
+    "asia.child3": {
+      "type": "image",
+      "src": "assets/asia_child3.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (5).png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "태국 전통복 소녀"
+    },
+    "europe.guide": {
+      "type": "image",
+      "src": "assets/europe_guide.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (2).png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 지도 든 탐험 복장 소녀 가이드"
+    },
+    "europe.heritage": {
+      "type": "image",
+      "src": "assets/europe_heritage.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "콜로세움 미니어처"
+    },
+    "africa.host": {
+      "type": "image",
+      "src": "assets/africa_host.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (3).png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 춤추며 맞이하는 소녀"
+    },
+    "africa.instrument1": {
+      "type": "image",
+      "src": "assets/africa_instrument1.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_52 (4).png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "젬베 북"
+    },
+    "africa.instrument2": {
+      "type": "image",
+      "src": "assets/africa_instrument2.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_53 (5).png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "토킹드럼(장구형 북)"
+    },
+    "africa.instrument3": {
+      "type": "image",
+      "src": "assets/africa_instrument3.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_54 (6).png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "셰케레(구슬 박)"
+    },
+    "americas.student1": {
+      "type": "image",
+      "src": "assets/americas_student1.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_41 (4).png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "급식판 든 소년"
+    },
+    "americas.student2": {
+      "type": "image",
+      "src": "assets/americas_student2.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_42 (5).png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "도시락 든 소녀"
+    },
+    "americas.student3": {
+      "type": "image",
+      "src": "assets/americas_student3.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_43 (6).png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "병 간식 든 소녀"
+    },
+    "americas.student4": {
+      "type": "image",
+      "src": "assets/americas_student4.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_43 (7).png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "보온병·가방 든 소년"
+    },
+    "oceania.youth": {
+      "type": "image",
+      "src": "assets/oceania_youth.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_58 (6).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 고글 모자 소년"
+    },
+    "oceania.researcher": {
+      "type": "image",
+      "src": "assets/oceania_researcher.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (3).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 쌍안경 탐험가 소년"
+    },
+    "oceania.fisher": {
+      "type": "image",
+      "src": "assets/oceania_fisher.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_58 (5).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 야외활동 복장 소녀"
+    },
+    "oceania.visitor": {
+      "type": "image",
+      "src": "assets/oceania_visitor.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (1).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "추정: 배낭 여행자 소녀"
+    },
+    "oceania.island": {
+      "type": "image",
+      "src": "assets/oceania_island.webp",
+      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "산호초·바다거북 섬"
+    }
+  }
+}

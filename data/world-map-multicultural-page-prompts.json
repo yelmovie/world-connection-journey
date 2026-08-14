@@ -1,0 +1,1083 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "document": {
+    "id": "world_connection_journey_page_prompts",
+    "project_title_ko": "세계를 잇는 여행",
+    "document_title_ko": "1~10페이지 상세 제작 프롬프트",
+    "version": "1.0.0",
+    "updated_at": "2026-08-14",
+    "locale": "ko-KR",
+    "target_audience": "초등학교 고학년~중학생",
+    "target_session_minutes": 35,
+    "orientation": "landscape",
+    "reference_resolution": "1920x1080",
+    "delivery": "반응형 태블릿·데스크톱 웹앱",
+    "core_experience": "정보를 읽고 맞히는 퀴즈가 아니라 세계를 직접 탐험하며 문화 차이를 관찰하고, 근거를 들어 선택하고, 협력과 대화의 결과를 경험하는 게임"
+  },
+  "design_system": {
+    "tone": [
+      "밝고 세련된 프리미엄 교육게임",
+      "초등 고학년에게 친근하지만 유치원용처럼 단순하거나 장난감처럼 보이지 않음",
+      "문화적 차이를 호기심과 존중의 대상으로 다루되 국가·인종을 고정된 특성으로 묘사하지 않음"
+    ],
+    "visual_style": "polished 3D cartoon game art와 2.5D 세계지도, 부드러운 PBR 질감, 정돈된 셀 셰이딩, 깊이감 있는 조명, 과도하지 않은 파티클",
+    "palette": {
+      "violet": "#6C4CE8",
+      "sky_blue": "#2588E8",
+      "turquoise": "#10C3C8",
+      "coral": "#F26D6D",
+      "gold": "#F2C14E",
+      "navy": "#19324D",
+      "cream": "#FFF9EA",
+      "success": "#2EAD78",
+      "warning": "#E7A52E",
+      "danger": "#D95C5C"
+    },
+    "typography": {
+      "title_asset_exception": "메인 제목 ‘세계를 잇는 여행’은 투명 PNG 타이틀 에셋 사용 가능",
+      "heading": "Pretendard 또는 Noto Sans KR 700~800",
+      "body": "Pretendard 또는 Noto Sans KR 400~600",
+      "minimum_body_px": 18,
+      "minimum_touch_target_px": 44,
+      "rule": "메인 제목 에셋 외의 한글, 버튼, 카드, 점수, 말풍선은 이미지에 굽지 않고 DOM/CSS/SVG로 표시"
+    },
+    "layout": {
+      "safe_area_percent": 6,
+      "top_bar_height_px": 72,
+      "bottom_action_height_px": 84,
+      "max_content_width_px": 1600,
+      "responsive_breakpoints": [
+        1024,
+        1280,
+        1440,
+        1920
+      ],
+      "rule": "절대 좌표 남용을 피하고 CSS Grid/Flex와 clamp()를 사용하며 16:9 외 비율에서는 안전 여백을 늘림"
+    }
+  },
+  "global_generation_rules": {
+    "screen_mockup": [
+      "1이미지=1화면, 10페이지를 한 장에 합치지 않음",
+      "콜라주, 콘택트시트, 분할 패널, 여러 버전 동시 배치 금지",
+      "각 페이지는 16:9 가로 화면 한 장으로 독립 생성",
+      "한글 본문과 버튼 문구는 이미지 생성 결과에 의존하지 않고 CSS로 구현",
+      "같은 배경과 같은 카드 배열을 10페이지에 반복하지 않고 페이지 목적에 맞춰 정보 구조를 바꿈"
+    ],
+    "asset": {
+      "max_independent_raster_assets_per_page": 10,
+      "one_image_one_asset": true,
+      "transparent_png_for_isolated_assets": true,
+      "ui_asset_rule": "버튼, 탭, 진행바, 체크박스, 라디오, 툴팁, 카드 프레임은 CSS/SVG",
+      "file_naming": "영문 소문자 snake_case",
+      "runtime_format": "원본 PNG 보관 후 배포본 WebP 사용, 투명도가 필요한 경우 WebP alpha 또는 PNG 사용",
+      "reuse_rule": "이미 만든 비행기·캐릭터·아이콘은 manifest의 semantic_id로 재사용하고 페이지별 중복 파일을 만들지 않음"
+    },
+    "cultural_safety": [
+      "‘이 나라 사람은 모두 이렇게 한다’는 문장을 금지하고 ‘일부 지역·가정·상황에서 볼 수 있는 예’로 제시",
+      "국가, 대륙, 언어, 종교, 인종을 서로 같은 개념으로 처리하지 않음",
+      "전통 의상만으로 국가를 식별하게 하지 않음",
+      "인물의 피부색·머리 모양·옷차림을 성격, 능력, 경제 수준과 연결하지 않음",
+      "낯선 행동을 틀린 행동으로 판정하지 않고 상황과 당사자의 선호를 확인하도록 유도",
+      "원주민·소수문화 콘텐츠는 관광 장식이 아니라 현재 살아 있는 공동체의 관점과 권리를 포함",
+      "문화적 차이를 인권 침해의 정당화 근거로 사용하지 않음"
+    ],
+    "learning_design": [
+      "단순 국기·수도·음식 암기 문제는 보조 정보로만 사용",
+      "관찰→근거 찾기→가설 세우기→당사자에게 질문하기→선택 결과 확인 순서를 반복",
+      "정답 하나만 고르는 문제보다 복수 전략, 부분 점수, 근거 선택을 포함",
+      "오답은 즉시 종료하지 않고 왜 판단했는지 되돌아보는 재시도 힌트를 제공",
+      "최종 점수는 속도보다 근거성, 경청, 존중, 수정 능력을 더 크게 반영"
+    ]
+  },
+  "technical_architecture": {
+    "recommended_stack": {
+      "gameplay": "Phaser 3 2D·2.5D",
+      "ui": "React 또는 바닐라 DOM + CSS + SVG",
+      "communication": "EventBus",
+      "data": "versioned JSON",
+      "save": "localStorage 기본 + IndexedDB 선택",
+      "deployment": "정적 웹 배포 가능 구조"
+    },
+    "scene_policy": {
+      "default": "프리렌더 2.5D 또는 Phaser 2D",
+      "three_js": "필수 아님. 향후 3D 아바타 미리보기를 넣더라도 3페이지에서만 고정 카메라로 선택 적용",
+      "renderer_rule": "숨겨진 Phaser/Three 렌더러를 계속 실행하지 않으며 페이지 전환 시 이전 Scene의 이벤트·타이머·오디오를 정리",
+      "initial_download_target_mb": "5~8",
+      "low_end_target_fps": 30,
+      "pixel_ratio": "1.0~1.25 기본, 최대 1.5",
+      "dynamic_shadow_limit": 1,
+      "post_processing": "기본 끄기"
+    },
+    "state_guards": [
+      "isTransitioning",
+      "isStageEnded",
+      "resultShown",
+      "inputLocked",
+      "sceneToken"
+    ],
+    "event_rules": [
+      "모든 EventBus 리스너는 Scene shutdown에서 해제",
+      "타이머와 delayedCall은 Scene 종료 시 제거",
+      "중복 클릭은 inputLocked와 300ms debounce로 차단",
+      "완료 처리와 보상 지급은 idempotent하게 구현",
+      "비동기 콜백은 sceneToken이 현재 Scene과 같은지 확인한 뒤 상태 변경"
+    ],
+    "audio": {
+      "autoplay": false,
+      "start_after_first_gesture": true,
+      "formats": [
+        "ogg",
+        "mp3"
+      ],
+      "controls": [
+        "bgmMute",
+        "sfxMute",
+        "masterVolume"
+      ],
+      "scene_transition": "기존 BGM 250~500ms fade-out 후 다음 BGM 시작"
+    }
+  },
+  "save_and_maintenance": {
+    "storage_key": "world_connection_journey.save.v1",
+    "save_schema_version": 1,
+    "autosave_points": [
+      "프로필 확정",
+      "대륙 미션의 각 체크포인트 완료",
+      "페이지 9 대화 미션의 각 상황 완료",
+      "최종 보상 지급 직전과 직후"
+    ],
+    "save_shape": {
+      "schemaVersion": 1,
+      "profile": {
+        "nickname": "string",
+        "avatarId": "string",
+        "airplaneId": "string"
+      },
+      "completedContinents": "string[]",
+      "missionStateById": "Record<string, object>",
+      "stamps": "string[]",
+      "reflection": "object",
+      "settings": "object",
+      "updatedAt": "ISO-8601 string"
+    },
+    "robustness_rules": [
+      "저장 데이터는 try/catch로 읽고 파싱 실패 시 손상본을 별도 백업한 뒤 안전한 기본값으로 복구",
+      "배열 순서가 아니라 고정된 id로 진행도를 저장",
+      "앱 버전과 콘텐츠 버전을 분리",
+      "스키마 변경 시 migrateSaveV1ToV2 같은 명시적 마이그레이션 함수 제공",
+      "보상 지급 여부를 rewardClaimedById로 기록해 새로고침·중복 터치 시 중복 지급 방지",
+      "외부 API가 실패해도 핵심 10페이지가 실행되도록 기본 콘텐츠를 앱에 포함",
+      "에셋 로드 실패 시 alt 일러스트 또는 CSS 자리표시자를 제공하고 전체 진행은 막지 않음",
+      "문항 데이터 누락 시 해당 문항만 건너뛰고 오류 로그에 contentId를 기록",
+      "교사 초기화는 확인 모달 2단계와 현재 저장 백업 내보내기를 제공"
+    ],
+    "content_record_required_fields": [
+      "contentId",
+      "countryOrRegion",
+      "claimKo",
+      "contextKo",
+      "sourceTitle",
+      "sourceUrl",
+      "sourceOrganization",
+      "sourcePublishedAt",
+      "lastReviewedAt",
+      "reviewer",
+      "license",
+      "stereotypeRiskNotes"
+    ],
+    "annual_review": {
+      "cycle": "학년도 시작 전 연 1회",
+      "actions": [
+        "외부 링크 상태 확인",
+        "국가·지역 명칭과 문화 설명 재검수",
+        "브라우저·Phaser 의존성 보안 업데이트",
+        "iPad Safari, Android Chrome, Chromebook, Windows Chrome 터치 테스트",
+        "저장 마이그레이션 회귀 테스트",
+        "깨진 에셋과 오디오 대체 포맷 확인"
+      ]
+    }
+  },
+  "reference_policy": {
+    "checked_at": "2026-08-14",
+    "official_sources": [
+      {
+        "title": "UNESCO Universal Declaration on Cultural Diversity",
+        "url": "https://www.unesco.org/en/legal-affairs/unesco-universal-declaration-cultural-diversity",
+        "use": "문화다양성, 인간 존엄, 문화적 권리, 다언어 접근의 상위 원칙"
+      },
+      {
+        "title": "UNESCO Intercultural Dialogue",
+        "url": "https://www.unesco.org/en/interculturaldialogue",
+        "use": "차이를 건설적으로 다루는 경청·관점 전환·공동 해결 활동의 근거"
+      },
+      {
+        "title": "교육부 2026년 민주시민교육 추진계획",
+        "url": "https://www.moe.go.kr/boardCnts/fileDown.do?fileSeq=0666ec6565b5b21330fbcc18a71a2336&m=020402&s=moe",
+        "use": "2022 개정 교육과정의 역량 중심 학교교육과 민주시민교육 연계 검토"
+      }
+    ],
+    "country_content_rule": "국가별 세부 사실은 해당 국가의 정부·공공기관·박물관·유네스코·공식 관광/교육기관 자료를 우선하고, 블로그·상업 여행 사이트 단독 근거는 사용하지 않음",
+    "review_expiry_months": 12
+  },
+  "assessment_model": {
+    "total_points": 100,
+    "dimensions": {
+      "evidence_use": 30,
+      "perspective_taking": 25,
+      "respectful_communication": 25,
+      "strategy_revision": 15,
+      "speed_bonus_cap": 5
+    },
+    "grading_rule": "국가 상징을 빠르게 암기한 정도가 아니라 단서와 근거를 연결하고, 상대의 관점을 확인하고, 처음 판단을 수정한 과정을 평가",
+    "completion_threshold": 70,
+    "retry": "제한 없음. 재시도 시 점수를 깎기보다 다른 단서와 설명을 제공"
+  },
+  "pages": [
+    {
+      "page": 1,
+      "page_id": "p01_title",
+      "route": "/",
+      "title": "세계를 잇는 여행",
+      "scene_type": "프리렌더 2.5D + DOM UI",
+      "estimated_minutes": 2,
+      "purpose": "게임의 탐험·대화·공감 중심 세계관을 전달하고 새 여행 또는 이어하기로 진입",
+      "learning_objectives": [
+        "이 게임이 나라 정보 암기보다 문화 차이를 이해하고 대화하는 탐험임을 인식",
+        "저장된 진행 상태를 확인하고 스스로 시작 경로를 선택"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 태블릿 교육게임의 메인 타이틀 화면 한 장. 화면 중앙에 투명 PNG 제목 에셋 ‘세계를 잇는 여행’을 크게 배치하고, 그 아래에는 보라·하늘색·청록·산호색 포인트가 있는 귀여운 프리미엄 비행기 캐릭터가 황금빛 항로를 따라 입체 세계지구 주위를 도는 장면. 배경은 깊이감 있는 청명한 하늘과 구름, 멀리 보이는 여러 대륙의 실루엣, 은은한 나침반 별빛. 초등 고학년용 polished 3D cartoon game art, 부드러운 PBR, 세련되고 명료한 정보 위계, 유치원 장난감 느낌 금지. 하단 중앙에는 CSS로 구현할 ‘새 여행 시작’과 ‘이어하기’ 버튼 공간을 비워 두고 우상단에는 설정 버튼 공간을 확보. 한 화면만 생성하고 콜라주·분할·시트 금지. 제목 외 한글 본문은 이미지에 넣지 않음.",
+      "implementation_prompt": "p01_title Scene을 구현한다. 최초 로딩에는 title_segyereul_itneun_yeohaeng.png, bg_title_world_route.webp, plane_default.webp만 lazy-load한다. 저장 데이터가 유효하고 completedContinents 또는 현재 checkpoint가 존재하면 ‘이어하기’를 활성화하고, 없으면 비활성 상태와 짧은 설명을 표시한다. 새 여행 시작을 누르면 기존 저장이 있을 때만 확인 모달을 띄운다. 첫 사용자 터치 이후 BGM을 재생한다. 비행기 항로 애니메이션은 transform 기반 CSS 또는 Phaser tween으로 8~12초 반복하며 prefers-reduced-motion에서는 정지 이미지로 대체한다. 버튼은 DOM으로 만들고 inputLocked 및 debounce를 적용한다.",
+      "layout": {
+        "top": "우상단 설정·음소거, 좌상단 제작자/학년 표시는 선택",
+        "center": "제목 에셋과 세계지구·비행기 히어로 일러스트",
+        "bottom": "새 여행 시작, 이어하기, 교사용 안내 링크"
+      },
+      "interactions": [
+        "새 여행 시작",
+        "이어하기",
+        "음악·효과음 설정",
+        "교사용 간단 안내 열기"
+      ],
+      "asset_plan": {
+        "raster": [
+          "title_segyereul_itneun_yeohaeng.png",
+          "bg_title_world_route.webp",
+          "plane_default.webp"
+        ],
+        "css_svg": [
+          "start_button",
+          "continue_button",
+          "settings_icon",
+          "cloud_particles",
+          "route_line"
+        ]
+      },
+      "save_contract": {
+        "read": [
+          "schemaVersion",
+          "completedContinents",
+          "lastRoute"
+        ],
+        "write": [
+          "settings"
+        ]
+      },
+      "transition": "새 여행은 p02_world_map, 이어하기는 lastRoute로 이동",
+      "acceptance_criteria": [
+        "1024x576에서도 제목과 시작 버튼이 잘리지 않음",
+        "저장 손상 시 앱이 멈추지 않고 새 여행을 시작할 수 있음",
+        "첫 터치 전 오디오가 자동 재생되지 않음",
+        "메인 제목 외 텍스트가 래스터 이미지에 포함되지 않음"
+      ]
+    },
+    {
+      "page": 2,
+      "page_id": "p02_world_map",
+      "route": "/map",
+      "title": "세계 항로 지도",
+      "scene_type": "Phaser 2.5D 지도 + SVG 경로 + DOM UI",
+      "estimated_minutes": 3,
+      "purpose": "5개 대륙 미션의 관계와 진행 상태를 한눈에 보고 다음 탐험을 자기주도적으로 선택",
+      "learning_objectives": [
+        "대륙과 국가가 같은 개념이 아님을 구분",
+        "대륙별 문화가 하나로 동일하지 않음을 안내 문장과 사례로 인식",
+        "완료 상태와 남은 임무를 읽고 탐험 순서를 계획"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 세계지도 선택 화면 한 장. 중앙에는 입체 종이지도처럼 보이는 세련된 2.5D 세계지도, 아시아·유럽·아프리카·아메리카·오세아니아의 다섯 탐험 허브가 각기 다른 색의 빛나는 원형 포털로 표시된다. 지도 위에는 작은 비행기와 점선 항로, 완료한 지역의 금색 여권 도장, 미완료 지역의 은은한 잠금 표시가 보인다. 좌측에는 현재 여행 요약 카드, 우측에는 선택한 대륙의 미션 미리보기 카드 공간을 남긴다. 프리미엄 교육게임 스타일, 정보량은 풍부하지만 정돈되고 유치하지 않음. 국가를 전통의상·국기 묶음으로 단순화하지 말 것. 한 화면만, 콜라주 금지, 지도 라벨·버튼·진행률은 CSS/SVG로 구현하므로 이미지에는 읽을 수 있는 글자를 넣지 않음.",
+      "implementation_prompt": "p02_world_map Scene을 구현한다. 세계지도 베이스는 WebP 한 장, 대륙 경계·포털·항로·선택 히트영역은 SVG로 분리한다. 대륙 5개 미션은 page 3 프로필 완료 후 순서와 관계없이 선택할 수 있다. 각 포털은 not_started, in_progress, completed, mastered 네 상태를 가진다. 선택 시 우측 패널에 예상 시간, 핵심 활동, 마지막 체크포인트, 획득 가능한 스탬프를 표시한다. 지도 드래그는 필요할 때만 허용하고 기본 화면에서 다섯 포털이 모두 보이게 한다. hover 없이 탭 한 번으로 선택, 두 번째 탭 또는 ‘탐험 시작’으로 진입한다. 모든 대륙 완료 후 p09_respect_dialogue를 해금한다.",
+      "layout": {
+        "top": "전체 진행률, 여권, 설정, 홈",
+        "left": "현재 여행 요약과 추천 다음 활동",
+        "center": "SVG 히트영역을 얹은 세계지도",
+        "right": "선택한 대륙 미션 미리보기",
+        "bottom": "탐험 시작, 프로필 수정"
+      },
+      "interactions": [
+        "대륙 포털 선택",
+        "완료·진행 중 필터",
+        "항로 미리보기",
+        "추천이 아닌 자유 순서 선택",
+        "프로필 페이지 이동"
+      ],
+      "challenge_flow": [
+        "첫 방문 시 대륙과 국가의 차이를 설명하는 20초 튜토리얼",
+        "학생이 포털을 선택",
+        "미션 카드의 목적과 예상 시간을 확인",
+        "선택한 대륙으로 출발"
+      ],
+      "asset_plan": {
+        "raster": [
+          "bg_world_map_25d.webp",
+          "plane_selected.webp"
+        ],
+        "css_svg": [
+          "continent_hotspots.svg",
+          "route_paths.svg",
+          "progress_ring",
+          "stamp_state_icons",
+          "mission_preview_card"
+        ]
+      },
+      "save_contract": {
+        "read": [
+          "profile",
+          "completedContinents",
+          "missionStateById",
+          "stamps"
+        ],
+        "write": [
+          "lastRoute",
+          "lastSelectedContinent"
+        ]
+      },
+      "transition": "프로필 미완료면 p03_passport, 완료면 선택한 p04~p08로 이동",
+      "acceptance_criteria": [
+        "대륙 히트영역이 최소 56px 상당 크기",
+        "지도 확대 없이 다섯 포털 접근 가능",
+        "대륙과 국가를 혼동하는 문구 없음",
+        "완료 상태가 색상만이 아니라 아이콘과 텍스트로도 구분됨"
+      ]
+    },
+    {
+      "page": 3,
+      "page_id": "p03_passport_profile",
+      "route": "/passport",
+      "title": "나의 여행 여권",
+      "scene_type": "DOM 카드 UI + 고정 2.5D 캐릭터 미리보기",
+      "estimated_minutes": 4,
+      "purpose": "개인정보를 최소화한 탐험 프로필과 비행기를 만들고 학습 목표를 선택",
+      "learning_objectives": [
+        "외모·문화 배경과 능력·성격을 연결하지 않는 아바타 선택 경험",
+        "이번 여행에서 알고 싶은 질문을 스스로 설정"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 디지털 여권·프로필 제작 화면 한 장. 왼쪽에는 펼쳐진 현대적인 여행 여권 카드와 스탬프 빈칸, 중앙에는 다양한 피부색·머리 모양·평상복을 조합할 수 있는 탐험가 아바타 미리보기, 오른쪽에는 보라·파랑·청록·산호색 계열의 귀여운 여행 비행기 미리보기. 아바타는 특정 국가의 전통의상으로 국적을 고정하지 않고 일상적인 탐험 복장. 하단에는 닉네임, 관심 질문, 비행기 선택 UI가 들어갈 정돈된 공간. polished 3D educational game art, 초등 고학년용, 성별 고정관념과 유치한 스티커북 느낌 금지. 실제 한글·입력창·버튼은 CSS로 구현하므로 이미지에는 텍스트를 넣지 않음. 한 화면만 생성.",
+      "implementation_prompt": "p03_passport_profile을 DOM 중심으로 구현한다. 닉네임은 1~10자, 금칙어 필터와 앞뒤 공백 제거를 적용하고 실명 입력을 요구하지 않는다. 아바타는 skinTone, hair, top, accessory를 독립 옵션으로 제공하되 능력치 차이를 주지 않는다. 비행기는 기존 생성된 비행기 시리즈의 semantic_id를 사용하며 성능 차이 없이 시각만 바뀐다. 관심 질문은 ‘사람들은 어떻게 인사할까?’, ‘학교생활은 무엇이 같고 다를까?’, ‘자연과 문화를 어떻게 지킬까?’ 등 3개 중 하나 또는 교사가 허용한 자유 입력을 선택한다. 완료 전 미리보기와 수정 가능성을 안내하고 저장한다.",
+      "layout": {
+        "left": "여권 표지·스탬프 슬롯",
+        "center": "아바타 미리보기와 조합 탭",
+        "right": "비행기와 탐험 질문",
+        "bottom": "저장하고 지도 돌아가기"
+      },
+      "interactions": [
+        "닉네임 입력",
+        "아바타 파츠 선택",
+        "비행기 선택",
+        "탐험 질문 선택",
+        "프로필 미리보기·수정"
+      ],
+      "asset_plan": {
+        "raster": [
+          "passport_cover.webp",
+          "avatar_base.webp",
+          "plane_variant_01.webp",
+          "plane_variant_02.webp",
+          "plane_variant_03.webp"
+        ],
+        "css_svg": [
+          "passport_page",
+          "form_controls",
+          "selection_tabs",
+          "stamp_slots",
+          "validation_message"
+        ]
+      },
+      "privacy": [
+        "실명·학교명·학번 수집 금지",
+        "프로필은 기기 로컬에만 저장",
+        "자유 입력은 외부 전송하지 않음"
+      ],
+      "save_contract": {
+        "read": [
+          "profile"
+        ],
+        "write": [
+          "profile.nickname",
+          "profile.avatarId",
+          "profile.airplaneId",
+          "profile.inquiryQuestion",
+          "profile.completed"
+        ]
+      },
+      "transition": "저장 성공 후 p02_world_map",
+      "acceptance_criteria": [
+        "어떤 외모 조합도 능력치·점수에 영향 없음",
+        "키보드 없이 터치만으로 모든 옵션 선택 가능",
+        "실명 입력을 요구하지 않음",
+        "새로고침 후 프로필 복원"
+      ]
+    },
+    {
+      "page": 4,
+      "page_id": "p04_asia_route",
+      "route": "/mission/asia",
+      "title": "아시아: 하루를 읽는 탐험",
+      "scene_type": "Phaser 2D 카드·타임라인 미션 + DOM 설명",
+      "estimated_minutes": 5,
+      "purpose": "서로 다른 지역 어린이의 하루 자료를 비교하며 관찰과 추측을 구분",
+      "learning_objectives": [
+        "같은 대륙 안에서도 언어·생활환경·가족·학교생활이 다양함을 설명",
+        "자료에 보이는 사실과 자신의 추측을 구분",
+        "모르는 점을 단정하지 않고 질문으로 바꾸기"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 아시아 문화 탐험 미션 한 장. 화면은 현대적인 공항 환승 라운지와 디지털 여행 기록대가 결합된 2.5D 공간. 중앙에는 서로 다른 도시·농촌·산간 환경의 하루 기록을 나타내는 세 개의 타임라인 레일, 왼쪽에는 사진 단서와 이동·학교·식사·놀이를 상징하는 개별 오브젝트 카드, 오른쪽에는 ‘관찰한 사실 / 아직 모르는 점 / 물어볼 질문’ 세 영역이 있는 분석 보드 공간. 특정 국가를 전통의상이나 사원 하나로 표현하지 말고 현대의 일상과 다양한 환경을 균형 있게 표현. polished 3D cartoon educational game, 초등 고학년용, 논리 퍼즐 느낌. 한 화면만, 콜라주 금지, 텍스트는 CSS로 구현.",
+      "implementation_prompt": "p04_asia_route는 세 라운드로 구성한다. 1라운드에서 학생은 3명의 하루 자료 조각을 시간 순서로 배치한다. 2라운드에서 각 문장을 ‘자료에서 확인’, ‘가능한 해석’, ‘자료만으로 판단 불가’로 분류한다. 3라운드에서 오해를 줄이는 후속 질문을 선택하거나 조립한다. 콘텐츠는 일본·네팔·인도네시아 등 서로 다른 지역 사례를 사용할 수 있으나 각 사례는 도시/지역/가정 맥락과 공식 출처를 함께 가진 데이터 레코드로 관리한다. ‘아시아 사람들은’ 같은 일반화 문장을 정답으로 허용하지 않는다. 순서 배열에는 부분 점수를 주고, 오답 피드백은 관련 단서를 다시 하이라이트한다.",
+      "challenge_flow": [
+        "단서 6개를 읽고 세 인물의 하루 타임라인 구성",
+        "사실·해석·판단 불가 분류",
+        "상대에게 물어볼 존중 질문 완성",
+        "처음 생각과 수정한 생각 비교",
+        "아시아 관찰 스탬프 획득"
+      ],
+      "interaction_types": [
+        "드래그 순서 배열",
+        "3영역 분류",
+        "문장 조각 조립",
+        "근거 하이라이트",
+        "생각 수정 기록"
+      ],
+      "difficulty": {
+        "base": "단서 6개, 방해 단서 2개, 복수 정답 가능 질문 2개",
+        "scaffold": "시간·장소 색상 표시, 핵심 단서 1개 강조",
+        "advanced": "자료가 부족한 추론을 스스로 찾아 반박 근거 선택"
+      },
+      "scoring": {
+        "timeline": 30,
+        "fact_inference_distinction": 35,
+        "respectful_question": 25,
+        "revision": 10
+      },
+      "feedback": {
+        "success": "정답 표시보다 사용한 근거를 연결선으로 보여 줌",
+        "retry": "‘이 문장은 자료에서 직접 확인했니?’ 질문과 관련 단서 재노출",
+        "no_shame": "문화 차이를 틀림으로 표현하지 않음"
+      },
+      "asset_plan": {
+        "raster": [
+          "asia_child_story_01.png",
+          "asia_child_story_02.png",
+          "asia_child_story_03.png",
+          "asia_travel_terminal.webp"
+        ],
+        "css_svg": [
+          "timeline_rails",
+          "evidence_cards",
+          "classification_zones",
+          "question_builder",
+          "asia_stamp"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "asia_daily_life_evidence",
+        "checkpoints": [
+          "timeline",
+          "classification",
+          "question",
+          "reflection"
+        ]
+      },
+      "transition": "완료 후 p02_world_map",
+      "acceptance_criteria": [
+        "국가 전체를 하나의 생활방식으로 일반화하지 않음",
+        "복수 정답은 같은 채점 루브릭으로 처리",
+        "드래그 실패 시 원래 위치로 부드럽게 복귀",
+        "중간 새로고침 후 마지막 체크포인트 복원"
+      ]
+    },
+    {
+      "page": 5,
+      "page_id": "p05_europe_route",
+      "route": "/mission/europe",
+      "title": "유럽: 흔적과 오늘의 도시",
+      "scene_type": "Phaser 지도·경로 설계 미션 + DOM 정보 패널",
+      "estimated_minutes": 5,
+      "purpose": "랜드마크와 축제만이 아니라 역사적 흔적, 현재의 생활, 지역 주민의 관점을 함께 고려해 탐방 경로 설계",
+      "learning_objectives": [
+        "문화유산과 현재 생활공간이 함께 존재함을 설명",
+        "여러 자료의 출처와 관점을 비교",
+        "시간·이동·접근성 조건을 고려해 근거 있는 경로를 설계"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 유럽 도시 탐험 경로 설계 화면 한 장. 중앙에는 역사 지구와 현대 생활 구역이 함께 보이는 입체 2.5D 도시 지도, 강·트램·보행로·광장·주거지·박물관·시장 등이 균형 있게 배치된다. 왼쪽에는 서로 다른 관점의 자료 카드, 오른쪽에는 시간·이동거리·접근성 게이지가 있는 여행 계획 보드 공간. 랜드마크만 나열하지 않고 주민의 일상 공간과 문화유산 보존 문제를 함께 보여 준다. 특정 국가를 성·탑·축제 의상 하나로 단순화하지 않음. 프리미엄 교육 전략게임 분위기, 차분한 파랑·금색·보라 포인트, 한 화면만, 텍스트는 CSS/SVG로 구현.",
+      "implementation_prompt": "p05_europe_route는 제한 조건이 있는 경로 계획 게임으로 구현한다. 학생은 공식 안내, 주민 인터뷰, 접근성 정보, 보존 규칙의 네 자료를 읽고 4개 지점 중 3개를 골라 경로를 만든다. 정답 경로 하나를 강제하지 않고 필수 조건 충족, 자료 근거, 이동 효율, 지역 존중을 루브릭으로 채점한다. 축제나 문화유산은 현재 주민의 생활과 연결해 제시하고, 관광객의 편의만 최우선으로 두는 선택에는 결과 시뮬레이션을 보여 준다. 유럽 내부의 언어·지역 다양성을 나타내되 국가별 사실은 검수된 content record에서 불러온다.",
+      "challenge_flow": [
+        "자료 카드 4종 출처 확인",
+        "방문 목적과 제한 조건 읽기",
+        "지도에서 3개 지점 선택하고 경로 연결",
+        "선택 근거 2개 연결",
+        "주민·보존·접근성 결과 시뮬레이션 확인",
+        "경로 수정 후 유럽 연결 스탬프 획득"
+      ],
+      "interaction_types": [
+        "지도 노드 선택",
+        "경로 연결",
+        "자료-선택 근거 매칭",
+        "조건 게이지",
+        "결과 비교"
+      ],
+      "difficulty": {
+        "base": "제한 조건 3개와 선택 지점 4개",
+        "scaffold": "충돌하는 조건을 색상과 아이콘으로 표시",
+        "advanced": "두 개의 유효 경로를 비교하고 더 공정한 경로를 서술"
+      },
+      "scoring": {
+        "constraint_satisfaction": 30,
+        "source_evidence": 30,
+        "community_respect": 25,
+        "route_efficiency": 15
+      },
+      "asset_plan": {
+        "raster": [
+          "europe_city_map_25d.webp",
+          "europe_local_guide.png",
+          "europe_heritage_object.png"
+        ],
+        "css_svg": [
+          "route_nodes.svg",
+          "transit_lines.svg",
+          "source_cards",
+          "constraint_meters",
+          "europe_stamp"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "europe_city_route",
+        "checkpoints": [
+          "sources_read",
+          "route_draft",
+          "evidence_linked",
+          "route_revised"
+        ]
+      },
+      "transition": "완료 후 p02_world_map",
+      "acceptance_criteria": [
+        "유효한 경로가 최소 2개 존재",
+        "관광 이미지로만 유럽을 표현하지 않음",
+        "지도 노드가 색상 외 기호로도 구분됨",
+        "경로 재계산이 중복 실행되지 않음"
+      ]
+    },
+    {
+      "page": 6,
+      "page_id": "p06_africa_route",
+      "route": "/mission/africa",
+      "title": "아프리카: 소리의 대화",
+      "scene_type": "Phaser 리듬·패턴 미션 + WebAudio + DOM 맥락 카드",
+      "estimated_minutes": 5,
+      "purpose": "아프리카를 하나의 문화로 묶지 않고 여러 지역의 음악적 표현을 맥락과 함께 비교하며 협력 리듬 완성",
+      "learning_objectives": [
+        "같은 대륙 안에도 다양한 지역·언어·음악 전통과 현대 문화가 있음을 설명",
+        "리듬 패턴을 듣고 반복·변형·응답 구조를 분석",
+        "다른 사람의 패턴을 듣고 자신의 패턴을 조정"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 아프리카 소리·리듬 협력 미션 한 장. 화면 중앙은 현대적인 야외 문화교류 무대와 디지털 리듬 테이블이 결합된 공간. 서로 다른 지역을 나타내는 세 개의 사운드 포털과 개별 악기 오브젝트가 충분한 간격으로 배치되고, 하단에는 8칸 리듬 시퀀서가 들어갈 공간, 오른쪽에는 소리의 출처와 사용 맥락 카드 공간. 전통과 현대를 함께 보여 주고 ‘원시적·부족적’ 이미지 금지. 특정 피부색이나 의상으로 대륙 전체를 단일화하지 않음. polished 3D cartoon game art, 청록·주황·보라·금색 포인트, 음악 분석 게임처럼 세련되게. 한 화면만, 글자는 CSS로 구현.",
+      "implementation_prompt": "p06_africa_route는 청취, 분석, 협력의 세 라운드로 구현한다. 검수된 라이선스 음원에서 2~4마디 짧은 패턴을 사용하고 음원마다 지역, 연주 맥락, 출처, 라이선스를 표시한다. 학생은 1라운드에서 패턴을 듣고 8칸 시퀀서에 재구성한다. 2라운드에서 두 패턴의 공통점과 차이점을 선택한다. 3라운드에서 NPC의 호출 패턴 뒤에 어울리는 응답 패턴을 만들고 결과를 함께 재생한다. 리듬 수행 능력만으로 문화 이해를 평가하지 않으며, 소리를 틀리게 따라 했다고 문화적으로 틀렸다고 표현하지 않는다. 청각 지원을 위해 파형·박자 점멸·진동 옵션을 제공한다.",
+      "challenge_flow": [
+        "세 지역 중 한 사운드 포털 선택",
+        "짧은 패턴 듣기와 시각 파형 확인",
+        "8칸 시퀀서 재구성",
+        "두 패턴 비교",
+        "호출-응답 협력 패턴 제작",
+        "아프리카 경청 스탬프 획득"
+      ],
+      "interaction_types": [
+        "탭 리듬 입력",
+        "드래그 시퀀서",
+        "A/B 패턴 비교",
+        "호출-응답 제작",
+        "속도 조절과 반복 재생"
+      ],
+      "difficulty": {
+        "base": "8칸, 두 음색, 80~100 BPM",
+        "scaffold": "4칸으로 축소, 박자 점멸, 0.75배 재생",
+        "advanced": "12칸 변형 패턴과 근거 설명"
+      },
+      "scoring": {
+        "listening_accuracy": 25,
+        "pattern_analysis": 30,
+        "responsive_collaboration": 30,
+        "context_understanding": 15
+      },
+      "asset_plan": {
+        "raster": [
+          "africa_music_host.png",
+          "africa_instrument_01.png",
+          "africa_instrument_02.png",
+          "africa_instrument_03.png",
+          "bg_africa_sound_stage.webp"
+        ],
+        "css_svg": [
+          "rhythm_sequencer",
+          "waveform_canvas",
+          "sound_portals",
+          "context_cards",
+          "africa_stamp"
+        ],
+        "audio": [
+          "africa_pattern_01.ogg",
+          "africa_pattern_01.mp3",
+          "africa_pattern_02.ogg",
+          "africa_pattern_02.mp3"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "africa_sound_dialogue",
+        "checkpoints": [
+          "portal_selected",
+          "pattern_rebuilt",
+          "comparison",
+          "response_created"
+        ]
+      },
+      "transition": "완료 후 p02_world_map",
+      "acceptance_criteria": [
+        "OGG와 MP3 대체 음원 모두 제공",
+        "음소거 상태에서도 파형과 시각 박자로 수행 가능",
+        "음원 출처·라이선스·지역 맥락 레코드 존재",
+        "빠른 연속 탭에도 입력이 두 번 기록되지 않음"
+      ]
+    },
+    {
+      "page": 7,
+      "page_id": "p07_americas_route",
+      "route": "/mission/americas",
+      "title": "아메리카: 우리 반의 하루",
+      "scene_type": "Phaser 조합·협상 미션 + DOM 학생 기록 카드",
+      "estimated_minutes": 5,
+      "purpose": "북아메리카와 남아메리카의 서로 다른 학교·가정 사례를 비교하고 다양한 필요를 만족하는 공동 계획 제작",
+      "learning_objectives": [
+        "아메리카가 하나의 국가나 하나의 언어권이 아님을 설명",
+        "음식·학교생활 차이를 개인의 선호, 건강, 종교, 지역 조건과 구분",
+        "여러 사람의 필요가 충돌할 때 공정한 대안을 설계"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 아메리카 학교 교류 프로젝트 화면 한 장. 중앙에는 온라인으로 연결된 공동 교실 계획 테이블, 왼쪽에는 북아메리카와 남아메리카의 여러 학생을 나타내는 개별 프로필 카드 공간, 오른쪽에는 시간표·점심·놀이·이동 수단을 조합하는 계획 보드 공간. 현대의 다양한 도시·교외·농촌 배경 단서를 균형 있게 넣고 음식·축제만으로 문화를 표현하지 않음. 학생마다 알레르기, 채식 선택, 이동 시간, 접근성 등 서로 다른 필요가 있음을 오브젝트로 보여 준다. polished 3D educational strategy game, 초등 고학년용, 한 화면만, 실제 글자와 버튼은 CSS로 구현.",
+      "implementation_prompt": "p07_americas_route는 ‘공동 교류의 날’ 계획 미션으로 구현한다. 캐나다·멕시코·콜롬비아 등 북·중·남아메리카의 지역 사례를 사용할 수 있으나 국가 하나를 단일 언어·식단·학교 형태로 단정하지 않는다. 학생은 4명의 기록 카드에서 필수 필요와 선호를 구분하고, 제한 예산과 시간 안에서 점심·활동·소통 방법을 조합한다. 모든 조건을 완벽히 만족시키기 어려운 라운드에서는 누구의 필요를 우선했는지 근거를 설명하고 차선책을 제안한다. ‘다수결이면 공정하다’를 자동 정답으로 두지 않는다.",
+      "challenge_flow": [
+        "학생 기록 카드 4장 읽기",
+        "필수 필요와 선호 분류",
+        "예산·시간 안에서 공동 일정 조합",
+        "충돌 조건 발견",
+        "대안 2개 비교와 근거 선택",
+        "아메리카 협력 스탬프 획득"
+      ],
+      "interaction_types": [
+        "필요·선호 분류",
+        "일정 블록 조합",
+        "예산 슬라이더",
+        "조건 충돌 표시",
+        "대안 비교"
+      ],
+      "difficulty": {
+        "base": "프로필 4명, 자원 3종, 충돌 조건 2개",
+        "scaffold": "필수 필요에 테두리 표시, 예산 자동 계산",
+        "advanced": "새 조건 카드 1장을 추가한 뒤 계획 수정"
+      },
+      "scoring": {
+        "needs_identification": 25,
+        "fairness": 30,
+        "constraint_management": 25,
+        "justification": 20
+      },
+      "asset_plan": {
+        "raster": [
+          "americas_student_01.png",
+          "americas_student_02.png",
+          "americas_student_03.png",
+          "americas_student_04.png",
+          "bg_americas_shared_classroom.webp"
+        ],
+        "css_svg": [
+          "student_profile_cards",
+          "schedule_blocks",
+          "budget_meter",
+          "constraint_alerts",
+          "americas_stamp"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "americas_shared_day",
+        "checkpoints": [
+          "profiles_read",
+          "needs_sorted",
+          "plan_draft",
+          "plan_revised"
+        ]
+      },
+      "transition": "완료 후 p02_world_map",
+      "acceptance_criteria": [
+        "아메리카를 미국 하나로 표현하지 않음",
+        "알레르기·접근성 등 필수 필요를 단순 선호와 구분",
+        "유효한 계획이 최소 2개 존재",
+        "예산 계산은 정수 단위로 결정적으로 수행"
+      ]
+    },
+    {
+      "page": 8,
+      "page_id": "p08_oceania_route",
+      "route": "/mission/oceania",
+      "title": "오세아니아: 함께 지키는 섬과 바다",
+      "scene_type": "Phaser 지도·의사결정 시뮬레이션 + DOM 관점 카드",
+      "estimated_minutes": 5,
+      "purpose": "자연환경, 생활, 관광, 지역 공동체의 권리가 얽힌 문제에서 여러 관점을 비교하고 지속 가능한 선택 설계",
+      "learning_objectives": [
+        "오세아니아가 호주만을 뜻하지 않으며 여러 섬나라와 공동체를 포함함을 인식",
+        "환경 보호와 지역 주민의 삶을 분리하지 않고 함께 고려",
+        "단기 이익과 장기 영향을 비교해 선택을 수정"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 오세아니아 해양·공동체 의사결정 게임 한 장. 중앙에는 산호초, 해변, 마을, 항구, 보호구역이 함께 보이는 아름다운 2.5D 섬 지도. 왼쪽에는 지역 청소년·환경 연구자·어업 종사자·방문객의 관점 카드 공간, 오른쪽에는 생태·생활·경제·문화 네 영향 게이지와 세 가지 계획안 카드 공간. 호주 대륙만 크게 그리지 말고 태평양 섬 지역의 존재가 보이게 구성. 원주민 문화를 장식 문양으로 소비하지 말고 현대 공동체의 발언권을 시각적으로 표현. 프리미엄 전략 시뮬레이션 스타일, 청록 바다·산호색·금색 포인트, 한 화면만, 글자는 CSS로 구현.",
+      "implementation_prompt": "p08_oceania_route는 가상의 섬 공동체 계획 시뮬레이션으로 구현하되 실제 지역에서 검증된 주제와 관점을 참고한다. 학생은 지역 청소년, 환경 연구자, 어업 종사자, 방문객의 자료를 읽고 관광 인원, 보호구역 범위, 이동 방식 세 항목을 조정한다. 결과는 생태·생활·경제·문화 네 지표로 나타내며 한 지표만 최대화하는 선택을 완전 정답으로 처리하지 않는다. 1차 결과 후 누락된 관점 카드를 추가로 공개하고 계획을 수정하게 한다. 원주민·지역 공동체의 동의와 참여를 필수 조건으로 둔다.",
+      "challenge_flow": [
+        "섬 지도 위험·생활 지점 조사",
+        "네 관점 카드 읽기",
+        "세 항목으로 1차 계획 수립",
+        "단기·장기 결과 비교",
+        "누락된 관점 반영해 계획 수정",
+        "오세아니아 공존 스탬프 획득"
+      ],
+      "interaction_types": [
+        "지도 조사 핫스팟",
+        "관점 카드 연결",
+        "슬라이더·토글 계획 조정",
+        "다중 지표 결과 시뮬레이션",
+        "수정 전후 비교"
+      ],
+      "difficulty": {
+        "base": "관점 4개, 조정 항목 3개, 결과 지표 4개",
+        "scaffold": "각 선택의 직접 영향만 먼저 표시",
+        "advanced": "2년 뒤 조건 변화 카드 적용 후 재설계"
+      },
+      "scoring": {
+        "perspective_coverage": 30,
+        "long_term_reasoning": 25,
+        "community_participation": 25,
+        "plan_revision": 20
+      },
+      "asset_plan": {
+        "raster": [
+          "oceania_island_map_25d.webp",
+          "oceania_youth_voice.png",
+          "oceania_researcher.png",
+          "oceania_fisher.png",
+          "oceania_visitor.png"
+        ],
+        "css_svg": [
+          "map_hotspots.svg",
+          "perspective_cards",
+          "impact_meters",
+          "plan_controls",
+          "oceania_stamp"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "oceania_shared_future",
+        "checkpoints": [
+          "map_investigated",
+          "perspectives_read",
+          "plan_v1",
+          "plan_v2"
+        ]
+      },
+      "transition": "완료 후 p02_world_map. 다섯 대륙 완료 시 p09_respect_dialogue 해금",
+      "acceptance_criteria": [
+        "오세아니아를 호주 하나로 축소하지 않음",
+        "원주민·지역 공동체 참여가 선택 조건에 포함",
+        "결과 지표 계산이 동일 입력에서 항상 동일",
+        "슬라이더를 키보드·터치 모두 조작 가능"
+      ]
+    },
+    {
+      "page": 9,
+      "page_id": "p09_respect_dialogue",
+      "route": "/mission/respect-dialogue",
+      "title": "다름을 잇는 대화",
+      "scene_type": "Phaser 상황 대화 미션 + DOM 말풍선·근거 패널",
+      "estimated_minutes": 6,
+      "purpose": "국가별 인사법을 암기하는 대신 상대의 선호와 상황을 관찰·질문·경청해 존중하는 대화 전략 완성",
+      "unlock_condition": "p04~p08의 다섯 대륙 미션 완료",
+      "learning_objectives": [
+        "인사 방식은 국가뿐 아니라 지역·가정·관계·상황·개인 선호에 따라 달라질 수 있음을 설명",
+        "낯선 행동을 평가하기 전에 관찰하고 질문",
+        "상대의 말을 요약하고 감정을 확인하며 자신의 행동을 수정"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 다문화 대화·공감 미션 한 장. 중앙에는 국제 청소년 교류 라운지, 반원형으로 배치된 모로코·콜롬비아·일본·탄자니아·호주·네팔 어린이 캐릭터가 각자 자연스러운 인사 상황을 보여 주지만 한 국가의 유일한 정답처럼 보이지 않게 구성. 왼쪽에는 상황·관계·개인 선호 단서 카드, 오른쪽에는 관찰·질문·경청·응답 네 단계의 공감 나침반, 하단에는 말풍선 선택 공간. 하트 말풍선, 귀+하트, 공감 나침반, 퍼즐 지구본 아이콘을 포인트로 사용. polished 3D educational game art, 보라·파랑·청록·산호·금색, 초등 고학년용, 유치한 표정 과장 금지. 한 화면만, 콜라주 금지, 대화 글자는 CSS로 구현.",
+      "implementation_prompt": "p09_respect_dialogue는 세 단계로 구현한다. 1단계 ‘가능한 인사’에서는 여섯 캐릭터의 인사 사례를 상황 카드와 연결하되 국적만 보고 맞히는 문제를 금지한다. 2단계 ‘경청 수리’에서는 갈등 대화를 관찰, 추측, 질문, 응답 문장으로 분류하고 상대 말의 핵심을 요약한다. 3단계 ‘공감 나침반’에서는 모로코·콜롬비아·일본·탄자니아·호주·네팔 캐릭터 중 무작위 3명의 상황을 만나 존중하는 행동과 근거를 선택한다. 각 나라 인사 예시는 가능한 사례일 뿐 보편 규칙이 아니라는 안내를 반복한다. 가장 높은 점수는 ‘상대에게 어떻게 인사하면 편한지 묻기’, ‘싫다는 신호를 존중하기’, ‘오해했을 때 사과하고 수정하기’에 부여한다.",
+      "challenge_flow": [
+        "여섯 인사 사례 관찰",
+        "국적이 아닌 관계·상황·선호 단서 연결",
+        "갈등 대화에서 사실과 추측 분리",
+        "상대 말 요약과 감정 확인",
+        "공감 나침반으로 행동 선택·근거 연결",
+        "퍼즐 지구본 완성과 존중 스탬프 획득"
+      ],
+      "interaction_types": [
+        "상황 카드 매칭",
+        "대화 문장 분류",
+        "말풍선 순서 배열",
+        "경청 키워드 선택",
+        "복수 전략 선택과 근거 연결",
+        "퍼즐 지구본 조립"
+      ],
+      "difficulty": {
+        "base": "인사 사례 6개, 갈등 대화 2개, 공감 상황 3개",
+        "scaffold": "관찰과 추측을 색상으로 구분, 경청 문장 틀 제공",
+        "advanced": "존중 가능한 두 응답을 비교하고 맥락별 장단점 설명"
+      },
+      "scoring": {
+        "avoid_stereotype": 25,
+        "active_listening": 30,
+        "empathy_choice": 30,
+        "repair_and_revision": 15
+      },
+      "feedback": {
+        "success": "‘나라를 외워서’가 아니라 ‘상대의 신호와 말을 확인해서’ 적절했다는 근거 표시",
+        "retry": "국적 정보는 흐리게 하고 관계·상황·개인 선호 단서를 다시 보여 줌",
+        "misconception": "‘이 나라 사람은 모두 이렇게 인사해’ 선택 시 일반화 위험을 설명하고 질문 전략으로 전환"
+      },
+      "asset_plan": {
+        "raster_exactly_10_independent_assets": [
+          "greeting_child_morocco.png",
+          "greeting_child_colombia.png",
+          "greeting_child_japan_bow.png",
+          "greeting_child_tanzania.png",
+          "greeting_child_australia.png",
+          "greeting_child_nepal_namaste.png",
+          "icon_heart_speech_bubble.png",
+          "icon_listening_ear_heart.png",
+          "icon_empathy_compass.png",
+          "icon_puzzle_globe.png"
+        ],
+        "asset_rule": "각 파일은 투명 배경 PNG 한 장에 캐릭터 또는 아이콘 하나만 포함하며 시트·합본·콜라주 금지",
+        "css_svg": [
+          "dialogue_bubbles",
+          "situation_cards",
+          "evidence_links",
+          "progress_steps",
+          "focus_ring"
+        ]
+      },
+      "save_contract": {
+        "mission_id": "respect_dialogue",
+        "checkpoints": [
+          "greeting_context",
+          "listening_repair",
+          "empathy_compass",
+          "puzzle_globe"
+        ]
+      },
+      "transition": "70점 이상 또는 모든 피드백 확인 후 p10_completion. 미달이면 선택한 단계만 재도전",
+      "acceptance_criteria": [
+        "국적만으로 인사법을 맞히는 문항 없음",
+        "여섯 인사법을 유일한 국가 규칙으로 설명하지 않음",
+        "경청·질문·수정 행동이 단순 예절 암기보다 높은 점수",
+        "10개 이미지가 모두 독립 파일이고 실제 투명 알파를 가짐",
+        "말풍선 본문은 DOM으로 렌더링"
+      ]
+    },
+    {
+      "page": 10,
+      "page_id": "p10_completion",
+      "route": "/completion",
+      "title": "세계 연결 인증",
+      "scene_type": "프리렌더 2.5D 보상 전당 + DOM 회고·인증서",
+      "estimated_minutes": 4,
+      "purpose": "대륙 스탬프와 대화 미션 결과를 종합하고 생각의 변화를 기록하며 재탐험 동기 제공",
+      "unlock_condition": "다섯 대륙 스탬프 + p09 완료",
+      "learning_objectives": [
+        "처음 생각과 탐험 후 바뀐 생각을 근거와 함께 표현",
+        "문화 차이를 만났을 때 사용할 개인 행동 원칙을 정리",
+        "점수보다 과정과 수정 능력을 성취로 인식"
+      ],
+      "sample_screen_image_prompt": "16:9 가로형 세계여행 완료·보상 화면 한 장. 중앙에는 여섯 조각이 맞춰진 빛나는 퍼즐 지구본과 그 주위를 도는 비행기, 아래에는 아시아·유럽·아프리카·아메리카·오세아니아·존중 대화 스탬프가 꽂힌 펼쳐진 여권. 왼쪽에는 ‘처음 생각 / 바뀐 생각 / 앞으로의 행동’ 회고 카드 공간, 오른쪽에는 인쇄 가능한 세계 연결 인증서 미리보기 공간. 과도한 폭죽 대신 금빛 항로와 은은한 별빛으로 성취감을 표현. polished 3D educational game art, 세련되고 따뜻하며 유치하지 않음. 한 화면만, 콜라주 금지, 인증서 이름·문구·버튼은 CSS/HTML로 구현하고 이미지에 글자를 넣지 않음.",
+      "implementation_prompt": "p10_completion은 완료 조건을 다시 계산해 직접 URL 접근으로 보상을 얻지 못하게 한다. 진입 시 rewardClaimedById.completion을 확인하고 최초 1회만 스탬프 완성 애니메이션과 배지를 지급한다. 학생은 ‘처음에는 ___라고 생각했지만, ___ 자료를 보고 ___로 생각을 바꾸었다’ 문장 틀 또는 선택형 회고를 완성한다. 이어서 ‘관찰하기, 물어보기, 끝까지 듣기, 잘못 알았으면 수정하기’ 중 개인 행동 원칙 두 개를 선택한다. 인증서는 DOM/CSS print stylesheet로 만들고 반·번호·이름 칸은 빈칸으로 인쇄해 손으로 쓸 수 있게 한다. 총점은 순위로 표시하지 않고 네 역량 레이더 또는 막대로 보여 준다. 다시 탐험에서는 스탬프를 유지한 채 개별 미션 점수 향상을 허용한다.",
+      "challenge_flow": [
+        "완료 조건 검증",
+        "스탬프와 퍼즐 지구본 완성 애니메이션",
+        "처음 생각과 바뀐 생각 회고",
+        "개인 행동 원칙 2개 선택",
+        "인증서 미리보기·인쇄",
+        "지도 복귀 또는 다시 탐험"
+      ],
+      "interaction_types": [
+        "스탬프 확인",
+        "문장 틀 회고",
+        "행동 원칙 선택",
+        "인증서 인쇄",
+        "미션 재선택"
+      ],
+      "reward_logic": {
+        "badge_id": "badge_world_connector",
+        "grant_once": true,
+        "certificate": "DOM/CSS print view",
+        "leaderboard": false,
+        "replay": true
+      },
+      "asset_plan": {
+        "raster": [
+          "reward_puzzle_globe_complete.png",
+          "reward_world_connector_badge.png",
+          "reward_passport_open.webp",
+          "plane_celebration.webp",
+          "bg_completion_hall.webp"
+        ],
+        "css_svg": [
+          "six_stamps",
+          "reflection_form",
+          "competency_bars",
+          "certificate_template",
+          "print_controls"
+        ]
+      },
+      "save_contract": {
+        "read": [
+          "completedContinents",
+          "missionStateById.respect_dialogue",
+          "stamps",
+          "rewardClaimedById"
+        ],
+        "write": [
+          "reflection.before",
+          "reflection.after",
+          "reflection.actionPrinciples",
+          "rewardClaimedById.completion",
+          "completedAt"
+        ]
+      },
+      "transition": "p02_world_map 또는 선택한 재도전 미션",
+      "acceptance_criteria": [
+        "직접 URL 진입으로 보상 우회 불가",
+        "새로고침·뒤로가기 반복에도 보상 중복 지급 없음",
+        "A4 가로 인쇄 시 인증서가 한 장 안에 들어옴",
+        "반·번호·이름 칸은 비워 두어 직접 작성 가능",
+        "점수 순위 대신 역량과 생각의 변화가 중심"
+      ]
+    }
+  ],
+  "shared_components": [
+    {
+      "id": "top_progress_bar",
+      "implementation": "DOM/CSS",
+      "used_on": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "mission_feedback_modal",
+      "implementation": "DOM/CSS + EventBus",
+      "used_on": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "passport_stamp_toast",
+      "implementation": "DOM/CSS + lightweight particle",
+      "used_on": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "settings_modal",
+      "implementation": "DOM/CSS",
+      "used_on": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "id": "safe_storage_service",
+      "implementation": "TypeScript service",
+      "used_on": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  ],
+  "qa_release_gate": {
+    "functional": [
+      "10개 route 직접 진입·뒤로가기·새로고침 테스트",
+      "각 checkpoint 저장·복원 테스트",
+      "보상 중복 지급 방지 테스트",
+      "문항 데이터 1개 누락 시 전체 앱이 멈추지 않는지 테스트",
+      "에셋 1개 로드 실패 시 대체 UI 테스트",
+      "빠른 연타·다중 터치·장면 전환 중 입력 테스트"
+    ],
+    "device_browser": [
+      "iPad Safari",
+      "Android 태블릿 Chrome",
+      "Chromebook Chrome",
+      "Windows Chrome·Edge",
+      "전자칠판 1920x1080"
+    ],
+    "accessibility": [
+      "키보드 포커스 순서",
+      "스크린리더용 aria-label",
+      "색상 외 상태 표시",
+      "자막·파형 등 오디오 대체 정보",
+      "prefers-reduced-motion",
+      "200% 확대 시 핵심 진행 가능"
+    ],
+    "performance": [
+      "저사양 모드 30fps 목표",
+      "첫 화면 필수 다운로드 8MB 이하 목표",
+      "사용하지 않는 Scene의 애니메이션·오디오·타이머 정지",
+      "페이지 전환 20회 후 메모리 증가 추적",
+      "일반 텍스처 1024 이하 우선"
+    ],
+    "content": [
+      "모든 문화 사실에 sourceUrl과 lastReviewedAt 존재",
+      "‘모두·항상·원래’ 같은 일반화 문구 전수 검색",
+      "대륙과 국가 혼동 문구 전수 검색",
+      "인권 침해를 문화 차이로 정당화하는 선택지 없음",
+      "원주민·소수문화가 과거형 장식으로만 등장하지 않음"
+    ]
+  }
+}

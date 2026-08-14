@@ -1,0 +1,81 @@
+/* 기본 레이아웃 — 1920/1366/1024, 태블릿 16:9 대응 */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+
+@font-face {
+  font-family: 'Jua';
+  src: url('/fonts/jua-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/pretendard-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/pretendard-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  color: var(--c-ink);
+  background: var(--c-navy);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+#app { position: fixed; inset: 0; }
+#scene-root { position: absolute; inset: 0; overflow: hidden; }
+#overlay-root { position: absolute; inset: 0; pointer-events: none; z-index: 100; }
+#overlay-root > * { pointer-events: auto; }
+
+h1, h2, h3 { font-family: var(--font-head); font-weight: 400; margin: 0; }
+p { margin: 0; }
+button { font-family: inherit; font-size: inherit; cursor: pointer; }
+img { max-width: 100%; user-select: none; -webkit-user-drag: none; }
+
+/* 한글 어절 단위 줄바꿈 */
+h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wrap: break-word; }
+
+:focus-visible {
+  outline: 3px solid var(--c-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* 페이지 공통 프레임 */
+.page {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  background-size: cover; background-position: center;
+  animation: page-in var(--t-med) ease-out;
+}
+@keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+
+.page-body {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  padding: var(--sp-4) clamp(16px, 4vw, 64px);
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.error-fallback {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; gap: var(--sp-4);
+  align-items: center; justify-content: center;
+  background: var(--c-cream); text-align: center; padding: var(--sp-6);
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  clip-path: inset(50%); overflow: hidden; white-space: nowrap;
+}

@@ -1,0 +1,52 @@
+/* 디자인 토큰 — data/world-map-multicultural-page-prompts.json design_system.palette */
+:root {
+  --c-violet: #6C4CE8;
+  --c-sky: #2588E8;
+  --c-turquoise: #10C3C8;
+  --c-coral: #F26D6D;
+  --c-gold: #F2C14E;
+  --c-navy: #19324D;
+  --c-cream: #FFF9EA;
+  --c-success: #2EAD78;
+  --c-warning: #E7A52E;
+  --c-danger: #D95C5C;
+
+  --c-ink: #22344a;
+  --c-ink-soft: #52657e;
+  --c-paper: #ffffff;
+  --c-line: rgba(25, 50, 77, 0.14);
+
+  --font-head: 'Jua', 'Pretendard', system-ui, sans-serif;
+  --font-body: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+
+  --fs-body: clamp(16px, 1.35vw, 19px);
+  --fs-small: clamp(13px, 1.05vw, 15px);
+  --fs-title: clamp(22px, 2.4vw, 34px);
+  --fs-hero: clamp(28px, 3.6vw, 52px);
+
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+
+  --shadow-card: 0 4px 14px rgba(25, 50, 77, 0.16);
+  --shadow-pop: 0 10px 30px rgba(25, 50, 77, 0.28);
+  --edge: 0 3px 0;
+
+  --touch-min: 44px;
+  --hotspot-min: 56px;
+
+  --top-bar-h: 72px;
+  --bottom-bar-h: 84px;
+  --content-max: 1600px;
+
+  --t-fast: 140ms;
+  --t-med: 260ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 0ms; --t-med: 0ms; }
+}
+:root[data-reduced-motion="true"] { --t-fast: 0ms; --t-med: 0ms; }

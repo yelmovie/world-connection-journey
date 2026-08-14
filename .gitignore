@@ -1,0 +1,21 @@
+# deps / build
+node_modules/
+dist/
+*.log
+
+# 원본 에셋(로컬 보존, 빌드용 최적화본 public/ 만 커밋)
+assets/*
+!assets/CREDITS.md
+background/
+samplepages/
+title/
+3d assets/
+og.png
+sound/*.mp3
+
+# 중복·미사용 보관함
+_unused/
+
+# 로컬 잡동사니
+.DS_Store
+Thumbs.db

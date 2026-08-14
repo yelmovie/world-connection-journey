@@ -1,0 +1,362 @@
+[
+  {
+    "id": "bg.title",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (1).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 131,
+    "pages": "p01"
+  },
+  {
+    "id": "bg.completion",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (10).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 198,
+    "pages": "p10"
+  },
+  {
+    "id": "bg.dialogue",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (2).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 86,
+    "pages": "p09"
+  },
+  {
+    "id": "bg.map",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (3).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 230,
+    "pages": "p02 p03"
+  },
+  {
+    "id": "bg.asia",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (4).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 212,
+    "pages": "p04"
+  },
+  {
+    "id": "bg.americas",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (5).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 291,
+    "pages": "p07"
+  },
+  {
+    "id": "bg.africa",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (6).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 192,
+    "pages": "p06"
+  },
+  {
+    "id": "bg.europe",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (7).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 258,
+    "pages": "p05"
+  },
+  {
+    "id": "bg.oceania",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (8).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 222,
+    "pages": "p08"
+  },
+  {
+    "id": "bg.spare",
+    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (9).png",
+    "res": "1672x941",
+    "alpha": false,
+    "kb": 173,
+    "pages": ""
+  },
+  {
+    "id": "title.logo",
+    "original": "title/ChatGPT Image 2026년 8월 14일 오후 04_16_10.png",
+    "res": "2172x724",
+    "alpha": true,
+    "kb": 105,
+    "pages": "p01"
+  },
+  {
+    "id": "plane.main",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 56,
+    "pages": "p01 p02"
+  },
+  {
+    "id": "plane.alt1",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 52,
+    "pages": ""
+  },
+  {
+    "id": "plane.alt2",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (1).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 57,
+    "pages": ""
+  },
+  {
+    "id": "prop.passport",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (4).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 52,
+    "pages": "p03"
+  },
+  {
+    "id": "prop.globe",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (6).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 55,
+    "pages": "p02"
+  },
+  {
+    "id": "prop.stamp",
+    "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (9).png",
+    "res": "1224x1285",
+    "alpha": true,
+    "kb": 28,
+    "pages": "p03"
+  },
+  {
+    "id": "prop.suitcase",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 53,
+    "pages": "p03"
+  },
+  {
+    "id": "icon.compass",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 18,
+    "pages": "p02"
+  },
+  {
+    "id": "greeting.morocco",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (4).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 40,
+    "pages": "p09"
+  },
+  {
+    "id": "greeting.colombia",
+    "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_33 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 47,
+    "pages": "p09"
+  },
+  {
+    "id": "greeting.japan",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_57 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 31,
+    "pages": "p09"
+  },
+  {
+    "id": "greeting.tanzania",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 35,
+    "pages": "p09"
+  },
+  {
+    "id": "greeting.australia",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 43,
+    "pages": "p09"
+  },
+  {
+    "id": "greeting.nepal",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 43,
+    "pages": "p09"
+  },
+  {
+    "id": "reward.globe_puzzle",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_39_03 (10).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 46,
+    "pages": "p02 p10"
+  },
+  {
+    "id": "reward.badge",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 73,
+    "pages": "p10"
+  },
+  {
+    "id": "asia.child1",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 45,
+    "pages": "p04"
+  },
+  {
+    "id": "asia.child2",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 35,
+    "pages": "p04"
+  },
+  {
+    "id": "asia.child3",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 36,
+    "pages": "p04"
+  },
+  {
+    "id": "europe.guide",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (2).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 45,
+    "pages": "p05"
+  },
+  {
+    "id": "europe.heritage",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 66,
+    "pages": "p05"
+  },
+  {
+    "id": "africa.host",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_51 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 49,
+    "pages": "p06"
+  },
+  {
+    "id": "africa.instrument1",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_52 (4).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 46,
+    "pages": "p06"
+  },
+  {
+    "id": "africa.instrument2",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_53 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 66,
+    "pages": "p06"
+  },
+  {
+    "id": "africa.instrument3",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_54 (6).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 70,
+    "pages": "p06"
+  },
+  {
+    "id": "americas.student1",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_41 (4).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 38,
+    "pages": "p07"
+  },
+  {
+    "id": "americas.student2",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_42 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 46,
+    "pages": "p07"
+  },
+  {
+    "id": "americas.student3",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_43 (6).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 47,
+    "pages": "p07"
+  },
+  {
+    "id": "americas.student4",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_43 (7).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 46,
+    "pages": "p07"
+  },
+  {
+    "id": "oceania.youth",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_58 (6).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 36,
+    "pages": "p08"
+  },
+  {
+    "id": "oceania.researcher",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (3).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 44,
+    "pages": "p08"
+  },
+  {
+    "id": "oceania.fisher",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_58 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 48,
+    "pages": "p08"
+  },
+  {
+    "id": "oceania.visitor",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_38_56 (1).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 39,
+    "pages": "p08"
+  },
+  {
+    "id": "oceania.island",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png",
+    "res": "1254x1254",
+    "alpha": true,
+    "kb": 98,
+    "pages": "p08"
+  }
+]
