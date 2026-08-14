@@ -21,8 +21,8 @@ const SPOTS: Spot[] = [
   { id: 'asia', name: '아시아', route: '#/mission/asia', desc: '한 친구의 하루 자료를 보고 사실과 해석을 구분해요', x: 0.74, y: 0.36 },
   { id: 'europe', name: '유럽', route: '#/mission/europe', desc: '문화유산과 오늘의 생활을 잇는 여행 경로를 설계해요', x: 0.52, y: 0.28 },
   { id: 'africa', name: '아프리카', route: '#/mission/africa', desc: '리듬으로 주고받는 소리의 대화를 만들어요', x: 0.52, y: 0.56 },
-  { id: 'americas', name: '아메리카', route: '#/mission/americas', desc: '친구들의 필요를 살펴 함께할 하루를 계획해요', x: 0.22, y: 0.42 },
-  { id: 'oceania', name: '오세아니아', route: '#/mission/oceania', desc: '섬과 바다를 지키는 3턴 시뮬레이션에 도전해요', x: 0.84, y: 0.66 },
+  { id: 'americas', name: '아메리카', route: '#/mission/americas', desc: '친구들의 필요를 살펴 함께할 하루를 계획해요', x: 0.16, y: 0.44 },
+  { id: 'oceania', name: '오세아니아', route: '#/mission/oceania', desc: '섬과 바다를 지키는 3턴 시뮬레이션에 도전해요', x: 0.86, y: 0.72 },
   { id: 'dialogue', name: '다름을 잇는 대화', route: '#/mission/respect-dialogue', desc: '다섯 대륙을 여행한 뒤 열리는 마지막 대화 미션이에요', x: 0.5, y: 0.8 }
 ];
 

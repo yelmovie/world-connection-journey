@@ -8,6 +8,7 @@ import { buildTopBar } from '../ui/chrome';
 import { confirmDialog } from '../ui/modal';
 import { showToast } from '../ui/toast';
 import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
+import { threeSlot } from '../ui/threeSlot';
 import type { MissionId } from '../types';
 
 interface CommonContent {
@@ -73,7 +74,7 @@ export function createPage(): Page {
               display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden"></div>
           </div>
           <div id="puzzle-done" style="display:none;margin-top:var(--sp-4);text-align:center">
-            ${hasAsset('reward.globe_puzzle') ? `<img src="${assetUrl('reward.globe_puzzle')}" alt="완성된 퍼즐 지구본" style="width:min(260px,50vw)" class="bob">` : ''}
+            <div id="globe-3d-slot" style="display:flex;justify-content:center"></div>
             <p class="chip" style="font-size:var(--fs-body)">지구본이 완성됐어요! 세계가 하나로 이어졌어요.</p>
           </div>
         </section>
@@ -106,6 +107,11 @@ export function createPage(): Page {
         </section>`;
       page.appendChild(body);
       root.appendChild(page);
+
+      // Three.js 예약 슬롯 — 완성 지구본 (GLB 준비 시 회전 지구본으로 교체)
+      body.querySelector('#globe-3d-slot')?.appendChild(
+        threeSlot({ slotId: 'completion-globe', assetId: 'reward.globe_puzzle', label: '완성된 퍼즐 지구본', width: 'min(260px,50vw)' })
+      );
 
       // ---- 퍼즐 지구본 ----
       const tray = body.querySelector('#piece-tray') as HTMLElement;

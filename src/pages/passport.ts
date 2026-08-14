@@ -7,6 +7,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { showToast } from '../ui/toast';
 import { CONTINENT_IDS } from '../types';
+import { threeSlot } from '../ui/threeSlot';
 
 interface CommonContent {
   nickname?: { minLen: number; maxLen: number; banned: string[] };
@@ -104,6 +105,7 @@ export function createPage(): Page {
             <h2 style="color:var(--c-navy)">여권 도장</h2>
             <div style="display:grid;grid-template-columns:repeat(3,auto);gap:var(--sp-4);justify-content:start">${stampsHtml}</div>
             ${hasAsset('prop.passport') ? `<img src="${assetUrl('prop.passport')}" alt="" aria-hidden="true" style="width:min(260px,60%);align-self:center" class="bob">` : ''}
+            <div id="stamp-3d-slot" style="align-self:center"></div>
           </section>
         </div>`;
       page.appendChild(body);
@@ -140,6 +142,10 @@ export function createPage(): Page {
           markSelected('.plane-pick', 'plane', airplaneId);
         })
       );
+
+      // Three.js 예약 슬롯 — 지금은 2.5D 도장 이미지, GLB 준비 시 교체
+      const slotWrap = page.querySelector('#stamp-3d-slot');
+      if (slotWrap) slotWrap.appendChild(threeSlot({ slotId: 'passport-stamp', assetId: 'prop.stamp', label: '나의 여행 도장', width: 'min(160px,30vw)' }));
 
       const input = page.querySelector<HTMLInputElement>('#nickname');
       const msg = page.querySelector<HTMLElement>('#nick-msg');
