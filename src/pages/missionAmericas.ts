@@ -7,6 +7,7 @@ import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
+import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -41,12 +42,12 @@ interface AmericasContent {
 /** JSON의 needs/prefs id → 학생용 한글 라벨 (콘텐츠에 라벨이 없어 코드에 둔다) */
 const ITEM_LABELS: Record<string, string> = {
   nut_free_meal: '견과류 없는 음식',
-  prayer_time: '조용히 기도할 짧은 시간',
-  wheelchair_access: '휠체어로 다닐 수 있는 길',
+  prayer_time: '기도할 조용한 시간',
+  wheelchair_access: '휠체어가 다니는 길',
   quiet_break: '조용히 쉬는 시간',
-  hearing_support: '자막·그림처럼 눈으로 보는 자료',
+  hearing_support: '눈으로 보는 자막·그림',
   veggie_option: '채소 중심 메뉴',
-  language_support: '그림·몸짓으로 소통할 도움',
+  language_support: '그림·몸짓 소통 도움',
   movement_break: '몸을 움직이는 시간',
   pref_soccer: '축구',
   pref_drawing: '그림 그리기',
@@ -58,6 +59,21 @@ const ITEM_LABELS: Record<string, string> = {
   pref_cooking: '요리'
 };
 const labelOf = (id: string): string => ITEM_LABELS[id] ?? id;
+
+/** 활동 카드 묶음 탭 — 한 번에 3~4장만 보여 화면을 비우고 선택을 쉽게 한다 */
+const CATEGORY_LABEL: Record<string, string> = {
+  meal: '식사',
+  rest: '쉼',
+  activity: '활동',
+  learn: '배움'
+};
+
+/** 식사류 블록 이미지 헤더 (americas.food1~3, 표현용) */
+const FOOD_IMG: Record<string, string> = {
+  shared_lunch_table: 'americas.food1',
+  food_truck_lunch: 'americas.food2',
+  garden_snack_time: 'americas.food3'
+};
 
 /** 활동 블록 ↔ 학생 선호 매칭 (보너스 표시용, 콘텐츠에 없어 코드에 둔다) */
 const BLOCK_PREFS: Record<string, string[]> = {
@@ -102,13 +118,6 @@ interface PlanTotals {
 
 const STAGES = ['profiles', 'classify', 'plan', 'alt'] as const;
 type Stage = (typeof STAGES)[number];
-
-const STAGE_LABEL: Record<Stage, string> = {
-  profiles: '1단계 · 친구 알아보기',
-  classify: '2단계 · 필요와 좋아하는 것 나누기',
-  plan: '3단계 · 하루 일정 만들기',
-  alt: '4단계 · 다른 계획과 비교하기'
-};
 
 interface ClassifyResult {
   first: number;
@@ -171,45 +180,120 @@ function restoreState(data: Record<string, unknown>): AmState | null {
 }
 
 const PAGE_CSS = `
-.am-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--sp-4); flex: 1; min-height: 0; }
-.am-col { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-3); }
-.am-block { text-align: left; width: 100%; padding: 10px 12px; }
-.am-block .am-meta { color: var(--c-ink-soft); font-size: var(--fs-small); }
+/* 계약 §7 — 배경 일러스트가 주인공. 패널은 반투명·내용 크기만큼만. */
+.am-scene .page-body { padding: var(--sp-3) clamp(12px, 3vw, 44px); }
+.am-scene .panel { background: rgba(255,252,240,0.9); backdrop-filter: blur(6px); padding: var(--sp-4); }
+.am-scene .card { padding: var(--sp-3); background: rgba(255,255,255,0.94); }
+.am-scene .btn { color: #0F172A; text-shadow: none; }
+.am-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+.am-head { display: flex; justify-content: center; flex-shrink: 0; }
+
+/* --- 1단계: 배경 위에 큰 친구들 (계약 §7 캐릭터 최소 120px) --- */
+.am-friends {
+  flex: 1; min-height: 0; display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center; gap: clamp(10px, 3vw, 48px);
+}
+.am-friends .round-node { --node-size: clamp(120px, 13vw, 190px); }
+.round-node .node-flagchip {
+  background: rgba(255,255,255,0.92); color: #14559c; border-radius: 999px;
+  padding: 1px 10px; font-size: var(--fs-small); font-weight: 700;
+}
+
+/* --- 2단계: 위에 나눌 카드 띠, 아래 두 칸 (1024에서도 스크롤 없이) --- */
+.am-classify {
+  flex: 1; min-height: 0; display: grid;
+  grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.am-classify > .cl-zone:first-child { grid-column: 1 / -1; }
+.cl-zone {
+  min-height: 0; overflow: hidden; padding: var(--sp-3);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  background: rgba(255,252,240,0.88); backdrop-filter: blur(6px);
+}
+.cl-zone h3 { font-size: var(--fs-body); color: var(--c-navy); }
+.cl-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); flex-shrink: 0; }
+.cl-head .btn { padding: 8px 14px; }
+.cl-list { display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; overflow-y: auto; min-height: 0; }
+.cl-item { padding: 8px 12px; font-weight: 700; font-size: var(--fs-small); }
+.cl-item.is-wrong { border-color: var(--c-coral); box-shadow: 0 0 0 3px rgba(242,109,109,0.35); }
+.cl-item.is-right { border-color: var(--c-success); }
+
+/* --- 3단계: 활동 카드 | 시간표 --- */
+.am-plan { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.05fr); gap: var(--sp-3); }
+.am-col { min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+/* 활동 카드는 묶음 탭으로 3~4장씩만 — 화면을 넘기지 않는다 */
+.am-pool { display: flex; flex-direction: column; gap: 6px; }
+.am-tabs { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+.am-tabs .btn { padding: 6px 16px; }
+.am-tabs .btn[aria-pressed="true"] { background: var(--c-gold); box-shadow: var(--edge) #c69a2e, var(--shadow-card); }
+.am-block { text-align: left; width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 8px; }
+.am-block .am-block-name { font-family: var(--font-head); font-size: var(--fs-small); line-height: 1.15; }
+.am-block .am-food { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.am-block .am-block-txt { flex: 1; min-width: 0; }
+.am-meta { color: var(--c-ink-soft); font-size: var(--fs-small); }
 .am-block:disabled { opacity: 0.45; cursor: not-allowed; }
 .am-cover-chip { display: inline-flex; background: rgba(37,136,232,0.12); color: #14559c; border-radius: 999px; padding: 2px 10px; font-size: var(--fs-small); font-weight: 700; margin: 2px 4px 0 0; }
 .am-pref-chip { display: inline-flex; background: rgba(242,193,78,0.25); color: #6b4a00; border-radius: 999px; padding: 2px 10px; font-size: var(--fs-small); font-weight: 700; margin: 2px 4px 0 0; }
 .am-plan-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.am-gauge-row { display: flex; align-items: center; gap: var(--sp-3); }
-.am-gauge-row .g-label { width: 44px; font-weight: 700; flex-shrink: 0; }
-.am-gauge-row .g-value { min-width: 110px; text-align: right; font-weight: 700; }
-.am-gauge-row.is-over .g-value { color: var(--c-danger); }
-.am-gauge-row.is-over .progress-fill { background: var(--c-danger); }
+.am-gauges-bar { display: flex; gap: var(--sp-4); align-items: center; flex-wrap: wrap; padding: 6px var(--sp-3); flex-shrink: 0; }
+.am-gauges-bar .meter-row { flex: 1 1 240px; }
+.am-gauges-bar .am-gauge-meta { flex: 0 0 auto; }
+.travel-row { display: flex; gap: 8px; align-items: center; padding: 2px 10px; color: var(--c-ink-soft); font-size: var(--fs-small); }
+.plan-order-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.plan-order-actions .btn { padding: 8px 12px; min-width: 44px; }
+
+/* 친구별 필요 — 하단 바의 그림 진행 표시. 자세한 내용은 탭하면 모달 */
+.am-needs { display: flex; gap: var(--sp-2); align-items: center; min-width: 0; }
+.am-need-card { display: flex; align-items: center; gap: 6px; padding: 4px 10px; }
+.am-need-card img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: var(--shadow-card); background: var(--c-sky); flex-shrink: 0; }
+.am-need-card .n-name { font-family: var(--font-head); font-size: var(--fs-small); }
+.am-need-card .n-count { font-size: var(--fs-small); font-weight: 700; color: var(--c-ink-soft); }
+.am-need-card.is-done { border-color: var(--c-success); }
+.am-need-card.is-done .n-count { color: #17573d; }
 .need-chip { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 2px 10px; font-size: var(--fs-small); font-weight: 700; background: rgba(25,50,77,0.1); color: var(--c-ink-soft); margin: 2px 4px 0 0; }
 .need-chip.is-ok { background: rgba(46,173,120,0.18); color: #17573d; }
-.cl-item { padding: 8px 12px; font-weight: 700; }
-.cl-item.is-wrong { border-color: var(--c-coral); box-shadow: 0 0 0 3px rgba(242,109,109,0.35); }
-.cl-item.is-right { border-color: var(--c-success); }
-.cl-zone { flex: 1; min-height: 120px; padding: var(--sp-3); display: flex; flex-direction: column; gap: 8px; align-content: flex-start; }
-.cl-zone h3 { font-size: var(--fs-body); color: var(--c-navy); }
-.profile-card { text-align: center; }
-.profile-card img { width: 88px; height: 88px; object-fit: contain; }
+.conflict-card { border-left: 5px solid var(--c-coral); }
+
+/* --- 4단계: 두 계획 비교 --- */
 .compare-list { margin: 0; padding-left: 18px; }
 .compare-list li { font-size: var(--fs-small); }
-.travel-row { display: flex; gap: 8px; align-items: center; padding: 3px 10px; color: var(--c-ink-soft); font-size: var(--fs-small); }
-.conflict-card { border-left: 5px solid var(--c-success); }
-.conflict-card.has-conflict { border-left-color: var(--c-coral); }
-.plan-order-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.page .btn { color: #0F172A; text-shadow: none; }
-/* 좌하단 가이드 말풍선이 컨트롤을 가리지 않게 스크롤 여백 확보 */
-.page-body > .panel { padding-bottom: 110px; }
-@media (max-width: 820px), (min-resolution: 1.8dppx) {
-  .am-grid { grid-template-columns: 1fr; overflow-y: visible; }
-  .am-col { overflow-y: visible; }
-  .americas-profile-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .americas-compare-row { flex-direction: column; }
+.am-q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; cursor: pointer; min-height: var(--touch-min); }
+
+.am-actions { display: flex; gap: var(--sp-3); align-items: center; }
+
+/* 1024×576 같은 낮은 화면: 여백을 줄여 스크롤 없이 담는다 */
+@media (max-height: 620px) {
+  .am-scene .page-body { padding: 6px clamp(10px, 2.5vw, 28px); }
+  .am-stage { gap: var(--sp-2); }
+  .am-classify { gap: var(--sp-2); }
+  .cl-zone { padding: var(--sp-2); gap: 6px; }
+  .cl-item { padding: 5px 10px; }
+  .cl-head .btn { padding: 6px 12px; min-height: 44px; }
+  /* 3단계: 활동 카드·시간표를 한 줄씩으로 눌러 담는다 */
+  .am-block .am-food { display: none; }
+  .am-block .am-block-txt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .am-block .am-pref-chip { display: none; }
+  .am-scene .am-plan-item { padding: 3px 8px; }
+  .am-plan-item > div:first-child { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .plan-order-actions .btn { padding: 6px 8px; min-width: 38px; }
+  .travel-row { padding: 0 10px; }
+  .am-need-card { padding: 2px 8px; }
+  .am-need-card img { width: 32px; height: 32px; }
+  .am-need-card .n-name { display: none; }
+  .ribbon-title .ribbon-sub { display: none; }
+  .am-gauge-meta { display: none; }
+  /* 4단계: 비교 카드·질문 줄 압축 */
+  .am-scene .vs-compare .card { padding: 8px 10px; }
+  .am-scene .am-questions { padding: 4px 10px; }
+  .am-q-row { padding: 2px 0; min-height: 40px; }
 }
-@media (max-width: 520px) {
-  .americas-profile-grid { grid-template-columns: 1fr !important; }
+
+@media (max-width: 900px) {
+  .am-plan { grid-template-columns: 1fr; }
+  .am-needs { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .americas-compare-row { grid-template-columns: 1fr; }
+  .americas-compare-row .vs-mark { justify-self: center; }
 }
 `;
 
@@ -220,7 +304,11 @@ export function createPage(): Page {
   return {
     async mount(root: HTMLElement) {
       const content = await loadContent<AmericasContent>('americas');
-      await preloadImages(['bg.americas', 'americas.student1', 'americas.student2', 'americas.student3', 'americas.student4']);
+      await preloadImages([
+        'bg.americas',
+        'americas.student1', 'americas.student2', 'americas.student3', 'americas.student4',
+        'americas.food1', 'americas.food2', 'americas.food3'
+      ]);
       audio.playBgm('americas');
 
       const allNeeds: string[] = [];
@@ -333,8 +421,9 @@ export function createPage(): Page {
 
       // ---- 뼈대 ----
       const page = document.createElement('div');
-      page.className = 'page';
-      page.style.backgroundImage = `linear-gradient(rgba(20,45,80,0.45), rgba(20,45,80,0.6)), url('${assetUrl('bg.americas')}')`;
+      page.className = 'page am-scene';
+      // 배경이 주인공 — 어두운 오버레이는 글자 대비에 필요한 만큼만
+      page.style.backgroundImage = `linear-gradient(rgba(20,45,80,0.28), rgba(20,45,80,0.42)), url('${assetUrl('bg.americas')}')`;
 
       const style = document.createElement('style');
       style.textContent = PAGE_CSS;
@@ -348,11 +437,25 @@ export function createPage(): Page {
       });
       page.appendChild(topBar);
 
+      // 장식 랜드마크 — 흐름 밖(.page-deco)이라 겹침을 만들지 않는다
+      const deco = document.createElement('div');
+      deco.className = 'page-deco';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = [
+        hasAsset('deco.landmark_liberty')
+          ? `<img src="${assetUrl('deco.landmark_liberty')}" alt="" style="position:absolute;left:1.5%;bottom:0;width:clamp(90px,10vw,168px);opacity:0.9">`
+          : '',
+        hasAsset('deco.landmark_rio')
+          ? `<img src="${assetUrl('deco.landmark_rio')}" alt="" style="position:absolute;right:1.5%;bottom:0;width:clamp(90px,10vw,168px);opacity:0.9">`
+          : ''
+      ].join('');
+      page.appendChild(deco);
+
       const body = document.createElement('div');
       body.className = 'page-body';
+      // 계약 §7: 화면 전체를 덮는 패널 대신, 각 단계가 필요한 만큼만 패널을 만든다
       const panel = document.createElement('div');
-      panel.className = 'panel';
-      panel.style.cssText = 'flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-4)';
+      panel.className = 'am-stage';
       body.appendChild(panel);
       page.appendChild(body);
 
@@ -365,8 +468,21 @@ export function createPage(): Page {
       guide = createGuide();
       page.appendChild(guide.el);
 
-      const setBottom = (hint: string): void => {
-        bottom.innerHTML = `<span class="chip">${hint}</span>`;
+      /** 하단 바 = 진행 표시(칩 또는 그림 카드) + 다음 행동 버튼 (계약 §1 행4) */
+      const setBottom = (hint: string | HTMLElement, ...actions: HTMLElement[]): void => {
+        bottom.replaceChildren();
+        if (typeof hint === 'string') {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = hint;
+          bottom.appendChild(chip);
+        } else {
+          bottom.appendChild(hint);
+        }
+        const right = document.createElement('div');
+        right.className = 'am-actions';
+        for (const el of actions) right.appendChild(el);
+        bottom.appendChild(right);
       };
 
       // ---- 완료 처리 ----
@@ -431,24 +547,25 @@ export function createPage(): Page {
 
       // ---- 1단계: 친구 프로필 4명 ----
       const renderProfiles = (): void => {
-        setBottom(STAGE_LABEL.profiles);
         const head = document.createElement('div');
+        head.className = 'am-head';
         head.innerHTML = `
-          <h2 style="color:var(--c-navy)">어울림 학급 친구들을 만나요</h2>
-          <p style="color:var(--c-ink-soft)">친구들의 '필요'는 나라가 아니라 저마다의 사정 때문이에요.</p>`;
+          <div class="ribbon-title">
+            <span class="ribbon-main">어울림 학급 친구들</span>
+            <span class="ribbon-sub">카드를 눌러 한 명씩 만나 봐요</span>
+          </div>`;
         panel.appendChild(head);
 
         const grid = document.createElement('div');
-        grid.className = 'americas-profile-grid';
-        grid.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4)';
+        grid.className = 'am-friends';
         const nextBtn = document.createElement('button');
 
         const refreshNext = (): void => {
           const all = content.students.every((st) => S.viewed.includes(st.id));
           nextBtn.disabled = !all;
-          nextBtn.textContent = all ? '다음 단계 ▶' : `친구 카드 ${S.viewed.length}/${content.students.length} 읽는 중`;
+          setBottom(`친구 ${S.viewed.length}/${content.students.length} 만남`, nextBtn);
           if (all) {
-            guide?.say('모두 만났어요! 다음 단계를 눌러요!', { cue: nextBtn });
+            guide?.say('모두 만났어요! 다음을 눌러요!', { cue: nextBtn });
           } else {
             const idx = content.students.findIndex((st) => !S.viewed.includes(st.id));
             guide?.setCue((grid.children[idx] as HTMLElement | undefined) ?? null);
@@ -458,15 +575,16 @@ export function createPage(): Page {
         content.students.forEach((st, i) => {
           const card = document.createElement('button');
           card.type = 'button';
-          card.className = 'card profile-card';
+          card.className = 'round-node';
+          if (S.viewed.includes(st.id)) card.dataset.state = 'completed';
           const avatar = studentAvatar(i);
-          const renderMark = () =>
-            `<span class="chip" data-mark>${S.viewed.includes(st.id) ? '✓ 읽었어요' : '눌러서 알아보기'}</span>`;
           card.innerHTML = `
-            ${avatar ? `<img src="${avatar}" alt="">` : ''}
-            <p style="font-family:var(--font-head);color:var(--c-navy);font-size:var(--fs-body)">${st.name}</p>
-            <p class="am-meta" style="color:var(--c-ink-soft);font-size:var(--fs-small)">${st.from}에서 왔어요</p>
-            ${renderMark()}`;
+            ${avatar
+              ? `<img class="node-img" src="${avatar}" alt="">`
+              : `<span class="node-img" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:var(--fs-title);color:#fff">${st.name.charAt(0)}</span>`}
+            <span class="node-badge" data-mark ${S.viewed.includes(st.id) ? '' : 'hidden'}>✓</span>
+            <span class="node-label">${st.name}</span>
+            <span class="node-flagchip">${st.from}</span>`;
           card.addEventListener('click', () => {
             void audio.playSfx('tap');
             const bodyEl = document.createElement('div');
@@ -490,8 +608,10 @@ export function createPage(): Page {
             if (!S.viewed.includes(st.id)) {
               S.viewed.push(st.id);
               persist();
-              const mark = card.querySelector('[data-mark]');
-              if (mark) mark.textContent = '✓ 읽었어요';
+              const mark = card.querySelector<HTMLElement>('[data-mark]');
+              if (mark) mark.hidden = false;
+              card.dataset.state = 'completed';
+              popBounce(card);
               refreshNext();
             }
           });
@@ -500,63 +620,61 @@ export function createPage(): Page {
         panel.appendChild(grid);
 
         nextBtn.className = 'btn btn-primary btn-big';
-        nextBtn.style.alignSelf = 'center';
+        nextBtn.textContent = '다음';
         nextBtn.addEventListener('click', () => {
           if (nextBtn.disabled) return;
           nextBtn.disabled = true;
           goStage('classify');
         });
         if (!content.students.every((st) => S.viewed.includes(st.id))) {
-          guide?.say('친구 네 명을 모두 만나 봐요!');
+          guide?.say('친구 카드를 눌러 만나 봐요!');
         }
         refreshNext();
-        panel.appendChild(nextBtn);
       };
 
       // ---- 2단계: 필요/선호 분류 ----
       const renderClassify = (): void => {
-        setBottom(`${STAGE_LABEL.classify} — 끌어다 놓거나, 누른 뒤 놓을 곳을 눌러도 돼요`);
         if (!S.classify) S.classify = { first: -1, final: 0, retries: 0 };
         const cl = S.classify;
 
         const head = document.createElement('div');
+        head.className = 'am-head';
         head.innerHTML = `
-          <h2 style="color:var(--c-navy)">'꼭 필요한 것'과 '좋아하는 것'은 달라요</h2>
-          <p style="color:var(--c-ink-soft)">필요: 없으면 함께하기 어려워요 · 좋아하는 것: 있으면 더 즐거워요</p>`;
+          <div class="ribbon-title">
+            <span class="ribbon-main">필요 vs 좋아하는 것</span>
+            <span class="ribbon-sub">없으면 함께하기 어려운 것이 '필요'예요</span>
+          </div>`;
         panel.appendChild(head);
 
-        const pool = document.createElement('div');
-        pool.className = 'drop-zone cl-zone';
-        pool.dataset.zoneId = 'pool';
-        pool.innerHTML = `<h3>나눌 카드</h3>`;
-        const poolPlaceButton = document.createElement('button');
-        poolPlaceButton.type = 'button';
-        poolPlaceButton.className = 'btn btn-ghost';
-        poolPlaceButton.textContent = '선택한 카드를 나눌 카드로 되돌리기';
-        pool.appendChild(poolPlaceButton);
-        const poolList = document.createElement('div');
-        poolList.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px';
-        pool.appendChild(poolList);
-
         const zoneWrap = document.createElement('div');
-        zoneWrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)';
-        const mkZone = (id: 'need' | 'pref', title: string) => {
+        zoneWrap.className = 'am-classify';
+
+        const mkZone = (id: 'pool' | 'need' | 'pref', title: string, action: string) => {
           const z = document.createElement('div');
           z.className = 'drop-zone cl-zone';
           z.dataset.zoneId = id;
-          z.innerHTML = `<h3>${title}</h3>`;
+          // 제목과 놓기 버튼을 한 줄로 — 세로 공간 절약(1024×576 대응)
+          const zoneHead = document.createElement('div');
+          zoneHead.className = 'cl-head';
+          zoneHead.innerHTML = `<h3>${title}</h3>`;
           const placeButton = document.createElement('button');
           placeButton.type = 'button';
           placeButton.className = 'btn btn-ghost';
-          placeButton.textContent = `선택한 카드를 '${title}'에 놓기`;
-          z.appendChild(placeButton);
+          placeButton.textContent = action;
+          placeButton.setAttribute('aria-label', `선택한 카드를 '${title}'에 놓기`);
+          zoneHead.appendChild(placeButton);
+          z.appendChild(zoneHead);
           const list = document.createElement('div');
-          list.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start';
+          list.className = 'cl-list';
           z.appendChild(list);
           return { z, list };
         };
-        const needZone = mkZone('need', '꼭 필요해요');
-        const prefZone = mkZone('pref', '좋아하는 것');
+        const poolZone = mkZone('pool', '나눌 카드', '되돌리기');
+        const pool = poolZone.z;
+        const poolList = poolZone.list;
+        const needZone = mkZone('need', '꼭 필요해요', '여기 놓기');
+        const prefZone = mkZone('pref', '좋아하는 것', '여기 놓기');
+        zoneWrap.appendChild(pool);
         zoneWrap.appendChild(needZone.z);
         zoneWrap.appendChild(prefZone.z);
 
@@ -599,10 +717,7 @@ export function createPage(): Page {
 
         const refreshCheck = (): void => {
           checkBtn.disabled = placements.size < classifyItems.length || cl.final >= 1;
-          checkBtn.textContent =
-            placements.size < classifyItems.length
-              ? `카드 ${placements.size}/${classifyItems.length} 나누는 중`
-              : '확인하기';
+          setBottom(`카드 ${placements.size}/${classifyItems.length} 나눔`, checkBtn, nextBtn);
           if (!checkBtn.disabled) guide?.setCue(checkBtn);
           else if (cl.final < 1) guide?.setCue((poolList.firstElementChild as HTMLElement | null) ?? null);
         };
@@ -630,7 +745,8 @@ export function createPage(): Page {
           }
         });
 
-        checkBtn.className = 'btn btn-primary';
+        checkBtn.className = 'btn btn-primary btn-big';
+        checkBtn.textContent = '확인';
         let checking = false;
         let lastCheckAt = 0;
         checkBtn.addEventListener('click', () => {
@@ -662,7 +778,7 @@ export function createPage(): Page {
             showFeedback(fb, 'success', '필요와 좋아하는 것을 정확히 나눴어요! 이 구분이 다음 단계의 열쇠예요.', 'americas');
             checkBtn.disabled = true;
             nextBtn.style.display = '';
-            guide?.say('정확해요! 다음 단계를 눌러요!', { cue: nextBtn });
+            guide?.say('정확해요! 다음을 눌러요!', { cue: nextBtn });
           } else {
             // 잘못 놓인 카드는 다시 나눌 카드로
             for (const id of wrongIds) {
@@ -678,15 +794,14 @@ export function createPage(): Page {
               'americas'
             );
             nextBtn.style.display = '';
-            nextBtn.textContent = '이대로 다음 단계 ▶';
             refreshCheck();
           }
           persist();
           checking = false;
         });
 
-        nextBtn.className = 'btn btn-success';
-        nextBtn.textContent = '다음 단계 ▶';
+        nextBtn.className = 'btn btn-success btn-big';
+        nextBtn.textContent = '다음';
         nextBtn.style.display = 'none';
         nextBtn.addEventListener('click', () => {
           if (nextBtn.disabled) return;
@@ -694,31 +809,16 @@ export function createPage(): Page {
           goStage('plan');
         });
 
-        const actions = document.createElement('div');
-        actions.style.cssText = 'display:flex;gap:var(--sp-3);flex-wrap:wrap';
-        actions.appendChild(checkBtn);
-        actions.appendChild(nextBtn);
-
-        panel.appendChild(pool);
         panel.appendChild(zoneWrap);
-        panel.appendChild(actions);
         panel.appendChild(fb);
+        if (cl.first >= 0) nextBtn.style.display = '';
         refreshCheck();
-        if (cl.first >= 0) {
-          nextBtn.style.display = '';
-          if (cl.final < 1) nextBtn.textContent = '이대로 다음 단계 ▶';
-        }
-        if (cl.final >= 1) guide?.say('잘 나눴어요! 다음 단계를 눌러요!', { cue: nextBtn });
-        else guide?.say('꼭 필요한 것부터 나눠 봐요!');
+        if (cl.final >= 1) guide?.say('잘 나눴어요! 다음을 눌러요!', { cue: nextBtn });
+        else guide?.say('카드를 눌러 두 칸으로 나눠 봐요!');
       };
 
       // ---- 3·4단계: 일정 조립 (altMode = 두 번째 계획) ----
       const renderPlan = (altMode: boolean): void => {
-        setBottom(
-          altMode
-            ? STAGE_LABEL.alt
-            : `${STAGE_LABEL.plan} — 예산 ${content.constraints.budget}코인 · ${content.constraints.totalMinutes}분`
-        );
         const chosen: string[] = cleanPlan(altMode ? S.draftAlt : S.draftPlan);
         const saveDraft = (): void => {
           if (altMode) S.draftAlt = [...chosen];
@@ -727,39 +827,58 @@ export function createPage(): Page {
         };
 
         const head = document.createElement('div');
+        head.className = 'am-head';
         head.innerHTML = `
-          <h2 style="color:var(--c-navy)">${altMode ? '두 번째 계획 세우기' : '함께 보낼 하루를 계획해요'}</h2>
-          <p style="color:var(--c-ink-soft)">${
-            altMode ? '첫 계획과 다른 조합으로 만들어 봐요.' : '정답 조합은 여러 개예요!'
-          }</p>
-          <p class="chip">장소가 바뀌면 이동 10분 · ↑ 앞·↓ 뒤 버튼으로 순서 조정</p>`;
+          <div class="ribbon-title">
+            <span class="ribbon-main">${altMode ? '두 번째 계획' : '함께 보낼 하루'}</span>
+            <span class="ribbon-sub">${altMode ? '첫 계획과 다른 조합으로 만들어 봐요' : '정답 조합은 여러 개예요'}</span>
+          </div>`;
         panel.appendChild(head);
 
         const grid = document.createElement('div');
-        grid.className = 'am-grid';
+        grid.className = 'am-plan';
 
         // 왼쪽: 활동 카드 풀
         const poolCol = document.createElement('div');
         poolCol.className = 'am-col';
-        poolCol.innerHTML = `<h3 style="color:var(--c-navy)">활동 카드</h3>`;
+        const tabBar = document.createElement('div');
+        tabBar.className = 'am-tabs';
+        tabBar.setAttribute('role', 'group');
+        tabBar.setAttribute('aria-label', '활동 묶음 고르기');
+        const poolGrid = document.createElement('div');
+        poolGrid.className = 'am-pool';
+        poolCol.appendChild(tabBar);
+        poolCol.appendChild(poolGrid);
         const poolButtons = new Map<string, HTMLButtonElement>();
+        const categories = [...new Set(content.blocks.map((b) => b.category))];
+        let activeCat = categories[0] ?? '';
+        const renderPool = (): void => {
+          poolGrid.replaceChildren();
+          for (const b of content.blocks) {
+            if (b.category !== activeCat) continue;
+            const btn = poolButtons.get(b.id);
+            if (btn) poolGrid.appendChild(btn);
+          }
+          tabBar.querySelectorAll<HTMLButtonElement>('button').forEach((t) => {
+            t.setAttribute('aria-pressed', String(t.dataset.cat === activeCat));
+          });
+        };
 
-        // 오른쪽: 게이지 + 시간표 + 필요 체크리스트
+        // 오른쪽: 게이지 + 시간표 + 친구별 필요(그림 카드)
         const rightCol = document.createElement('div');
         rightCol.className = 'am-col';
+        // 게이지는 본문 위 가로 띠로 — 오른쪽 칸은 시간표만 담는다
         const gauges = document.createElement('div');
-        gauges.className = 'card';
-        gauges.style.cssText = 'display:flex;flex-direction:column;gap:8px';
+        gauges.className = 'card am-gauges-bar';
         const planWrap = document.createElement('div');
-        planWrap.innerHTML = `<h3 style="color:var(--c-navy)">오늘의 시간표</h3>`;
         const planList = document.createElement('div');
-        planList.style.cssText = 'display:flex;flex-direction:column;gap:8px;min-height:56px';
+        planList.style.cssText = 'display:flex;flex-direction:column;gap:6px;min-height:56px';
         const planEmpty = document.createElement('p');
         planEmpty.className = 'chip';
-        planEmpty.textContent = '아직 비어 있어요. 왼쪽 카드를 눌러 넣어 보세요.';
+        planEmpty.textContent = '왼쪽 카드를 눌러 넣어요';
         planWrap.appendChild(planList);
         const needsCard = document.createElement('div');
-        needsCard.className = 'card';
+        needsCard.className = 'am-needs';
         const conflictCard = document.createElement('div');
         conflictCard.className = 'card conflict-card';
         conflictCard.setAttribute('role', 'status');
@@ -774,6 +893,7 @@ export function createPage(): Page {
 
         const totals = (): PlanTotals => planTotals(chosen);
         let saidReady = false;
+        let prevCovered: Set<string> | null = null; // 첫 렌더에서는 팝 연출 생략
 
         const refreshBoard = (): void => {
           const t = totals();
@@ -783,18 +903,17 @@ export function createPage(): Page {
           const budgetPct =
             content.constraints.budget > 0 ? Math.min(100, Math.round((t.cost / content.constraints.budget) * 100)) : 0;
           gauges.innerHTML = `
-            <div class="am-gauge-row ${overTime ? 'is-over' : ''}">
-              <span class="g-label">시간</span>
+            <div class="meter-row ${overTime ? 'is-over' : ''}">
+              <span class="meter-label">시간</span>
               <div class="progress-track" role="progressbar" aria-label="사용한 시간 ${t.minutes}분" aria-valuemin="0" aria-valuemax="${content.constraints.totalMinutes}" aria-valuenow="${Math.min(t.minutes, content.constraints.totalMinutes)}"><div class="progress-fill" style="width:${timePct}%"></div></div>
-              <span class="g-value">${t.minutes}/${content.constraints.totalMinutes}분${overTime ? ' · 넘쳤어요' : ''}</span>
+              <span class="meter-value">${t.minutes}/${content.constraints.totalMinutes}분</span>
             </div>
-            <div class="am-gauge-row ${overBudget ? 'is-over' : ''}">
-              <span class="g-label">예산</span>
+            <div class="meter-row ${overBudget ? 'is-over' : ''}">
+              <span class="meter-label">예산</span>
               <div class="progress-track" role="progressbar" aria-label="사용한 예산 ${t.cost}코인" aria-valuemin="0" aria-valuemax="${content.constraints.budget}" aria-valuenow="${Math.min(t.cost, content.constraints.budget)}"><div class="progress-fill" style="width:${budgetPct}%"></div></div>
-              <span class="g-value">${t.cost}/${content.constraints.budget}코인${overBudget ? ' · 넘쳤어요' : ''}</span>
+              <span class="meter-value">${t.cost}/${content.constraints.budget}코인</span>
             </div>
-            <p class="chip">활동 ${t.activityMinutes}분 + 장소 이동 ${t.travelMinutes}분</p>
-            <div><span class="am-pref-chip">★ 좋아하는 것 보너스 ${t.prefsHit.size}개</span></div>`;
+            <p class="am-meta am-gauge-meta">이동 ${t.travelMinutes}분 · ★ 보너스 ${t.prefsHit.size}개</p>`;
 
           // 시간표
           planList.replaceChildren();
@@ -802,19 +921,14 @@ export function createPage(): Page {
           chosen.forEach((id, index) => {
             const b = blockById.get(id);
             if (!b) return;
+            // 이동 시간은 별도 줄 대신 항목 안에 — 세로 줄 수를 줄인다
             const travel = travelBetween(index > 0 ? chosen[index - 1] ?? null : null, id);
-            if (travel > 0) {
-              const travelRow = document.createElement('div');
-              travelRow.className = 'travel-row';
-              travelRow.textContent = `↳ ${placeOf(id).label}(으)로 이동 ${travel}분`;
-              planList.appendChild(travelRow);
-            }
             const row = document.createElement('div');
             row.className = 'card am-plan-item';
             row.innerHTML = `
               <div>
                 <strong>${b.label}</strong>
-                <div class="am-meta">${placeOf(id).label} · ${b.minutes}분 · ${b.cost > 0 ? `${b.cost}코인` : '무료'}</div>
+                <div class="am-meta">${placeOf(id).label} · ${b.minutes}분 · ${b.cost > 0 ? `${b.cost}코인` : '무료'}${travel > 0 ? ` · 이동 ${travel}분` : ''}</div>
               </div>`;
             const orderActions = document.createElement('div');
             orderActions.className = 'plan-order-actions';
@@ -836,8 +950,8 @@ export function createPage(): Page {
               });
               return button;
             };
-            orderActions.appendChild(makeMoveButton(-1, '↑ 앞'));
-            orderActions.appendChild(makeMoveButton(1, '↓ 뒤'));
+            orderActions.appendChild(makeMoveButton(-1, '↑'));
+            orderActions.appendChild(makeMoveButton(1, '↓'));
             const rm = document.createElement('button');
             rm.className = 'btn btn-ghost';
             rm.textContent = '빼기';
@@ -857,31 +971,50 @@ export function createPage(): Page {
             planList.appendChild(row);
           });
 
-          // 학생별 필요 체크리스트
-          needsCard.innerHTML =
-            `<h3 style="color:var(--c-navy);margin-bottom:8px">친구들의 필요 채우기</h3>` +
-            content.students
-              .map((st, i) => {
-                const avatar = studentAvatar(i);
-                const chips = st.needs
-                  .map((n) => {
-                    const ok = t.covered.has(n);
-                    return `<span class="need-chip ${ok ? 'is-ok' : ''}">${ok ? '✓' : '■'} ${labelOf(n)}</span>`;
-                  })
-                  .join('');
-                return `
-                  <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-                    ${avatar ? `<img src="${avatar}" alt="" style="width:32px;height:32px;object-fit:contain;flex-shrink:0">` : ''}
-                    <span style="font-weight:700;width:64px;flex-shrink:0">${st.name}</span>
-                    <span>${chips}</span>
-                  </div>`;
-              })
-              .join('');
+          // 친구별 필요 — 그림 + 한 줄 라벨. 어떤 필요인지는 탭하면 모달로.
+          const newlyCovered = new Set<string>();
+          if (prevCovered) for (const n of t.covered) if (!prevCovered.has(n)) newlyCovered.add(n);
+          needsCard.replaceChildren();
+          content.students.forEach((st, i) => {
+            const avatar = studentAvatar(i);
+            const doneCount = st.needs.filter((n) => t.covered.has(n)).length;
+            const allDone = doneCount >= st.needs.length;
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = `card am-need-card${allDone ? ' is-done' : ''}`;
+            card.innerHTML = `
+              ${avatar ? `<img src="${avatar}" alt="">` : ''}
+              <span class="n-name">${st.name}</span>
+              <span class="n-count">${allDone ? '✓ ' : ''}${doneCount}/${st.needs.length}</span>`;
+            card.setAttribute('aria-label', `${st.name} 필요 ${doneCount}/${st.needs.length} 채움 — 자세히 보기`);
+            card.addEventListener('click', () => {
+              void audio.playSfx('tap');
+              const chips = st.needs
+                .map((n) => {
+                  const ok = t.covered.has(n);
+                  return `<span class="need-chip ${ok ? 'is-ok' : ''}">${ok ? '✓' : '■'} ${labelOf(n)}</span>`;
+                })
+                .join('');
+              openModal({
+                id: `need-${st.id}`,
+                title: `${st.name}의 필요`,
+                bodyHtml: `<div>${chips}</div>`,
+                actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
+              });
+            });
+            if (st.needs.some((n) => newlyCovered.has(n))) popBounce(card);
+            needsCard.appendChild(card);
+          });
+          prevCovered = new Set(t.covered);
 
-          conflictCard.classList.toggle('has-conflict', t.conflicts.length > 0);
+          // 충돌은 있을 때만 보여 준다 (없을 때 빈 띠 금지)
+          conflictCard.hidden = t.conflicts.length === 0;
           conflictCard.innerHTML = t.conflicts.length
-            ? `<h3 style="color:var(--c-navy);margin-bottom:6px">조정할 충돌 ${t.conflicts.length}개</h3><ul style="margin:0;padding-left:20px">${t.conflicts.map((message) => `<li>${message}</li>`).join('')}</ul>`
-            : '<strong>✓ 일정 순서 충돌이 없어요</strong><p class="am-meta">이동 시간과 활동 순서까지 확인했어요.</p>';
+            ? `<ul style="margin:0;padding-left:20px">${t.conflicts.map((message) => `<li>${message}</li>`).join('')}</ul>`
+            : '';
+
+          // 친구별 필요 카드를 하단 진행 표시로 — 본문 세로 공간을 비운다
+          setBottom(needsCard, submitBtn);
 
           // 조건을 모두 채우면 큐를 제출 버튼으로 이동
           const ready =
@@ -890,13 +1023,14 @@ export function createPage(): Page {
           if (ready && !submitBtn.disabled) {
             if (!saidReady) {
               saidReady = true;
-              guide?.say(altMode ? '좋아요! 두 번째 계획을 제출해요!' : '좋아요! 계획 제출하기를 눌러요!', { cue: submitBtn });
+              guide?.say('좋아요! 제출을 눌러요!', { cue: submitBtn });
             } else {
               guide?.setCue(submitBtn);
             }
           } else {
             saidReady = false;
-            guide?.setCue([...poolButtons.values()].find((b) => !b.disabled) ?? null);
+            // 지금 보이는 묶음 안의 카드만 큐로 (숨은 탭의 카드를 가리키지 않게)
+            guide?.setCue([...poolButtons.values()].find((b) => !b.disabled && b.isConnected) ?? null);
           }
         };
 
@@ -908,10 +1042,15 @@ export function createPage(): Page {
             .filter((p) => allPrefs.includes(p))
             .map((p) => `<span class="am-pref-chip">★ ${labelOf(p)}</span>`)
             .join('');
+          const foodId = FOOD_IMG[b.id];
+          const foodImg = foodId && hasAsset(foodId) ? `<img class="am-food" src="${assetUrl(foodId)}" alt="" aria-hidden="true">` : '';
+          // 2줄로 압축: 제목 / 정보+필요칩 (1024×576에서도 스크롤 없이 담기게)
           btn.innerHTML = `
-            <strong>${b.label}</strong>
-            <div class="am-meta">${placeOf(b.id).label} · ${b.minutes}분 · ${b.cost > 0 ? `${b.cost}코인` : '무료'}</div>
-            <div>${b.covers.map((c) => `<span class="am-cover-chip">${labelOf(c)}</span>`).join('')}${prefChips}</div>`;
+            ${foodImg}
+            <div class="am-block-txt">
+              <strong class="am-block-name">${b.label}</strong>
+              <div class="am-meta">${b.minutes}분 · ${b.cost > 0 ? `${b.cost}코인` : '무료'}${b.covers.map((c) => `<span class="am-cover-chip">${labelOf(c)}</span>`).join('')}${prefChips}</div>
+            </div>`;
           btn.setAttribute('aria-label', `${b.label} 시간표에 넣기`);
           btn.addEventListener('click', () => {
             if (btn.disabled || !acceptBoardAction()) return;
@@ -923,12 +1062,26 @@ export function createPage(): Page {
           });
           btn.disabled = chosen.includes(b.id);
           poolButtons.set(b.id, btn);
-          poolCol.appendChild(btn);
         }
 
-        rightCol.appendChild(gauges);
+        for (const cat of categories) {
+          const tab = document.createElement('button');
+          tab.type = 'button';
+          tab.className = 'btn btn-ghost';
+          tab.dataset.cat = cat;
+          tab.textContent = CATEGORY_LABEL[cat] ?? cat;
+          tab.addEventListener('click', () => {
+            if (activeCat === cat) return;
+            void audio.playSfx('tap');
+            activeCat = cat;
+            renderPool();
+          });
+          tabBar.appendChild(tab);
+        }
+        renderPool();
+
+        panel.appendChild(gauges);
         rightCol.appendChild(planWrap);
-        rightCol.appendChild(needsCard);
         rightCol.appendChild(conflictCard);
         grid.appendChild(poolCol);
         grid.appendChild(rightCol);
@@ -937,8 +1090,7 @@ export function createPage(): Page {
         const fb = document.createElement('div');
         const submitBtn = document.createElement('button');
         submitBtn.className = 'btn btn-primary btn-big';
-        submitBtn.textContent = altMode ? '두 번째 계획 제출' : '계획 제출하기';
-        submitBtn.style.alignSelf = 'center';
+        submitBtn.textContent = '제출';
         let submitting = false;
         let lastSubmitAt = 0;
         submitBtn.addEventListener('click', () => {
@@ -981,6 +1133,7 @@ export function createPage(): Page {
               persist();
             } else {
               showFeedback(fb, 'success', content.feedback.good, 'americas');
+              burstConfetti(submitBtn);
               submitBtn.disabled = true;
               S.planB = [...chosen];
               S.draftAlt = [...chosen];
@@ -990,6 +1143,7 @@ export function createPage(): Page {
             }
           } else {
             showFeedback(fb, 'success', content.feedback.good, 'americas');
+            burstConfetti(submitBtn);
             submitBtn.disabled = true;
             S.planA = [...chosen];
             S.planB = null;
@@ -999,9 +1153,8 @@ export function createPage(): Page {
           }
           submitting = false;
         });
-        panel.appendChild(submitBtn);
         panel.appendChild(fb);
-        guide?.say(altMode ? '다른 조합으로 한 번 더 만들어 봐요!' : '블록을 눌러 하루를 채워요! 게이지를 봐요!');
+        guide?.say(altMode ? '다른 조합으로 한 번 더 만들어 봐요!' : '활동을 눌러 하루를 채워요!');
         refreshBoard();
       };
 
@@ -1042,12 +1195,14 @@ export function createPage(): Page {
       // ---- 4단계 마무리: 두 계획 비교 ----
       const renderCompare = (planA: string[], planB: string[]): void => {
         panel.replaceChildren();
-        setBottom(STAGE_LABEL.alt);
 
         const head = document.createElement('div');
+        head.className = 'am-head';
         head.innerHTML = `
-          <h2 style="color:var(--c-navy)">두 계획, 무엇이 달랐을까요?</h2>
-          <p style="color:var(--c-ink-soft)">무엇을 얻고 무엇을 포기했는지 살펴봐요.</p>`;
+          <div class="ribbon-title">
+            <span class="ribbon-main">두 계획 비교</span>
+            <span class="ribbon-sub">무엇을 얻고 무엇을 포기했나요?</span>
+          </div>`;
         panel.appendChild(head);
 
         const mkSummary = (title: string, ids: string[]): string => {
@@ -1058,17 +1213,17 @@ export function createPage(): Page {
             .join('');
           return `
             <div class="card" style="flex:1">
-              <h3 style="color:var(--c-navy);margin-bottom:8px">${title}</h3>
+              <h3 style="color:var(--c-navy);margin-bottom:6px">${title}</h3>
               <ul class="compare-list">${items}</ul>
-              <p style="margin-top:8px;font-weight:700">${t.minutes}분(활동 ${t.activityMinutes} + 이동 ${t.travelMinutes}) · ${t.cost}코인</p>
-              <p><span class="need-chip is-ok">✓ 필요 ${allNeeds.length}개 모두 채움</span></p>
-              <p><span class="am-pref-chip">★ 좋아하는 것 보너스 ${t.prefsHit.size}개</span></p>
+              <p class="am-meta" style="margin-top:6px">${t.minutes}분 · ${t.cost}코인 · ★ ${t.prefsHit.size}</p>
             </div>`;
         };
         const compareRow = document.createElement('div');
-        compareRow.className = 'americas-compare-row';
-        compareRow.style.cssText = 'display:flex;gap:var(--sp-4);align-items:stretch';
-        compareRow.innerHTML = mkSummary('첫 번째 계획', planA) + mkSummary('두 번째 계획', planB);
+        compareRow.className = 'vs-compare americas-compare-row';
+        compareRow.innerHTML =
+          mkSummary('첫 번째 계획', planA) +
+          '<div class="vs-mark" aria-hidden="true">VS</div>' +
+          mkSummary('두 번째 계획', planB);
         panel.appendChild(compareRow);
 
         const finishBtn = document.createElement('button');
@@ -1077,11 +1232,11 @@ export function createPage(): Page {
         const refreshFinish = (): void => {
           const all = checks.every(Boolean);
           finishBtn.disabled = !all;
-          finishBtn.textContent = all ? '미션 완료하기' : `질문 ${checks.filter(Boolean).length}/${checks.length} 생각하는 중`;
+          setBottom(`질문 ${checks.filter(Boolean).length}/${checks.length} 확인`, finishBtn);
           if (all) {
             if (!saidDone) {
               saidDone = true;
-              guide?.say('미션 완료를 눌러요!', { cue: finishBtn });
+              guide?.say('완료를 눌러요!', { cue: finishBtn });
             }
           } else {
             saidDone = false;
@@ -1090,10 +1245,10 @@ export function createPage(): Page {
         };
 
         const qWrap = document.createElement('div');
-        qWrap.className = 'card';
+        qWrap.className = 'card am-questions';
         content.altCompare.questions.forEach((q, i) => {
           const row = document.createElement('label');
-          row.style.cssText = 'display:flex;gap:10px;align-items:flex-start;padding:8px 0;cursor:pointer;min-height:var(--touch-min)';
+          row.className = 'am-q-row';
           const cb = document.createElement('input');
           cb.type = 'checkbox';
           cb.checked = checks[i] ?? false;
@@ -1110,22 +1265,17 @@ export function createPage(): Page {
           row.appendChild(span);
           qWrap.appendChild(row);
         });
-        const hint = document.createElement('p');
-        hint.className = 'chip';
-        hint.textContent = '질문을 읽고 내 생각을 정리했으면 칸에 표시해 주세요';
-        qWrap.prepend(hint);
         panel.appendChild(qWrap);
 
         finishBtn.className = 'btn btn-success btn-big';
-        finishBtn.style.alignSelf = 'center';
+        finishBtn.textContent = '완료';
         finishBtn.addEventListener('click', () => {
           if (finishBtn.disabled || finished) return;
           finishBtn.disabled = true;
           finish(1, allNeeds.length);
         });
-        guide?.say('다른 계획과 비교해 볼까요?');
+        guide?.say('질문을 읽고 칸에 표시해요!');
         refreshFinish();
-        panel.appendChild(finishBtn);
       };
 
       renderStage();

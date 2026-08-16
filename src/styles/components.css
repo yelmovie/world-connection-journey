@@ -210,7 +210,7 @@
 
 /* 둥실 애니메이션 (마스코트) */
 @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-.bob { animation: bob 3.2s ease-in-out infinite; }
+.bob { animation: bob 3.2s ease-in-out 2; }
 :root[data-reduced-motion="true"] .bob, :root[data-reduced-motion="true"] .stamp.is-new { animation: none; }
 @media (prefers-reduced-motion: reduce) { .bob, .stamp.is-new { animation: none; } }
 
@@ -293,7 +293,8 @@
 }
 .guide-left { left: clamp(8px, 1.5vw, 24px); }
 .guide-right { right: clamp(8px, 1.5vw, 24px); align-items: flex-end; }
-.guide-mascot { width: clamp(72px, 8vw, 120px); filter: drop-shadow(0 6px 14px rgba(10,25,45,0.35)); }
+.guide-mascot-button { pointer-events: auto; width: clamp(72px, 8vw, 120px); min-height: 48px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.guide-mascot { width: 100%; filter: drop-shadow(0 6px 14px rgba(10,25,45,0.35)); }
 .guide-bubble {
   pointer-events: auto; cursor: pointer;
   background: var(--c-paper); color: var(--c-ink);
@@ -315,7 +316,7 @@
 /* 화면이 좁으면 말풍선을 하단 전폭 배너로 (겹침 방지) */
 @media (max-width: 1100px) {
   .guide-wrap { max-width: min(320px, 46vw); }
-  .guide-mascot { width: 64px; }
+  .guide-mascot-button { width: 64px; }
 }
 
 /* ===== "여기를 눌러요" 탭 큐 ===== */
@@ -337,5 +338,229 @@
   opacity: 0; pointer-events: none; transform: translateY(6px);
 }
 .guide-bubble { transition: opacity var(--t-med), transform var(--t-med); }
-.guide-wrap.is-idle .guide-mascot { opacity: 0.55; width: clamp(48px, 5vw, 72px); }
-.guide-mascot { pointer-events: auto; cursor: pointer; transition: opacity var(--t-med), width var(--t-med); }
+.guide-wrap.is-idle .guide-mascot-button { opacity: 0.55; width: clamp(48px, 5vw, 72px); }
+.guide-mascot-button { transition: opacity var(--t-med), width var(--t-med); }
+
+/* ===== 샘플 스타일 연출 부품 (리디자인 공통) ===== */
+/* 리본 타이틀 — 미션 상단 중앙 배너 */
+.ribbon-title {
+  position: relative;
+  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(#fffdf4, #f6ecd2);
+  border: 2px solid #d9c48a;
+  border-radius: 10px;
+  padding: 8px 34px;
+  box-shadow: 0 4px 0 rgba(160, 130, 60, 0.35), var(--shadow-card);
+  font-family: var(--font-head);
+}
+.ribbon-title::before, .ribbon-title::after {
+  content: ''; position: absolute; top: 8px; width: 26px; height: calc(100% - 8px);
+  background: linear-gradient(#e8d5a5, #d9c48a); z-index: -1;
+}
+.ribbon-title::before { left: -18px; transform: skewY(-14deg); border-radius: 6px 0 0 6px; }
+.ribbon-title::after { right: -18px; transform: skewY(14deg); border-radius: 0 6px 6px 0; }
+.ribbon-title .ribbon-main { font-size: var(--fs-title); color: var(--c-navy); }
+.ribbon-title .ribbon-sub { font-size: var(--fs-small); color: #8a6d1f; font-family: var(--font-body); font-weight: 700; }
+
+/* 원형 이미지 노드 — 지도 대륙·국가 카드 */
+.round-node {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.round-node .node-img {
+  width: var(--node-size, 92px); height: var(--node-size, 92px);
+  border-radius: 50%; object-fit: cover;
+  border: 4px solid #fff; box-shadow: var(--shadow-pop);
+  background: var(--c-sky);
+  transition: transform var(--t-fast);
+}
+.round-node:hover .node-img { transform: scale(1.06); }
+.round-node .node-badge {
+  position: absolute; top: -6px; left: -6px;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-gold); color: #5a3c00; font-family: var(--font-head);
+  border: 2px solid #fff; box-shadow: var(--shadow-card); font-size: 16px;
+}
+.round-node .node-label {
+  background: var(--c-paper); border-radius: 999px; padding: 4px 14px;
+  font-family: var(--font-head); font-size: var(--fs-small); color: var(--c-ink);
+  box-shadow: var(--shadow-card); border: 2px solid var(--c-line);
+  white-space: nowrap;
+}
+.round-node[data-state="completed"] .node-label { background: var(--c-success); color: #fff; border-color: #1f8158; }
+.round-node[data-state="locked"] { cursor: not-allowed; filter: grayscale(0.75) brightness(0.85); }
+
+/* 보드 패널 — 크림색 게시판 + 상단 클립바 */
+.panel-board {
+  position: relative;
+  background: linear-gradient(#fffef8, #fbf3dd);
+  border: 2px solid #e3d3a6;
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  padding: var(--sp-5);
+}
+.panel-board::before {
+  content: ''; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  width: 88px; height: 16px; border-radius: 999px;
+  background: linear-gradient(var(--c-turquoise), #0da3a8);
+  box-shadow: var(--shadow-card);
+}
+
+/* 스티커 수집 슬롯 */
+.sticker-row { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; }
+.sticker {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: #fff; border: 2px dashed rgba(25,50,77,0.3);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.sticker img { width: 100%; height: 100%; object-fit: cover; }
+.sticker.is-filled { border-style: solid; border-color: var(--c-gold); box-shadow: var(--shadow-card); }
+
+/* VS 비교 구도 */
+.vs-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--sp-3); align-items: stretch; }
+.vs-compare .vs-mark {
+  align-self: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--c-sky); color: #fff; font-family: var(--font-head);
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid #fff; box-shadow: var(--shadow-card);
+}
+
+/* 미션 장면 헤더 — 배경 위 리본 + 마스코트 자리 */
+.scene-header {
+  display: flex; justify-content: center; align-items: flex-start;
+  padding-top: var(--sp-2); position: relative; flex-shrink: 0;
+}
+
+/* ===== 공통 6구역 시각 계약 =====
+   배경 → 장면 보드 → 리본/티켓 → 상호작용 → 하단 도크 → 피드백 */
+.scene-board {
+  position: relative;
+  min-width: 0; min-height: 0;
+  background: rgba(255, 249, 234, 0.94);
+  border: 2px solid rgba(227, 211, 166, 0.92);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.quest-ribbon,
+.ribbon-title {
+  position: relative;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 48px; padding: 7px clamp(18px, 3vw, 34px);
+  color: var(--c-navy); text-align: center;
+  background: linear-gradient(#fffdf4, #f6ecd2);
+  border: 2px solid #d9c48a; border-radius: 10px;
+  box-shadow: 0 4px 0 rgba(160, 130, 60, 0.35), var(--shadow-card);
+  font-family: var(--font-head);
+}
+.quest-ribbon::before, .quest-ribbon::after,
+.ribbon-title::before, .ribbon-title::after {
+  content: ''; position: absolute; top: 8px; width: 24px; height: calc(100% - 8px);
+  background: linear-gradient(#e8d5a5, #d9c48a); z-index: -1;
+}
+.quest-ribbon::before, .ribbon-title::before { left: -16px; transform: skewY(-14deg); border-radius: 6px 0 0 6px; }
+.quest-ribbon::after, .ribbon-title::after { right: -16px; transform: skewY(14deg); border-radius: 0 6px 6px 0; }
+.quest-ribbon .ribbon-main, .ribbon-title .ribbon-main { font-size: clamp(30px, 2.5vw, 36px); line-height: 1.05; }
+.quest-ribbon .ribbon-sub, .ribbon-title .ribbon-sub { font-family: var(--font-body); font-size: var(--fs-small); font-weight: 700; color: #795d17; }
+
+.journey-ticket {
+  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 9px;
+  min-width: 132px; min-height: 48px; padding: 6px 13px;
+  color: var(--c-navy); background: rgba(255, 249, 234, 0.95);
+  border: 2px dashed #c7a64d; border-radius: 12px;
+  box-shadow: var(--shadow-card); font-size: var(--fs-small); font-weight: 700;
+}
+.journey-ticket__icon { grid-row: 1 / 3; font-family: var(--font-head); color: var(--c-coral-ink); }
+.journey-ticket__meta { color: var(--c-ink-soft); font-size: var(--fs-small); }
+
+.asset-tray,
+.reward-rail {
+  display: flex; align-items: center; gap: var(--sp-2);
+  min-height: 64px; padding: var(--sp-2) var(--sp-3);
+  background: rgba(255,255,255,.9); border: 2px solid var(--c-line);
+  border-radius: var(--radius-m); box-shadow: var(--shadow-card);
+  overflow-x: auto; overscroll-behavior-inline: contain;
+}
+.reward-rail { justify-content: center; background: rgba(255,249,234,.96); border-color: #d9c48a; }
+
+.mission-dock {
+  min-height: var(--bottom-bar-h);
+  display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-2) var(--scene-safe);
+  background: linear-gradient(180deg, rgba(20,42,70,.06), rgba(20,42,70,.22));
+  flex-shrink: 0;
+}
+.mission-dock .btn-primary { min-height: 52px; }
+
+.mission-brief {
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  min-width: 0; min-height: 0; padding: var(--sp-4);
+  color: var(--c-navy); background: rgba(255,249,234,.96);
+  border: 2px solid #e3d3a6; border-radius: var(--radius-l); box-shadow: var(--shadow-card);
+}
+.mission-brief__hero { width: 100%; aspect-ratio: 16 / 8; border-radius: var(--radius-m); object-fit: cover; background: #d7ecfb; }
+.mission-brief__objective { font-size: max(18px, var(--fs-body)); font-weight: 800; line-height: 1.35; }
+.mission-brief__steps { margin: 0; padding-left: 1.35em; display: grid; gap: 5px; font-size: var(--fs-small); }
+.mission-brief__reward { display: flex; align-items: center; gap: var(--sp-2); margin-top: auto; font-weight: 800; }
+.mission-brief .btn-primary { width: 100%; min-height: 52px; }
+.btn-primary, .btn-success, .guide-bubble { font-size: max(18px, var(--fs-body)); }
+
+.round-node { min-width: var(--touch-min); min-height: var(--touch-min); }
+.round-node:focus-visible .node-img,
+.round-node.is-selected .node-img,
+.round-node[aria-checked="true"] .node-img { outline: 4px solid var(--c-gold); outline-offset: 3px; transform: scale(1.06); }
+.round-node[aria-checked="true"] .node-label::before { content: '✓ '; }
+
+.stamp-collection { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.stamp-collection__slot {
+  display: grid; place-items: center; min-width: 48px; aspect-ratio: 1;
+  border: 2px dashed rgba(25,50,77,.28); border-radius: 14px;
+  background: rgba(255,255,255,.78); overflow: hidden;
+}
+.stamp-collection__slot img { width: 100%; height: 100%; object-fit: cover; }
+.stamp-collection__slot.is-earned { border-style: solid; border-color: var(--c-gold); box-shadow: var(--shadow-card); }
+.stamp-collection__slot.is-new { animation: stamp-slam var(--t-stamp) cubic-bezier(.2,.9,.3,1.2); }
+
+.journey-transition {
+  position: fixed; inset: 0; z-index: var(--z-loading);
+  display: grid; place-items: center; overflow: hidden;
+  color: #fff; background: radial-gradient(circle at 50% 48%, rgba(72,170,232,.62), rgba(13,40,72,.92));
+  pointer-events: auto; opacity: 0; animation: journey-fade var(--t-flight) ease both;
+}
+.journey-transition__plane { width: clamp(150px, 24vw, 300px); filter: drop-shadow(0 12px 24px rgba(0,0,0,.38)); animation: journey-flight var(--t-flight) cubic-bezier(.4,0,.2,1) both; }
+.journey-transition__label { position: absolute; bottom: 18%; font-family: var(--font-head); font-size: var(--fs-title); text-shadow: 0 2px 8px rgba(0,0,0,.45); }
+.journey-transition--stamp { background: rgba(15,28,45,.7); }
+.journey-transition--stamp .journey-transition__plane { width: clamp(110px, 18vw, 190px); animation: stamp-slam var(--t-stamp) cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes journey-fade { 0% { opacity: 0; } 15%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes journey-flight { 0% { transform: translate(-55vw, 18vh) rotate(-7deg) scale(.72); } 70% { transform: translate(4vw, -3vh) rotate(2deg) scale(1.05); } 100% { transform: translate(58vw, -18vh) rotate(6deg) scale(.84); } }
+
+@media (max-width: 1100px), (max-height: 620px) {
+  .top-bar { padding-inline: var(--scene-safe); gap: 8px; }
+  .top-bar .btn { min-height: 48px; padding-inline: 12px; }
+  .top-bar .quest-ribbon { min-height: 48px; padding: 3px 16px; }
+  .top-bar .quest-ribbon .ribbon-main { font-size:30px; }
+  .journey-ticket { min-width: 112px; padding: 4px 9px; }
+  .mission-brief { padding: 10px; gap: 7px; }
+  .mission-brief__hero { aspect-ratio: 16 / 6; }
+  .mission-brief__steps { gap: 2px; line-height: 1.2; }
+  .mission-brief .btn-primary { min-height: 48px; padding: 8px 10px; }
+  .asset-tray, .reward-rail { min-height: 56px; }
+}
+
+@media (max-width: 760px) {
+  .journey-ticket__meta { display: none; }
+  .journey-ticket { min-width: 48px; grid-template-columns: 1fr; text-align: center; }
+  .journey-ticket__icon { grid-row: auto; }
+  .top-bar-title .ribbon-sub { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-transition, .journey-transition__plane, .stamp-collection__slot.is-new { animation: none; }
+  .journey-transition { opacity: 1; transition: opacity 120ms linear; }
+}
+:root[data-reduced-motion="true"] .journey-transition,
+:root[data-reduced-motion="true"] .journey-transition__plane,
+:root[data-reduced-motion="true"] .stamp-collection__slot.is-new { animation: none; }

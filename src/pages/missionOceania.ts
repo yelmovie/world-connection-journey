@@ -6,6 +6,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
+import { burstConfetti, countUp } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -63,6 +64,64 @@ const PERSPECTIVE_IMG: Record<string, string> = {
 const START_VALUE = 50;
 const COLLAPSE_LINE = 35;
 
+const OCEANIA_CSS = `
+/* 계약 §7 — 섬 배경이 주인공. 패널은 반투명·내용 크기만큼. */
+.oc-scene .page-body { padding: var(--sp-3) clamp(12px, 3vw, 44px); }
+.oc-scene .panel { background: rgba(255,252,240,0.9); backdrop-filter: blur(6px); padding: var(--sp-4); }
+.oc-scene .card { padding: var(--sp-3); background: rgba(255,255,255,0.94); }
+.oc-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+.oc-head { display: flex; justify-content: center; flex-shrink: 0; }
+
+/* 1단계 — 섬 지도(주인공) + 필요할 때만 나타나는 연결 패널 */
+.oc-map-row { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr); gap: var(--sp-3); }
+.oc-map-row.has-task { grid-template-columns: minmax(0,1.25fr) minmax(300px,0.85fr); }
+.oc-island { position: relative; min-height: 0; border-radius: var(--radius-l); overflow: hidden; box-shadow: var(--shadow-card); }
+.oc-spot {
+  position: absolute; transform: translate(-50%,-50%);
+  width: var(--hotspot-min); height: var(--hotspot-min); border-radius: 50%;
+  border: 3px solid #fff; cursor: pointer; color: var(--c-ink);
+  font-family: var(--font-head); font-size: var(--fs-body); box-shadow: var(--shadow-pop);
+}
+.oc-task { min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.oc-opt { text-align: left; min-height: var(--touch-min); font-size: var(--fs-small); padding: 8px 12px; }
+
+/* 2단계 — 네 사람을 크게 (계약 §7 최소 120px) */
+.oc-people { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: clamp(10px, 3vw, 48px); }
+.oc-people .round-node { --node-size: clamp(120px, 13vw, 190px); }
+
+/* 3단계 — 게이지 4개 한 줄, 1024에서는 2×2 폴백 */
+.oc-gauges { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--sp-3); flex-shrink: 0; }
+.oc-gauge { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.oc-gauge .g-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.oc-gauge .g-label { font-family: var(--font-head); font-size: var(--fs-small); }
+.oc-gauge .g-num { font-weight: 700; font-size: var(--fs-small); }
+.oc-gauge .g-delta { font-weight: 900; font-size: var(--fs-small); }
+.oc-controls { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-3); align-content: start; }
+.oc-controls .g-title { font-weight: 700; font-size: var(--fs-small); margin-bottom: 6px; }
+.oc-ctrl-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.oc-ctrl-row .card-pick { flex: 1; min-width: 88px; min-height: var(--touch-min); font-weight: 700; text-align: center; font-size: var(--fs-small); padding: 6px 8px; }
+
+@media (max-width: 1200px) {
+  .oc-gauges { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-height: 620px) {
+  .oc-scene .page-body { padding: 6px clamp(10px, 2.5vw, 28px); }
+  .oc-stage { gap: var(--sp-2); }
+  .oc-scene .panel { padding: var(--sp-3); }
+  .oc-scene .card { padding: 8px 10px; }
+  .ribbon-title .ribbon-sub { display: none; }
+  .oc-gauges { gap: 6px; }
+  .oc-opt { padding: 5px 10px; min-height: 44px; }
+  .oc-task { gap: 6px; }
+  .oc-scene .oc-task .card { padding: 6px 8px; }
+  .oc-controls .g-title { margin-bottom: 3px; }
+}
+@media (max-width: 900px) {
+  .oc-map-row.has-task { grid-template-columns: 1fr; }
+  .oc-controls { grid-template-columns: 1fr; }
+}
+`;
+
 /* ===== 저장 데이터 복원용 가드 ===== */
 function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
@@ -89,7 +148,7 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       disposed = false;
       const content = await loadContent<OceaniaContent>('oceania');
-      await preloadImages(['bg.oceania', ...Object.values(PERSPECTIVE_IMG).filter(hasAsset)]);
+      await preloadImages(['bg.oceania', 'oceania.island', ...Object.values(PERSPECTIVE_IMG).filter(hasAsset)]);
       audio.playBgm('oceania');
 
       /* ===== 진행 상태 ===== */
@@ -115,6 +174,9 @@ export function createPage(): Page {
       let lastBalanced = false;
       let busy = false;
       let finished = false;
+      // 표현용 상태(저장 안 함): 게이지 숫자 굴리기 기준값 · 경고 강조 지표
+      let shownMetrics: Metrics | null = null;
+      const warnKeys = new Set<MetricKey>();
 
       const presentModal = (opts: Parameters<typeof openModal>[0]): void => {
         if (disposed) return;
@@ -205,8 +267,12 @@ export function createPage(): Page {
 
       /* ===== 페이지 골격 ===== */
       const page = document.createElement('div');
-      page.className = 'page';
-      page.style.backgroundImage = `linear-gradient(rgba(10, 40, 62, 0.42), rgba(10, 40, 62, 0.55)), url('${assetUrl('bg.oceania')}')`;
+      page.className = 'page oc-scene';
+      // 배경이 주인공 — 오버레이는 글자 대비에 필요한 만큼만
+      page.style.backgroundImage = `linear-gradient(rgba(10, 40, 62, 0.28), rgba(10, 40, 62, 0.42)), url('${assetUrl('bg.oceania')}')`;
+      const pageStyle = document.createElement('style');
+      pageStyle.textContent = OCEANIA_CSS;
+      page.appendChild(pageStyle);
       const topBar = buildTopBar({
         title: '오세아니아: 섬과 바다',
         subtitle: content.intro.subtitle,
@@ -214,12 +280,26 @@ export function createPage(): Page {
         steps: { total: 3, done: stage - 1, now: stage - 1 }
       });
       page.appendChild(topBar);
+
+      // 장식 — 흐름 밖(.page-deco)이라 겹침을 만들지 않는다
+      const deco = document.createElement('div');
+      deco.className = 'page-deco';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = [
+        hasAsset('deco.landmark_sydney')
+          ? `<img src="${assetUrl('deco.landmark_sydney')}" alt="" style="position:absolute;right:1.5%;bottom:0;width:clamp(90px,10vw,170px);opacity:0.9">`
+          : '',
+        hasAsset('deco.sea_lantern')
+          ? `<img src="${assetUrl('deco.sea_lantern')}" alt="" style="position:absolute;left:1.5%;bottom:0;width:clamp(70px,7vw,120px);opacity:0.85">`
+          : ''
+      ].join('');
+      page.appendChild(deco);
+
       const body = document.createElement('div');
       body.className = 'page-body';
       page.appendChild(body);
       const bottom = document.createElement('div');
       bottom.className = 'bottom-bar';
-      bottom.style.flexWrap = 'wrap';
       page.appendChild(bottom);
       root.appendChild(page);
 
@@ -249,6 +329,16 @@ export function createPage(): Page {
           <path d="M640 545 q40 -18 80 0 t80 0" stroke="#ffffff" stroke-width="5" fill="none" opacity="0.5"/>
           <path d="M700 80 q40 -18 80 0 t80 0" stroke="#ffffff" stroke-width="5" fill="none" opacity="0.4"/>
         </svg>`;
+
+      /** 섬 히어로 — 산호초·바다거북 섬 이미지를 지도 배경으로, 핫스폿은 같은 좌표의 오버레이 버튼 */
+      const islandHero = (): string => {
+        if (!hasAsset('oceania.island')) return islandSvg();
+        return `
+          <div aria-hidden="true" style="position:absolute;inset:0;background:linear-gradient(#2588e8,#15507a)"></div>
+          <img src="${assetUrl('oceania.island')}" alt="" aria-hidden="true"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+          <div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 55%, rgba(10,40,62,0.35) 100%)"></div>`;
+      };
 
       const openHotspot = (h: Hotspot) => {
         const bodyEl = document.createElement('div');
@@ -287,29 +377,25 @@ export function createPage(): Page {
         const linksDone = linked.size;
         const currentLink = content.hotspots.find((h) => !linked.has(h.id));
         const readyForPerspectives = done >= total && linksDone >= total;
+        // 조사 중에는 섬 지도만(진행 상황은 하단 칩·핀 색으로), 연결 단계에서만 패널을 연다
+        const showTask = done >= total;
         body.innerHTML = `
-          <div class="mission-frame grid-2col">
-            <section class="panel" style="padding:var(--sp-3);display:flex;min-height:320px">
-              <div id="island-wrap" style="position:relative;flex:1;min-height:0;border-radius:var(--radius-m);overflow:hidden">
-                ${islandSvg()}
+          <div class="oc-stage">
+            <div class="oc-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">${showTask ? '원인과 영향 잇기' : '섬을 조사해요'}</span>
+                <span class="ribbon-sub">${showTask ? '조사한 내용을 떠올려 골라 봐요' : '지도의 표시된 곳을 눌러 살펴봐요'}</span>
               </div>
-            </section>
-            <section class="panel" style="display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;min-height:0">
-              <h2 style="color:var(--c-navy)">1단계 — 조사하고 원인·영향 연결</h2>
-              <div id="spot-list" style="display:flex;flex-direction:column;gap:var(--sp-2)">
-                ${content.hotspots
-                  .map(
-                    (h) => `<div class="card" style="display:flex;align-items:center;gap:8px;padding:10px 14px">
-                      <span aria-hidden="true" style="font-weight:900;color:${investigated.has(h.id) ? 'var(--c-success)' : 'rgba(25,50,77,0.35)'}">${investigated.has(h.id) ? '✓' : '◐'}</span>
-                      <span style="font-weight:700">${h.name}</span>
-                      <span class="chip" style="margin-left:auto">${investigated.has(h.id) ? '조사 완료' : '조사 전'}</span>
-                    </div>`
-                  )
-                  .join('')}
-              </div>
-              <div id="link-task" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>
-              <div id="stage1-fb" style="min-height:52px"></div>
-            </section>
+            </div>
+            <div class="oc-map-row ${showTask ? 'has-task' : ''}">
+              <div id="island-wrap" class="oc-island">${islandHero()}</div>
+              ${showTask
+                ? `<section class="panel oc-task">
+                     <div id="link-task" style="display:flex;flex-direction:column;gap:var(--sp-2);min-height:0"></div>
+                     <div id="stage1-fb"></div>
+                   </section>`
+                : ''}
+            </div>
           </div>`;
 
         const wrap = body.querySelector<HTMLElement>('#island-wrap');
@@ -319,11 +405,10 @@ export function createPage(): Page {
             const doneSpot = investigated.has(h.id);
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.style.cssText = `
-              position:absolute;left:${h.x * 100}%;top:${h.y * 100}%;transform:translate(-50%,-50%);
-              width:56px;height:56px;border-radius:50%;border:3px solid #fff;cursor:pointer;
-              background:${doneSpot ? 'var(--c-success)' : 'var(--c-coral)'};color:var(--c-ink);
-              font-family:var(--font-head);font-size:1.3rem;box-shadow:var(--shadow-pop);`;
+            btn.className = 'oc-spot';
+            btn.style.left = `${h.x * 100}%`;
+            btn.style.top = `${h.y * 100}%`;
+            btn.style.background = doneSpot ? 'var(--c-success)' : 'var(--c-coral)';
             btn.textContent = doneSpot ? '✓' : '?';
             btn.setAttribute('aria-label', `${h.name} ${doneSpot ? '조사 완료' : '조사하기'}`);
             btn.addEventListener('click', () => {
@@ -342,21 +427,20 @@ export function createPage(): Page {
           const ordered = content.hotspots.slice(shift).concat(content.hotspots.slice(0, shift));
           const field: 'cause' | 'effect' = linkPhase;
           const prompt = linkPhase === 'cause' ? '이 문제의 원인은 무엇일까요?' : '이 문제에서 이어지는 영향은 무엇일까요?';
+          // 안내 문장은 가이드 말풍선이 맡는다 — 화면에는 조사 기록과 선택지만
           linkTask.innerHTML = `
             <div class="card" style="border-width:2px;border-color:var(--c-violet)">
               <p style="font-size:var(--fs-small);font-weight:700;margin-bottom:4px">연결 ${linksDone + 1}/${total} · ${currentLink.name}</p>
-              <p>${currentLink.issue}</p>
+              <p style="font-size:var(--fs-small)">${currentLink.issue}</p>
             </div>
-            <p style="font-weight:700">${prompt}</p>
-            <div id="link-options" role="group" aria-label="${currentLink.name}의 ${linkPhase === 'cause' ? '원인' : '영향'} 선택" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>`;
+            <div id="link-options" role="group" aria-label="${currentLink.name}의 ${linkPhase === 'cause' ? '원인' : '영향'} 선택" style="display:flex;flex-direction:column;gap:6px;min-height:0"></div>`;
 
           const options = linkTask.querySelector<HTMLElement>('#link-options');
           if (options) {
             for (const candidate of ordered) {
               const btn = document.createElement('button');
               btn.type = 'button';
-              btn.className = 'card card-pick';
-              btn.style.cssText = 'text-align:left;min-height:var(--touch-min);font-size:var(--fs-small)';
+              btn.className = 'card card-pick oc-opt';
               btn.textContent = candidate[field];
               btn.addEventListener('click', () => {
                 if (busy || disposed) return;
@@ -403,16 +487,12 @@ export function createPage(): Page {
 
         const fb = body.querySelector<HTMLElement>('#stage1-fb');
         if (fb && readyForPerspectives) {
-          showFeedback(fb, 'success', '네 곳의 조사와 원인·영향 연결을 마쳤어요! 이제 섬에 사는 네 사람의 이야기를 들어 볼까요?', 'oceania');
-        } else if (fb && done >= total) {
-          showFeedback(fb, 'partial', `조사를 모두 마쳤어요. 원인·영향 연결이 ${total - linksDone}곳 남았어요.`);
-        } else if (fb && done > 0) {
-          showFeedback(fb, 'partial', `잘하고 있어요. 아직 조사하지 않은 곳이 ${total - done}곳 남았어요.`);
+          showFeedback(fb, 'success', '조사와 연결을 모두 마쳤어요! 이제 섬에 사는 네 사람의 이야기를 들어 볼까요?', 'oceania');
         }
 
         bottom.innerHTML = `
           <span class="chip">조사 ${done}/${total} · 연결 ${linksDone}/${total}</span>
-          <button class="btn btn-primary btn-big" data-act="next" ${readyForPerspectives ? '' : 'disabled'}>관점 듣기로</button>`;
+          <button class="btn btn-primary btn-big" data-act="next" ${readyForPerspectives ? '' : 'disabled'}>다음</button>`;
         bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
           if (!readyForPerspectives || busy || disposed) return;
           busy = true;
@@ -423,9 +503,9 @@ export function createPage(): Page {
         });
 
         if (readyForPerspectives) {
-          guide?.say('다 됐어요! 관점 듣기를 눌러요!', { cue: bottom.querySelector<HTMLElement>('[data-act="next"]') });
+          guide?.say('다 됐어요! 다음을 눌러요!', { cue: bottom.querySelector<HTMLElement>('[data-act="next"]') });
         } else if (done < total) {
-          guide?.say('지도의 반짝이는 곳을 눌러 조사해요!', { cue: firstTodoSpot });
+          guide?.say('지도의 표시된 곳을 눌러 조사해요!', { cue: firstTodoSpot });
         } else {
           guide?.say(linkPhase === 'cause' ? '문제의 원인을 골라 봐요!' : '이어지는 영향을 골라 봐요!', {
             cue: body.querySelector<HTMLElement>('#link-options')
@@ -472,10 +552,15 @@ export function createPage(): Page {
         const total = content.perspectives.length;
         const done = viewed.size;
         body.innerHTML = `
-          <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;padding-bottom:96px">
-            <h2 style="color:var(--c-navy)">2단계 — 네 사람의 이야기 듣기</h2>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--sp-3)" id="persp-grid"></div>
-            <div id="stage2-fb" style="min-height:52px"></div>
+          <div class="oc-stage">
+            <div class="oc-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">네 사람의 이야기</span>
+                <span class="ribbon-sub">아끼는 마음은 같아도 걱정은 서로 달라요</span>
+              </div>
+            </div>
+            <div class="oc-people" id="persp-grid"></div>
+            <div id="stage2-fb"></div>
           </div>`;
 
         const grid = body.querySelector<HTMLElement>('#persp-grid');
@@ -486,18 +571,15 @@ export function createPage(): Page {
             const imgId = PERSPECTIVE_IMG[p.id];
             const card = document.createElement('button');
             card.type = 'button';
-            card.className = 'card card-pick';
-            card.style.cssText = 'display:flex;align-items:center;gap:var(--sp-3);text-align:left;min-height:72px';
+            card.className = 'round-node';
+            if (heard) card.dataset.state = 'completed';
+            // 그림 + 한 줄 라벨만 — 걱정(자세한 내용)은 눌렀을 때 모달에서
             card.innerHTML = `
-              ${imgId && hasAsset(imgId) ? `<img src="${assetUrl(imgId)}" alt="" style="width:56px;flex-shrink:0">` : ''}
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-                  <strong style="font-family:var(--font-head)">${p.name}</strong>
-                  <span class="chip">${p.role}</span>
-                </div>
-                <p style="font-size:var(--fs-small);color:rgba(25,50,77,0.75)">${p.concern}</p>
-              </div>
-              <span aria-hidden="true" style="font-weight:900;font-size:1.2rem;color:${heard ? 'var(--c-success)' : 'rgba(25,50,77,0.3)'}">${heard ? '✓' : '◐'}</span>`;
+              ${imgId && hasAsset(imgId)
+                ? `<img class="node-img" src="${assetUrl(imgId)}" alt="">`
+                : `<span class="node-img" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:var(--fs-title);color:#fff">${p.name.charAt(0)}</span>`}
+              <span class="node-badge" ${heard ? '' : 'hidden'}>✓</span>
+              <span class="node-label">${p.name} · ${p.role}</span>`;
             card.setAttribute('aria-label', `${p.name} ${p.role} 이야기 ${heard ? '들었어요' : '듣기'}`);
             card.addEventListener('click', () => openPerspective(p));
             if (!heard && !firstUnheard) firstUnheard = card;
@@ -513,8 +595,8 @@ export function createPage(): Page {
         bottom.innerHTML = `
           <span class="chip">이야기 ${done}/${total} 듣기</span>
           <div style="display:flex;gap:var(--sp-3)">
-            <button class="btn btn-ghost" data-act="back">조사 다시 보기</button>
-            <button class="btn btn-primary btn-big" data-act="next" ${done >= total ? '' : 'disabled'}>미래 회의 시작</button>
+            <button class="btn btn-ghost" data-act="back">조사로</button>
+            <button class="btn btn-primary btn-big" data-act="next" ${done >= total ? '' : 'disabled'}>회의 시작</button>
           </div>`;
         bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => {
           stage = 1;
@@ -537,42 +619,53 @@ export function createPage(): Page {
       }
 
       /* ===== 3단계: 3턴 시뮬레이션 ===== */
+      /** 게이지 한 칸 — 라벨·숫자·변화량을 위에, 막대를 아래에 (4개가 한 줄에 들어가게) */
       const metricRow = (m: { key: MetricKey; label: string; color: string }): string => {
         const value = metrics[m.key];
         const d = lastDelta ? lastDelta[m.key] : null;
         const deltaHtml =
           d === null
             ? ''
-            : `<span style="width:44px;font-weight:900;text-align:right;color:${d > 0 ? 'var(--c-success)' : d < 0 ? 'var(--c-coral)' : 'rgba(25,50,77,0.5)'}">${d > 0 ? `+${d}` : d < 0 ? `−${Math.abs(d)}` : '±0'}</span>`;
+            : `<span class="g-delta" style="color:${d > 0 ? 'var(--c-success)' : d < 0 ? 'var(--c-coral)' : 'rgba(25,50,77,0.5)'}">${d > 0 ? `▲${d}` : d < 0 ? `▼${Math.abs(d)}` : '±0'}</span>`;
+        const danger = turnWarned && warnKeys.has(m.key);
         return `
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="width:60px;font-weight:700">${m.label}</span>
-            <div class="progress-track" style="flex:1;position:relative">
-              <div class="progress-fill" style="width:${value}%;background:${m.color}"></div>
+          <div class="oc-gauge">
+            <div class="g-top">
+              <span class="g-label">${m.label}</span>
+              <span><span data-mval="${m.key}" class="g-num">${value}</span>${deltaHtml}</span>
+            </div>
+            <div class="progress-track" data-mtrack="${m.key}" style="position:relative${danger ? ';box-shadow:0 0 0 3px var(--c-danger)' : ''}">
+              <div class="progress-fill" style="width:${value}%;background:${danger ? 'var(--c-danger)' : m.color}"></div>
               <div style="position:absolute;left:${COLLAPSE_LINE}%;top:-2px;bottom:-2px;width:2px;background:rgba(242,109,109,0.85)" aria-hidden="true"></div>
             </div>
-            <span style="width:32px;text-align:right;font-weight:700">${value}</span>
-            ${deltaHtml}
           </div>`;
+      };
+
+      /** 게이지 숫자 굴리기 — 지난번 표시값에서 현재값까지 (첫 렌더는 생략) */
+      const animateMetrics = (): void => {
+        const from = shownMetrics;
+        for (const m of METRICS) {
+          const el = body.querySelector<HTMLElement>(`[data-mval="${m.key}"]`);
+          if (el && from && from[m.key] !== metrics[m.key]) countUp(el, from[m.key], metrics[m.key]);
+        }
+        shownMetrics = { ...metrics };
       };
 
       function renderStage3(): void {
         updateSteps(topBar, 3, 2, 2);
         const label = content.sim.turnLabels[turnIndex] ?? `${turnIndex + 1}번째`;
+        // 안내 문장(빨간 선 설명)은 가이드 말풍선으로 옮기고 화면에는 게이지·선택지만 둔다
         body.innerHTML = `
-          <div class="mission-frame grid-2col">
-            <section class="panel" style="display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;min-height:0;padding-bottom:96px">
-              <h2 style="color:var(--c-navy)">3단계 — 섬의 미래 회의</h2>
-              <p><span class="chip">${turnIndex + 1}번째 결정 · ${label}</span></p>
-              <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
-                ${METRICS.map(metricRow).join('')}
+          <div class="oc-stage">
+            <div class="oc-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">섬의 미래 회의</span>
+                <span class="ribbon-sub">${turnIndex + 1}번째 결정 · ${label}</span>
               </div>
-              <p style="font-size:var(--fs-small);color:rgba(25,50,77,0.7)">빨간 선(${COLLAPSE_LINE}) 아래로 내려가는 지표가 생기면 위험 신호예요.</p>
-              <div id="sim-fb" style="min-height:64px"></div>
-            </section>
-            <section class="panel" style="display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;min-height:0">
-              <div id="controls" style="display:flex;flex-direction:column;gap:var(--sp-3)"></div>
-            </section>
+            </div>
+            <section class="panel oc-gauges">${METRICS.map(metricRow).join('')}</section>
+            <section class="panel oc-controls" id="controls"></section>
+            <div id="sim-fb"></div>
           </div>`;
 
         const controlsEl = body.querySelector<HTMLElement>('#controls');
@@ -581,14 +674,13 @@ export function createPage(): Page {
             const group = document.createElement('div');
             group.setAttribute('role', 'radiogroup');
             group.setAttribute('aria-label', CONTROL_LABELS[ctrl] ?? ctrl);
-            group.innerHTML = `<p style="font-weight:700;margin-bottom:6px">${CONTROL_LABELS[ctrl] ?? ctrl}</p>`;
+            group.innerHTML = `<p class="g-title">${CONTROL_LABELS[ctrl] ?? ctrl}</p>`;
             const row = document.createElement('div');
-            row.style.cssText = 'display:flex;gap:var(--sp-2);flex-wrap:wrap';
+            row.className = 'oc-ctrl-row';
             for (const opt of options) {
               const btn = document.createElement('button');
               btn.type = 'button';
               btn.className = 'card card-pick';
-              btn.style.cssText = 'flex:1;min-width:96px;min-height:var(--touch-min);font-weight:700;text-align:center';
               btn.textContent = opt;
               btn.setAttribute('role', 'radio');
               const sync = () => {
@@ -619,6 +711,7 @@ export function createPage(): Page {
           <button class="btn btn-primary btn-big" data-act="run" disabled>턴 진행</button>`;
         bottom.querySelector('[data-act="run"]')?.addEventListener('click', runTurn);
         syncRunButton();
+        animateMetrics();
 
         if (turnWarned) {
           const fb = body.querySelector<HTMLElement>('#sim-fb');
@@ -672,6 +765,17 @@ export function createPage(): Page {
           turnWarned = true;
           warnedChoices = JSON.stringify(chosen);
           collapseCount += 1;
+          // 화면 흔들기 대신 위험 지표 게이지만 danger 색으로 강조
+          warnKeys.clear();
+          collapsed.forEach((m) => warnKeys.add(m.key));
+          for (const m of METRICS) {
+            const track = body.querySelector<HTMLElement>(`[data-mtrack="${m.key}"]`);
+            if (!track) continue;
+            const on = warnKeys.has(m.key);
+            track.style.boxShadow = on ? '0 0 0 3px var(--c-danger)' : '';
+            const fill = track.querySelector<HTMLElement>('.progress-fill');
+            if (fill && on) fill.style.background = 'var(--c-danger)';
+          }
           const fb = body.querySelector<HTMLElement>('#sim-fb');
           if (fb) {
             showFeedback(
@@ -695,9 +799,10 @@ export function createPage(): Page {
         turnIndex += 1;
         turnWarned = false;
         warnedChoices = '';
+        warnKeys.clear();
         chosen = {};
         checkpoint('stage3');
-        void audio.playSfx('success');
+        void audio.playSfx('whoosh');
 
         if (turnIndex >= content.sim.turns) {
           showResult();
@@ -747,32 +852,43 @@ export function createPage(): Page {
           .map((_, i) => `<th style="padding:4px 10px;font-weight:700">${content.sim.turnLabels[i] ?? `${i + 1}턴`}</th>`)
           .join('');
 
+        // 표 2개와 긴 설명은 '자세히' 모달로 — 결과 화면에는 게이지와 한 줄 결론만
         body.innerHTML = `
-          <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;padding-bottom:96px">
-            <h2 style="color:var(--c-navy)">${lastBalanced ? '균형을 지켜냈어요!' : '세 번의 결정이 끝났어요'}</h2>
-            <div style="display:flex;flex-direction:column;gap:var(--sp-2)">${METRICS.map(metricRow).join('')}</div>
-            <div style="overflow-x:auto">
-              <table style="border-collapse:collapse;font-size:var(--fs-small);background:rgba(255,255,255,0.6);border-radius:var(--radius-s)">
-                <thead><tr><th style="padding:4px 10px"></th>${tableHead}</tr></thead>
-                <tbody>${tableRows}</tbody>
-              </table>
+          <div class="oc-stage">
+            <div class="oc-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">${lastBalanced ? '균형을 지켜냈어요!' : '세 번의 결정 끝'}</span>
+                <span class="ribbon-sub">지표가 어떻게 움직였는지 살펴봐요</span>
+              </div>
             </div>
-            ${compareRows ? `<div class="card" style="overflow-x:auto">
-              <p style="font-weight:700;margin-bottom:6px">단기·장기 효과 비교 <span class="chip">결정 전 50 기준</span></p>
-              <table style="border-collapse:collapse;font-size:var(--fs-small)">
-                <thead><tr><th style="padding:4px 10px"></th><th style="padding:4px 10px">단기(1턴)</th><th style="padding:4px 10px">장기(${history.length}턴)</th></tr></thead>
-                <tbody>${compareRows}</tbody>
-              </table>
-            </div>` : ''}
-            ${compare ? `<p>${compare}</p>` : ''}
+            <section class="panel oc-gauges">${METRICS.map(metricRow).join('')}</section>
             <div id="result-fb"></div>
-            <p style="font-size:var(--fs-small);color:rgba(25,50,77,0.75)">${content.feedback.tradeoffNote}</p>
           </div>`;
 
+        const detailHtml = `
+          <div style="overflow-x:auto">
+            <table style="border-collapse:collapse;font-size:var(--fs-small)">
+              <thead><tr><th style="padding:4px 10px"></th>${tableHead}</tr></thead>
+              <tbody>${tableRows}</tbody>
+            </table>
+          </div>
+          ${compareRows ? `<div class="card" style="overflow-x:auto;margin-top:var(--sp-3)">
+            <p style="font-weight:700;margin-bottom:6px">단기·장기 효과 비교 <span class="chip">결정 전 50 기준</span></p>
+            <table style="border-collapse:collapse;font-size:var(--fs-small)">
+              <thead><tr><th style="padding:4px 10px"></th><th style="padding:4px 10px">단기(1턴)</th><th style="padding:4px 10px">장기(${history.length}턴)</th></tr></thead>
+              <tbody>${compareRows}</tbody>
+            </table>
+          </div>` : ''}
+          ${compare ? `<p style="margin-top:var(--sp-3)">${compare}</p>` : ''}
+          <p style="margin-top:var(--sp-3);font-size:var(--fs-small);color:rgba(25,50,77,0.75)">${content.feedback.tradeoffNote}</p>`;
+
+        animateMetrics();
         const fb = body.querySelector<HTMLElement>('#result-fb');
         if (fb) {
           if (lastBalanced) {
             showFeedback(fb, 'success', content.feedback.balanced, 'oceania');
+            const heading = body.querySelector<HTMLElement>('h2');
+            if (heading) burstConfetti(heading, 24);
           } else {
             const low = METRICS.filter((m) => metrics[m.key] < warn).map((m) => m.label);
             showFeedback(
@@ -785,8 +901,20 @@ export function createPage(): Page {
         }
 
         bottom.innerHTML = `
-          <button class="btn btn-ghost" data-act="retry">다른 전략으로 다시</button>
-          <button class="btn btn-success btn-big" data-act="finish">미션 완료!</button>`;
+          <span class="chip">결정 ${history.length}회 완료</span>
+          <div style="display:flex;gap:var(--sp-3);align-items:center">
+            <button class="btn btn-ghost" data-act="detail">자세히</button>
+            <button class="btn btn-ghost" data-act="retry">다시</button>
+            <button class="btn btn-success btn-big" data-act="finish">완료</button>
+          </div>`;
+        bottom.querySelector('[data-act="detail"]')?.addEventListener('click', () => {
+          presentModal({
+            id: 'oceania-detail',
+            title: '지표가 어떻게 움직였나요?',
+            bodyHtml: detailHtml,
+            actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
+          });
+        });
         bottom.querySelector('[data-act="retry"]')?.addEventListener('click', () => {
           if (busy || finished) return;
           busy = true;

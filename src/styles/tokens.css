@@ -23,10 +23,12 @@
   --font-head: 'Jua', 'Pretendard', system-ui, sans-serif;
   --font-body: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 
-  --fs-body: clamp(18px, 1.6vw, 22px);
-  --fs-small: clamp(16px, 1.05vw, 17px);
-  --fs-title: clamp(22px, 2.4vw, 34px);
-  --fs-hero: clamp(28px, 3.6vw, 52px);
+  /* 타이포 스케일 — 전자칠판 기준(1280×720)에서 본문 20px·버튼 20px·중간제목 26px 이상 */
+  --fs-body: clamp(18px, 1.6vw, 24px);
+  --fs-small: clamp(16px, 1.25vw, 19px);
+  --fs-btn: clamp(18px, 1.6vw, 24px);
+  --fs-title: clamp(24px, 2.6vw, 40px);
+  --fs-hero: clamp(30px, 3.6vw, 54px);
 
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
@@ -46,11 +48,46 @@
   --bottom-bar-h: 84px;
   --content-max: 1600px;
 
+  /* 공통 6구역 장면 계약 */
+  --scene-safe: 20px;
+  --scene-gap: 16px;
+  --map-progress-w: 224px;
+  --map-brief-w: 284px;
+
+  /* z-index는 이 계층만 사용한다. */
+  --z-background: 0;
+  --z-canvas: 1;
+  --z-overlay: 10;
+  --z-panel: 20;
+  --z-modal-backdrop: 100;
+  --z-modal: 110;
+  --z-toast: 200;
+  --z-loading: 300;
+
   --t-fast: 140ms;
   --t-med: 260ms;
+  --t-success: 280ms;
+  --t-stamp: 460ms;
+  --t-flight: 650ms;
+}
+
+@media (max-width: 1100px), (max-height: 620px) {
+  :root {
+    --top-bar-h: 56px;
+    --bottom-bar-h: 64px;
+    --scene-safe: 12px;
+    --scene-gap: 8px;
+    --map-progress-w: 176px;
+    --map-brief-w: 224px;
+    /* 좁은 화면에서도 본문 18px·버튼 18px 하한은 지킨다 (교실 태블릿 가독성) */
+    --fs-body: clamp(18px, 1.8vw, 20px);
+    --fs-small: 16px;
+    --fs-btn: clamp(18px, 1.8vw, 20px);
+    --fs-title: clamp(24px, 2.4vw, 30px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --t-fast: 0ms; --t-med: 0ms; }
+  :root { --t-fast: 0ms; --t-med: 0ms; --t-success: 0ms; --t-stamp: 0ms; --t-flight: 120ms; }
 }
-:root[data-reduced-motion="true"] { --t-fast: 0ms; --t-med: 0ms; }
+:root[data-reduced-motion="true"] { --t-fast: 0ms; --t-med: 0ms; --t-success: 0ms; --t-stamp: 0ms; --t-flight: 120ms; }

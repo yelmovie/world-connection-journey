@@ -6,6 +6,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
+import { burstConfetti, countUp, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 
@@ -62,13 +63,100 @@ interface DialogueContent {
   feedback: { good: string; retry: string; stereotypeWarning: string };
 }
 
+/**
+ * NPC 아바타 — 관련 인물 이미지(greeting.*)는 성별·인상착의가 NPC 설정과 어긋날 수 있는
+ * '추정' 에셋이라 배정하지 않고, 이름 첫 글자 이니셜 원으로 표현한다.
+ */
+const NPC_COLOR: Record<string, string> = {
+  npc_yusra: 'var(--c-violet)',
+  npc_kenji: 'var(--c-sky)',
+  npc_amara: 'var(--c-turquoise)'
+};
 const NPC_IMG: Record<string, string> = {
   npc_yusra: 'greeting.morocco',
   npc_kenji: 'greeting.japan',
   npc_amara: 'greeting.tanzania'
 };
+const npcAvatar = (npc: { id: string; name: string }, size: number): string => `
+  <span aria-hidden="true" style="width:${size}px;height:${size}px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:${NPC_COLOR[npc.id] ?? 'var(--c-sky)'};color:#fff;font-family:var(--font-head);
+    font-size:${Math.round(size * 0.42)}px;border:3px solid #fff;box-shadow:var(--shadow-pop)">${npc.name.charAt(0)}</span>`;
 
 const greetingImg = (g: Greeting): string => `greeting.${g.id.replace(/^greet_/, '')}`;
+
+const DIALOGUE_CSS = `
+/* 계약 §7 — 배경이 주인공. 패널은 반투명·내용 크기만큼. */
+.dialogue-scene .page-body { padding: var(--sp-3) clamp(12px, 3vw, 44px); }
+.dialogue-scene .panel { background: rgba(255,252,240,0.9); backdrop-filter: blur(6px); padding: var(--sp-4); }
+.dialogue-scene .card { padding: var(--sp-3); background: rgba(255,255,255,0.94); }
+.dl-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+.dl-head { display: flex; justify-content: center; flex-shrink: 0; }
+
+/* 1단계 — 인사 사진(크게) + 오른쪽 질문 패널 */
+.dl-greet-row { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1.3fr) minmax(280px,0.72fr); gap: var(--sp-3); }
+.dl-greet-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-2); align-content: start; min-height: 0; overflow-y: auto; }
+.dl-greet-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px; }
+.dl-greet-card img { width: 100%; height: clamp(120px, 12vw, 168px); object-fit: contain; }
+.dl-greet-card .g-name { font-family: var(--font-head); font-size: var(--fs-small); }
+.dl-task { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-2); }
+.dl-ox { display: flex; gap: var(--sp-2); }
+.dl-ox .btn { flex: 1; }
+
+/* 2단계 — 상황 + 단서 + 반응 */
+.dl-listen { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.dl-cues { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-2); }
+.dl-opt { text-align: left; min-height: var(--touch-min); font-size: var(--fs-small); padding: 8px 12px; }
+
+/* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
+.dl-talk { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(240px,0.8fr) minmax(0,1.5fr); gap: var(--sp-3); }
+.dl-who { min-height: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); overflow-y: auto; }
+.dl-portrait { width: clamp(120px, 13vw, 190px); height: clamp(120px, 13vw, 190px); border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: var(--shadow-pop); }
+.dl-chat { min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+
+/* NPC 말풍선 — 가이드 스트립(하단 흰 말풍선)과 확실히 다르게 보이도록
+   본문 안, 보라 테두리 + 연보라 배경 + 왼쪽 꼬리 + 인물 아바타 */
+.npc-bubble {
+  position: relative; display: flex; align-items: flex-start; gap: var(--sp-2);
+  background: linear-gradient(180deg, #f3efff, #e9e2ff);
+  border: 2px solid var(--c-violet); border-radius: var(--radius-l);
+  padding: var(--sp-3) var(--sp-4); margin-left: 12px;
+  box-shadow: var(--shadow-card); font-weight: 700; color: var(--c-ink);
+}
+.npc-bubble::before {
+  content: ''; position: absolute; left: -12px; top: 22px;
+  border: 10px solid transparent; border-right-color: var(--c-violet); border-left: 0;
+}
+.npc-bubble .npc-say { flex: 1; min-width: 0; }
+
+/* 공감 나침반 — 숫자 + 바늘 하나로 단순화 */
+.dl-compass { display: flex; align-items: center; gap: var(--sp-2); }
+.dl-compass .c-dial { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+.dl-compass .c-num { font-family: var(--font-head); font-size: var(--fs-title); }
+.dl-side-btn { display: none; }
+
+@media (max-height: 620px) {
+  .dialogue-scene .page-body { padding: 6px clamp(10px, 2.5vw, 28px); }
+  .dl-stage { gap: var(--sp-2); }
+  .dialogue-scene .panel { padding: var(--sp-3); }
+  .dialogue-scene .card { padding: 8px 10px; }
+  .ribbon-title .ribbon-sub { display: none; }
+  /* 낮은 화면(1024×576): 사진 6장을 한 줄로 올리고 질문 패널을 아래로 */
+  .dl-greet-row { grid-template-columns: 1fr; grid-template-rows: auto minmax(0,1fr); }
+  .dl-greet-grid { grid-template-columns: repeat(6, minmax(0,1fr)); overflow: visible; }
+  .dl-greet-card { padding: 3px; }
+  .dl-greet-card img { height: 120px; }
+  .dl-opt { padding: 5px 10px; }
+  .npc-bubble { padding: 8px 12px; }
+  /* 3단계: 왼쪽 칸이 넘치지 않게 상황 카드를 버튼+모달로 */
+  .dl-who .dl-side-card { display: none; }
+  .dl-side-btn { display: inline-flex; }
+  .dl-compass .c-dial { width: 48px; height: 48px; }
+}
+@media (max-width: 900px) {
+  .dl-greet-row, .dl-talk { grid-template-columns: 1fr; }
+}
+`;
 
 function num(v: unknown, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
@@ -89,6 +177,9 @@ export function createPage(): Page {
       await preloadImages([
         'bg.dialogue',
         'icon.compass',
+        'icon.listening',
+        'icon.heart_speech',
+        'deco.explorer1',
         ...content.greetings.map(greetingImg).filter(hasAsset)
       ]);
       audio.playBgm('main');
@@ -174,8 +265,13 @@ export function createPage(): Page {
 
       /* ===== 페이지 골격 ===== */
       const page = document.createElement('div');
-      page.className = 'page';
-      page.style.backgroundImage = `linear-gradient(rgba(22, 34, 60, 0.42), rgba(22, 34, 60, 0.55)), url('${assetUrl('bg.dialogue')}')`;
+      page.className = 'page dialogue-scene';
+      page.dataset.assetId = 'bg.dialogue';
+      // 배경이 주인공 — 오버레이는 글자 대비에 필요한 만큼만
+      page.style.backgroundImage = `linear-gradient(rgba(22, 34, 60, 0.28), rgba(22, 34, 60, 0.42)), url('${assetUrl('bg.dialogue')}')`;
+      const pageStyle = document.createElement('style');
+      pageStyle.textContent = DIALOGUE_CSS;
+      page.appendChild(pageStyle);
       const topBar = buildTopBar({
         title: '다름을 잇는 대화',
         subtitle: content.intro.subtitle,
@@ -184,11 +280,24 @@ export function createPage(): Page {
       });
       page.appendChild(topBar);
       const body = document.createElement('div');
-      body.className = 'page-body';
+      body.className = 'page-body dialogue-body';
       page.appendChild(body);
+      // 장식 — 흐름 밖(.page-deco)이라 겹침을 만들지 않는다
+      const deco = document.createElement('div');
+      deco.className = 'page-deco';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = [
+        hasAsset('deco.explorer2')
+          ? `<img src="${assetUrl('deco.explorer2')}" alt="" style="position:absolute;left:1.5%;bottom:0;width:clamp(80px,9vw,150px);opacity:0.9">`
+          : '',
+        hasAsset('deco.portal_globe')
+          ? `<img src="${assetUrl('deco.portal_globe')}" alt="" style="position:absolute;right:1.5%;bottom:0;width:clamp(80px,9vw,150px);opacity:0.85">`
+          : ''
+      ].join('');
+      page.appendChild(deco);
+
       const bottom = document.createElement('div');
       bottom.className = 'bottom-bar';
-      bottom.style.flexWrap = 'wrap';
       page.appendChild(bottom);
       root.appendChild(page);
 
@@ -201,7 +310,7 @@ export function createPage(): Page {
         const bodyEl = document.createElement('div');
         bodyEl.innerHTML = `
           <div style="display:flex;gap:var(--sp-4);align-items:flex-start;flex-wrap:wrap">
-            ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" alt="" style="width:96px;flex-shrink:0">` : ''}
+            ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" data-asset-id="${greetingImg(g)}" alt="${g.country}에서 만난 학생의 인사 사례" style="width:140px;flex-shrink:0;border-radius:var(--radius-m)">` : ''}
             <div style="flex:1;min-width:240px;display:flex;flex-direction:column;gap:var(--sp-3)">
               <p>${g.example}</p>
               <p style="font-size:var(--fs-small);color:rgba(25,50,77,0.75)">${g.context}</p>
@@ -222,12 +331,20 @@ export function createPage(): Page {
         const current = content.greetings.find((g) => !matched.has(g.id));
 
         body.innerHTML = `
-          <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;padding-bottom:96px">
-            <h2 style="color:var(--c-navy)">1단계 — 세계의 인사 연결하기</h2>
-            <div id="greet-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:var(--sp-2)"></div>
-            <p class="chip" style="align-self:flex-start">어느 나라든 '모두가 항상' 같은 방법으로 인사하는 건 아니에요.</p>
-            <div id="stage1-task" style="display:flex;flex-direction:column;gap:var(--sp-3)"></div>
-            <div id="stage1-fb" style="min-height:52px"></div>
+          <div class="dl-stage">
+            <div class="dl-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">세계의 인사</span>
+                <span class="ribbon-sub">설명을 읽고 어울리는 사진을 골라요</span>
+              </div>
+            </div>
+            <div class="dl-greet-row">
+              <div id="greet-grid" class="dl-greet-grid"></div>
+              <section class="panel dl-task">
+                <div id="stage1-task" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>
+                <div id="stage1-fb"></div>
+              </section>
+            </div>
           </div>`;
 
         const grid = body.querySelector<HTMLElement>('#greet-grid');
@@ -237,11 +354,10 @@ export function createPage(): Page {
             const isMatched = matched.has(g.id);
             const card = document.createElement('button');
             card.type = 'button';
-            card.className = 'card card-pick';
-            card.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;min-height:var(--touch-min)';
+            card.className = 'card card-pick dl-greet-card';
             card.innerHTML = `
-              ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" alt="" style="width:100%;max-height:88px;object-fit:contain${isMatched ? ';opacity:0.85' : ''}">` : `<span style="font-size:2rem" aria-hidden="true">?</span>`}
-              <span style="font-size:var(--fs-small);font-weight:700;color:${isMatched ? 'var(--c-success-ink)' : 'var(--c-ink-soft)'}">${isMatched ? `✓ ${g.country}` : '?'}</span>`;
+              ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" data-asset-id="${greetingImg(g)}" alt="${g.country}에서 만난 학생의 인사 사례"${isMatched ? ' style="opacity:0.85"' : ''}>` : `<span style="font-size:var(--fs-title)" aria-hidden="true">?</span>`}
+              <span class="g-name" style="color:${isMatched ? 'var(--c-success-ink)' : 'var(--c-ink-soft)'}">${isMatched ? `✓ ${g.country}` : '?'}</span>`;
             card.setAttribute('aria-label', isMatched ? `${g.country}의 인사 — 연결 완료, 다시 보기` : `인사 사진 ${index + 1} — 설명과 연결하기`);
             card.addEventListener('click', () => {
               if (busy || disposed) return;
@@ -255,6 +371,7 @@ export function createPage(): Page {
                 if (!greetingMistakes.has(current.id)) firstTryMatches += 1;
                 matched.add(g.id);
                 checkpoint('stage1');
+                popBounce(card); // 매칭 성공 — 이어서 모달에서 사진·설명 쌍이 나란히 보인다
                 openGreetingInfo(g);
               } else {
                 greetingMistakes.add(current.id);
@@ -282,9 +399,9 @@ export function createPage(): Page {
                 <p style="font-weight:700;margin-bottom:6px">확인 질문</p>
                 <p>"한 나라의 사람은 <strong>모두 항상</strong> 방금 배운 방법으로 인사한다." 맞을까요?</p>
               </div>
-              <div style="display:flex;gap:var(--sp-3)">
-                <button class="btn btn-ghost btn-big" data-ox="o" style="flex:1">O 맞아요</button>
-                <button class="btn btn-ghost btn-big" data-ox="x" style="flex:1">X 아니에요</button>
+              <div class="dl-ox">
+                <button class="btn btn-ghost btn-big" data-ox="o">O 맞아요</button>
+                <button class="btn btn-ghost btn-big" data-ox="x">X 아니에요</button>
               </div>`;
             task.querySelector('[data-ox="o"]')?.addEventListener('click', () => {
               if (busy || oxDone || disposed) return;
@@ -309,7 +426,7 @@ export function createPage(): Page {
 
         bottom.innerHTML = `
           <span class="chip">연결 ${matched.size}/${total}${oxDone ? ' · 확인 질문 완료' : ''}</span>
-          <button class="btn btn-primary btn-big" data-act="next" ${oxDone ? '' : 'disabled'}>경청 연습으로</button>`;
+          <button class="btn btn-primary btn-big" data-act="next" ${oxDone ? '' : 'disabled'}>다음</button>`;
         bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
           if (!oxDone || busy || disposed) return;
           busy = true;
@@ -345,15 +462,21 @@ export function createPage(): Page {
         let wrongPicked = scenarioMistakes.has(sc.id);
         let resolved = false;
 
+        // 화면 안내 문장('관찰 단서'·'어떻게 할까요?')은 가이드 말풍선이 대신한다
         body.innerHTML = `
-          <div class="panel" style="flex:1;min-height:0;display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;padding-bottom:96px">
-            <h2 style="color:var(--c-navy)">2단계 — 경청 연습 (${scenarioIndex + 1}/${scenarios.length})</h2>
-            <div class="card">${sc.situation}</div>
-            <p style="font-weight:700">관찰 단서</p>
-            <div id="cue-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--sp-2)"></div>
-            <p style="font-weight:700">어떻게 할까요?</p>
-            <div id="opt-col" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>
-            <div id="stage2-fb" style="min-height:52px"></div>
+          <div class="dl-stage">
+            <div class="dl-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">경청 렌즈</span>
+                <span class="ribbon-sub">상황 ${scenarioIndex + 1}/${scenarios.length} · 단서를 보고 반응을 골라요</span>
+              </div>
+            </div>
+            <section class="panel dl-listen">
+              <div class="card">${sc.situation}</div>
+              <div id="cue-row" class="dl-cues"></div>
+              <div id="opt-col" style="display:flex;flex-direction:column;gap:6px"></div>
+              <div id="stage2-fb"></div>
+            </section>
           </div>`;
 
         const fb = body.querySelector<HTMLElement>('#stage2-fb');
@@ -380,9 +503,10 @@ export function createPage(): Page {
           sc.cues.forEach((cue, i) => {
             const card = document.createElement('button');
             card.type = 'button';
-            card.className = 'card card-pick';
-            card.style.cssText = 'min-height:64px;font-weight:700;text-align:center';
-            card.textContent = `단서 ${i + 1} 확인하기`;
+            card.className = 'card card-pick dl-opt';
+            card.style.textAlign = 'center';
+            card.style.fontWeight = '700';
+            card.textContent = `단서 ${i + 1}`;
             card.addEventListener('click', () => {
               if (revealed.has(i) || resolved || disposed) return;
               void audio.playSfx('pickup');
@@ -402,8 +526,7 @@ export function createPage(): Page {
           for (const opt of sc.options) {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'card card-pick';
-            btn.style.cssText = 'text-align:left;min-height:var(--touch-min)';
+            btn.className = 'card card-pick dl-opt';
             btn.textContent = opt.text;
             btn.disabled = true;
             btn.addEventListener('click', () => {
@@ -444,7 +567,7 @@ export function createPage(): Page {
 
         bottom.innerHTML = `
           <span class="chip">상황 ${scenarioIndex + 1}/${scenarios.length}</span>
-          <button class="btn btn-primary btn-big" data-act="next" disabled>${scenarioIndex + 1 < scenarios.length ? '다음 상황으로' : '공감 나침반으로'}</button>`;
+          <button class="btn btn-primary btn-big" data-act="next" disabled>다음</button>`;
         bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
           if (!resolved || busy || disposed) return;
           busy = true;
@@ -469,18 +592,28 @@ export function createPage(): Page {
       }
 
       /* ===== 3단계: 공감 나침반 ===== */
-      const compassHtml = (): string => {
-        const pct = empathyMax > 0 ? Math.round((empathySum / empathyMax) * 100) : 0;
-        return `
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <p style="font-weight:700">공감 나침반</p>
-            <div class="meter-row">
-              ${hasAsset('icon.compass') ? `<img src="${assetUrl('icon.compass')}" alt="" style="width:44px;flex-shrink:0" class="bob">` : ''}
-              <div class="progress-track" style="flex:1"><div class="progress-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--c-violet),var(--c-turquoise))"></div></div>
-              <span class="meter-value" style="font-size:var(--fs-small)">${empathySum}/${empathyMax}</span>
-            </div>
-            <p style="font-size:var(--fs-small);color:rgba(25,50,77,0.7)">상대의 마음에 가까워질수록 바늘이 차올라요.</p>
-          </div>`;
+      const compassAngle = (sum: number): number =>
+        empathyMax > 0 ? Math.round(-90 + (sum / empathyMax) * 180) : -90;
+      /** 공감 나침반 — 게이지 바·설명문 없이 '숫자 + 바늘 하나'로 단순화 (계약 §3) */
+      const compassHtml = (): string => `
+        <div class="dl-compass" role="img" aria-label="공감 ${empathySum}점, 최대 ${empathyMax}점">
+          <span class="c-dial" aria-hidden="true">
+            ${hasAsset('icon.compass') ? `<img src="${assetUrl('icon.compass')}" data-asset-id="icon.compass" alt="" style="width:100%;height:100%;object-fit:contain">` : ''}
+            <span id="compass-needle" style="position:absolute;left:50%;bottom:50%;width:5px;height:26px;margin-left:-2.5px;
+              border-radius:4px 4px 0 0;background:var(--c-coral);box-shadow:0 0 0 1px rgba(255,255,255,0.7);
+              transform-origin:50% 100%;transform:rotate(${compassAngle(empathySum)}deg);
+              transition:transform 220ms cubic-bezier(0.2,0.8,0.4,1)"></span>
+          </span>
+          <span id="compass-num" class="c-num">${empathySum}/${empathyMax}</span>
+        </div>`;
+      /** 공감 상승 연출 — 바늘 회전 + 숫자 굴리기 */
+      const updateCompass = (prevSum: number): void => {
+        const needle = body.querySelector<HTMLElement>('#compass-needle');
+        if (needle) needle.style.transform = `rotate(${compassAngle(empathySum)}deg)`;
+        const numEl = body.querySelector<HTMLElement>('#compass-num');
+        if (numEl && prevSum !== empathySum) countUp(numEl, prevSum, empathySum, `/${empathyMax}`);
+        const dial = body.querySelector<HTMLElement>('.dl-compass');
+        if (dial) dial.setAttribute('aria-label', `공감 ${empathySum}점, 최대 ${empathyMax}점`);
       };
 
       function renderStage3(): void {
@@ -493,30 +626,51 @@ export function createPage(): Page {
         }
         const imgId = NPC_IMG[npc.id];
 
+        // 왼쪽: 누구와 이야기하는지(그림 크게) + 나침반 / 오른쪽: 대화만
+        // 단계에 따라 카드 1장만 — 대화 중엔 상황, 되돌아볼 땐 '처음 든 생각'
+        const sideTitle = npcPhase === 'revision' ? '처음 든 생각' : '어떤 상황인가요?';
+        const sideText = npcPhase === 'revision' ? npc.firstImpression : npc.situation;
+        // 낮은 화면에서는 카드 대신 버튼 → 모달 (CSS가 전환)
+        const sideCard = `
+          <div class="card dl-side-card" style="font-size:var(--fs-small)${npcPhase === 'revision' ? ';border-color:var(--c-warning)' : ''}">
+            ${npcPhase === 'revision' ? '<strong>처음 든 생각</strong><br>' : ''}${sideText}
+          </div>
+          <button type="button" class="btn btn-ghost dl-side-btn">${npcPhase === 'revision' ? '생각 보기' : '상황 보기'}</button>`;
         body.innerHTML = `
-          <div class="mission-frame grid-2col">
-            <section class="panel" style="display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;min-height:0;padding-bottom:96px">
-              <div style="display:flex;gap:var(--sp-3);align-items:center">
-                ${imgId && hasAsset(imgId) ? `<img src="${assetUrl(imgId)}" alt="" style="width:64px;flex-shrink:0">` : ''}
-                <div>
-                  <strong style="font-family:var(--font-head);font-size:var(--fs-body)">${npc.name}</strong>
-                  <p style="font-size:var(--fs-small)"><span class="chip">${npc.from}</span></p>
-                </div>
+          <div class="dl-stage">
+            <div class="dl-head">
+              <div class="ribbon-title">
+                <span class="ribbon-main">${npc.name}와 대화</span>
+                <span class="ribbon-sub">마음에 다가가는 말을 골라요</span>
               </div>
-              <div class="card" style="font-size:var(--fs-small)">${npc.situation}</div>
-              <div class="card" style="font-size:var(--fs-small);border-color:var(--c-warning)">
-                <strong>처음 든 생각</strong><br>${npc.firstImpression}
-              </div>
-              ${compassHtml()}
-            </section>
-            <section class="panel" style="display:flex;flex-direction:column;gap:var(--sp-3);overflow-y:auto;min-height:0">
-              <div id="dlg-area" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>
-              <div id="stage3-fb" style="min-height:64px"></div>
-            </section>
+            </div>
+            <div class="dl-talk">
+              <section class="panel dl-who">
+                ${imgId && hasAsset(imgId)
+                  ? `<img class="dl-portrait" src="${assetUrl(imgId)}" data-asset-id="${imgId}" alt="${npc.name} 학생의 대화 사례">`
+                  : npcAvatar(npc, 150)}
+                <span class="chip">${npc.name} · ${npc.from}</span>
+                ${compassHtml()}
+                ${sideCard}
+              </section>
+              <section class="panel dl-chat">
+                <div id="dlg-area" style="display:flex;flex-direction:column;gap:var(--sp-2)"></div>
+                <div id="stage3-fb"></div>
+              </section>
+            </div>
           </div>`;
 
         const area = body.querySelector<HTMLElement>('#dlg-area');
         const fb = body.querySelector<HTMLElement>('#stage3-fb');
+        body.querySelector<HTMLElement>('.dl-side-btn')?.addEventListener('click', () => {
+          void audio.playSfx('tap');
+          presentModal({
+            id: `npc-side-${npc.id}-${npcPhase}`,
+            title: sideTitle,
+            bodyHtml: `<p>${sideText}</p>`,
+            actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
+          });
+        });
 
         bottom.innerHTML = `
           <span class="chip">친구 ${npcIndex + 1}/${npcs.length} · ${npc.name}</span>
@@ -533,31 +687,30 @@ export function createPage(): Page {
           }
           let answered = false;
           if (area) {
-            const p = document.createElement('p');
-            p.style.fontWeight = '700';
-            p.textContent = turn.prompt;
-            area.appendChild(p);
+            // NPC가 하는 말 — 하단 가이드 스트립과 헷갈리지 않게 본문 안 말풍선으로
+            const bubble = document.createElement('div');
+            bubble.className = 'npc-bubble';
+            const say = document.createElement('span');
+            say.className = 'npc-say';
+            say.textContent = turn.prompt;
+            bubble.appendChild(say);
+            area.appendChild(bubble);
             const btns: HTMLButtonElement[] = [];
             for (const opt of turn.options) {
               const btn = document.createElement('button');
               btn.type = 'button';
-              btn.className = 'card card-pick';
-              btn.style.cssText = 'text-align:left;min-height:var(--touch-min)';
+              btn.className = 'card card-pick dl-opt';
               btn.textContent = opt.text;
               btn.addEventListener('click', () => {
                 if (answered || busy || disposed) return;
                 answered = true;
                 void audio.playSfx('tap');
+                const prevSum = empathySum;
                 empathySum = Math.min(empathyMax, empathySum + Math.max(0, opt.empathy));
                 btns.forEach((b) => (b.disabled = true));
                 btn.classList.add('is-selected');
                 if (fb) showFeedback(fb, opt.empathy >= 2 ? 'success' : 'partial', opt.reply, 'dialogue');
-                const gauge = body.querySelector('.progress-fill');
-                if (gauge instanceof HTMLElement && empathyMax > 0) {
-                  gauge.style.width = `${Math.round((empathySum / empathyMax) * 100)}%`;
-                }
-                const numEl = gauge?.parentElement?.parentElement?.querySelector('span');
-                if (numEl) numEl.textContent = `${empathySum}/${empathyMax}`;
+                updateCompass(prevSum);
                 if (opt.leadsTo === 'end' || typeof opt.leadsTo !== 'number' || !npc.turns[opt.leadsTo]) {
                   npcPhase = 'revision';
                 } else {
@@ -584,16 +737,18 @@ export function createPage(): Page {
           // 첫인상 수정 질문
           let answered = false;
           if (area) {
-            const p = document.createElement('p');
-            p.style.fontWeight = '700';
-            p.textContent = npc.revision.question;
-            area.appendChild(p);
+            const bubble = document.createElement('div');
+            bubble.className = 'npc-bubble';
+            const say = document.createElement('span');
+            say.className = 'npc-say';
+            say.textContent = npc.revision.question;
+            bubble.appendChild(say);
+            area.appendChild(bubble);
             const btns: HTMLButtonElement[] = [];
             for (const opt of npc.revision.options) {
               const btn = document.createElement('button');
               btn.type = 'button';
-              btn.className = 'card card-pick';
-              btn.style.cssText = 'text-align:left;min-height:var(--touch-min)';
+              btn.className = 'card card-pick dl-opt';
               btn.textContent = opt.text;
               btn.addEventListener('click', () => {
                 if (answered || busy || disposed) return;

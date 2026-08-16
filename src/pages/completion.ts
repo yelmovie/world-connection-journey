@@ -10,6 +10,7 @@ import { showToast } from '../ui/toast';
 import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { threeSlot } from '../ui/threeSlot';
 import { createGuide, type GuideController } from '../ui/guide';
+import { burstConfetti, popBounce } from '../ui/fx';
 import { MISSION_IDS, type MissionId } from '../types';
 
 interface CommonContent {
@@ -35,9 +36,103 @@ const PIECE_TEXT_COLORS: Record<MissionId, string> = {
   americas: 'var(--c-ink)', oceania: 'var(--c-ink)', dialogue: 'var(--c-ink)'
 };
 
+/** 하단 보상 바 5슬롯 — 회고 저장 시 차례로 채워진다 */
+const REWARD_ITEMS: Array<{ id: string; label: string }> = [
+  { id: 'reward.trophy', label: '지구본 트로피' },
+  { id: 'prop.stamp', label: '여행 도장' },
+  { id: 'reward.badge', label: '지구 메달' },
+  { id: 'reward.globe_puzzle', label: '퍼즐 지구본' },
+  { id: 'prop.suitcase', label: '여행 가방' }
+];
+
+const COMPLETION_CSS = `
+.completion-page .top-bar { height: auto; min-height: var(--top-bar-h); padding-block: var(--sp-2); }
+/* 장식은 배경과 패널 사이에 깔아 둔다 — 패널을 가리지 않는다 */
+.completion-page > .page-deco { z-index: -1; }
+.completion-deco { position: absolute; opacity: .85; filter: drop-shadow(0 8px 18px rgba(0,0,0,.35)); }
+.completion-deco.deco-left { left: clamp(4px, 1.5vw, 28px); bottom: clamp(4px, 1.5vh, 24px); width: min(clamp(64px, 8vw, 130px), 16vh); }
+.completion-deco.deco-right { right: clamp(4px, 1.5vw, 28px); bottom: clamp(4px, 1.5vh, 24px); width: min(clamp(64px, 8vw, 130px), 16vh); }
+.completion-deco.deco-top { left: 50%; top: 2vh; transform: translateX(-50%); width: min(clamp(70px, 9vw, 150px), 15vh); opacity: .5; }
+.completion-page .page-body { gap: var(--sp-3); }
+/* 리본과 주인공 캐릭터를 한 줄에 둬서 세로 공간을 아끼고 캐릭터는 크게 (§7) */
+.completion-header { gap: clamp(6px, 2vw, 28px); align-items: flex-end; justify-content: center; flex-wrap: nowrap; }
+.completion-header .header-side { display: flex; align-items: flex-end; gap: var(--sp-2); flex-shrink: 1; min-width: 0; }
+.completion-wreath { width: min(clamp(48px, 6vw, 104px), 14vh); pointer-events: none; filter: drop-shadow(0 6px 14px rgba(0,0,0,0.35)); }
+.completion-wreath.is-left { transform: scaleX(-1); }
+/* §7 완료 화면 주인공 — 낮은 화면에서만 vh로 잘림을 막는다 */
+.completion-mascot { width: min(clamp(200px, 24vw, 360px), 26vh); filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4)); }
+@media (max-height: 620px) { .completion-mascot { width: min(clamp(200px, 24vw, 360px), 23vh); } }
+.completion-mascot.is-small { width: min(clamp(130px, 16vw, 240px), 18vh); animation-delay: 0.9s; }
+.completion-trophy { width: min(clamp(90px, 11vw, 150px), 20vh); filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35)); }
+/* §7 반투명 패널 — 축하 배경이 비쳐 보이게 */
+.completion-page .panel { background: rgba(255,252,240,0.9); padding: var(--sp-3) var(--sp-4); }
+.completion-page .panel h2 { font-size: var(--fs-title); line-height: 1.1; }
+.puzzle-row { display: flex; gap: var(--sp-4); flex-wrap: wrap; align-items: center; justify-content: center; margin-top: var(--sp-2); }
+#piece-tray { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-2); }
+#piece-tray .card-pick { min-width: 84px; padding: var(--sp-2); text-align: center; font-family: var(--font-head); font-size: var(--fs-small); }
+#globe-zone {
+  position: relative; width: min(300px, 46vw, 34vh); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #bfe6ff, #2588E8 70%); box-shadow: var(--shadow-pop);
+  display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; overflow: hidden;
+}
+.puzzle-trophy-row { display: flex; justify-content: center; align-items: center; gap: var(--sp-4); flex-wrap: wrap; margin-top: var(--sp-2); }
+/* 축하 연출이 끝난 뒤(회고·수료증)에는 헤더를 줄여 본문이 한 화면에 들어오게 한다 */
+.completion-page.is-writing .completion-wreath,
+.completion-page.is-final .completion-wreath { display: none; }
+.completion-page.is-writing .completion-mascot,
+.completion-page.is-final .completion-mascot { width: min(clamp(80px, 9vw, 130px), 11vh); }
+.completion-page.is-writing .completion-mascot.is-small,
+.completion-page.is-final .completion-mascot.is-small { display: none; }
+.completion-page.is-final .page-body {
+  display: grid; grid-template-columns: minmax(200px, 0.75fr) minmax(0, 1.7fr);
+  grid-template-rows: auto minmax(0, 1fr); gap: var(--sp-3); align-content: start;
+}
+.completion-page.is-final .scene-header { grid-column: 1 / -1; }
+.completion-page.is-final #sec-rewards,
+.completion-page.is-final #sec-cert { min-height: 0; overflow: hidden; }
+/* 3D 지구본 슬롯은 아래 스티커의 "퍼즐 지구본"과 같은 보상이라 마지막 화면에서는 접는다 */
+.completion-page.is-final #globe-3d-slot { display: none; }
+.completion-page.is-final .completion-trophy { width: min(clamp(70px, 8vw, 130px), 15vh); }
+.completion-page.is-final .cert-frame { width: min(100%, 44vh); margin-inline: auto; }
+@media (max-height: 620px) {
+  .completion-page.is-final .cert-frame { width: min(100%, 38vh); }
+}
+@media (max-width: 900px) {
+  .completion-page.is-final .page-body { grid-template-columns: 1fr; }
+}
+.completion-rewards { justify-content: center; }
+.completion-rewards .sticker { width: min(68px, 9vh); height: min(68px, 9vh); }
+.completion-rewards .sticker-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.completion-rewards .sticker-name { font-size: var(--fs-small); font-weight: 700; color: var(--c-ink-soft); }
+.cert-frame { position: relative; max-width: min(720px, 100%); margin: var(--sp-2) auto; }
+.cert-frame-img { width: 100%; display: block; }
+.cert-frame .cert-text {
+  position: absolute; inset: 20% 15% 17%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; overflow-y: auto; text-align: center; color: #19324D;
+  font-size: var(--fs-small);
+}
+.cert-frame .cert-text .cert-eyebrow { letter-spacing: 0.3em; color: #6f5514; font-size: var(--fs-small); }
+.cert-frame .cert-text h2 { font-family: var(--font-head); font-size: 1.7em; margin: 0; color: #19324D; }
+.cert-frame .cert-text .cert-quote { background: rgba(255,249,234,0.85); border-radius: 10px; padding: 6px 12px; max-width: 92%; }
+.ref-row { display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--fs-body); }
+.ref-row .ref-input { padding: 8px 10px; border: 2px solid var(--c-line); border-radius: var(--radius-s); }
+/* 낮은 화면(1024×576 교실 태블릿)에서 회고 단계가 스크롤 없이 들어오도록 밀도를 올린다 */
+@media (max-height: 620px) {
+  .completion-page .page-body { gap: var(--sp-2); padding-block: 4px; }
+  .completion-page .panel { padding: var(--sp-2) var(--sp-3); }
+  .ref-row { gap: 6px; font-size: var(--fs-small); }
+  .ref-row .ref-input { min-height: 44px; padding: 6px 8px; }
+  #sec-reflect h3 { font-size: var(--fs-body); margin-top: var(--sp-2) !important; }
+  #principles .btn { min-height: 44px; padding: 6px 14px; }
+  #sec-reflect .modal-actions { margin-top: var(--sp-2) !important; }
+}
+`;
+
 export function createPage(): Page {
   let dnd: PickPlaceController | null = null;
   let guide: GuideController | null = null;
+  const timers: number[] = [];
 
   return {
     async mount(root: HTMLElement) {
@@ -55,58 +150,103 @@ export function createPage(): Page {
       } catch {
         /* 기본값 사용 */
       }
-      await preloadImages(['bg.completion', 'reward.globe_puzzle', 'reward.badge']);
+      await preloadImages([
+        'bg.completion', 'reward.globe_puzzle', 'reward.badge', 'reward.trophy',
+        'reward.certificate', 'reward.wreath', 'plane.main', 'plane.alt1',
+        'prop.stamp', 'prop.suitcase',
+        'deco.emblem_unity', 'prop.globe_glow', 'deco.flight_kids'
+      ]);
       audio.playBgm('main');
 
       const principles = common.actionPrinciples ?? ['관찰하기', '물어보기', '끝까지 듣기', '잘못 알았으면 수정하기'];
       const placed = new Set<MissionId>(save.completion.placedPuzzlePieceIds);
 
       const page = document.createElement('div');
-      page.className = 'page';
+      page.className = 'page completion-page';
       page.style.backgroundImage = `linear-gradient(rgba(15,28,45,0.45), rgba(15,28,45,0.6)), url('${assetUrl('bg.completion')}')`;
+      const style = document.createElement('style');
+      style.textContent = COMPLETION_CSS;
+      page.appendChild(style);
       page.appendChild(buildTopBar({ title: '세계 연결 인증', backTo: '#/map' }));
+
+      // 배경 위 장식 — 패널 뒤(z-index:-1)에 깔려 레이아웃에 영향을 주지 않는다 (§7 에셋 다양성)
+      const deco = document.createElement('div');
+      deco.className = 'page-deco';
+      deco.setAttribute('aria-hidden', 'true');
+      deco.innerHTML = `
+        ${hasAsset('deco.emblem_unity') ? `<img class="completion-deco deco-left" src="${assetUrl('deco.emblem_unity')}" data-asset-id="deco.emblem_unity" alt="">` : ''}
+        ${hasAsset('prop.globe_glow') ? `<img class="completion-deco deco-right" src="${assetUrl('prop.globe_glow')}" data-asset-id="prop.globe_glow" alt="">` : ''}
+        ${hasAsset('deco.flight_kids') ? `<img class="completion-deco deco-top" src="${assetUrl('deco.flight_kids')}" data-asset-id="deco.flight_kids" alt="">` : ''}`;
+      page.appendChild(deco);
+
+      const wreathHtml = hasAsset('reward.wreath')
+        ? `<img class="completion-wreath is-left" src="${assetUrl('reward.wreath')}" data-asset-id="reward.wreath" alt="" aria-hidden="true">`
+        : '';
+      const wreathHtmlR = hasAsset('reward.wreath')
+        ? `<img class="completion-wreath" src="${assetUrl('reward.wreath')}" data-asset-id="reward.wreath" alt="" aria-hidden="true">`
+        : '';
 
       const body = document.createElement('div');
       body.className = 'page-body';
-      body.style.cssText = 'overflow-y:auto;gap:var(--sp-5)';
       body.innerHTML = `
+        <div class="scene-header completion-header">
+          <div class="header-side">
+            ${wreathHtml}
+            ${hasAsset('plane.main') ? `<img class="bob completion-mascot" src="${assetUrl('plane.main')}" data-asset-id="plane.main" alt="" aria-hidden="true">` : ''}
+          </div>
+          <div class="ribbon-title">
+            <span class="ribbon-main">세계 연결 완주!</span>
+            <span class="ribbon-sub">다섯 대륙과 존중의 대화를 모두 마쳤어요</span>
+          </div>
+          <div class="header-side">
+            ${hasAsset('plane.alt1') ? `<img class="bob completion-mascot is-small" src="${assetUrl('plane.alt1')}" data-asset-id="plane.alt1" alt="" aria-hidden="true">` : ''}
+            ${wreathHtmlR}
+          </div>
+        </div>
+
         <section class="panel" id="sec-puzzle">
           <h2 style="color:var(--c-navy)">① 퍼즐 지구본 완성하기</h2>
-          <div style="display:flex;gap:var(--sp-6);flex-wrap:wrap;align-items:center;margin-top:var(--sp-4)">
-            <div id="piece-tray" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3)"></div>
-            <div id="globe-zone" style="position:relative;width:min(300px,60vw);aspect-ratio:1;border-radius:50%;
-              background:radial-gradient(circle at 35% 30%, #bfe6ff, #2588E8 70%);box-shadow:var(--shadow-pop);
-              display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden"></div>
-          </div>
-          <div id="puzzle-done" style="display:none;margin-top:var(--sp-4);text-align:center">
-            <div id="globe-3d-slot" style="display:flex;justify-content:center"></div>
-            <p class="chip" style="font-size:var(--fs-body)">지구본이 완성됐어요! 세계가 하나로 이어졌어요.</p>
+          <div class="puzzle-row" id="puzzle-play">
+            <div id="piece-tray"></div>
+            <div id="globe-zone"></div>
           </div>
         </section>
 
         <section class="panel" id="sec-reflect" style="display:none">
           <h2 style="color:var(--c-navy)">② 여행에서 바뀐 나의 생각</h2>
-          <div style="display:flex;flex-direction:column;gap:var(--sp-3);font-size:var(--fs-body)">
-            <label>처음에는 <input id="ref-1" type="text" maxlength="60" class="ref-input" placeholder="예: 다른 나라 친구들은 우리와 아주 다를 거야"
-              style="width:min(420px,90%);padding:10px;border:2px solid var(--c-line);border-radius:var(--radius-s)"> 라고 생각했지만,</label>
-            <label><input id="ref-2" type="text" maxlength="60" class="ref-input" placeholder="예: 아시아 친구의 하루"
-              style="width:min(300px,80%);padding:10px;border:2px solid var(--c-line);border-radius:var(--radius-s)"> 자료를 보고,</label>
-            <label><input id="ref-3" type="text" maxlength="60" class="ref-input" placeholder="예: 비슷한 점도 많고 저마다 다른 이유가 있구나"
-              style="width:min(420px,90%);padding:10px;border:2px solid var(--c-line);border-radius:var(--radius-s)"> 라고 생각을 바꾸었어요.</label>
+          <div class="ref-row">
+            <label>처음에는 <input id="ref-1" type="text" maxlength="60" class="ref-input" placeholder="예: 다른 나라 친구들은 우리와 아주 다를 거야" style="width:min(420px,90%)"> 라고 생각했지만,</label>
+            <label><input id="ref-2" type="text" maxlength="60" class="ref-input" placeholder="예: 아시아 친구의 하루" style="width:min(300px,80%)"> 자료를 보고,</label>
+            <label><input id="ref-3" type="text" maxlength="60" class="ref-input" placeholder="예: 비슷한 점도 많고 저마다 다른 이유가 있구나" style="width:min(420px,90%)"> 라고 생각을 바꾸었어요.</label>
           </div>
-          <h3 style="color:var(--c-navy);margin-top:var(--sp-5)">실천 약속 — 두 가지를 골라요</h3>
-          <div id="principles" style="display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-3)">
+          <h3 style="color:var(--c-navy);margin-top:var(--sp-3)">실천 약속 — 두 가지를 골라요</h3>
+          <div id="principles" style="display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-top:var(--sp-2)">
             ${principles.map((p) => `<button type="button" class="btn btn-ghost principle-pick" data-p="${p}" aria-pressed="false">${p}</button>`).join('')}
           </div>
-          <div class="modal-actions"><button class="btn btn-primary btn-big" id="btn-reflect-done">기록 저장하기</button></div>
+          <div class="modal-actions" style="margin-top:var(--sp-3)"><button class="btn btn-primary btn-big" id="btn-reflect-done">기록 저장</button></div>
+        </section>
+
+        <section class="panel" id="sec-rewards" style="display:none">
+          <h2 style="color:var(--c-navy)">여행 보상</h2>
+          <div class="puzzle-trophy-row">
+            <div id="globe-3d-slot"></div>
+            ${hasAsset('reward.trophy') ? `<img id="trophy-img" class="completion-trophy" src="${assetUrl('reward.trophy')}" data-asset-id="reward.trophy" alt="" aria-hidden="true">` : ''}
+          </div>
+          <div class="sticker-row completion-rewards" style="margin-top:var(--sp-2)">
+            ${REWARD_ITEMS.map((r) => `
+              <div class="sticker-slot">
+                <div class="sticker" data-reward="${r.id}" role="img" aria-label="${r.label}"></div>
+                <span class="sticker-name">${r.label}</span>
+              </div>`).join('')}
+          </div>
         </section>
 
         <section class="panel" id="sec-cert" style="display:none">
           <h2 style="color:var(--c-navy)">③ 세계 연결 수료증</h2>
-          <div id="cert-preview" style="background:#fff;border:6px double var(--c-gold);border-radius:var(--radius-s);padding:var(--sp-6);text-align:center;max-width:720px;margin:var(--sp-4) auto"></div>
-          <div class="modal-actions" style="justify-content:center">
-            <button class="btn btn-success btn-big" id="btn-print">수료증 인쇄하기</button>
-            <button class="btn btn-ghost" id="btn-new-journey">새 여행 시작하기</button>
+          <div id="cert-preview"></div>
+          <div class="modal-actions" style="justify-content:center;margin-top:var(--sp-3)">
+            <button class="btn btn-success btn-big" id="btn-print">인쇄하기</button>
+            <button class="btn btn-ghost" id="btn-new-journey">새 여행</button>
           </div>
         </section>`;
       page.appendChild(body);
@@ -118,8 +258,31 @@ export function createPage(): Page {
 
       // Three.js 예약 슬롯 — 완성 지구본 (GLB 준비 시 회전 지구본으로 교체)
       body.querySelector('#globe-3d-slot')?.appendChild(
-        threeSlot({ slotId: 'completion-globe', assetId: 'reward.globe_puzzle', label: '완성된 퍼즐 지구본', width: 'min(260px,50vw)' })
+        threeSlot({ slotId: 'completion-globe', assetId: 'reward.globe_puzzle', label: '완성된 퍼즐 지구본', width: 'min(220px,44vw)' })
       );
+
+      // ---- 보상 바 채우기 (표현 전용) ----
+      const fillRewards = (animate: boolean) => {
+        const slots = Array.from(body.querySelectorAll<HTMLElement>('[data-reward]'));
+        slots.forEach((slot, i) => {
+          if (slot.classList.contains('is-filled')) return;
+          const id = slot.dataset.reward ?? '';
+          const fill = () => {
+            slot.classList.add('is-filled');
+            if (hasAsset(id)) {
+              const img = document.createElement('img');
+              img.src = assetUrl(id);
+              img.dataset.assetId = id;
+              img.alt = '';
+              img.setAttribute('aria-hidden', 'true');
+              slot.appendChild(img);
+            }
+            popBounce(slot);
+          };
+          if (animate) timers.push(window.setTimeout(fill, 250 + i * 200));
+          else fill();
+        });
+      };
 
       // ---- 퍼즐 지구본 ----
       const tray = body.querySelector('#piece-tray') as HTMLElement;
@@ -149,12 +312,20 @@ export function createPage(): Page {
       globe.dataset.zoneId = 'globe';
       globe.setAttribute('aria-label', '지구본 — 조각을 놓는 곳');
 
+      // 단계가 끝나면 그 단계 패널은 접는다 — 한 화면에 큰 패널 2개 이하(§7), 스크롤 없이 순서대로.
       const puzzleDone = (announce = true) => {
-        (body.querySelector('#puzzle-done') as HTMLElement).style.display = 'block';
+        if (announce) {
+          void audio.playSfx('complete');
+          burstConfetti(globe, 24); // 파티클은 overlay-root에 fixed로 붙으므로 패널을 접어도 남는다
+        }
+        page.classList.add('is-writing');
+        (body.querySelector('#sec-puzzle') as HTMLElement).style.display = 'none';
         (body.querySelector('#sec-reflect') as HTMLElement).style.display = 'block';
-        if (announce) void audio.playSfx('complete');
-        guide?.say('여행에서 바뀐 생각을 적어 봐요!', { cue: body.querySelector<HTMLElement>('#ref-1') });
-        if (alreadyIssued) revealCertificate(); // 이미 발급했던 경우 회고 스킵 가능
+        guide?.say('지구본이 완성됐어요! 여행에서 바뀐 생각을 적어 봐요.', { cue: body.querySelector<HTMLElement>('#ref-1') });
+        if (alreadyIssued) {
+          fillRewards(false); // 이미 발급했던 경우 보상 바 즉시 채움
+          revealCertificate(); // 회고 스킵 가능
+        }
       };
 
       dnd = enablePickPlace({
@@ -237,8 +408,32 @@ export function createPage(): Page {
         const s = saveRepo.get();
         const cert = body.querySelector('#cert-preview') as HTMLElement;
         const dateStr = new Date().toLocaleDateString('ko-KR');
-        cert.innerHTML = certificateHtml(s.profile?.nickname ?? '여행자', dateStr, s.completion.reflection, s.completion.actionPrinciples);
+        if (hasAsset('reward.certificate')) {
+          // 두루마리 이미지 프레임 위 텍스트 오버레이 (인쇄용 HTML은 기존 유지)
+          cert.className = 'cert-frame';
+          cert.innerHTML = `
+            <img class="cert-frame-img" src="${assetUrl('reward.certificate')}" data-asset-id="reward.certificate" alt="" aria-hidden="true">
+            <div class="cert-text">
+              <p class="cert-eyebrow">CERTIFICATE</p>
+              <h2>세계 연결 수료증</h2>
+              <p><strong>${escapeHtml(s.profile?.nickname ?? '여행자')}</strong> 여행자</p>
+              <p>다섯 대륙의 생활을 조사하고, 다름을 잇는 대화를 완주하여<br>세계를 연결하는 여행을 마쳤음을 인증합니다.</p>
+              ${s.completion.reflection ? `<p class="cert-quote">“${escapeHtml(s.completion.reflection)}”</p>` : ''}
+              ${s.completion.actionPrinciples.length ? `<p>나의 실천 약속: <strong>${s.completion.actionPrinciples.map(escapeHtml).join(' · ')}</strong></p>` : ''}
+              <p style="color:#6b7a8d">${dateStr} · 세계를 잇는 여행</p>
+            </div>`;
+        } else {
+          cert.style.cssText = 'background:#fff;border:6px double var(--c-gold);border-radius:var(--radius-s);padding:var(--sp-6);text-align:center;max-width:720px;margin:var(--sp-4) auto';
+          cert.innerHTML = certificateHtml(s.profile?.nickname ?? '여행자', dateStr, s.completion.reflection, s.completion.actionPrinciples);
+        }
+        // 마지막 단계: 보상 스트립 + 수료증만 남긴다(헤더는 축소해 둘 다 스크롤 없이 보이게)
+        page.classList.add('is-final');
+        (body.querySelector('#sec-puzzle') as HTMLElement).style.display = 'none';
+        (body.querySelector('#sec-reflect') as HTMLElement).style.display = 'none';
+        (body.querySelector('#sec-rewards') as HTMLElement).style.display = 'block';
         (body.querySelector('#sec-cert') as HTMLElement).style.display = 'block';
+        const trophy = body.querySelector<HTMLElement>('#trophy-img');
+        if (trophy) popBounce(trophy);
         guide?.say('수료증을 인쇄할 수 있어요!', { cue: body.querySelector<HTMLElement>('#btn-print') });
         const reducedMotion = saveRepo.get().settings.reducedMotion
           || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -271,6 +466,7 @@ export function createPage(): Page {
           s.completion.certificateIssued = true;
         });
         void audio.playSfx('complete');
+        fillRewards(true); // 보상 바 차례로 채우기
         revealCertificate();
       });
 
@@ -311,6 +507,8 @@ export function createPage(): Page {
     },
 
     unmount() {
+      for (const t of timers) window.clearTimeout(t);
+      timers.length = 0;
       dnd?.dispose();
       dnd = null;
       guide?.dispose();

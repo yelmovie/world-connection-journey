@@ -33,7 +33,7 @@ body {
 
 #app { position: fixed; inset: 0; }
 #scene-root { position: absolute; inset: 0; overflow: hidden; }
-#overlay-root { position: absolute; inset: 0; pointer-events: none; z-index: 100; }
+#overlay-root { position: absolute; inset: 0; pointer-events: none; z-index: var(--z-modal-backdrop); }
 #overlay-root > * { pointer-events: auto; }
 
 h1, h2, h3 { font-family: var(--font-head); font-weight: 400; margin: 0; }
@@ -69,6 +69,11 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
   margin: 0 auto;
 }
 
+/* 1024×576에서도 다음 행동이 화면 안에 남도록 수직 여백을 고정한다. */
+@media (max-height: 620px) {
+  .page-body { padding: 8px var(--scene-safe); }
+}
+
 .error-fallback {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; gap: var(--sp-4);
@@ -77,7 +82,7 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
 }
 
 .loading-screen {
-  position: absolute; inset: 0; z-index: 300;
+  position: absolute; inset: 0; z-index: var(--z-loading);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--sp-4); padding: var(--sp-6); text-align: center;
   background: var(--c-cream); color: var(--c-navy);
@@ -98,7 +103,7 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
   body::after {
     content: "\21bb\a태블릿을 가로로 돌려 주세요";
     white-space: pre-line;
-    position: fixed; inset: 0; z-index: 9999;
+    position: fixed; inset: 0; z-index: var(--z-loading);
     display: flex; align-items: center; justify-content: center;
     text-align: center;
     background: var(--c-navy); color: var(--c-cream);
@@ -117,3 +122,81 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
   position: absolute; width: 1px; height: 1px;
   clip-path: inset(50%); overflow: hidden; white-space: nowrap;
 }
+
+/* =========================================================
+   장면 레이아웃 계약 (겹침 원천 차단 + 정보 최소화)
+   모든 페이지는 4행 그리드다: 헤더 / 본문 / 가이드 / 액션바
+   - 가이드 말풍선은 더 이상 떠 있는 오버레이가 아니라 "자기 행"을 갖는다 → 카드·버튼을 가릴 수 없다
+   - 본문만 스크롤한다. 헤더·가이드·액션바는 항상 보인다
+   ========================================================= */
+.page {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: 100%;
+  overflow: hidden;
+}
+.page > .top-bar    { grid-row: 1; overflow: visible; }
+.page > .page-body  { grid-row: 2; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+.page > .guide-wrap { grid-row: 3; }
+.page > .bottom-bar { grid-row: 4; }
+/* 그 외 직계 자식(장식·모달 앵커)은 흐름에서 뺀다 */
+.page > .page-deco  { position: absolute; inset: 0; pointer-events: none; z-index: var(--z-background); }
+
+/* 제목 이중 표시 금지: 리본 제목이 있으면 상단바 제목은 숨긴다 */
+.page:has(.ribbon-title) .top-bar-title { display: none; }
+
+/* 리본 제목이 헤더 위로 잘리지 않게 */
+.ribbon-title { margin-top: 0 !important; }
+
+/* ---- 가이드 스트립: 마스코트 + 타이핑 말풍선 (화면 폭 전체, 겹침 불가) ---- */
+.page > .guide-wrap {
+  position: static;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-3);
+  max-width: none;
+  width: 100%;
+  padding: 6px clamp(12px, 2.5vw, 32px);
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(15,28,45,0.28) 100%);
+}
+.page > .guide-wrap .guide-mascot {
+  width: clamp(52px, 5.2vw, 76px);
+  flex: 0 0 auto;
+  order: 0;
+}
+.page > .guide-wrap .guide-bubble {
+  order: 1;
+  flex: 1 1 auto;
+  min-height: 44px;
+  font-size: var(--fs-body);
+  border-radius: var(--radius-l);
+}
+/* 스트립에서는 꼬리를 왼쪽으로 (마스코트 방향) */
+.page > .guide-wrap .guide-bubble::after {
+  left: -10px; bottom: auto; top: 50%; transform: translateY(-50%);
+  border: 10px solid transparent; border-right-color: var(--c-paper); border-left: 0;
+}
+/* 접힘 상태에서도 자리를 유지해 레이아웃이 튀지 않게 */
+.page > .guide-wrap.is-idle .guide-bubble { opacity: 0.55; }
+.page > .guide-wrap.is-idle .guide-mascot { opacity: 0.85; width: clamp(52px, 5.2vw, 76px); }
+
+/* ---- 정보 최소화 유틸 ---- */
+/* 화면 설명문은 2줄까지만 노출하고 나머지는 말풍선/모달로 */
+.text-lead {
+  font-size: var(--fs-body);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.text-oneline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 그림 중심 카드: 이미지가 주인공, 라벨은 한 줄 */
+.card-visual { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.card-visual img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.card-visual .label { font-family: var(--font-head); font-size: var(--fs-body); }
+
+/* 버튼 글자 하한 보정 */
+.btn { font-size: var(--fs-btn); }
+.btn-big { font-size: calc(var(--fs-btn) * 1.15); }
+
+/* 빈 상태 박스가 테두리만 남아 "깨진 것처럼" 보이지 않게 */
+:where(.chip, .feedback):empty { display: none !important; }

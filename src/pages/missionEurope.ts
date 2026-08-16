@@ -6,6 +6,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
+import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal, type ModalOptions } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -69,9 +70,71 @@ type PurposeId = 'balanced' | 'access' | 'heritage' | 'community';
 const PURPOSES: ReadonlyArray<{ id: PurposeId; label: string; help: string }> = [
   { id: 'balanced', label: '균형 탐방', help: '접근성·주민 생활·보존 목표를 모두 챙겨요.' },
   { id: 'access', label: '함께 이동', help: '계단 많은 다리를 피하고 접근하기 쉬운 지점을 두 곳 이상 골라요.' },
-  { id: 'heritage', label: '흔적 깊이 보기', help: '보존 규칙이 있는 역사 지점을 두 곳 이상 연결해요.' },
-  { id: 'community', label: '오늘의 생활 만나기', help: '주민 생활·교류 지점을 두 곳 이상 연결해요.' }
+  { id: 'heritage', label: '흔적 보기', help: '보존 규칙이 있는 역사 지점을 두 곳 이상 연결해요.' },
+  { id: 'community', label: '생활 만나기', help: '주민 생활·교류 지점을 두 곳 이상 연결해요.' }
 ];
+
+const PAGE_CSS = `
+.europe-mission .top-bar { background:linear-gradient(180deg,rgba(31,43,74,.8),rgba(31,43,74,0)); }
+.europe-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow:hidden; }
+/* 배경이 주인공 — 큰 패널은 최대 2개(보드 + 조작 레일), 캐릭터는 배경 위에 크게 선다 */
+.europe-mission .mission-scene { flex:1;min-height:0;display:grid;gap:var(--sp-4);align-items:stretch; }
+.europe-mission .scene-read { grid-template-columns:minmax(0,1fr) clamp(132px,14vw,240px); }
+.europe-mission .scene-route { grid-template-columns:clamp(120px,11vw,190px) minmax(0,1fr) clamp(200px,19vw,280px); }
+.europe-mission .scene-board,
+.europe-mission .control-rail {
+  min-width:0;min-height:0;position:relative;overflow:hidden;
+  padding:var(--sp-4);border-radius:var(--radius-l);
+  background:rgba(255,252,240,.9);backdrop-filter:blur(6px);
+  border:2px solid rgba(212,191,138,.9);box-shadow:var(--shadow-card);
+  display:flex;flex-direction:column;gap:var(--sp-3);
+}
+.europe-mission .control-rail { overflow-y:auto;gap:var(--sp-2);color:var(--c-navy); }
+.europe-mission .scene-cast {
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  gap:var(--sp-2);min-width:0;overflow:hidden;
+}
+.europe-mission .cast-hero { width:clamp(120px,14vw,240px);max-height:54%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(8,18,33,.5)); }
+.europe-mission .cast-props { display:flex;gap:var(--sp-2);justify-content:center;flex-wrap:wrap; }
+.europe-mission .cast-props img { width:clamp(40px,4.6vw,72px);height:clamp(40px,4.6vw,72px);object-fit:contain;filter:drop-shadow(0 5px 10px rgba(8,18,33,.45)); }
+.europe-mission .cast-note { font-size:var(--fs-small);line-height:1.35;color:#fff;text-align:center;text-shadow:0 2px 6px rgba(10,22,40,.95); }
+.europe-mission .board-title { display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2); }
+.europe-mission .board-title h2 { color:var(--c-navy);font-size:var(--fs-title); }
+.europe-mission .source-row { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2); }
+.europe-mission .source-row .card { min-height:56px;padding:var(--sp-2);font-size:var(--fs-small);text-align:left; }
+.europe-mission .source-viewer {
+  flex:1;min-height:0;overflow:auto;padding:var(--sp-3);border-radius:var(--radius-m);
+  background:rgba(255,253,244,.92);border:2px solid #d8c798;
+}
+.europe-mission .source-viewer p,.europe-mission .source-viewer li { font-size:var(--fs-small);line-height:1.45; }
+.europe-mission .source-lens { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2); }
+.europe-mission .source-lens .card { padding:var(--sp-3);font-size:var(--fs-small);text-align:left; }
+.europe-mission .compare-result { flex:1;min-height:0;overflow:auto; }
+.europe-mission .city-map { width:100%;height:100%;min-height:0;display:block;border-radius:var(--radius-m);background:#9ed4d0; }
+.europe-mission .map-surface { flex:1;min-height:0;display:flex;position:relative; }
+.europe-mission .map-caption { position:absolute;left:8px;bottom:8px;padding:5px 12px;border-radius:999px;background:rgba(15,30,50,.84);color:#fff;font-size:var(--fs-small);pointer-events:none; }
+.europe-mission .purpose-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2); }
+.europe-mission .purpose-grid .card { min-height:48px;padding:var(--sp-2);font-size:var(--fs-small);line-height:1.2;text-align:center; }
+.europe-mission .gauge-card { padding:var(--sp-2);border-radius:var(--radius-s);background:rgba(255,255,255,.86);font-size:var(--fs-small);font-weight:700; }
+.europe-mission .goal-list { display:flex;flex-direction:column;gap:2px;font-size:var(--fs-small);line-height:1.35; }
+.europe-mission .mission-dock { background:linear-gradient(0deg,rgba(15,30,50,.82),rgba(15,30,50,.28)); }
+.europe-mission .mission-dock .chip { max-width:60%; }
+.europe-mission .compact-feedback .feedback { padding:var(--sp-2) var(--sp-3);font-size:var(--fs-small); }
+.europe-mission .route-tools { padding:var(--sp-2);font-size:var(--fs-small); }
+.europe-mission .route-tools summary { min-height:44px;display:flex;align-items:center;font-weight:700; }
+@media (max-width:900px) {
+  .europe-mission .scene-route { grid-template-columns:120px minmax(0,1fr) 200px;gap:var(--sp-3); }
+  .europe-mission .scene-board,.europe-mission .control-rail { padding:var(--sp-3); }
+}
+@media (max-height:620px) {
+  .europe-mission .cast-hero { max-height:42%; }
+  .europe-mission .cast-props img { width:40px;height:40px; }
+  /* 낮은 화면에서도 레일이 스크롤 없이 들어오게 */
+  .europe-mission .control-rail { padding:var(--sp-3);gap:6px; }
+  .europe-mission .goal-list { line-height:1.25; }
+}
+@media (prefers-reduced-motion:reduce) { .europe-mission * { scroll-behavior:auto!important; } }
+`;
 
 function isPurposeId(value: unknown): value is PurposeId {
   return typeof value === 'string' && PURPOSES.some((purpose) => purpose.id === value);
@@ -107,6 +170,15 @@ function el(html: string): HTMLElement {
   const t = document.createElement('template');
   t.innerHTML = html.trim();
   return t.content.firstElementChild as HTMLElement;
+}
+
+function imageHtml(id: string, alt = '', className = ''): string {
+  if (!hasAsset(id)) return '';
+  return `<img src="${assetUrl(id)}" alt="${alt}" ${alt ? '' : 'aria-hidden="true"'} data-asset-id="${id}" class="${className}">`;
+}
+
+function stickerImages(ids: readonly string[]): string {
+  return ids.filter((id) => hasAsset(id)).map((id) => imageHtml(id)).join('');
 }
 
 function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>): SVGElementTagNameMap[K] {
@@ -271,9 +343,13 @@ export function createPage(): Page {
 
       // ---- 페이지 뼈대 ----
       const page = document.createElement('div');
-      page.className = 'page';
-      page.style.setProperty('--fs-small', '1rem');
-      page.style.backgroundImage = `linear-gradient(rgba(15,30,50,0.55), rgba(15,30,50,0.62)), url('${assetUrl('bg.europe')}')`;
+      page.className = 'page europe-mission';
+      page.dataset.assetId = 'bg.europe';
+      // 배경 일러스트가 주인공이라 어둡게 덮지 않는다(가독성 최소한만).
+      page.style.backgroundImage = `linear-gradient(rgba(15,30,50,0.34), rgba(15,30,50,0.44)), url('${assetUrl('bg.europe')}')`;
+      const style = document.createElement('style');
+      style.textContent = PAGE_CSS;
+      page.appendChild(style);
       const stepNow = stage === 1 ? 0 : secondMode ? 2 : 1;
       const bar = buildTopBar({
         title: c.intro.title,
@@ -282,13 +358,14 @@ export function createPage(): Page {
         steps: { total: 3, done: stepNow, now: stepNow }
       });
       page.appendChild(bar);
+      // 제목은 상단바 리본 한 곳에만. 단계 목표는 그 리본의 부제로 바꿔 쓴다.
+      const ribbonSub = bar.querySelector('.ribbon-sub') as HTMLElement;
+      const setRibbon = (text: string): void => { ribbonSub.textContent = text; };
       const body = document.createElement('div');
       body.className = 'page-body';
-      body.style.overflowY = 'auto';
       page.appendChild(body);
       const bottom = document.createElement('div');
-      bottom.className = 'bottom-bar';
-      bottom.style.flexWrap = 'wrap';
+      bottom.className = 'bottom-bar mission-dock';
       page.appendChild(bottom);
       root.appendChild(page);
 
@@ -297,7 +374,6 @@ export function createPage(): Page {
       const gd = createGuide({ side: 'right' });
       guide = gd;
       page.appendChild(gd.el);
-      body.style.paddingBottom = '150px'; // 가이드가 하단 콘텐츠를 가려도 스크롤로 피할 수 있게
       let lastSaid = '';
       const say = (text: string, cue: HTMLElement | null): void => {
         if (text !== lastSaid) {
@@ -325,34 +401,35 @@ export function createPage(): Page {
       function renderStage1(): void {
         updateSteps(bar, 3, 0, 0);
         body.replaceChildren();
-        body.appendChild(
-          el(`<div class="panel" style="padding:var(--sp-3) var(--sp-4);font-size:1rem">
-            <strong style="color:var(--c-navy)">가상 도시 '벨라리바'에서 자료를 읽고 나만의 탐방 경로를 만들어요</strong>
-          </div>`)
-        );
-        const grid = el(
-          `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sp-3);margin-top:var(--sp-3)"></div>`
-        );
-        body.appendChild(grid);
-
-        const comparisonPanel = el(`<section class="panel" style="margin-top:var(--sp-3);display:flex;flex-direction:column;gap:var(--sp-3)">
-          <div>
-            <h3 style="color:var(--c-navy)">문화유산의 흔적과 오늘의 생활 비교</h3>
-            <p style="font-size:1rem;margin-top:6px">‘역사·보존’ 자료 하나와 ‘오늘의 생활·이동’ 자료 하나를 골라요.</p>
-          </div>
-          <div data-compare-buttons role="group" aria-label="비교할 자료 두 개 선택" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px"></div>
-          <div data-compare-result role="status" aria-live="polite"></div>
+        let activeSourceId = c.sources.find((source) => !readSet.has(source.id))?.id ?? c.sources[0]?.id ?? '';
+        // 읽기 → 비교 두 국면을 한 보드에서 갈아 끼운다(한 화면에 쌓지 않는다).
+        const scene = el(`<section class="mission-scene scene-read" aria-label="벨라리바 자료 조사 장면">
+          <main class="scene-board">
+            <div class="board-title"><h2 data-phase-title>자료 서랍</h2><span class="chip">가상 도시</span></div>
+            <div class="source-row" data-source-grid></div>
+            <article class="source-viewer" data-source-viewer role="status" aria-live="polite"></article>
+            <div class="source-lens" data-compare-buttons role="group" aria-label="비교할 자료 두 개 선택" hidden></div>
+            <div class="compare-result" data-compare-result role="status" aria-live="polite" hidden></div>
+          </main>
+          <aside class="scene-cast" aria-hidden="true">
+            ${imageHtml('europe.guide', '', 'cast-hero bob')}
+            <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'europe.heritage', 'deco.accordion'])}</div>
+            <p class="cast-note">벨라리바는 학습용 가상 도시예요. 그림은 실제 유럽 사례를 떠올리는 장식이에요.</p>
+          </aside>
         </section>`);
-        body.appendChild(comparisonPanel);
-        const compareButtons = comparisonPanel.querySelector('[data-compare-buttons]') as HTMLElement;
-        const compareResult = comparisonPanel.querySelector('[data-compare-result]') as HTMLElement;
+        body.appendChild(scene);
+        const grid = scene.querySelector('[data-source-grid]') as HTMLElement;
+        const sourceViewer = scene.querySelector('[data-source-viewer]') as HTMLElement;
+        const phaseTitle = scene.querySelector('[data-phase-title]') as HTMLElement;
+        const compareButtons = scene.querySelector('[data-compare-buttons]') as HTMLElement;
+        const compareResult = scene.querySelector('[data-compare-result]') as HTMLElement;
         const compareSelection = [...comparedSourceIds].slice(0, 2);
 
         bottom.replaceChildren();
         const status = el(
-          `<span class="chip" role="status" aria-live="polite">1단계 · 자료 ${readSet.size}/${c.sources.length} · 관점 비교 ${comparisonDone ? '✓' : '○'}</span>`
+          `<span class="chip mission-status" role="status" aria-live="polite">자료 ${readSet.size}/${c.sources.length} · 관점 비교 ${comparisonDone ? '✓' : '○'}</span>`
         );
-        const startBtn = el(`<button class="btn btn-primary btn-big">경로 설계 시작</button>`) as HTMLButtonElement;
+        const startBtn = el(`<button class="btn btn-primary btn-big">경로 설계</button>`) as HTMLButtonElement;
         bottom.append(status, startBtn);
 
         const persistSources = () => {
@@ -381,7 +458,7 @@ export function createPage(): Page {
           for (const source of c.sources) {
             const selected = compareSelection.includes(source.id);
             const lens = SOURCE_LENS[source.type];
-            const button = el(`<button class="card card-pick" aria-pressed="${selected}" ${allRead ? '' : 'disabled'} style="text-align:left;font:inherit;font-size:1rem;padding:10px;min-height:var(--touch-min)">
+            const button = el(`<button class="card card-pick" aria-pressed="${selected}" ${allRead ? '' : 'disabled'} style="font:inherit">
               <strong>${selected ? '✓ ' : ''}${source.title}</strong><br>
               <span style="color:var(--c-ink-soft)">${lens?.label ?? TYPE_LABEL[source.type] ?? source.type}</span>
             </button>`) as HTMLButtonElement;
@@ -400,14 +477,15 @@ export function createPage(): Page {
                 void audio.playSfx('success');
               }
               paint();
+              if (validComparison()) {
+                popBounce(compareResult);
+                burstConfetti(button);
+              }
             });
             compareButtons.appendChild(button);
           }
 
-          if (!allRead) {
-            compareResult.innerHTML = '<div class="feedback partial"><span aria-hidden="true">◐</span><span>네 자료를 모두 읽으면 비교를 시작할 수 있어요.</span></div>';
-            return;
-          }
+          if (!allRead) return;
           const selected = selectedSources();
           if (selected.length < 2) {
             compareResult.innerHTML = '<div class="feedback partial"><span aria-hidden="true">◐</span><span>서로 다른 관점의 자료 두 장을 골라 보세요.</span></div>';
@@ -419,40 +497,59 @@ export function createPage(): Page {
           }
           const [first, second] = selected;
           if (!first || !second) return;
-          compareResult.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--sp-3)">
+          compareResult.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-3)">
             ${[first, second]
               .map(
-                (source) => `<div class="card" style="padding:12px">
-                  <p class="chip" style="margin-bottom:8px;font-size:1rem">${SOURCE_LENS[source.type]?.label ?? TYPE_LABEL[source.type] ?? source.type}</p>
+                (source) => `<div class="card" style="padding:var(--sp-3)">
+                  <p class="chip" style="margin-bottom:6px">${SOURCE_LENS[source.type]?.label ?? TYPE_LABEL[source.type] ?? source.type}</p>
                   <strong>${source.title}</strong>
-                  <ul style="padding-left:20px;font-size:1rem;line-height:1.5">${source.clues.map((clue) => `<li>${clue}</li>`).join('')}</ul>
+                  <ul style="padding-left:20px;font-size:var(--fs-small);line-height:1.5">${source.clues.map((clue) => `<li>${clue}</li>`).join('')}</ul>
                 </div>`
               )
               .join('')}
           </div>
-          <div class="feedback success" style="margin-top:var(--sp-3)"><span aria-hidden="true">✓</span><span>같은 도시도 자료의 관점에 따라 보이는 문제가 달라요. 이제 두 관점을 경로에 함께 반영할 수 있어요.</span></div>`;
+          <div class="feedback success" style="margin-top:var(--sp-3)"><span aria-hidden="true">✓</span><span>같은 도시도 자료의 관점에 따라 보이는 문제가 달라요.</span></div>`;
         };
 
         const paint = () => {
-          status.textContent = `1단계 · 자료 ${readSet.size}/${c.sources.length} · 관점 비교 ${comparisonDone ? '✓ 완료' : '○ 필요'}`;
-          startBtn.disabled = readSet.size < c.sources.length || !comparisonDone;
+          const allRead = readSet.size === c.sources.length;
+          status.textContent = `자료 ${readSet.size}/${c.sources.length} · 비교 ${comparisonDone ? '✓' : '○'}`;
+          startBtn.disabled = !allRead || !comparisonDone;
+          // 국면 전환: 다 읽기 전에는 자료 서랍, 다 읽으면 관점 비교만 보인다.
+          phaseTitle.textContent = allRead ? '관점 비교' : '자료 서랍';
+          grid.hidden = allRead;
+          sourceViewer.hidden = allRead;
+          compareButtons.hidden = !allRead;
+          compareResult.hidden = !allRead;
           grid.replaceChildren();
           let firstUnread: HTMLElement | null = null;
           for (const s of c.sources) {
             const read = readSet.has(s.id);
-            const card = el(`<button class="card card-pick" style="text-align:left;font:inherit;display:flex;flex-direction:column;gap:6px;padding:var(--sp-4);min-height:var(--touch-min)">
-              <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <span class="chip">${TYPE_LABEL[s.type] ?? s.type}</span>
-                ${read ? '<span class="chip" style="background:#e8f7f0;color:#17573d">✓ 읽음</span>' : ''}
-              </span>
-              <strong style="font-family:var(--font-head);color:var(--c-navy)">${s.title}</strong>
-              <span style="font-size:1rem;color:var(--c-ink-soft)">${read ? '다시 읽을 수 있어요' : '눌러서 읽어 보세요'}</span>
+            const card = el(`<button class="card card-pick" aria-pressed="${activeSourceId === s.id}">
+              <strong>${read ? '✓ ' : ''}${TYPE_LABEL[s.type] ?? s.type}</strong><br><span>${s.title}</span>
             </button>`);
-            card.addEventListener('click', () => openSource(s, paint));
+            card.addEventListener('click', () => {
+              const wasRead = readSet.has(s.id);
+              activeSourceId = s.id;
+              readSet.add(s.id);
+              persistSources();
+              void audio.playSfx(wasRead ? 'tap' : 'pickup');
+              paint();
+              const activeCard = grid.querySelector<HTMLElement>(`[data-source-id="${s.id}"]`);
+              if (!wasRead && activeCard) popBounce(activeCard);
+            });
+            card.dataset.sourceId = s.id;
             grid.appendChild(card);
             if (!read && !firstUnread) firstUnread = card;
           }
+          const activeSource = c.sources.find((source) => source.id === activeSourceId) ?? c.sources[0];
+          sourceViewer.innerHTML = activeSource
+            ? `<div class="row-between" style="gap:8px"><strong>${activeSource.title}</strong><span class="chip">${TYPE_LABEL[activeSource.type] ?? activeSource.type}</span></div>
+               <p style="margin-top:5px">${activeSource.body}</p>
+               <p style="margin-top:5px;font-weight:700">핵심 단서 · ${activeSource.clues.join(' · ')}</p>`
+            : '<p>위의 자료를 골라 단서를 살펴봐요.</p>';
           paintComparison();
+          setRibbon(allRead ? '관점이 다른 자료 두 장을 골라 비교해요' : '자료 네 장을 눌러 단서를 읽어요');
           if (readSet.size < c.sources.length) say('자료 네 장을 모두 읽어야 출발!', firstUnread);
           else if (!comparisonDone) say('관점이 다른 자료 두 장을 골라 비교해요!', compareButtons.querySelector<HTMLElement>('button'));
           else say('비교 완료! 경로 설계를 시작해요!', startBtn);
@@ -485,7 +582,7 @@ export function createPage(): Page {
           <p style="line-height:1.6">${s.body}</p>
           <div>
             <p style="font-weight:700;margin-bottom:6px">단서 메모</p>
-            <ul style="padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:1rem;line-height:1.5">
+            <ul style="padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:var(--fs-small);line-height:1.5">
               ${s.clues.map((cl) => `<li>${cl}</li>`).join('')}
             </ul>
           </div>
@@ -519,6 +616,7 @@ export function createPage(): Page {
       function renderStage2(): void {
         updateSteps(bar, 3, secondMode ? 2 : 1, secondMode ? 2 : 1);
         body.replaceChildren();
+        setRibbon(secondMode ? '다른 목적으로 두 번째 노선을 설계해요' : '목적을 고르고 세 지점을 이어요');
 
         let lastSubmittedSignature: string | null = null;
         const routeSignature = (): string => `${secondMode ? 'second' : 'first'}\u0000${purpose ?? ''}\u0000${route.join('\u0000')}`;
@@ -538,15 +636,22 @@ export function createPage(): Page {
           writeRouteCheckpoint();
         };
 
-        const row = el(
-          `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:var(--sp-3);flex:1;min-height:0;margin-top:var(--sp-2);align-items:start"></div>`
-        );
-        const mapWrap = el(`<div style="min-width:0;display:flex;align-items:flex-start"></div>`);
-        const aside = el(
-          `<aside class="panel" style="min-width:0;overflow-y:auto;max-height:100%;display:flex;flex-direction:column;gap:var(--sp-3);padding:var(--sp-4);padding-bottom:150px"></aside>`
-        );
-        row.append(mapWrap, aside);
-        body.appendChild(row);
+        const scene = el(`<section class="mission-scene scene-route" aria-label="벨라리바 경로 설계 장면">
+          <aside class="scene-cast" aria-hidden="true">
+            ${imageHtml('europe.guide', '', 'cast-hero bob')}
+            <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'deco.tulip'])}</div>
+            <p class="cast-note">가상 도시예요</p>
+          </aside>
+          <main class="scene-board map-wrap">
+            <div class="board-title"><h2>${c.city.name} 노선판</h2><span class="chip">도보 ━ · 트램 ┅</span></div>
+            <div class="map-surface"></div>
+          </main>
+          <aside class="control-rail" aria-label="경로 목표와 게이지"></aside>
+        </section>`);
+        body.appendChild(scene);
+        const mapWrap = scene.querySelector('.map-wrap') as HTMLElement;
+        const mapSurface = scene.querySelector('.map-surface') as HTMLElement;
+        const aside = scene.querySelector('.control-rail') as HTMLElement;
 
         // ---- SVG 지도 ----
         const svg = svgEl('svg', {
@@ -554,13 +659,23 @@ export function createPage(): Page {
           role: 'group',
           'aria-label': `${c.city.name} 탐방 지도. 지점은 Enter 또는 Space로 연결할 수 있고, 아래에 같은 기능의 글자 버튼도 있어요.`
         });
-        svg.style.cssText = 'width:100%;height:auto;display:block;border-radius:var(--radius-l);background:#14405c;box-shadow:var(--shadow-card)';
-        if (hasAsset('europe.map')) {
-          const img = svgEl('image', { x: '0', y: '0', width: String(VB_W), height: String(VB_H), preserveAspectRatio: 'xMidYMid slice' });
-          img.setAttribute('href', assetUrl('europe.map'));
-          img.setAttribute('opacity', '0.85');
-          svg.appendChild(img);
-        }
+        svg.classList.add('city-map');
+        svg.appendChild(svgEl('rect', { x: '0', y: '0', width: String(VB_W), height: String(VB_H), rx: '26', fill: '#91cdbf' }));
+        svg.appendChild(svgEl('path', { d: 'M -20 430 C 180 350, 310 470, 500 390 S 790 300, 990 360', fill: 'none', stroke: '#57a9cf', 'stroke-width': '92', opacity: '.95' }));
+        svg.appendChild(svgEl('path', { d: 'M -20 430 C 180 350, 310 470, 500 390 S 790 300, 990 360', fill: 'none', stroke: 'rgba(255,255,255,.45)', 'stroke-width': '7', 'stroke-dasharray': '18 18' }));
+        const buildingData: Array<[number, number, number, number, string]> = [
+          [90, 70, 115, 78, '#e9c88e'], [690, 72, 120, 88, '#e6a97f'], [740, 405, 124, 72, '#e9d4aa'],
+          [85, 330, 100, 72, '#d6b178'], [405, 72, 104, 66, '#e8bf94'], [570, 235, 92, 62, '#d9a783']
+        ];
+        buildingData.forEach(([x, y, w, h, fill]) => {
+          svg.appendChild(svgEl('rect', { x: String(x), y: String(y), width: String(w), height: String(h), rx: '12', fill: String(fill), stroke: '#795f4c', 'stroke-width': '4' }));
+          svg.appendChild(svgEl('path', { d: `M ${x - 8} ${y + 8} L ${x + w / 2} ${y - 28} L ${x + w + 8} ${y + 8} Z`, fill: '#a55446', stroke: '#795f4c', 'stroke-width': '4' }));
+        });
+        const treeSpots: Array<[number, number]> = [[220,110],[850,210],[610,470],[330,465],[895,455]];
+        treeSpots.forEach(([x, y]) => {
+          svg.appendChild(svgEl('circle', { cx:String(x),cy:String(y),r:'22',fill:'#4d9360',stroke:'#fff','stroke-width':'4' }));
+          svg.appendChild(svgEl('rect', { x:String(x-4),y:String(y+18),width:'8',height:'20',fill:'#76543c' }));
+        });
         // 이동 가능한 길 + 소요 시간
         for (const e of c.edges) {
           const a = nodeById.get(e.from);
@@ -622,115 +737,129 @@ export function createPage(): Page {
           svg.appendChild(g);
           nodeRefs.set(n.id, { group: g, circle, center });
         }
-        mapWrap.appendChild(svg);
+        mapSurface.appendChild(svg);
+        mapSurface.appendChild(el(`<span class="map-caption">핀을 순서대로 눌러 노선을 이어요</span>`));
 
         // ---- 사이드 패널 ----
         const fb = el(`<div></div>`);
-        const purposePanel = el(`<section style="display:flex;flex-direction:column;gap:8px">
-          <div>
-            <h3 style="color:var(--c-navy)">${secondMode ? '두 번째 탐방 목적' : '이번 탐방 목적'}</h3>
-            <p style="font-size:1rem;margin-top:4px">목적을 먼저 고른 뒤, 그 목적에 맞는 지점을 연결하세요.${secondMode ? ' 첫 경로와 다른 목적을 골라요.' : ''}</p>
-          </div>
-          <div data-purpose-buttons role="group" aria-label="탐방 목적 선택" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px"></div>
-        </section>`);
-        const purposeButtonsWrap = purposePanel.querySelector('[data-purpose-buttons]') as HTMLElement;
-        const purposeButtons = new Map<PurposeId, HTMLButtonElement>();
-        for (const option of PURPOSES) {
-          const unavailable = secondMode && firstSnap?.purpose === option.id;
-          const button = el(`<button class="card card-pick" aria-pressed="false" ${unavailable ? 'disabled' : ''} style="text-align:left;font:inherit;font-size:1rem;padding:10px;min-height:var(--touch-min)">
-            <strong>${option.label}</strong><br><span style="color:var(--c-ink-soft)">${unavailable ? '첫 경로에서 선택함' : option.help}</span>
-          </button>`) as HTMLButtonElement;
-          button.addEventListener('click', () => {
-            if (finished || unavailable) return;
-            purpose = option.id;
-            fb.replaceChildren();
-            void audio.playSfx('tap');
-            persistRoute();
-            updateView();
+        // 탐방 목적은 한 번 고르는 결정이라 레일에 4장을 늘어놓지 않고 모달에서 고른다.
+        const purposePanel = el(`<div class="gauge-card row-between">
+          <span data-purpose-now>목적 없음</span>
+          <button class="btn btn-ghost" data-purpose-open style="min-height:44px;padding:6px 14px">고르기</button>
+        </div>`);
+        const purposeNow = purposePanel.querySelector('[data-purpose-now]') as HTMLElement;
+        const openPurposePicker = (): void => {
+          const grid = el(`<div class="purpose-grid" role="group" aria-label="탐방 목적 선택"></div>`);
+          for (const option of PURPOSES) {
+            const unavailable = secondMode && firstSnap?.purpose === option.id;
+            const button = el(`<button class="card card-pick" aria-pressed="${purpose === option.id}" ${unavailable ? 'disabled' : ''} style="font:inherit;text-align:left">
+              <strong>${option.label}</strong>
+              <p style="font-size:var(--fs-small);color:var(--c-ink-soft);margin-top:4px">${unavailable ? '첫 경로에서 고른 목적이에요.' : option.help}</p>
+            </button>`) as HTMLButtonElement;
+            button.addEventListener('click', () => {
+              if (finished || unavailable) return;
+              purpose = option.id;
+              fb.replaceChildren();
+              void audio.playSfx('tap');
+              persistRoute();
+              activeModalClose?.();
+              updateView();
+            });
+            grid.appendChild(button);
+          }
+          const bodyEl = el(`<div></div>`);
+          bodyEl.appendChild(grid);
+          openOwnedModal({
+            id: 'eu-purpose',
+            title: secondMode ? '두 번째 탐방 목적' : '이번 탐방 목적',
+            bodyEl,
+            actions: [{ label: '닫기', kind: 'ghost', onClick: (close) => close() }]
           });
-          purposeButtonsWrap.appendChild(button);
-          purposeButtons.set(option.id, button);
-        }
-        const gauge = el(`<div>
-          <div class="row-between" style="font-size:1rem;font-weight:700">
-            <span>총 소요 시간</span><span id="eu-time"></span>
-          </div>
+        };
+        (purposePanel.querySelector('[data-purpose-open]') as HTMLButtonElement).addEventListener('click', openPurposePicker);
+        // 거리 지수는 결과 모달의 비교표에서만 보여 준다(화면 정보 최소화).
+        const gauge = el(`<div class="gauge-card">
+          <div class="row-between"><span>시간</span><span id="eu-time"></span></div>
           <div class="progress-track" style="margin-top:6px"><div class="progress-fill" id="eu-fill" role="progressbar" aria-label="사용한 탐방 시간" aria-valuemin="0" aria-valuemax="${c.constraints.maxMinutes}" aria-valuenow="0" style="width:0%"></div></div>
-          <div class="row-between" style="font-size:1rem;font-weight:700;margin-top:8px">
-            <span>지도상 거리 지수</span><span id="eu-distance"></span>
-          </div>
-          <p style="font-size:1rem;color:var(--c-ink-soft);margin-top:2px">실제 km가 아닌 두 경로 비교용 수치예요.</p>
+          <span id="eu-distance" class="visually-hidden"></span>
         </div>`);
         const timeText = gauge.querySelector('#eu-time') as HTMLElement;
         const gaugeFill = gauge.querySelector('#eu-fill') as HTMLElement;
         const distanceText = gauge.querySelector('#eu-distance') as HTMLElement;
 
-        const checks = el(`<div role="status" aria-live="polite" style="display:flex;flex-direction:column;gap:8px;font-size:1rem"></div>`);
-        const visitRow = el(`<div style="font-weight:700"></div>`);
-        const timeRow = el(`<div style="font-weight:700"></div>`);
-        const purposeRow = el(`<div style="font-weight:700"></div>`);
+        const checks = el(`<div class="goal-list" role="status" aria-live="polite"></div>`);
+        const visitRow = el(`<div></div>`);
+        const timeRow = el(`<div></div>`);
+        const purposeRow = el(`<div></div>`);
         checks.append(visitRow, timeRow, purposeRow);
         const goalMarks = new Map<string, HTMLElement>();
         for (const g of c.goals) {
           const rowEl = el(`<div>
             <span style="font-weight:700"><span data-mark>◐</span> ${g.label}</span>
-            <p style="font-size:1rem;color:var(--c-ink-soft);margin:2px 0 0">${g.check}</p>
+            <span class="visually-hidden">${g.check}</span>
           </div>`);
           goalMarks.set(g.id, rowEl.querySelector('[data-mark]') as HTMLElement);
           checks.appendChild(rowEl);
         }
-        const routeText = el(`<p style="font-size:1rem;line-height:1.5"></p>`);
-        const selectedDetails = el(`<p style="font-size:1rem;line-height:1.5;color:var(--c-ink-soft)"></p>`);
+        const routeText = el(`<p class="text-oneline" style="font-size:var(--fs-small);line-height:1.4"></p>`);
         const nodeButtons = el(
           `<div role="group" aria-label="지도 지점 대체 선택" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"></div>`
         );
         const nodeButtonRefs = new Map<string, HTMLButtonElement>();
         for (const node of c.nodes) {
-          const button = el(`<button class="card card-pick" aria-pressed="false" style="text-align:left;font:inherit;font-size:1rem;padding:9px;min-height:var(--touch-min)">
+          const button = el(`<button class="card card-pick" aria-pressed="false" style="text-align:left;font:inherit;font-size:var(--fs-small);padding:var(--sp-2);min-height:var(--touch-min)">
             <strong>${node.name}</strong><br><span style="color:var(--c-ink-soft)">머무름 ${node.visitMinutes}분</span>
           </button>`) as HTMLButtonElement;
           button.addEventListener('click', () => tapNode(node.id));
           nodeButtons.appendChild(button);
           nodeButtonRefs.set(node.id, button);
         }
-        const edgeList = el(`<details class="card" style="padding:10px">
-          <summary style="cursor:pointer;font-weight:700;min-height:var(--touch-min);display:flex;align-items:center">길과 이동 시간 글로 보기</summary>
-          <ul style="padding-left:20px;font-size:1rem;line-height:1.6;margin:6px 0 0">
-            ${c.edges
-              .map((edge) => {
-                const from = nodeById.get(edge.from)?.name ?? edge.from;
-                const to = nodeById.get(edge.to)?.name ?? edge.to;
-                return `<li>${from} ↔ ${to}: ${edge.minutes}분${edge.mode === 'tram' ? ' (트램)' : ' (도보)'}</li>`;
-              })
-              .join('')}
-          </ul>
-        </details>`);
-        const hint = el(`<p style="font-size:1rem;color:var(--c-ink-soft)">지도나 아래 지점 버튼을 순서대로 누르세요. 마지막 지점을 다시 누르면 취소돼요.</p>`);
-        const srcBtn = el(`<button class="btn btn-ghost" style="align-self:stretch">자료 다시 보기</button>`);
-        srcBtn.addEventListener('click', () => {
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            ${c.sources
-              .map(
-                (s) => `<div class="card" style="padding:10px">
-                  <strong style="font-size:1rem">${s.title}</strong>
-                  <ul style="padding-left:18px;font-size:1rem;line-height:1.5;margin-top:4px">${s.clues.map((cl) => `<li>${cl}</li>`).join('')}</ul>
-                </div>`
-              )
-              .join('')}
+        // 지점 글자 버튼 · 길 목록 · 자료 단서는 레일에 쌓지 않고 '자료' 버튼 → 모달 한 곳으로 모은다.
+        const toolsBtn = el(`<button class="btn btn-ghost" style="align-self:stretch">자료</button>`);
+        toolsBtn.addEventListener('click', () => {
+          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+            <section>
+              <h3 style="margin-bottom:var(--sp-2)">지점 고르기</h3>
+              <div data-node-slot></div>
+            </section>
+            <section>
+              <h3 style="margin-bottom:var(--sp-2)">길과 이동 시간</h3>
+              <ul style="padding-left:20px;font-size:var(--fs-small);line-height:1.6">
+                ${c.edges
+                  .map((edge) => {
+                    const from = nodeById.get(edge.from)?.name ?? edge.from;
+                    const to = nodeById.get(edge.to)?.name ?? edge.to;
+                    return `<li>${from} ↔ ${to}: ${edge.minutes}분${edge.mode === 'tram' ? ' (트램)' : ' (도보)'}</li>`;
+                  })
+                  .join('')}
+              </ul>
+            </section>
+            <section>
+              <h3 style="margin-bottom:var(--sp-2)">단서 메모</h3>
+              ${c.sources
+                .map(
+                  (s) => `<div class="card" style="padding:var(--sp-3);margin-bottom:var(--sp-2)">
+                    <strong>${s.title}</strong>
+                    <ul style="padding-left:18px;font-size:var(--fs-small);line-height:1.5;margin-top:4px">${s.clues.map((cl) => `<li>${cl}</li>`).join('')}</ul>
+                  </div>`
+                )
+                .join('')}
+            </section>
           </div>`);
+          (bodyEl.querySelector('[data-node-slot]') as HTMLElement).appendChild(nodeButtons);
           openOwnedModal({
-            id: 'eu-sources',
-            title: '단서 메모 모아 보기',
+            id: 'eu-tools',
+            title: '지점 · 길 · 단서',
             bodyEl,
             actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
           });
         });
-        aside.append(purposePanel, fb, gauge, checks, routeText, selectedDetails, nodeButtons, edgeList, hint, srcBtn);
+        aside.append(purposePanel, gauge, checks, fb, routeText, toolsBtn);
 
         // ---- 하단 바 ----
         bottom.replaceChildren();
         const status = el(
-          `<span class="chip">${secondMode ? '3단계 · 다른 전략으로 두 번째 경로를 만들어요' : `2단계 · ${c.constraints.maxMinutes}분 안에 ${c.constraints.mustVisitCount}곳 이상 방문 경로 만들기`}</span>`
+          `<span class="chip mission-status">${secondMode ? '다른 목적으로 두 번째 경로' : `${c.constraints.maxMinutes}분 안에 ${c.constraints.mustVisitCount}곳 이상`}</span>`
         );
         const btns = el(`<div style="display:flex;gap:var(--sp-3)"></div>`);
         const resetBtn = el(`<button class="btn btn-ghost">처음부터</button>`) as HTMLButtonElement;
@@ -739,11 +868,7 @@ export function createPage(): Page {
         bottom.append(status, btns);
 
         const updateView = () => {
-          for (const [id, button] of purposeButtons) {
-            const selected = purpose === id;
-            button.classList.toggle('is-selected', selected);
-            button.setAttribute('aria-pressed', String(selected));
-          }
+          purposeNow.textContent = purpose ? `목적 · ${purposeLabel(purpose)}` : '목적 없음';
           for (const n of c.nodes) {
             const ref = nodeRefs.get(n.id);
             if (!ref) continue;
@@ -785,15 +910,13 @@ export function createPage(): Page {
           gaugeFill.setAttribute('aria-valuenow', String(Math.min(total, c.constraints.maxMinutes)));
           gaugeFill.setAttribute('aria-valuetext', `${total}분 사용, 제한 ${c.constraints.maxMinutes}분`);
           const enough = route.length >= c.constraints.mustVisitCount;
-          visitRow.textContent = `${enough ? '✓' : '◐'} 방문 지점 ${route.length}/${c.constraints.mustVisitCount}곳 이상`;
+          visitRow.textContent = `${enough ? '✓' : '◐'} 지점 ${route.length}/${c.constraints.mustVisitCount}`;
           visitRow.style.color = enough ? '#17573d' : '#6b4a00';
-          timeRow.textContent = `${over ? '◐' : '✓'} 시간 ${c.constraints.maxMinutes}분 이내`;
+          timeRow.textContent = `${over ? '◐' : '✓'} ${c.constraints.maxMinutes}분 이내`;
           timeRow.style.color = over ? '#6b4a00' : '#17573d';
           const met = goalsMetFor(route, tagSets);
           const purposeOkay = purpose ? purposeMetFor(route, purpose, met, tagSets) : false;
-          purposeRow.textContent = purpose
-            ? `${purposeOkay ? '✓' : '◐'} 선택 목적 ‘${purposeLabel(purpose)}’ 조건`
-            : '○ 탐방 목적을 먼저 선택하세요';
+          purposeRow.textContent = purpose ? `${purposeOkay ? '✓' : '◐'} 목적 조건` : '○ 목적 먼저';
           purposeRow.style.color = purposeOkay ? '#17573d' : '#6b4a00';
           for (const g of c.goals) {
             const mark = goalMarks.get(g.id);
@@ -803,19 +926,14 @@ export function createPage(): Page {
             mark.style.color = ok ? '#17573d' : '#6b4a00';
           }
           routeText.textContent = route.length
-            ? `내 경로: ${route.map((id) => nodeById.get(id)?.name ?? '').join(' → ')}`
-            : '아직 고른 지점이 없어요. 지도의 동그라미를 눌러 보세요.';
-          const lastId = route[route.length - 1];
-          const lastNode = lastId ? nodeById.get(lastId) : undefined;
-          selectedDetails.textContent = lastNode ? `마지막 지점 살펴보기: ${lastNode.desc}` : '지점을 고르면 그곳의 설명이 여기에 나타나요.';
-          status.textContent = secondMode
-            ? `3단계 · ${purpose ? `‘${purposeLabel(purpose)}’ 목적의 ` : ''}두 번째 경로 만들기`
-            : `2단계 · ${purpose ? `‘${purposeLabel(purpose)}’ 목적 · ` : ''}${c.constraints.maxMinutes}분 안에 ${c.constraints.mustVisitCount}곳 이상`;
+            ? `${route.map((id) => nodeById.get(id)?.name ?? '').join(' → ')}`
+            : '지도의 동그라미를 눌러 보세요.';
+          // 마지막 지점 설명은 핀의 aria-label 과 '지점 버튼' 목록에 이미 있어 화면에서는 뺀다.
+          status.textContent = `${route.length}/${c.constraints.mustVisitCount}곳 · ${c.constraints.maxMinutes}분 안`;
           submitBtn.disabled =
             !purpose || route.length < c.constraints.mustVisitCount || lastSubmittedSignature === routeSignature();
           if (!purpose) {
-            const firstPurpose = [...purposeButtons.values()].find((b) => !b.disabled) ?? null;
-            say(secondMode ? '다른 목적으로 한 번 더 가 볼까요?' : '이번 탐방 목적을 먼저 골라요!', firstPurpose);
+            say(secondMode ? '다른 목적으로 한 번 더 가 볼까요?' : '이번 탐방 목적을 먼저 골라요!', purposePanel.querySelector<HTMLElement>('[data-purpose-open]'));
           } else if (!submitBtn.disabled) {
             say('경로가 다 되면 제출을 눌러요!', submitBtn);
           } else {
@@ -845,6 +963,8 @@ export function createPage(): Page {
           }
           persistRoute();
           updateView();
+          const nodeFx = nodeRefs.get(id)?.group as unknown as HTMLElement | undefined;
+          if (nodeFx && route.includes(id)) popBounce(nodeFx);
         }
 
         resetBtn.addEventListener('click', () => {
@@ -858,8 +978,8 @@ export function createPage(): Page {
 
         const goalTable = (snap: RouteSnap): string => `
           <p style="font-weight:700;margin-bottom:4px">${snap.nodes.map((id) => nodeById.get(id)?.name ?? '').join(' → ')}</p>
-          <p style="font-size:1rem;margin-bottom:6px">목적 ‘${purposeLabel(snap.purpose)}’ · 총 ${snap.minutes}분 · 지도상 거리 지수 ${snap.distanceIndex} · 목표 ${snap.metCount}/${c.goals.length}개 충족</p>
-          <table style="border-collapse:collapse;font-size:1rem">
+          <p style="font-size:var(--fs-small);margin-bottom:6px">목적 ‘${purposeLabel(snap.purpose)}’ · 총 ${snap.minutes}분 · 지도상 거리 지수 ${snap.distanceIndex} · 목표 ${snap.metCount}/${c.goals.length}개 충족</p>
+          <table style="border-collapse:collapse;font-size:var(--fs-small)">
             ${c.goals
               .map(
                 (g) => `<tr>
@@ -876,7 +996,7 @@ export function createPage(): Page {
               snap.metCount >= c.goals.length ? '우수 경로예요! ' : ''
             }${c.feedback.good}</span></div>
             <div class="card" style="padding:12px">${goalTable(snap)}</div>
-            <p style="font-size:1rem">이제 다른 목적을 골라 두 번째 경로를 만든 뒤, 시간·거리·충족 목표를 비교해 보세요.</p>
+            <p style="font-size:var(--fs-small)">이제 다른 목적을 골라 두 번째 경로를 만든 뒤, 시간·거리·충족 목표를 비교해 보세요.</p>
           </div>`);
           openOwnedModal({
             id: 'eu-first-result',
@@ -885,7 +1005,7 @@ export function createPage(): Page {
             dismissible: false,
             actions: [
               {
-                label: '다른 목적으로 두 번째 경로',
+                label: '두 번째 경로',
                 kind: 'primary',
                 autofocus: true,
                 onClick: (close) => {
@@ -922,8 +1042,8 @@ export function createPage(): Page {
           const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
             <p>같은 도시에서도 무엇을 중요하게 보느냐에 따라 좋은 경로가 달라져요. 두 경로를 비교해 볼까요?</p>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sp-3)">
-              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px;font-size:1rem">첫 번째 경로</p>${goalTable(first)}</div>
-              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px;font-size:1rem">두 번째 경로</p>${goalTable(second)}</div>
+              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px">첫 번째 경로</p>${goalTable(first)}</div>
+              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px">두 번째 경로</p>${goalTable(second)}</div>
             </div>
             <div class="panel" role="status" style="padding:12px">
               <strong>바뀐 점</strong>
@@ -1005,6 +1125,9 @@ export function createPage(): Page {
             } else {
               showFirstResult(snap);
             }
+            popBounce(gauge);
+            burstConfetti(submitBtn);
+            void audio.playSfx('success');
           } finally {
             busy = false;
             updateView();
@@ -1012,6 +1135,7 @@ export function createPage(): Page {
         });
 
         updateView();
+        if (!purpose) openPurposePicker(); // 목적을 고르기 전에는 지도를 눌러도 진행되지 않으므로 먼저 띄운다
       }
 
       if (stage === 1) renderStage1();

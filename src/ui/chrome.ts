@@ -98,6 +98,14 @@ function toggleRow(id: string, label: string, checked: boolean): string {
 export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: string; showPassport?: boolean; steps?: { total: number; done: number; now: number } }): HTMLElement {
   const bar = document.createElement('header');
   bar.className = 'top-bar';
+  const save = saveRepo.get();
+  const ticket = save.profile
+    ? `<div class="journey-ticket" aria-label="${escapeHtml(save.profile.nickname)}의 여행, 도장 ${save.stamps.length}/6개">
+        <span class="journey-ticket__icon" aria-hidden="true">TRIP</span>
+        <span>${escapeHtml(save.profile.nickname)}</span>
+        <span class="journey-ticket__meta">도장 ${save.stamps.length}/6</span>
+      </div>`
+    : '';
   const backLabel = opts.backTo === '#/' ? '처음 화면' : '지도';
   const backAria = opts.backTo === '#/' ? '처음 화면으로 돌아가기' : '지도로 돌아가기';
   const back = opts.backTo
@@ -111,9 +119,10 @@ export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: s
     : '';
   bar.innerHTML = `
     ${back}
-    <h1 class="top-bar-title">
-      <span>${escapeHtml(opts.title)}</span>
-      ${opts.subtitle ? `<span class="chip">${escapeHtml(opts.subtitle)}</span>` : ''}
+    ${ticket}
+    <h1 class="top-bar-title quest-ribbon">
+      <span class="ribbon-main">${escapeHtml(opts.title)}</span>
+      ${opts.subtitle ? `<span class="ribbon-sub">${escapeHtml(opts.subtitle)}</span>` : ''}
     </h1>
     <div class="spacer"></div>
     ${dots}
@@ -123,6 +132,22 @@ export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: s
   bar.querySelector('[data-act="settings"]')?.addEventListener('click', () => openSettings());
   bar.querySelector('[data-act="passport"]')?.addEventListener('click', () => navigate('#/passport'));
   return bar;
+}
+
+/** 이어하기 버튼에서 저장 위치를 학생에게 말로 보여 준다. 저장 구조는 바꾸지 않는다. */
+export function describeSavedRoute(route: string): string {
+  const routeLabels: Record<string, string> = {
+    '#/map': '세계 지도부터 이어하기',
+    '#/passport': '여권 꾸미기부터 이어하기',
+    '#/mission/asia': '아시아 여행부터 이어하기',
+    '#/mission/europe': '유럽 여행부터 이어하기',
+    '#/mission/africa': '아프리카 여행부터 이어하기',
+    '#/mission/americas': '아메리카 여행부터 이어하기',
+    '#/mission/oceania': '오세아니아 여행부터 이어하기',
+    '#/mission/respect-dialogue': '존중 대화부터 이어하기',
+    '#/completion': '완주 기록부터 이어하기'
+  };
+  return routeLabels[route] ?? '세계 지도부터 이어하기';
 }
 
 function escapeHtml(value: string): string {

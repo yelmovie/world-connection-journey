@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "assets": "node scripts/build-assets.mjs",
+    "audit:assets": "node scripts/audit-source-assets.mjs --check",
     "verify": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

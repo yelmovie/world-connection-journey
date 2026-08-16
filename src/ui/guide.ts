@@ -31,11 +31,13 @@ export function createGuide(opts: { assetId?: string; side?: 'left' | 'right' } 
   wrap.setAttribute('aria-live', 'polite');
   wrap.innerHTML = `
     <div class="guide-bubble" hidden><span class="guide-text"></span><span class="guide-caret" aria-hidden="true"></span></div>
-    ${hasAsset(assetId) ? `<img class="guide-mascot bob" src="${assetUrl(assetId)}" alt="" aria-hidden="true">` : ''}`;
+    ${hasAsset(assetId) ? `<button type="button" class="guide-mascot-button" aria-label="안내 다시 보기">
+      <img class="guide-mascot bob" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="" aria-hidden="true">
+    </button>` : ''}`;
 
   const bubble = wrap.querySelector('.guide-bubble') as HTMLElement;
   const textEl = wrap.querySelector('.guide-text') as HTMLElement;
-  const mascot = wrap.querySelector('.guide-mascot') as HTMLElement | null;
+  const mascot = wrap.querySelector('.guide-mascot-button') as HTMLButtonElement | null;
   let timer: number | null = null;
   let idleTimer: number | null = null;
   let cueTarget: HTMLElement | null = null;

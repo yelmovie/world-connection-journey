@@ -19,6 +19,7 @@ const KINDS = {
   bg:   { resize: { width: 1600 }, quality: Q_BG },
   logo: { resize: { width: 1024 }, quality: Q_CHAR },
   char: { resize: { width: 512, height: 512, fit: 'inside' }, quality: Q_CHAR },
+  deco: { resize: { width: 384, height: 384, fit: 'inside' }, quality: Q_CHAR },
   icon: { resize: { width: 256, height: 256, fit: 'inside' }, quality: Q_CHAR },
 };
 
