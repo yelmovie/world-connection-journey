@@ -59,7 +59,8 @@ const CAT_STYLE: Record<string, { color: string; fg: string; mark: string }> = {
 /* 표현 전용 스타일 — 로직과 무관한 페이지 내 연출 부품 */
 const PAGE_CSS = `
 .asia-mission .top-bar { background: linear-gradient(180deg,rgba(31,43,74,.78),rgba(31,43,74,0)); }
-.asia-mission .page-body { padding: var(--sp-3) clamp(12px,2.5vw,32px); overflow: hidden; }
+/* 기준 해상도(1024x576+)에서는 한 화면에 들어가지만, 더 낮은 창에서는 잘리는 대신 스크롤한다 */
+.asia-mission .page-body { padding: var(--sp-3) clamp(12px,2.5vw,32px); overflow-y: auto; }
 /* 배경 일러스트가 주인공 — 패널은 하나, 반투명. 오른쪽은 배경 위에 선 캐릭터 열 */
 .asia-mission .mission-scene {
   flex: 1; min-height: 0; width: 100%; display: grid;

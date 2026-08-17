@@ -4,7 +4,10 @@ import { saveRepo } from './SaveRepository';
 export type BgmId = 'main' | 'asia' | 'europe' | 'africa' | 'americas' | 'oceania';
 export type SfxId =
   | 'tap' | 'pickup' | 'drop' | 'success' | 'partial'
-  | 'stamp' | 'complete' | 'whoosh' | 'beat_low' | 'beat_high';
+  | 'stamp' | 'complete' | 'whoosh' | 'beat_low' | 'beat_high'
+  /* 아프리카 리듬 미션용 실제 악기 원샷 (Pixabay, 크레딧 불요 — assets/CREDITS.md) */
+  | 'djembe_low' | 'djembe_high' | 'talkingdrum' | 'shaker'
+  | 'kalimba' | 'kora' | 'clap' | 'count';
 
 const BGM_SRC: Record<BgmId, string> = {
   main: 'sound/bgm/maintheme.mp3',
@@ -185,11 +188,51 @@ class AudioManager {
     }
   }
 
-  /** 리듬 시퀀서용 — SFX 파일과 무관하게 WebAudio 합성 타악기 재생 (결정론적). */
+  /**
+   * 리듬 시퀀서용 타악기.
+   * 실제 젬베 샘플이 준비돼 있으면 그것을 정확한 시각에 예약 재생하고,
+   * 아직 로드 전이거나 파일이 없으면 합성음으로 대체한다(무음 사고 방지).
+   */
   playBeat(kind: 'low' | 'high', when = 0): void {
     if (!this.ctx || !this.settings.sfx) return;
     const vol = this.masterVolume;
     if (vol <= 0) return;
+
+    const sampleId: SfxId = kind === 'low' ? 'djembe_low' : 'djembe_high';
+    const sample = this.sfxBuffers.get(sampleId);
+    if (sample) {
+      const t = this.ctx.currentTime + when;
+      const src = this.ctx.createBufferSource();
+      src.buffer = sample;
+      const gain = this.ctx.createGain();
+      gain.gain.value = (kind === 'low' ? 0.95 : 0.85) * vol;
+      src.connect(gain).connect(this.ctx.destination);
+      src.start(t);
+      return;
+    }
+    // 샘플이 아직 없으면 백그라운드로 준비시키고 이번 타는 합성음으로 낸다.
+    void this.prepareBeatSamples();
+    this.playSynthBeat(kind, when, vol);
+  }
+
+  /** 시퀀서 진입 시 호출 — 젬베 샘플을 미리 디코드해 첫 재생부터 진짜 소리가 나게 한다. */
+  async prepareBeatSamples(): Promise<void> {
+    const ids: SfxId[] = ['djembe_low', 'djembe_high'];
+    await Promise.all(ids.map(async (id) => {
+      if (this.sfxBuffers.has(id)) return;
+      let pending = this.sfxLoads.get(id);
+      if (!pending) {
+        pending = this.loadSfx(id);
+        this.sfxLoads.set(id, pending);
+      }
+      const buf = await pending;
+      this.sfxLoads.delete(id);
+      this.sfxBuffers.set(id, buf);
+    }));
+  }
+
+  private playSynthBeat(kind: 'low' | 'high', when: number, vol: number): void {
+    if (!this.ctx) return;
     const t = this.ctx.currentTime + when;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();

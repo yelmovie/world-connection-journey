@@ -76,7 +76,8 @@ const PURPOSES: ReadonlyArray<{ id: PurposeId; label: string; help: string }> = 
 
 const PAGE_CSS = `
 .europe-mission .top-bar { background:linear-gradient(180deg,rgba(31,43,74,.8),rgba(31,43,74,0)); }
-.europe-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow:hidden; }
+/* 기준 해상도(1024x576+)에서는 한 화면에 들어가지만, 더 낮은 창에서는 잘리는 대신 스크롤한다 */
+.europe-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow-y:auto; }
 /* 배경이 주인공 — 큰 패널은 최대 2개(보드 + 조작 레일), 캐릭터는 배경 위에 크게 선다 */
 .europe-mission .mission-scene { flex:1;min-height:0;display:grid;gap:var(--sp-4);align-items:stretch; }
 .europe-mission .scene-read { grid-template-columns:minmax(0,1fr) clamp(132px,14vw,240px); }

@@ -49,7 +49,7 @@ const STAGE_LABEL: Record<Stage, string> = {
 /* 리본 부제로 쓰는 한 줄 목표 */
 const STAGE_GOAL: Record<Stage, string> = {
   context: '카드 세 장을 눌러 리듬을 알아봐요',
-  r1: '들은 리듬을 여덟 칸에 다시 만들어요',
+  r1: '북 치는 순서를 기억해서 똑같이 만들어요',
   r2: '두 리듬에서 다르게 들린 칸을 찾아요',
   r3: '규칙을 지켜 리듬으로 대답해요'
 };
@@ -129,12 +129,26 @@ function restoreState(data: Record<string, unknown>): AfricaState | null {
 }
 
 const PAGE_CSS = `
-/* 8칸이 1024폭에서도 잘리지 않도록 라벨 1열 + 8열 그리드로 늘린다 */
-.seq { display: grid; grid-template-columns: minmax(40px, auto) repeat(8, minmax(0, 62px)); gap: 6px; align-items: center; justify-content: start; }
+/* 8칸이 1024폭에서도 잘리지 않도록 라벨 1열 + 8열 그리드로 늘린다.
+   듣기 표시줄(.demo-strip.is-aligned)도 같은 열 규격을 써서 "들은 리듬"과 "내 리듬"이 세로로 정렬된다. */
+.seq, .demo-strip.is-aligned {
+  display: grid; grid-template-columns: clamp(84px, 9vw, 118px) repeat(8, minmax(0, 62px));
+  gap: 6px; align-items: center; justify-content: start;
+}
 .seq-row { display: contents; }
-.seq-label { font-weight: 700; font-size: var(--fs-small); text-align: right; padding-right: 4px; white-space: nowrap; }
-.seq-num { text-align: center; font-size: var(--fs-small); color: var(--c-ink-soft); font-weight: 700; }
+.seq-label {
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px;
+  font-family: var(--font-head); font-weight: 700; font-size: var(--fs-small);
+  text-align: right; padding-right: 4px; white-space: nowrap; line-height: 1.1;
+}
+.seq-label img { object-fit: contain; flex-shrink: 0; }
+.seq-label .drum-lo { width: clamp(26px, 3vw, 38px); height: clamp(26px, 3vw, 38px); }
+.seq-label .drum-hi { width: clamp(17px, 2vw, 24px); height: clamp(17px, 2vw, 24px); }
+.seq-num { display: flex; flex-direction: column; align-items: center; line-height: 1.05; text-align: center; font-size: var(--fs-small); color: var(--c-ink-soft); font-weight: 700; }
+/* 확인 전에도 진행 상황이 보이게 — 정답과 같은 칸에만 초록 체크(오답은 표시하지 않음) */
+.seq-mark { height: 1em; font-size: 0.9em; color: var(--c-success-ink); }
 .seq-cell {
+  position: relative;
   width: 100%; height: clamp(44px, 7vh, 60px);
   border-radius: 12px; border: 2px solid var(--c-line); background: #fff;
   font-size: 1.15em; transition: background var(--t-fast), border-color var(--t-fast);
@@ -142,8 +156,18 @@ const PAGE_CSS = `
 }
 .seq-cell.is-on-low { background: var(--c-violet); color: #fff; border-color: #4a30b0; }
 .seq-cell.is-on-high { background: var(--c-gold); color: #5a3c00; border-color: #c69a2e; }
+/* "다시 누르면 쉼"을 글로 설명하지 않고 켜진 칸 위 작은 ✕로 보여 준다 */
+.seq-cell.is-on-low::after, .seq-cell.is-on-high::after {
+  content: '✕'; position: absolute; top: 1px; right: 4px; font-size: 0.55em; opacity: 0.65; font-weight: 700;
+}
 .seq-cell.is-play { outline: 4px solid var(--c-turquoise); outline-offset: -1px; }
 .seq-cell.is-wrong { border-color: var(--c-coral); box-shadow: 0 0 0 3px rgba(242,109,109,0.35); background:#fff4ec; }
+/* 아직 열리지 않은 뒤쪽 칸 — 잠금 표시만, 누를 수 없음 */
+.seq-cell.is-locked { opacity: 0.4; background: repeating-linear-gradient(45deg,#f1ece1,#f1ece1 5px,#e6ded0 5px,#e6ded0 10px); }
+/* 따라하기 모드에서 지금 눌러야 할 칸 */
+.seq-cell.is-guide { outline: 4px dashed var(--c-gold); outline-offset: 2px; animation: seqGuidePulse 0.9s ease-in-out infinite; }
+@keyframes seqGuidePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+@media (prefers-reduced-motion: reduce) { .seq-cell.is-guide { animation: none; } }
 .demo-strip { display: flex; gap: 6px; max-width: 100%; overflow-x: auto; padding: 3px; }
 .demo-cell {
   width: clamp(36px, 4.6vw, 52px); height: clamp(36px, 4.6vw, 52px);
@@ -154,6 +178,9 @@ const PAGE_CSS = `
 .demo-cell.is-now { outline: 3px solid var(--c-turquoise); outline-offset: -1px; }
 .demo-cell.flash-low { background: var(--c-violet); color: #fff; border-color: #4a30b0; }
 .demo-cell.flash-high { background: var(--c-gold); color: #5a3c00; border-color: #c69a2e; }
+.demo-strip.is-aligned { overflow: visible; }
+.demo-strip.is-aligned .demo-cell { width: 100%; height: clamp(30px, 4.4vh, 42px); }
+.demo-cell.is-locked { opacity: 0.35; }
 .pick-col {
   width: clamp(44px, 5.4vw, 60px); height: 44px; border-radius: 10px;
   border: 2px solid var(--c-line); background: #fff; font-weight: 700; padding: 0;
@@ -170,7 +197,8 @@ const PAGE_CSS = `
 .demo-strip { flex-shrink: 1; }
 .rhythm-legend { display: flex; gap: 8px; flex-wrap: wrap; color: var(--c-ink-soft); font-size: var(--fs-small); }
 .africa-mission .top-bar { background:linear-gradient(180deg,rgba(42,30,53,.8),rgba(42,30,53,0)); }
-.africa-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow:hidden; }
+/* 기준 해상도(1024x576+)에서는 한 화면에 들어가지만, 더 낮은 창에서는 잘리는 대신 스크롤한다 */
+.africa-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow-y:auto; }
 /* 배경이 주인공 — 패널은 보드 하나, 진행자는 배경 위에 크게 선다 */
 .africa-mission .mission-scene {
   flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(132px,14vw,240px);
@@ -183,8 +211,14 @@ const PAGE_CSS = `
   border:2px solid rgba(210,169,94,.9);box-shadow:var(--shadow-card);
   display:flex;flex-direction:column;gap:var(--sp-3);
 }
-.africa-mission .stage-backdrop { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.16;border-radius:var(--radius-l);pointer-events:none; }
-.africa-mission .scene-board > :not(.stage-backdrop) { position:relative;z-index:1; }
+/* 북 무대 그림은 흐린 배경이 아니라 "보드 아래를 채우는 진짜 무대"다 —
+   남는 세로 공간을 그림이 먹어서 빈 여백이 생기지 않는다 (order로 맨 아래에 배치) */
+.africa-mission .stage-backdrop {
+  position:static;order:99;width:100%;flex:1 1 auto;min-height:0;
+  object-fit:contain;object-position:bottom;opacity:.96;
+  border-radius:var(--radius-m);pointer-events:none;
+}
+.africa-mission .scene-board > :not(.stage-backdrop) { position:relative;z-index:1;flex:0 0 auto; }
 .africa-mission .scene-board h2 { color:var(--c-navy);font-size:var(--fs-title); }
 .africa-mission .scene-cast {
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
@@ -298,6 +332,8 @@ export function createPage(): Page {
         ...AFRICA_INSTRUMENTS.map((instrument) => instrument.id)
       ]);
       audio.playBgm('africa');
+      // 진짜 젬베 소리를 미리 준비 — 첫 타부터 실제 악기음이 나게 한다(실패하면 합성음 폴백)
+      void audio.prepareBeatSamples();
 
       // ---- 상태 (체크포인트 복원) ----
       const mission = saveRepo.get().missions.africa;
@@ -459,17 +495,33 @@ export function createPage(): Page {
       };
 
       // ---- 시퀀서 위젯 ----
-      const buildSequencer = (onChange?: () => void) => {
+      const buildSequencer = (onChange?: (index: number) => void, headLabel = '내 리듬') => {
         const cells: Cell[] = [0, 0, 0, 0, 0, 0, 0, 0];
+        /** 실시간 초록 체크 기준(정답). null이면 표시하지 않는다 — 채점과는 무관한 표시 전용. */
+        let target: Cell[] | null = null;
+        /** 지금 열려 있는 칸 수 — 단계적 난이도(앞 4칸 → 8칸)를 "표시 범위"로만 처리한다. */
+        let activeLen = STEP_COUNT;
+        /** 따라하기 모드 입력 제한: 정해진 칸만 눌리게 한다. */
+        let gate: ((i: number, kind: 'low' | 'high') => boolean) | null = null;
+        let allDisabled = false;
         const el = document.createElement('div');
         el.className = 'seq';
         el.tabIndex = 0;
         el.setAttribute('aria-label', '여덟 칸 리듬 연주판. 숫자키 1부터 8로 각 칸을 쉼, 낮은 소리, 높은 소리 순서로 바꿀 수 있어요.');
         const head = document.createElement('div');
         head.className = 'seq-row';
-        head.innerHTML =
-          '<span class="seq-label"></span>' +
-          Array.from({ length: STEP_COUNT }, (_, i) => `<span class="seq-num">${i + 1}</span>`).join('');
+        const headPad = document.createElement('span');
+        headPad.className = 'seq-label';
+        headPad.textContent = headLabel;
+        head.appendChild(headPad);
+        const marks: HTMLElement[] = [];
+        for (let i = 0; i < STEP_COUNT; i++) {
+          const n = document.createElement('span');
+          n.className = 'seq-num';
+          n.innerHTML = `<span>${i + 1}</span><span class="seq-mark"></span>`;
+          marks.push(n.querySelector('.seq-mark') as HTMLElement);
+          head.appendChild(n);
+        }
         el.appendChild(head);
 
         const highBtns: HTMLButtonElement[] = [];
@@ -480,7 +532,11 @@ export function createPage(): Page {
           row.className = 'seq-row';
           const lab = document.createElement('span');
           lab.className = 'seq-label';
-          lab.textContent = kind === 'high' ? '★ 고' : '■ 저';
+          // 고/저를 글자만으로 설명하지 않는다 — 작은 북 = 높은 소리, 큰 북 = 낮은 소리 그림으로 보여 준다.
+          lab.innerHTML =
+            kind === 'high'
+              ? `${africaImage('africa.instrument1', '', 'drum-hi')}<span>높은 소리 ★</span>`
+              : `${africaImage('africa.instrument1', '', 'drum-lo')}<span>낮은 소리 ■</span>`;
           row.appendChild(lab);
           for (let i = 0; i < STEP_COUNT; i++) {
             const b = document.createElement('button');
@@ -489,6 +545,11 @@ export function createPage(): Page {
             b.setAttribute('aria-label', `${i + 1}번 칸 ${kind === 'high' ? '높은' : '낮은'} 소리`);
             b.setAttribute('aria-pressed', 'false');
             b.addEventListener('click', () => {
+              if (i >= activeLen) return;
+              if (gate && !gate(i, kind)) {
+                void audio.playSfx('tap'); // 따라하기 중 다른 칸 — 조용히 무시(오답 강조 금지)
+                return;
+              }
               const v: Cell = kind === 'high' ? 2 : 1;
               cells[i] = cells[i] === v ? 0 : v;
               clearWrong();
@@ -499,7 +560,7 @@ export function createPage(): Page {
                 audio.playBeat(kind);
               }
               else void audio.playSfx('tap');
-              onChange?.();
+              onChange?.(i);
             });
             row.appendChild(b);
             (kind === 'high' ? highBtns : lowBtns).push(b);
@@ -512,16 +573,24 @@ export function createPage(): Page {
             const v = cells[i] ?? 0;
             const hi = highBtns[i];
             const lo = lowBtns[i];
+            const locked = i >= activeLen;
             if (hi) {
               hi.classList.toggle('is-on-high', v === 2);
+              hi.classList.toggle('is-locked', locked);
+              hi.disabled = locked || allDisabled;
               hi.textContent = v === 2 ? '★' : '';
               hi.setAttribute('aria-pressed', String(v === 2));
             }
             if (lo) {
               lo.classList.toggle('is-on-low', v === 1);
+              lo.classList.toggle('is-locked', locked);
+              lo.disabled = locked || allDisabled;
               lo.textContent = v === 1 ? '■' : '';
               lo.setAttribute('aria-pressed', String(v === 1));
             }
+            // 소리를 넣은 칸이 정답과 같을 때만 체크 — 쉼 칸은 표시하지 않고, 틀린 칸도 강조하지 않는다.
+            const mark = marks[i];
+            if (mark) mark.textContent = target && !locked && v !== 0 && (target[i] ?? 0) === v ? '✓' : '';
           }
         };
 
@@ -533,7 +602,15 @@ export function createPage(): Page {
         };
 
         const setDisabled = (disabled: boolean): void => {
-          [...highBtns, ...lowBtns].forEach((button) => (button.disabled = disabled));
+          allDisabled = disabled;
+          paint();
+        };
+
+        /** 따라하기 모드: 지금 눌러야 할 칸만 반짝이게 한다. */
+        const highlight = (i: number | null, kind?: 'low' | 'high'): void => {
+          [...highBtns, ...lowBtns].forEach((b) => b.classList.remove('is-guide'));
+          if (i === null) return;
+          (kind === 'high' ? highBtns : lowBtns)[i]?.classList.add('is-guide');
         };
 
         const markWrong = (idx: number[]): void => {
@@ -547,9 +624,10 @@ export function createPage(): Page {
         };
 
         el.addEventListener('keydown', (event) => {
-          if (event.altKey || event.ctrlKey || event.metaKey || highBtns.every((button) => button.disabled)) return;
+          // 따라하기 모드는 "반짝이는 칸을 누르는" 흐름이라 키보드 순환 입력은 받지 않는다.
+          if (event.altKey || event.ctrlKey || event.metaKey || gate || highBtns.every((button) => button.disabled)) return;
           const index = Number(event.key) - 1;
-          if (!Number.isInteger(index) || index < 0 || index >= STEP_COUNT) return;
+          if (!Number.isInteger(index) || index < 0 || index >= activeLen) return;
           event.preventDefault();
           const current = cells[index] ?? 0;
           const next: Cell = current === 0 ? 1 : current === 1 ? 2 : 0;
@@ -559,7 +637,7 @@ export function createPage(): Page {
           if (next === 1) audio.playBeat('low');
           else if (next === 2) audio.playBeat('high');
           else void audio.playSfx('tap');
-          onChange?.();
+          onChange?.(index);
         });
 
         paint();
@@ -573,24 +651,46 @@ export function createPage(): Page {
           setPlayhead,
           setDisabled,
           markWrong,
-          clearWrong
+          clearWrong,
+          setTarget: (next: Cell[] | null): void => {
+            target = next;
+            paint();
+          },
+          setActiveLen: (n: number): void => {
+            activeLen = Math.max(1, Math.min(STEP_COUNT, n));
+            paint();
+          },
+          setGate: (fn: ((i: number, kind: 'low' | 'high') => boolean) | null): void => {
+            gate = fn;
+          },
+          highlight
         };
       };
 
       // ---- 듣기 전용 표시줄 (재생 순간에만 칸이 켜져서 박자를 시각화) ----
-      const buildDemoStrip = () => {
+      const buildDemoStrip = (label = '') => {
         const el = document.createElement('div');
-        el.className = 'demo-strip';
+        // label을 주면 연주판(.seq)과 같은 열 규격으로 그려서 "들은 리듬 / 내 리듬"이 세로로 정렬된다.
+        el.className = label ? 'demo-strip is-aligned' : 'demo-strip';
         el.setAttribute('aria-label', '여덟 칸 시각 박자 표시');
+        if (label) {
+          const lab = document.createElement('span');
+          lab.className = 'seq-label';
+          lab.textContent = label;
+          el.appendChild(lab);
+        }
         for (let i = 0; i < STEP_COUNT; i++) {
           const c = document.createElement('span');
           c.className = 'demo-cell';
           c.textContent = String(i + 1);
           el.appendChild(c);
         }
-        const cells = Array.from(el.children) as HTMLElement[];
+        const cells = Array.from(el.querySelectorAll<HTMLElement>('.demo-cell'));
         return {
           el,
+          setLen(n: number): void {
+            cells.forEach((c, i) => c.classList.toggle('is-locked', i >= n));
+          },
           flash(i: number, v: Cell): void {
             cells.forEach((x, index) => {
               x.classList.remove('is-now', 'flash-low', 'flash-high');
@@ -717,8 +817,10 @@ export function createPage(): Page {
       };
 
       // ---- 2단계: 패턴 재구성 (R1) ----
+      // 난이도는 두 걸음으로 나눈다: 앞 4칸 통과(연습, 점수 없음) → 8칸 전체(기존 채점 그대로).
       const renderR1 = (): void => {
         setBottom(STAGE_LABEL.r1);
+        const HALF = 4;
         const candidates = content.patterns.slice(0, 2);
         const firstPattern = candidates[0];
         if (!firstPattern) return;
@@ -727,47 +829,121 @@ export function createPage(): Page {
         let chosen: PatternDef = candidates.find((p) => p.id === S.r1PatternId) ?? firstPattern;
         S.r1PatternId = chosen.id;
         let locked = r1.first >= 0; // 첫 확인 후에는 패턴 변경 금지(채점 일관성)
-
-        const head = document.createElement('div');
-        head.innerHTML = `<p class="rhythm-legend"><span>■ 낮은 소리</span><span>★ 높은 소리</span><span>다시 누르면 쉼</span></p>`;
-        panel.appendChild(head);
+        // 이미 채점 확인을 한 적이 있으면 연습 단계는 건너뛴다.
+        let stepLimit = r1.first >= 0 ? STEP_COUNT : HALF;
+        let halfFails = 0;
 
         const tabWrap = document.createElement('div');
-        tabWrap.style.cssText = 'display:flex;gap:var(--sp-3);flex-wrap:wrap';
-        const desc = document.createElement('p');
-        desc.className = 'text-lead';
-        desc.style.color = 'var(--c-ink-soft)';
+        tabWrap.style.cssText = 'display:flex;gap:var(--sp-3);flex-wrap:wrap;align-items:center';
 
-        const strip = buildDemoStrip();
+        const strip = buildDemoStrip('들은 리듬');
         let seq!: ReturnType<typeof buildSequencer>;
-        seq = buildSequencer(() => {
+        let guiding = false;
+        let guideIdx = 0;
+        seq = buildSequencer((index) => {
           S.r1Draft = seq.get();
           persist();
+          if (guiding && index === guideIdx) {
+            guideIdx += 1;
+            guideStep();
+          }
         });
         seq.set(S.r1Draft);
+        seq.setTarget(toCells(chosen.steps));
         const fb = document.createElement('div');
         const checkBtn = document.createElement('button');
-        const refreshCheckAvailability = (): void => {
-          checkBtn.disabled = !S.r1Heard.includes(chosen.id) || r1.final >= 1;
-          checkBtn.textContent = S.r1Heard.includes(chosen.id) ? '확인' : '먼저 듣기';
-          if (r1.final >= 1) say('완벽해요! 다음 단계로 가요!', nextBtn);
-          else if (S.r1Heard.includes(chosen.id)) say('들은 대로 칸을 눌러 만들고 확인해요!', seq.el);
-          else say('듣기를 누르고 똑같이 만들어 봐요!', listenBtn);
+
+        const applyLimit = (): void => {
+          seq.setActiveLen(stepLimit);
+          strip.setLen(stepLimit);
+          listenBtn.textContent = stepLimit < STEP_COUNT ? '▶ 앞 4칸 듣기' : '▶ 리듬 듣기';
+          ribbonSub.textContent =
+            stepLimit < STEP_COUNT ? '먼저 앞의 네 칸만 똑같이 만들어요' : STAGE_GOAL.r1;
         };
+
+        const refreshCheckAvailability = (): void => {
+          const heard = S.r1Heard.includes(chosen.id);
+          checkBtn.disabled = guiding || !heard || r1.final >= 1;
+          checkBtn.textContent = !heard ? '먼저 듣기' : stepLimit < STEP_COUNT ? '4칸 확인' : '확인';
+          listenBtn.disabled = guiding || playing;
+          guideBtn.textContent = guiding ? '그만하기' : '한 칸씩 같이';
+          if (guiding) say('반짝이는 칸을 순서대로 눌러요!', seq.el);
+          else if (r1.final >= 1) say('완벽해요! 다음으로 가요!', nextBtn);
+          else if (!heard) say('북을 치는 순서를 잘 들어 봐요!', listenBtn);
+          else if (stepLimit < STEP_COUNT) say('앞의 네 칸만 똑같이 만들어요!', seq.el);
+          else say('이제 여덟 칸을 똑같이 만들어요!', seq.el);
+        };
+
+        // ---- 따라하기(연습) 모드: 정답 칸이 하나씩 반짝이고, 학생이 그 칸을 누르면 다음으로 ----
+        const endGuide = (): void => {
+          guiding = false;
+          seq.setGate(null);
+          seq.highlight(null);
+          refreshCheckAvailability();
+        };
+        function guideStep(): void {
+          if (!guiding) return;
+          if (guideIdx >= stepLimit) {
+            endGuide();
+            showFeedback(fb, 'success', '따라서 다 만들었어요! 이제 확인을 눌러 볼까요?', 'africa');
+            popBounce(seq.el);
+            return;
+          }
+          const target = toCells(chosen.steps);
+          const v = target[guideIdx] ?? 0;
+          if (v === 0) {
+            // 쉼 칸은 누를 것이 없으니 잠깐 보여 주고 자동으로 넘어간다.
+            seq.highlight(null);
+            seq.setGate(() => false);
+            later(() => {
+              guideIdx += 1;
+              guideStep();
+            }, 420);
+            return;
+          }
+          const kind = v === 2 ? 'high' : 'low';
+          seq.highlight(guideIdx, kind);
+          seq.setGate((i, k) => i === guideIdx && k === kind);
+          audio.playBeat(kind);
+        }
+        let hintCounted = false;
+        const guideBtn = document.createElement('button');
+        guideBtn.className = 'btn btn-ghost';
+        guideBtn.textContent = '한 칸씩 같이';
+        guideBtn.addEventListener('click', () => {
+          if (playing || r1.final >= 1) return;
+          void audio.playSfx('tap');
+          if (guiding) {
+            endGuide();
+            return;
+          }
+          // 따라하기는 채점에 반영하지 않고 힌트 사용(retries)으로만 한 번 기록한다.
+          if (!hintCounted) {
+            hintCounted = true;
+            r1.retries += 1;
+          }
+          guiding = true;
+          guideIdx = 0;
+          seq.set(toCells([]));
+          S.r1Draft = seq.get();
+          persist();
+          refreshCheckAvailability();
+          guideStep();
+        });
 
         const tabBtns: HTMLButtonElement[] = [];
         candidates.forEach((p, i) => {
           const t = document.createElement('button');
           t.type = 'button';
           t.className = 'btn btn-ghost';
-          t.textContent = `${p.name} (${p.bpm} BPM)`;
+          t.textContent = p.name;
           t.addEventListener('click', () => {
-            if (locked || playing) return;
+            if (locked || playing || guiding) return;
             void audio.playSfx('tap');
             chosen = candidates[i] ?? chosen;
             S.r1PatternId = chosen.id;
             tabBtns.forEach((x, xi) => x.classList.toggle('is-selected', xi === i));
-            desc.textContent = chosen.desc;
+            seq.setTarget(toCells(chosen.steps));
             strip.reset();
             persist();
             refreshCheckAvailability();
@@ -777,23 +953,23 @@ export function createPage(): Page {
           tabBtns.push(t);
           tabWrap.appendChild(t);
         });
-        desc.textContent = chosen.desc;
-        panel.appendChild(tabWrap);
-        panel.appendChild(desc);
 
-        const listenRow = document.createElement('div');
-        listenRow.style.cssText = 'display:flex;gap:var(--sp-4);align-items:center;flex-wrap:wrap';
         const listenBtn = document.createElement('button');
         listenBtn.className = 'btn';
-        listenBtn.textContent = '▶ 듣기';
+        listenBtn.textContent = '▶ 리듬 듣기';
         listenBtn.addEventListener('click', () => {
-          if (!chosen) return;
+          if (!chosen || guiding) return;
           const ok = playSteps(
-            toCells(chosen.steps),
+            toCells(chosen.steps).slice(0, stepLimit),
             chosen.bpm,
-            (i, v) => strip.flash(i, v),
+            (i, v) => {
+              // 듣기 줄과 내 리듬 줄의 재생헤드가 함께 움직여야 비교가 쉬워진다.
+              strip.flash(i, v);
+              seq.setPlayhead(i);
+            },
             () => {
               strip.reset();
+              seq.setPlayhead(null);
               listenBtn.disabled = false;
               refreshCheckAvailability();
             }
@@ -806,9 +982,9 @@ export function createPage(): Page {
             refreshCheckAvailability();
           }
         });
-        listenRow.appendChild(listenBtn);
-        listenRow.appendChild(strip.el);
-        panel.appendChild(listenRow);
+        tabWrap.append(listenBtn, guideBtn);
+        panel.appendChild(tabWrap);
+        panel.appendChild(strip.el);
         panel.appendChild(seq.el);
 
         const actions = document.createElement('div');
@@ -817,8 +993,10 @@ export function createPage(): Page {
         myPlayBtn.className = 'btn btn-ghost';
         myPlayBtn.textContent = '▶ 내 리듬';
         myPlayBtn.addEventListener('click', () => {
-          const ok = playSteps(seq.get(), chosen?.bpm ?? 88, (i) => seq.setPlayhead(i), () => seq.setPlayhead(null));
-          if (!ok) return;
+          if (guiding) return;
+          playSteps(seq.get().slice(0, stepLimit), chosen?.bpm ?? 88, (i) => seq.setPlayhead(i), () =>
+            seq.setPlayhead(null)
+          );
         });
         actions.appendChild(myPlayBtn);
         checkBtn.className = 'btn btn-primary';
@@ -837,6 +1015,36 @@ export function createPage(): Page {
           const now = performance.now();
           if (playing || !chosen || checkBtn.disabled || now - lastCheckAt < 250) return;
           lastCheckAt = now;
+          if (stepLimit < STEP_COUNT) {
+            // 연습 걸음 — 앞 4칸만 보고, 점수·재시도에는 전혀 기록하지 않는다.
+            const half = toCells(chosen.steps);
+            const draft = seq.get();
+            let halfOk = true;
+            for (let i = 0; i < HALF; i++) if ((draft[i] ?? 0) !== (half[i] ?? 0)) halfOk = false;
+            if (halfOk) {
+              stepLimit = STEP_COUNT;
+              // 뒤 4칸은 아직 들은 적이 없으니 전체 듣기를 한 번 더 하게 한다.
+              S.r1Heard = S.r1Heard.filter((id) => id !== chosen.id);
+              persist();
+              applyLimit();
+              showFeedback(fb, 'success', '앞 네 칸 성공! 이제 여덟 칸을 다 들어 보고 만들어요.', 'africa');
+              popBounce(seq.el);
+              burstConfetti(checkBtn);
+            } else if (halfFails >= 1) {
+              // 연습 걸음에서 막히지 않게 — 두 번째부터는 그냥 8칸을 열어 준다(따라하기로 언제든 도움받을 수 있다).
+              halfFails += 1;
+              stepLimit = STEP_COUNT;
+              S.r1Heard = S.r1Heard.filter((id) => id !== chosen.id);
+              persist();
+              applyLimit();
+              showFeedback(fb, 'partial', '괜찮아요! 여덟 칸을 다시 듣고 “한 칸씩 같이”로 함께 만들어 봐요.', 'africa');
+            } else {
+              halfFails += 1;
+              showFeedback(fb, 'partial', '괜찮아요. 다시 듣거나 “한 칸씩 같이”로 함께 만들어 봐요.', 'africa');
+            }
+            refreshCheckAvailability();
+            return;
+          }
           locked = true;
           tabBtns.forEach((x) => (x.disabled = true));
           const target = toCells(chosen.steps);
@@ -868,6 +1076,7 @@ export function createPage(): Page {
           if (r1.final < 1) nextBtn.textContent = '이대로 다음';
           else seq.setDisabled(true);
         }
+        applyLimit();
         refreshCheckAvailability();
         actions.appendChild(checkBtn);
         actions.appendChild(nextBtn);
@@ -1037,22 +1246,28 @@ export function createPage(): Page {
         if (!S.r3) S.r3 = { first: -1, final: 0, retries: 0 };
         const r3 = S.r3;
 
-        const head = document.createElement('div');
-        head.innerHTML = `<p class="rhythm-legend"><span>■ 낮은 소리</span><span>★ 높은 소리</span><span>다시 누르면 쉼</span></p>`;
-        panel.appendChild(head);
-
-        const strip = buildDemoStrip();
+        // 고/저 설명은 연주판 행 라벨(북 그림)이 대신한다 — 화면 글자를 늘리지 않는다.
+        const strip = buildDemoStrip('호출 리듬');
         const callRow = document.createElement('div');
-        callRow.style.cssText = 'display:flex;gap:var(--sp-4);align-items:center;flex-wrap:wrap';
+        callRow.style.cssText = 'display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap';
         const callBtn = document.createElement('button');
         callBtn.className = 'btn';
         callBtn.textContent = '▶ 호출 듣기';
         let callListened = S.callHeard;
         callBtn.addEventListener('click', () => {
-          const ok = playSteps(call, cr.call.bpm, (i, v) => strip.flash(i, v), () => {
-            strip.reset();
-            callBtn.disabled = false;
-          });
+          const ok = playSteps(
+            call,
+            cr.call.bpm,
+            (i, v) => {
+              strip.flash(i, v);
+              seq.setPlayhead(i); // 호출 줄과 내 응답 줄의 재생헤드를 함께 움직인다
+            },
+            () => {
+              strip.reset();
+              seq.setPlayhead(null);
+              callBtn.disabled = false;
+            }
+          );
           if (ok) {
             callBtn.disabled = true;
             if (!callListened) {
@@ -1065,7 +1280,6 @@ export function createPage(): Page {
           }
         });
         callRow.appendChild(callBtn);
-        callRow.appendChild(strip.el);
         panel.appendChild(callRow);
 
         const ruleList = document.createElement('div');
@@ -1095,16 +1309,15 @@ export function createPage(): Page {
             actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
           });
         });
-        const ruleRow = document.createElement('div');
-        ruleRow.style.cssText = 'display:flex;gap:var(--sp-2);align-items:center;flex-wrap:wrap';
-        ruleRow.append(ruleChip, ruleBtn);
-        panel.appendChild(ruleRow);
+        // 호출 듣기·규칙은 한 줄로 묶고, 그 아래 "호출 리듬 / 내 응답"을 같은 열 규격으로 나란히 둔다.
+        callRow.append(ruleChip, ruleBtn);
+        panel.appendChild(strip.el);
 
         let seq!: ReturnType<typeof buildSequencer>;
         seq = buildSequencer(() => {
           S.r3Draft = seq.get();
           persist();
-        });
+        }, '내 응답');
         seq.set(S.r3Draft);
         panel.appendChild(seq.el);
 
@@ -1121,7 +1334,7 @@ export function createPage(): Page {
         exampleBtn.className = 'btn btn-ghost';
         exampleBtn.textContent = '▶ 예시';
         exampleBtn.style.display = 'none';
-        const exampleStrip = buildDemoStrip();
+        const exampleStrip = buildDemoStrip('예시 응답');
         exampleStrip.el.style.display = 'none';
         exampleBtn.addEventListener('click', () => {
           const ex = toCells(cr.examples[0]);
