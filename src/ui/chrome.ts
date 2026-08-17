@@ -38,6 +38,12 @@ export function openSettings(): void {
         <p style="margin-top:var(--sp-2)">교육 내용 근거: 교육부 2022 개정 사회과 교육과정(moe.go.kr). 앱 화면·자체 제작 이미지·BGM의 무단 복제·재배포·상업적 이용을 금지하며, 외부 에셋의 권리는 각 원저작자와 라이선스 조건을 따라요.</p>
         <p style="margin-top:var(--sp-2)">ⓒ 2026 세계를 잇는 여행 프로젝트 · 버전 0.1.0</p>
       </details>
+      <details class="card" id="teacher-tools">
+        <summary style="font-weight:800;cursor:pointer">교사용 도구</summary>
+        <p style="margin-top:var(--sp-2)">수업에서 특정 미션만 다루거나 시연할 때 모든 미션을 열 수 있어요. 학생이 이미 쌓은 점수·도장·기록은 지워지지 않아요.</p>
+        <p id="teacher-state" class="chip" style="margin-top:var(--sp-2)">${saveRepo.isTeacherUnlocked() ? '지금은 전체 해금 상태예요.' : '지금은 순서대로 열리는 상태예요.'}</p>
+        <button class="btn btn-ghost" id="btn-unlock-all" style="margin-top:var(--sp-3)" ${saveRepo.isTeacherUnlocked() ? 'disabled aria-disabled="true"' : ''}>전체 미션 해금</button>
+      </details>
     </div>`;
   const closeSettings = openModal({
     id: 'settings',
@@ -63,6 +69,19 @@ export function openSettings(): void {
       },
       { label: '닫기', kind: 'primary', onClick: (close) => close(), autofocus: true }
     ]
+  });
+  body.querySelector('#btn-unlock-all')?.addEventListener('click', () => {
+    closeSettings();
+    queueMicrotask(() => confirmDialog(
+      '모든 미션을 열까요?',
+      '다섯 대륙을 끝내지 않아도 대화 미션과 인증 화면까지 바로 갈 수 있어요. 수업 시연이나 한 미션만 다루는 차시에 쓰세요. 학생 기록은 그대로 남아요.',
+      '전체 해금',
+      () => {
+        saveRepo.unlockAllForTeacher();
+        showToast('모든 미션을 열었어요. 지도에서 바로 고를 수 있어요.', 'success');
+        navigate('#/map');
+      }
+    ));
   });
   body.querySelector('#set-volume')?.addEventListener('input', (e) => {
     audio.setVolume(Number((e.target as HTMLInputElement).value) / 100);
@@ -94,7 +113,17 @@ function toggleRow(id: string, label: string, checked: boolean): string {
     </label>`;
 }
 
-/** 미션 공통 상단 바: 지도로 버튼 + 제목 + 진행 점 + 설정 */
+/* 상단바 아이콘 — 이모지 대신 SVG (OS별 글리프 차이·미지원 네모 방지) */
+const GEAR_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm9.3 4c0-.6-.1-1.2-.2-1.8l2-1.5-2-3.4-2.3 1a7.6 7.6 0 00-3.1-1.8L15.3 2h-3.9l-.4 2.5c-1.1.3-2.2.9-3.1 1.8l-2.3-1-2 3.4 2 1.5a7.7 7.7 0 000 3.6l-2 1.5 2 3.4 2.3-1c.9.9 2 1.5 3.1 1.8l.4 2.5h3.9l.4-2.5c1.1-.3 2.2-.9 3.1-1.8l2.3 1 2-3.4-2-1.5c.1-.6.2-1.2.2-1.8z"/></svg>`;
+const SOUND_ON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4zM14 2.2v2.1a7.8 7.8 0 010 15.4v2.1a9.9 9.9 0 000-19.6z"/></svg>`;
+const SOUND_OFF_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor"><path d="M4 9v6h4l5 4V5L8 9H4zm15.5 3l2.3-2.3-1.4-1.4L18 10.6l-2.3-2.3-1.4 1.4 2.3 2.3-2.3 2.3 1.4 1.4 2.3-2.3 2.4 2.3 1.4-1.4z"/></svg>`;
+
+function soundIconSvg(): string {
+  const s = saveRepo.get().settings;
+  return s.bgm || s.sfx ? SOUND_ON_SVG : SOUND_OFF_SVG;
+}
+
+/** 미션 공통 상단 바: 지도로 버튼 + 제목 + 진행 점 + 소리·설정 아이콘 */
 export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: string; showPassport?: boolean; steps?: { total: number; done: number; now: number } }): HTMLElement {
   const bar = document.createElement('header');
   bar.className = 'top-bar';
@@ -127,9 +156,18 @@ export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: s
     <div class="spacer"></div>
     ${dots}
     ${opts.showPassport ? '<button class="btn btn-ghost" data-act="passport">여권</button>' : ''}
-    <button class="btn btn-ghost" data-act="settings">설정</button>`;
+    <button class="btn btn-ghost btn-icon" data-act="sound" aria-label="소리 켜기 끄기">${soundIconSvg()}</button>
+    <button class="btn btn-ghost btn-icon" data-act="settings" aria-label="설정">${GEAR_SVG}</button>`;
   bar.querySelector('[data-act="back"]')?.addEventListener('click', () => navigate(opts.backTo ?? '#/map'));
   bar.querySelector('[data-act="settings"]')?.addEventListener('click', () => openSettings());
+  const soundBtn = bar.querySelector<HTMLElement>('[data-act="sound"]');
+  soundBtn?.addEventListener('click', () => {
+    const s = saveRepo.get().settings;
+    const on = !(s.bgm || s.sfx); // 하나라도 켜져 있으면 전체 끄기, 다 꺼져 있으면 전체 켜기
+    audio.setSettings(on, on);
+    soundBtn.innerHTML = soundIconSvg();
+    showToast(on ? '소리를 켰어요.' : '소리를 껐어요. 그림으로 계속할 수 있어요.', 'info', 1800);
+  });
   bar.querySelector('[data-act="passport"]')?.addEventListener('click', () => navigate('#/passport'));
   return bar;
 }

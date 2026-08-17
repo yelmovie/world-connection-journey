@@ -51,6 +51,8 @@ export interface GameSaveV1 {
     certificateIssued: boolean;
   };
   rewardClaimedById: Record<string, boolean>;
+  /** 교사용 전체 해금 — 수업 시연·부분 차시용. 켜져 있으면 선행 조건 잠금을 적용하지 않는다. */
+  teacherUnlocked?: boolean;
   lastRoute: string;
   updatedAt: string;
 }

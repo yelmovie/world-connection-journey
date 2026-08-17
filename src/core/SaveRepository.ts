@@ -112,6 +112,7 @@ export function validateSave(raw: unknown): GameSaveV1 {
       if (typeof v === 'boolean') base.rewardClaimedById[k] = v;
     }
   }
+  if (r.teacherUnlocked === true) base.teacherUnlocked = true;
   if (typeof r.lastRoute === 'string' && r.lastRoute.startsWith('#/')) base.lastRoute = r.lastRoute;
   if (typeof r.updatedAt === 'string') base.updatedAt = r.updatedAt;
 
@@ -134,6 +135,14 @@ function normalizeMissionRewards(save: GameSaveV1): void {
 export function recomputeUnlocks(save: GameSaveV1): void {
   const continentsDone = CONTINENT_IDS.every((id) => save.missions[id].status === 'completed');
   const d = save.missions.dialogue;
+  // 교사가 수업용으로 전체 해금한 경우에는 선행 조건 잠금을 적용하지 않는다.
+  if (save.teacherUnlocked === true) {
+    for (const id of MISSION_IDS) {
+      if (save.missions[id].status === 'locked') save.missions[id].status = 'available';
+    }
+    save.completion.unlocked = true;
+    return;
+  }
   if (!continentsDone) {
     // 완료/해금 값을 직접 주입한 저장 데이터도 선행 미션 없이는 인정하지 않는다.
     d.status = 'locked';
@@ -300,6 +309,25 @@ class SaveRepository {
   reset(): void {
     this.state = defaultSave();
     this.persist();
+  }
+
+  /**
+   * 교사용 전체 해금 — 수업 시연·특정 미션만 다루는 차시를 위해 모든 미션을 열어 둔다.
+   * 학생 진행 기록(점수·도장·회고)은 지우지 않고, 아직 못 연 미션만 '도전 가능'으로 바꾼다.
+   * recomputeUnlocks가 선행 조건을 다시 잠그지 못하도록 teacherUnlocked 플래그로 표시한다.
+   */
+  unlockAllForTeacher(): void {
+    this.update((s) => {
+      s.teacherUnlocked = true;
+      for (const id of MISSION_IDS) {
+        if (s.missions[id].status === 'locked') s.missions[id].status = 'available';
+      }
+      s.completion.unlocked = true;
+    });
+  }
+
+  isTeacherUnlocked(): boolean {
+    return this.state.teacherUnlocked === true;
   }
 }
 
