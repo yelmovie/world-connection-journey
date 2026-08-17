@@ -152,7 +152,8 @@ const MAP_CSS = `
   .map-brief__stamp img { width:34px;height:34px; }
 }
 @media (max-width:900px) {
-  .map-layout { grid-template-columns:176px minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto; }
+  /* 지도가 주인공이다 — 아래로 접힌 안내판이 지도 높이를 뺏지 않게 지도에 최소 높이를 준다 */
+  .map-layout { grid-template-columns:176px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto; }
   .map-brief { grid-column:1/-1;height:auto;display:grid;grid-template-columns:1fr 1.45fr auto;align-items:center;gap:10px; }
   .map-brief__steps,.map-brief__stamp { display:none; }
   .map-brief .btn-primary { width:auto;min-width:190px; }

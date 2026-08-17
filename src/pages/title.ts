@@ -34,7 +34,11 @@ const TITLE_CSS = `
 .title-hero .title-deco.deco-right { animation: bob 4.4s ease-in-out 2; animation-delay: 0.7s; }
 .title-cta { display: flex; gap: clamp(10px, 2vw, 28px); flex-wrap: wrap; justify-content: center; }
 .title-cta .btn-big { min-width: clamp(190px, 21vw, 280px); }
-.title-page .bottom-bar { justify-content: center; min-height: 0; padding-block: var(--sp-2) var(--sp-3); }
+/* CTA는 하단 고정 행에 둔다 — 화면이 낮아도 "새 여행"이 항상 보이게 (스크롤에 갇히지 않음) */
+.title-page .bottom-bar {
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-2); min-height: 0; padding-block: var(--sp-2) var(--sp-3);
+}
 .title-foot-note {
   color: rgba(255,255,255,0.92); font-size: var(--fs-small); font-weight: 700;
   text-shadow: 0 1px 5px rgba(0,0,0,0.55);
@@ -115,6 +119,8 @@ export function createPage(): Page {
             ${hasAsset('plane.main') ? `<img class="hero-plane bob" src="${assetUrl('plane.main')}" data-asset-id="plane.main" alt="" aria-hidden="true">` : ''}
             ${hasAsset('deco.landmark_liberty') ? `<img class="title-deco deco-right" src="${assetUrl('deco.landmark_liberty')}" data-asset-id="deco.landmark_liberty" alt="" aria-hidden="true">` : ''}
           </div>
+        </div>
+        <div class="bottom-bar">
           <div class="title-cta">
             <button class="btn btn-primary btn-big" data-act="new">
               ${hasAsset('icon.compass') ? `<img class="btn-cta-icon" src="${assetUrl('icon.compass')}" data-asset-id="icon.compass" alt="" aria-hidden="true">` : ''}새 여행
@@ -125,8 +131,6 @@ export function createPage(): Page {
               ${hasAsset('plane.alt1') ? `<img class="btn-cta-icon" src="${assetUrl('plane.alt1')}" data-asset-id="plane.alt1" alt="" aria-hidden="true">` : ''}이어하기
             </button>
           </div>
-        </div>
-        <div class="bottom-bar">
           <p class="title-foot-note">초등학교 6학년 사회 · 지구촌 사람들</p>
         </div>
         <div class="page-deco" aria-hidden="true">
