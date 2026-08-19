@@ -11,10 +11,11 @@ const SVG_SOUND_ON = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none
 const SVG_SOUND_OFF = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/><line x1="15" y1="9" x2="21" y2="15"/><line x1="21" y1="9" x2="15" y2="15"/></svg>`;
 const SVG_GEAR = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01A1.7 1.7 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01A1.7 1.7 0 0 0 20.91 10H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/></svg>`;
 
+/* 프롤로그 — 초등학생 눈높이: 누가 말하는지 먼저 밝히고, 무엇을 할지, 어떻게 할지 순서로 */
 const PROLOGUE_LINES = [
-  '먼저 그림과 자료를 천천히 관찰해요.',
-  '궁금한 점은 물어보고, 친구의 말을 끝까지 들어요.',
-  '새로 안 사실로 내 생각을 바꾸며 여행해요.'
+  '안녕! 나는 세계를 잇는 비행기, 코리예요.',
+  '다섯 대륙 친구들의 하루를 함께 조사할 거예요.',
+  '보고, 물어보고, 끝까지 듣고, 생각을 바꾸면 성공!'
 ];
 
 const TITLE_CSS = `

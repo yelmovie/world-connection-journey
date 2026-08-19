@@ -111,10 +111,11 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
     font-size: var(--fs-title);
     line-height: 1.6;
     padding: var(--sp-6);
-    animation: rotate-hint 2s ease-in-out infinite;
+    /* 깜빡이며 뒤 화면이 비치면 "눌러도 되나?" 하고 헷갈린다 — 완전히 덮어 한 가지만 하게 한다 */
   }
+  /* 세로에서는 뒤 화면을 만질 수 없게 한다 */
+  #app { pointer-events: none; }
 }
-@keyframes rotate-hint { 0%, 100% { opacity: 1; } 50% { opacity: 0.75; } }
 @media (prefers-reduced-motion: reduce) { body::after { animation: none; } }
 :root[data-reduced-motion="true"] body::after { animation: none; }
 
