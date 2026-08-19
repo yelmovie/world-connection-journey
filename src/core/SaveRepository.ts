@@ -274,8 +274,11 @@ class SaveRepository {
       const m = s.missions[missionId];
       if (m.status === 'available') m.status = 'in_progress';
       m.checkpointId = checkpointId;
-      // 체크포인트는 스냅샷이다. 이전 회차의 필드가 새 회차에 섞이지 않도록 교체한다.
+      // 체크포인트는 스냅샷이다. 이전 회차의 필드가 새 회차에 섞이지 않도록 교체하되,
+      // 배움 기록(learn: 첫 생각·배움 카드)은 회차와 무관한 성찰 데이터라 항상 보존한다.
+      const learn = m.data.learn;
       m.data = data ? { ...data } : {};
+      if (learn !== undefined && m.data.learn === undefined) m.data.learn = learn;
     });
     bus.emit('MISSION_CHECKPOINT', { missionId, checkpointId });
   }
@@ -296,7 +299,8 @@ class SaveRepository {
         m.completedAt = new Date().toISOString();
       }
       m.checkpointId = null;
-      m.data = {};
+      // 진행 스냅샷은 비우되 배움 기록은 남긴다 — 여권·수료증의 배움 카드가 이걸 읽는다.
+      m.data = m.data.learn !== undefined ? { learn: m.data.learn } : {};
       if (!s.rewardClaimedById[rewardKey]) {
         s.rewardClaimedById[rewardKey] = true;
         if (!s.stamps.includes(missionId)) s.stamps.push(missionId);

@@ -8,6 +8,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { showToast } from '../ui/toast';
@@ -180,6 +181,7 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       const c = await loadContent<AsiaContent>('asia');
       if (disposed) return;
+      const learn = getLearn(c); // 배움 루프(친구 소개→예상→배움 확인) — null이면 기존 흐름 그대로
       audio.playBgm('asia');
 
       // ---- 미션 진행 상태 ----
@@ -199,6 +201,8 @@ export function createPage(): Page {
 
       const persistAsiaCheckpoint = (checkpointId: 'observe' | 'round2' | 'round3'): void => {
         saveRepo.setCheckpoint('asia', checkpointId, {
+          // setCheckpoint는 data를 통째로 교체하므로 배움 기록(예상)을 함께 실어 보존한다
+          learn: saveRepo.get().missions.asia.data.learn,
           observed: [...observed],
           r1First,
           r2First,
@@ -264,8 +268,9 @@ export function createPage(): Page {
       });
       page.appendChild(bar);
       const ribbonSub = bar.querySelector('.ribbon-sub') as HTMLElement;
+      // 부제 = 학습 목표 고정. 단계별 조작 안내는 말풍선이, 진행은 상단 진행 점이 맡는다.
       const setRibbon = (text: string): void => {
-        ribbonSub.textContent = text;
+        ribbonSub.textContent = learn?.goal ?? text;
       };
       const body = document.createElement('div');
       body.className = 'page-body';
@@ -280,7 +285,14 @@ export function createPage(): Page {
       guide = gd;
       page.appendChild(gd.el);
       let lastSaid = '';
+      // 친구 소개 모달이 떠 있는 동안에는 말풍선 타이핑을 미뤄 뒀다가, 모달을 닫으면 시작한다.
+      let introGate = learn !== null;
+      let pendingSay: { text: string; cue: HTMLElement | null } | null = null;
       const say = (text: string, cue: HTMLElement | null): void => {
+        if (introGate) {
+          pendingSay = { text, cue };
+          return;
+        }
         if (text !== lastSaid) {
           lastSaid = text;
           gd.say(text, { cue });
@@ -330,7 +342,15 @@ export function createPage(): Page {
           revision: imperfect === 0 ? 1 : improved / imperfect // 수정 = 재도전 시 실제로 나아졌는가
         };
         const result = computeScore(ratios, WEIGHTS, 5 - imperfect);
-        completeMissionFlow('asia', '아시아', result);
+        // 점수 모달 전에 배움 확인(처음 생각 vs 발견) — learn 없으면 기존 흐름 그대로
+        const done = (): void => {
+          const learnRec = saveRepo.get().missions.asia.data.learn;
+          completeMissionFlow('asia', '아시아', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 되살린다(여권·수료증에서 읽음)
+          if (learnRec) saveRepo.update((s) => { s.missions.asia.data.learn = learnRec; });
+        };
+        if (learn) showLearningWrap('asia', learn, done);
+        else done();
       };
 
       // ================= 1라운드: 타임라인 =================
@@ -900,6 +920,17 @@ export function createPage(): Page {
       }
 
       startRound();
+      // 화면을 다 그린 뒤 친구 소개 + 예상하기. 닫으면 미뤄 둔 첫 말풍선이 시작된다.
+      if (learn) {
+        showFriendIntro('asia', learn, () => {
+          introGate = false;
+          if (pendingSay) {
+            const p = pendingSay;
+            pendingSay = null;
+            say(p.text, p.cue);
+          }
+        });
+      }
     },
 
     unmount() {

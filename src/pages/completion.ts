@@ -11,13 +11,22 @@ import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { threeSlot } from '../ui/threeSlot';
 import { createGuide, type GuideController } from '../ui/guide';
 import { burstConfetti, popBounce } from '../ui/fx';
+import { readLearnCard } from '../ui/learnFrame';
 import { MISSION_IDS, type MissionId } from '../types';
 
 interface CommonContent {
   reflectionFrame?: string;
   actionPrinciples?: string[];
+  inquiryQuestions?: string[];
   stamps?: Array<{ id: string; label: string }>;
 }
+
+/** 여권에서 고른 탐구 질문 id → 회고 첫 칸의 "처음 생각" 예시 */
+const INQUIRY_EXAMPLES: Record<string, string> = {
+  q1: '예: 인사하는 방법은 어디나 똑같을 거야',
+  q2: '예: 학교생활은 나라마다 전혀 다를 거야',
+  q3: '예: 자연과 문화 지키기는 어른들의 일일 거야'
+};
 
 const PIECES: Array<{ id: MissionId; label: string }> = [
   { id: 'asia', label: '아시아' },
@@ -117,10 +126,33 @@ const COMPLETION_CSS = `
 .cert-frame .cert-text .cert-quote { background: rgba(255,249,234,0.85); border-radius: 10px; padding: 6px 12px; max-width: 92%; }
 .ref-row { display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--fs-body); }
 .ref-row .ref-input { padding: 8px 10px; border: 2px solid var(--c-line); border-radius: var(--radius-s); }
+/* 회고 위 배움 카드 6장 요약 — 미션에서 만난 친구와 발견을 다시 본다 */
+.completion-learn { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--sp-2); margin: var(--sp-2) 0 var(--sp-3); }
+.learn-card-row .learn-card-main { display: flex; flex-direction: column; min-width: 0; text-align: left; }
+.learn-card-row .learn-card-title { font-family: var(--font-head); color: var(--c-navy); line-height: 1.15; }
+.learn-card-row .learn-card-line {
+  color: var(--c-ink-soft); font-weight: 600; font-size: calc(var(--fs-small)*.9); line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* 여권에서 고른 탐구 질문 — 여기서 답을 적으며 학습 고리를 닫는다 */
+.completion-inquiry {
+  background: rgba(242,193,78,.18); border: 2px solid rgba(242,193,78,.6); border-radius: var(--radius-m);
+  padding: var(--sp-2) var(--sp-3); font-weight: 800; color: var(--c-navy); margin-bottom: var(--sp-2);
+}
+/* 수료증 안의 배움 목록 */
+.cert-learned { list-style: none; margin: 2px 0 0; padding: 0; max-width: 94%; display: flex; flex-direction: column; gap: 1px; font-size: calc(var(--fs-small)*.82); }
+.cert-learned li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cert-learned-title { font-weight: 800; color: #6f5514; }
+@media (max-width: 700px) { .completion-learn { grid-template-columns: 1fr; } }
 /* 낮은 화면(1024×576 교실 태블릿)에서 회고 단계가 스크롤 없이 들어오도록 밀도를 올린다 */
 @media (max-height: 620px) {
   .completion-page .page-body { gap: var(--sp-2); padding-block: 4px; }
   .completion-page .panel { padding: var(--sp-2) var(--sp-3); }
+  .completion-learn { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin: 6px 0 8px; }
+  .completion-learn .learn-card-row { padding: 3px 8px; }
+  .completion-learn .learn-card-row img { width: 26px; height: 26px; }
+  .completion-learn .learn-card-line { -webkit-line-clamp: 1; }
+  .completion-inquiry { padding: 4px 10px; font-size: var(--fs-small); margin-bottom: 6px; }
   .ref-row { gap: 6px; font-size: var(--fs-small); }
   .ref-row .ref-input { min-height: 44px; padding: 6px 8px; }
   #sec-reflect h3 { font-size: var(--fs-body); margin-top: var(--sp-2) !important; }
@@ -160,6 +192,13 @@ export function createPage(): Page {
 
       const principles = common.actionPrinciples ?? ['관찰하기', '물어보기', '끝까지 듣기', '잘못 알았으면 수정하기'];
       const placed = new Set<MissionId>(save.completion.placedPuzzlePieceIds);
+
+      // 여권(질문 선택) → 미션(배움 카드) → 수료증(내 답)으로 학습 고리를 닫는다
+      const inquiryId = save.profile?.inquiryQuestionId ?? 'q1';
+      const inquiryIndex = Math.max(0, ['q1', 'q2', 'q3'].indexOf(inquiryId));
+      const inquiryQuestion = (common.inquiryQuestions ?? [])[inquiryIndex] ?? '';
+      const learnCards = MISSION_IDS.map((id) => ({ id, ...readLearnCard(id) }));
+      const earnedCards = learnCards.filter((card) => card.earned && card.friendName);
 
       const page = document.createElement('div');
       page.className = 'page completion-page';
@@ -214,8 +253,17 @@ export function createPage(): Page {
 
         <section class="panel" id="sec-reflect" style="display:none">
           <h2 style="color:var(--c-navy)">② 여행에서 바뀐 나의 생각</h2>
+          <div class="completion-learn" aria-label="여행에서 받은 배움 카드">
+            ${learnCards.map((card) => {
+              const label = PIECES.find((piece) => piece.id === card.id)?.label ?? card.id;
+              return card.earned && card.friendName
+                ? `<div class="learn-card-row">${card.friendImageId && hasAsset(card.friendImageId) ? `<img src="${assetUrl(card.friendImageId)}" data-asset-id="${card.friendImageId}" alt="" aria-hidden="true">` : ''}<div class="learn-card-main"><span class="learn-card-title">${escapeHtml(card.friendName)} · ${label}</span><span class="learn-card-line">${escapeHtml(card.line)}</span></div></div>`
+                : `<div class="learn-card-row is-empty"><div class="learn-card-main"><span class="learn-card-title">${label}</span><span class="learn-card-line">아직 받지 못한 배움 카드예요</span></div></div>`;
+            }).join('')}
+          </div>
+          ${inquiryQuestion ? `<p class="completion-inquiry">여행을 떠나며 네가 고른 질문 — “${escapeHtml(inquiryQuestion)}” 이제 너의 답을 적어 봐요!</p>` : ''}
           <div class="ref-row">
-            <label>처음에는 <input id="ref-1" type="text" maxlength="60" class="ref-input" placeholder="예: 다른 나라 친구들은 우리와 아주 다를 거야" style="width:min(420px,90%)"> 라고 생각했지만,</label>
+            <label>처음에는 <input id="ref-1" type="text" maxlength="60" class="ref-input" placeholder="${escapeHtml(INQUIRY_EXAMPLES[inquiryId] ?? '예: 다른 나라 친구들은 우리와 아주 다를 거야')}" style="width:min(420px,90%)"> 라고 생각했지만,</label>
             <label><input id="ref-2" type="text" maxlength="60" class="ref-input" placeholder="예: 아시아 친구의 하루" style="width:min(300px,80%)"> 자료를 보고,</label>
             <label><input id="ref-3" type="text" maxlength="60" class="ref-input" placeholder="예: 비슷한 점도 많고 저마다 다른 이유가 있구나" style="width:min(420px,90%)"> 라고 생각을 바꾸었어요.</label>
           </div>
@@ -418,13 +466,15 @@ export function createPage(): Page {
               <h2>세계 연결 수료증</h2>
               <p><strong>${escapeHtml(s.profile?.nickname ?? '여행자')}</strong> 여행자</p>
               <p>다섯 대륙의 생활을 조사하고, 다름을 잇는 대화를 완주하여<br>세계를 연결하는 여행을 마쳤음을 인증합니다.</p>
+              ${inquiryQuestion ? `<p>나의 탐구 질문: <strong>“${escapeHtml(inquiryQuestion)}”</strong></p>` : ''}
+              ${earnedCards.length ? `<p class="cert-learned-title">내가 만난 친구들과 배운 것</p><ul class="cert-learned">${earnedCards.slice(0, 6).map((card) => `<li><strong>${escapeHtml(card.friendName)}</strong> · ${escapeHtml(card.line)}</li>`).join('')}</ul>` : ''}
               ${s.completion.reflection ? `<p class="cert-quote">“${escapeHtml(s.completion.reflection)}”</p>` : ''}
               ${s.completion.actionPrinciples.length ? `<p>나의 실천 약속: <strong>${s.completion.actionPrinciples.map(escapeHtml).join(' · ')}</strong></p>` : ''}
               <p style="color:#6b7a8d">${dateStr} · 세계를 잇는 여행</p>
             </div>`;
         } else {
           cert.style.cssText = 'background:#fff;border:6px double var(--c-gold);border-radius:var(--radius-s);padding:var(--sp-6);text-align:center;max-width:720px;margin:var(--sp-4) auto';
-          cert.innerHTML = certificateHtml(s.profile?.nickname ?? '여행자', dateStr, s.completion.reflection, s.completion.actionPrinciples);
+          cert.innerHTML = certificateHtml(s.profile?.nickname ?? '여행자', dateStr, s.completion.reflection, s.completion.actionPrinciples, inquiryQuestion, earnedCards);
         }
         // 마지막 단계: 보상 스트립 + 수료증만 남긴다(헤더는 축소해 둘 다 스크롤 없이 보이게)
         page.classList.add('is-final');
@@ -483,6 +533,8 @@ export function createPage(): Page {
           new Date().toLocaleDateString('ko-KR'),
           s.completion.reflection,
           s.completion.actionPrinciples,
+          inquiryQuestion,
+          earnedCards,
           true
         );
         document.body.classList.add('printing-certificate');
@@ -517,13 +569,18 @@ export function createPage(): Page {
   };
 }
 
-function certificateHtml(nickname: string, date: string, reflection: string, principles: string[], forPrint = false): string {
+function certificateHtml(
+  nickname: string, date: string, reflection: string, principles: string[],
+  inquiry = '', learned: Array<{ friendName: string; line: string }> = [], forPrint = false
+): string {
   return `
     <div style="${forPrint ? 'width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:10px double #F2C14E;margin:16px;padding:24px;' : ''}text-align:center;font-family:var(--font-body, sans-serif);color:#19324D">
       <p style="font-size:1rem;letter-spacing:0.3em;color:#6f5514">CERTIFICATE</p>
       <h2 style="font-family:var(--font-head, sans-serif);font-size:2em;margin:8px 0">세계 연결 수료증</h2>
       <p style="font-size:1.2em;margin:12px 0"><strong>${escapeHtml(nickname)}</strong> 여행자</p>
       <p>다섯 대륙의 생활을 조사하고, 다름을 잇는 대화를 완주하여<br>세계를 연결하는 여행을 마쳤음을 인증합니다.</p>
+      ${inquiry ? `<p style="font-size:1rem;margin:10px 0 0">나의 탐구 질문: <strong>“${escapeHtml(inquiry)}”</strong></p>` : ''}
+      ${learned.length ? `<div style="margin:10px auto 0;max-width:560px;text-align:left;font-size:0.95rem"><p style="font-weight:800;color:#6f5514;margin:0 0 4px">내가 만난 친구들과 배운 것</p><ul style="margin:0;padding-left:20px">${learned.slice(0, 6).map((item) => `<li><strong>${escapeHtml(item.friendName)}</strong> · ${escapeHtml(item.line)}</li>`).join('')}</ul></div>` : ''}
       ${reflection ? `<p style="margin:14px auto;max-width:560px;background:#FFF9EA;border-radius:12px;padding:12px;font-size:1rem">“${escapeHtml(reflection)}”</p>` : ''}
       ${principles.length ? `<p style="font-size:1rem">나의 실천 약속: <strong>${principles.map(escapeHtml).join(' · ')}</strong></p>` : ''}
       <p style="margin-top:16px;color:#6b7a8d">${date} · 세계를 잇는 여행</p>

@@ -8,6 +8,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
 
@@ -224,7 +225,8 @@ const PAGE_CSS = `
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
   gap:var(--sp-2);min-width:0;overflow:hidden;
 }
-.africa-mission .cast-hero { width:clamp(120px,14vw,240px);max-height:46%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(8,18,33,.5)); }
+/* min-height:0 + shrink 허용 — 악기 갤러리·설명과 합쳐 컨테이너를 넘치면 그림이 줄어들어 잘림 0을 지킨다 */
+.africa-mission .cast-hero { width:clamp(120px,14vw,240px);max-height:46%;min-height:0;flex:0 1 auto;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(8,18,33,.5)); }
 .africa-mission .cast-note { font-size:var(--fs-small);line-height:1.35;color:#fff;text-align:center;text-shadow:0 2px 6px rgba(10,22,40,.95); }
 .africa-mission .instrument-gallery { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;width:100%; }
 .africa-mission .instrument-pick {
@@ -323,6 +325,7 @@ export function createPage(): Page {
   return {
     async mount(root: HTMLElement) {
       const content = await loadContent<AfricaContent>('africa');
+      const learn = getLearn(content); // 배움 루프(친구 소개→예상→배움 확인) — null이면 기존 흐름 그대로
       await preloadImages([
         'bg.africa',
         'africa.host',
@@ -363,7 +366,8 @@ export function createPage(): Page {
       let finished = false;
 
       const persist = (): void => {
-        saveRepo.setCheckpoint('africa', S.stage, { state: { ...S } });
+        // setCheckpoint는 data를 통째로 교체하므로 배움 기록(예상)을 함께 실어 보존한다
+        saveRepo.setCheckpoint('africa', S.stage, { state: { ...S }, learn: saveRepo.get().missions.africa.data.learn });
       };
 
       // ---- 뼈대 ----
@@ -386,6 +390,10 @@ export function createPage(): Page {
       });
       page.appendChild(topBar);
       const ribbonSub = topBar.querySelector('.ribbon-sub') as HTMLElement;
+      // 부제 = 학습 목표 고정. 단계별 조작 안내는 말풍선이, 진행은 상단 진행 점이 맡는다.
+      const setRibbon = (text: string): void => {
+        ribbonSub.textContent = learn?.goal ?? text;
+      };
 
       const body = document.createElement('div');
       body.className = 'page-body';
@@ -439,7 +447,14 @@ export function createPage(): Page {
       guide = gd;
       page.appendChild(gd.el);
       let lastSaid = '';
+      // 친구 소개 모달이 떠 있는 동안에는 말풍선 타이핑을 미뤄 뒀다가, 모달을 닫으면 시작한다.
+      let introGate = learn !== null;
+      let pendingSay: { text: string; cue: HTMLElement | null } | null = null;
       const say = (text: string, cue: HTMLElement | null): void => {
+        if (introGate) {
+          pendingSay = { text, cue };
+          return;
+        }
         if (text !== lastSaid) {
           lastSaid = text;
           gd.say(text, { cue });
@@ -485,7 +500,15 @@ export function createPage(): Page {
           { evidence: 30, perspective: 25, communication: 25, revision: 15 },
           speedBonus
         );
-        completeMissionFlow('africa', '아프리카', result);
+        // 점수 모달 전에 배움 확인(처음 생각 vs 발견) — learn 없으면 기존 흐름 그대로
+        const done = (): void => {
+          const learnRec = saveRepo.get().missions.africa.data.learn;
+          completeMissionFlow('africa', '아프리카', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 되살린다(여권·수료증에서 읽음)
+          if (learnRec) saveRepo.update((s) => { s.missions.africa.data.learn = learnRec; });
+        };
+        if (learn) showLearningWrap('africa', learn, done);
+        else done();
       };
 
       const goStage = (next: Stage): void => {
@@ -729,7 +752,7 @@ export function createPage(): Page {
         updateSteps(topBar, STAGES.length, idx, idx);
         panel.replaceChildren();
         panel.insertAdjacentHTML('afterbegin', africaImage('africa.stage', '', 'stage-backdrop'));
-        ribbonSub.textContent = STAGE_GOAL[S.stage];
+        setRibbon(STAGE_GOAL[S.stage]);
         updateRewardRail();
         switch (S.stage) {
           case 'context':
@@ -857,8 +880,7 @@ export function createPage(): Page {
           seq.setActiveLen(stepLimit);
           strip.setLen(stepLimit);
           listenBtn.textContent = stepLimit < STEP_COUNT ? '▶ 앞 4칸 듣기' : '▶ 리듬 듣기';
-          ribbonSub.textContent =
-            stepLimit < STEP_COUNT ? '먼저 앞의 네 칸만 똑같이 만들어요' : STAGE_GOAL.r1;
+          setRibbon(stepLimit < STEP_COUNT ? '먼저 앞의 네 칸만 똑같이 만들어요' : STAGE_GOAL.r1);
         };
 
         const refreshCheckAvailability = (): void => {
@@ -1435,6 +1457,17 @@ export function createPage(): Page {
       };
 
       renderStage();
+      // 화면을 다 그린 뒤 친구 소개 + 예상하기. 닫으면 미뤄 둔 첫 말풍선이 시작된다.
+      if (learn) {
+        showFriendIntro('africa', learn, () => {
+          introGate = false;
+          if (pendingSay) {
+            const p = pendingSay;
+            pendingSay = null;
+            say(p.text, p.cue);
+          }
+        });
+      }
     },
 
     unmount() {

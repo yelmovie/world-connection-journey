@@ -564,3 +564,33 @@
 :root[data-reduced-motion="true"] .journey-transition,
 :root[data-reduced-motion="true"] .journey-transition__plane,
 :root[data-reduced-motion="true"] .stamp-collection__slot.is-new { animation: none; }
+
+/* ===== 배움 프레임 (친구 만나기 · 예상하기 · 배움 카드) ===== */
+.learn-intro, .learn-wrap { display: flex; flex-direction: column; gap: var(--sp-3); text-align: center; align-items: center; }
+.learn-hero { display: flex; align-items: center; justify-content: center; gap: var(--sp-4); }
+.learn-eyebrow { font-size: var(--fs-small); color: var(--c-ink-soft); font-weight: 800; }
+.learn-name { font-family: var(--font-head); font-size: var(--fs-title); color: var(--c-navy); line-height: 1.1; }
+.learn-region { font-size: var(--fs-small); color: var(--c-ink-soft); font-weight: 700; }
+.learn-goal { font-size: var(--fs-body); font-weight: 800; color: var(--c-navy); max-width: 34em; }
+.learn-question { font-family: var(--font-head); font-size: var(--fs-body); color: var(--c-ink); }
+.learn-options { display: flex; flex-direction: column; gap: var(--sp-2); width: min(420px, 100%); }
+.learn-options .learn-option { width: 100%; justify-content: center; }
+.learn-hint { font-size: var(--fs-small); color: var(--c-ink-soft); }
+.learn-prior {
+  font-size: var(--fs-body); background: rgba(108,76,232,0.1); border: 2px solid rgba(108,76,232,0.35);
+  border-radius: var(--radius-m); padding: var(--sp-2) var(--sp-4); color: var(--c-violet-ink); font-weight: 700;
+}
+.learn-discoveries { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--sp-2); width: 100%; }
+.learn-discovery {
+  background: #fff; border: 2px solid var(--c-line); border-left: 6px solid var(--c-gold);
+  border-radius: var(--radius-m); padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-body); text-align: left;
+}
+/* 여권의 배움 카드 목록 */
+.learn-card-row {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: #fff; border: 2px solid var(--c-line); border-radius: var(--radius-m);
+  padding: var(--sp-2) var(--sp-3); font-size: var(--fs-small); text-align: left;
+}
+.learn-card-row.is-empty { opacity: 0.55; border-style: dashed; }
+.learn-card-row img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }

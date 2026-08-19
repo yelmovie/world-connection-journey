@@ -8,6 +8,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, countUp } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
 
@@ -148,6 +149,10 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       disposed = false;
       const content = await loadContent<OceaniaContent>('oceania');
+      // 배움 루프(친구 소개 → 예상 → 활동 → 배움 확인). learn 없으면 기존 흐름 그대로.
+      const learn = getLearn(content);
+      // 계약 §2 — 리본 sub는 '한 줄 학습 목표'로 고정, 조작 안내는 가이드 말풍선 전담
+      const ribbonSub = (fallback: string): string => learn?.goal ?? fallback;
       await preloadImages(['bg.oceania', 'oceania.island', ...Object.values(PERSPECTIVE_IMG).filter(hasAsset)]);
       audio.playBgm('oceania');
 
@@ -245,6 +250,8 @@ export function createPage(): Page {
 
       const checkpoint = (id: 'stage1' | 'stage2' | 'stage3') => {
         saveRepo.setCheckpoint('oceania', id, {
+          // setCheckpoint은 data를 스냅샷으로 통째 교체하므로, learnFrame 기록(data.learn)을 함께 실어 보존한다
+          learn: saveRepo.get().missions.oceania.data.learn,
           investigated: [...investigated],
           linked: [...linked],
           linkMistakes: [...linkMistakes],
@@ -384,7 +391,7 @@ export function createPage(): Page {
             <div class="oc-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">${showTask ? '원인과 영향 잇기' : '섬을 조사해요'}</span>
-                <span class="ribbon-sub">${showTask ? '조사한 내용을 떠올려 골라 봐요' : '지도의 표시된 곳을 눌러 살펴봐요'}</span>
+                <span class="ribbon-sub">${ribbonSub(showTask ? '조사한 내용을 떠올려 골라 봐요' : '지도의 표시된 곳을 눌러 살펴봐요')}</span>
               </div>
             </div>
             <div class="oc-map-row ${showTask ? 'has-task' : ''}">
@@ -556,7 +563,7 @@ export function createPage(): Page {
             <div class="oc-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">네 사람의 이야기</span>
-                <span class="ribbon-sub">아끼는 마음은 같아도 걱정은 서로 달라요</span>
+                <span class="ribbon-sub">${ribbonSub('아끼는 마음은 같아도 걱정은 서로 달라요')}</span>
               </div>
             </div>
             <div class="oc-people" id="persp-grid"></div>
@@ -660,7 +667,7 @@ export function createPage(): Page {
             <div class="oc-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">섬의 미래 회의</span>
-                <span class="ribbon-sub">${turnIndex + 1}번째 결정 · ${label}</span>
+                <span class="ribbon-sub">${ribbonSub(`${turnIndex + 1}번째 결정 · ${label}`)}</span>
               </div>
             </div>
             <section class="panel oc-gauges">${METRICS.map(metricRow).join('')}</section>
@@ -858,7 +865,7 @@ export function createPage(): Page {
             <div class="oc-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">${lastBalanced ? '균형을 지켜냈어요!' : '세 번의 결정 끝'}</span>
-                <span class="ribbon-sub">지표가 어떻게 움직였는지 살펴봐요</span>
+                <span class="ribbon-sub">${ribbonSub('지표가 어떻게 움직였는지 살펴봐요')}</span>
               </div>
             </div>
             <section class="panel oc-gauges">${METRICS.map(metricRow).join('')}</section>
@@ -959,17 +966,32 @@ export function createPage(): Page {
           { evidence: 30, perspective: 25, communication: 25, revision: 15 },
           speedBonus
         );
-        completeMissionFlow('oceania', '오세아니아', result);
-        rememberCompletionModal();
+        // 배움 확인(③) — 사용자가 '완료'로 결과를 확정한 직후 · 점수 모달 직전 한 곳만.
+        // 시뮬 경고·결과 흐름(runTurn/showResult) 중간에는 절대 끼어들지 않는다.
+        const conclude = (): void => {
+          const learnRec = saveRepo.get().missions.oceania.data.learn;
+          completeMissionFlow('oceania', '오세아니아', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 복원한다(여권·수료증이 읽음)
+          if (learnRec !== undefined) saveRepo.update((s) => { s.missions.oceania.data.learn = learnRec; });
+          rememberCompletionModal();
+        };
+        if (learn) showLearningWrap('oceania', learn, conclude);
+        else conclude();
       }
 
       /* ===== 시작 ===== */
-      if (stage === 1) renderStage1();
-      else if (stage === 2) renderStage2();
-      else if (turnIndex >= content.sim.turns) showResult();
-      else renderStage3();
+      const renderCurrent = (): void => {
+        if (stage === 1) renderStage1();
+        else if (stage === 2) renderStage2();
+        else if (turnIndex >= content.sim.turns) showResult();
+        else renderStage3();
+      };
+      renderCurrent();
 
-      if (stage === 1 && investigated.size === 0) {
+      if (learn) {
+        // ①친구 만나기+②예상이 기존 인트로 모달을 대체 — 닫힌 뒤 재렌더로 첫 guide.say
+        if (!disposed) showFriendIntro('oceania', learn, renderCurrent);
+      } else if (stage === 1 && investigated.size === 0) {
         presentModal({
           id: 'oceania-intro',
           title: content.intro.title,

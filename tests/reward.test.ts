@@ -31,6 +31,27 @@ describe('보상 중복 지급 방지', () => {
     expect(s.rewardClaimedById['mission.asia']).toBe(true);
   });
 
+  it('배움 기록(learn)은 체크포인트 교체·미션 완료에도 보존된다', async () => {
+    const { saveRepo } = await import('../src/core/SaveRepository');
+    saveRepo.reset();
+    // 친구 소개에서 첫 생각 기록
+    saveRepo.update((s) => {
+      s.missions.asia.data.learn = { prediction: '많이 다를 거야' };
+    });
+    // 라운드 진행 체크포인트가 스냅샷으로 data를 교체해도 learn은 남는다
+    saveRepo.setCheckpoint('asia', 'round2', { placed: ['t1'] });
+    expect((saveRepo.get().missions.asia.data.learn as { prediction: string }).prediction).toBe('많이 다를 거야');
+    expect(saveRepo.get().missions.asia.data.placed).toEqual(['t1']);
+    // 완료가 진행 스냅샷을 비워도 learn(배움 카드)은 남는다 — 여권·수료증이 읽는다
+    saveRepo.update((s) => {
+      s.missions.asia.data.learn = { prediction: '많이 다를 거야', confirmedAt: 'x', cardLine: '발견', friendName: '미나' };
+    });
+    saveRepo.completeMission('asia', 90, { evidence: 28 });
+    const data = saveRepo.get().missions.asia.data;
+    expect((data.learn as { cardLine: string }).cardLine).toBe('발견');
+    expect(data.placed).toBeUndefined();
+  });
+
   it('체크포인트 저장은 상태를 in_progress로 만든다', async () => {
     const { saveRepo } = await import('../src/core/SaveRepository');
     saveRepo.reset();

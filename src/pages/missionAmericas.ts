@@ -9,6 +9,7 @@ import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
 
@@ -304,6 +305,10 @@ export function createPage(): Page {
   return {
     async mount(root: HTMLElement) {
       const content = await loadContent<AmericasContent>('americas');
+      // 배움 루프(친구 소개 → 예상 → 활동 → 배움 확인). learn 없으면 기존 흐름 그대로.
+      const learn = getLearn(content);
+      // 계약 §2 — 리본 sub는 '한 줄 학습 목표'로 고정, 조작 안내는 가이드 말풍선 전담
+      const ribbonSub = (fallback: string): string => learn?.goal ?? fallback;
       await preloadImages([
         'bg.americas',
         'americas.student1', 'americas.student2', 'americas.student3', 'americas.student4',
@@ -416,7 +421,8 @@ export function createPage(): Page {
       let finished = false;
 
       const persist = (): void => {
-        saveRepo.setCheckpoint('americas', S.stage, { state: { ...S } });
+        // setCheckpoint은 data를 스냅샷으로 통째 교체하므로, learnFrame 기록(data.learn)을 함께 실어 보존한다
+        saveRepo.setCheckpoint('americas', S.stage, { state: { ...S }, learn: saveRepo.get().missions.americas.data.learn });
       };
 
       // ---- 뼈대 ----
@@ -511,7 +517,15 @@ export function createPage(): Page {
           { evidence: 30, perspective: 25, communication: 25, revision: 15 },
           speedBonus
         );
-        completeMissionFlow('americas', '아메리카', result);
+        // 배움 확인(③)은 완료 확정 직후 · 점수 모달 직전 한 곳에서만
+        const doComplete = (): void => {
+          const learnRec = saveRepo.get().missions.americas.data.learn;
+          completeMissionFlow('americas', '아메리카', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 복원한다(여권·수료증이 읽음)
+          if (learnRec !== undefined) saveRepo.update((s) => { s.missions.americas.data.learn = learnRec; });
+        };
+        if (learn) showLearningWrap('americas', learn, doComplete);
+        else doComplete();
       };
 
       const goStage = (next: Stage): void => {
@@ -552,7 +566,7 @@ export function createPage(): Page {
         head.innerHTML = `
           <div class="ribbon-title">
             <span class="ribbon-main">어울림 학급 친구들</span>
-            <span class="ribbon-sub">카드를 눌러 한 명씩 만나 봐요</span>
+            <span class="ribbon-sub">${ribbonSub('카드를 눌러 한 명씩 만나 봐요')}</span>
           </div>`;
         panel.appendChild(head);
 
@@ -642,7 +656,7 @@ export function createPage(): Page {
         head.innerHTML = `
           <div class="ribbon-title">
             <span class="ribbon-main">필요 vs 좋아하는 것</span>
-            <span class="ribbon-sub">없으면 함께하기 어려운 것이 '필요'예요</span>
+            <span class="ribbon-sub">${ribbonSub("없으면 함께하기 어려운 것이 '필요'예요")}</span>
           </div>`;
         panel.appendChild(head);
 
@@ -831,7 +845,7 @@ export function createPage(): Page {
         head.innerHTML = `
           <div class="ribbon-title">
             <span class="ribbon-main">${altMode ? '두 번째 계획' : '함께 보낼 하루'}</span>
-            <span class="ribbon-sub">${altMode ? '첫 계획과 다른 조합으로 만들어 봐요' : '정답 조합은 여러 개예요'}</span>
+            <span class="ribbon-sub">${ribbonSub(altMode ? '첫 계획과 다른 조합으로 만들어 봐요' : '정답 조합은 여러 개예요')}</span>
           </div>`;
         panel.appendChild(head);
 
@@ -1201,7 +1215,7 @@ export function createPage(): Page {
         head.innerHTML = `
           <div class="ribbon-title">
             <span class="ribbon-main">두 계획 비교</span>
-            <span class="ribbon-sub">무엇을 얻고 무엇을 포기했나요?</span>
+            <span class="ribbon-sub">${ribbonSub('무엇을 얻고 무엇을 포기했나요?')}</span>
           </div>`;
         panel.appendChild(head);
 
@@ -1279,6 +1293,8 @@ export function createPage(): Page {
       };
 
       renderStage();
+      // ①친구 만나기+②예상 — 닫힌 뒤 재렌더로 현재 단계의 첫 guide.say를 다시 띄운다
+      if (learn) showFriendIntro('americas', learn, () => renderStage());
     },
 
     unmount() {

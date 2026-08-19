@@ -8,6 +8,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal, type ModalOptions } from '../ui/modal';
 import { showToast } from '../ui/toast';
 
@@ -238,6 +239,7 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       const c = await loadContent<EuropeContent>('europe');
       if (disposed) return;
+      const learn = getLearn(c); // 배움 루프(친구 소개→예상→배움 확인) — null이면 기존 흐름 그대로
       audio.playBgm('europe');
 
       const nodeById = new Map(c.nodes.map((n) => [n.id, n]));
@@ -277,6 +279,11 @@ export function createPage(): Page {
           met,
           metCount: Object.values(met).filter(Boolean).length
         };
+      };
+
+      // setCheckpoint는 data를 통째로 교체하므로 배움 기록(예상)을 항상 함께 실어 보존한다.
+      const setCp = (checkpointId: string, data: Record<string, unknown>): void => {
+        saveRepo.setCheckpoint('europe', checkpointId, { ...data, learn: saveRepo.get().missions.europe.data.learn });
       };
 
       // ---- 미션 진행 상태 ----
@@ -361,7 +368,8 @@ export function createPage(): Page {
       page.appendChild(bar);
       // 제목은 상단바 리본 한 곳에만. 단계 목표는 그 리본의 부제로 바꿔 쓴다.
       const ribbonSub = bar.querySelector('.ribbon-sub') as HTMLElement;
-      const setRibbon = (text: string): void => { ribbonSub.textContent = text; };
+      // 부제 = 학습 목표 고정. 단계별 조작 안내는 말풍선이, 진행은 상단 진행 점이 맡는다.
+      const setRibbon = (text: string): void => { ribbonSub.textContent = learn?.goal ?? text; };
       const body = document.createElement('div');
       body.className = 'page-body';
       page.appendChild(body);
@@ -376,7 +384,16 @@ export function createPage(): Page {
       guide = gd;
       page.appendChild(gd.el);
       let lastSaid = '';
+      // 친구 소개 모달이 떠 있는 동안에는 말풍선 타이핑을 미뤄 뒀다가, 모달을 닫으면 시작한다.
+      let introGate = learn !== null;
+      let pendingSay: { text: string; cue: HTMLElement | null } | null = null;
+      // 2단계 복원 시 자동으로 여는 목적 고르기 모달도 소개가 끝날 때까지 미룬다(모달은 동시 1개).
+      let pendingAutoModal: (() => void) | null = null;
       const say = (text: string, cue: HTMLElement | null): void => {
+        if (introGate) {
+          pendingSay = { text, cue };
+          return;
+        }
         if (text !== lastSaid) {
           lastSaid = text;
           gd.say(text, { cue });
@@ -395,7 +412,15 @@ export function createPage(): Page {
           revision: didSecond ? 1 : 0.35 // 다른 전략으로 한 번 더 설계했는가
         };
         const result = computeScore(ratios, WEIGHTS, 5 - failedAttempts);
-        completeMissionFlow('europe', '유럽', result);
+        // 점수 모달 전에 배움 확인(처음 생각 vs 발견) — learn 없으면 기존 흐름 그대로
+        const done = (): void => {
+          const learnRec = saveRepo.get().missions.europe.data.learn;
+          completeMissionFlow('europe', '유럽', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 되살린다(여권·수료증에서 읽음)
+          if (learnRec) saveRepo.update((s) => { s.missions.europe.data.learn = learnRec; });
+        };
+        if (learn) showLearningWrap('europe', learn, done);
+        else done();
       };
 
       // ================= 1단계: 자료 읽기·관점 비교 =================
@@ -434,7 +459,7 @@ export function createPage(): Page {
         bottom.append(status, startBtn);
 
         const persistSources = () => {
-          saveRepo.setCheckpoint('europe', 'sources', {
+          setCp('sources', {
             read: [...readSet],
             comparedSourceIds: [...comparedSourceIds],
             comparisonDone,
@@ -561,7 +586,7 @@ export function createPage(): Page {
           busy = true;
           try {
             stage = 2;
-            saveRepo.setCheckpoint('europe', 'route', {
+            setCp('route', {
               read: [...readSet],
               comparedSourceIds: [...comparedSourceIds],
               comparisonDone,
@@ -599,7 +624,7 @@ export function createPage(): Page {
               autofocus: true,
               onClick: (close) => {
                 readSet.add(s.id);
-                saveRepo.setCheckpoint('europe', 'sources', {
+                setCp('sources', {
                   read: [...readSet],
                   comparedSourceIds: [...comparedSourceIds],
                   comparisonDone,
@@ -622,7 +647,7 @@ export function createPage(): Page {
         let lastSubmittedSignature: string | null = null;
         const routeSignature = (): string => `${secondMode ? 'second' : 'first'}\u0000${purpose ?? ''}\u0000${route.join('\u0000')}`;
         const writeRouteCheckpoint = () => {
-          saveRepo.setCheckpoint('europe', secondMode ? 'second_route' : 'route', {
+          setCp(secondMode ? 'second_route' : 'route', {
             read: [...readSet],
             comparedSourceIds: [...comparedSourceIds],
             comparisonDone,
@@ -1015,7 +1040,7 @@ export function createPage(): Page {
                   secondMode = true;
                   route = [];
                   purpose = null;
-                  saveRepo.setCheckpoint('europe', 'second_route', {
+                  setCp('second_route', {
                     firstRoute: snap.nodes,
                     firstPurpose: snap.purpose,
                     read: [...readSet],
@@ -1136,11 +1161,30 @@ export function createPage(): Page {
         });
 
         updateView();
-        if (!purpose) openPurposePicker(); // 목적을 고르기 전에는 지도를 눌러도 진행되지 않으므로 먼저 띄운다
+        if (!purpose) {
+          // 목적을 고르기 전에는 지도를 눌러도 진행되지 않으므로 먼저 띄운다.
+          // 친구 소개가 아직 안 끝났으면 소개를 닫은 뒤에 연다(모달은 동시 1개).
+          if (introGate) pendingAutoModal = openPurposePicker;
+          else openPurposePicker();
+        }
       }
 
       if (stage === 1) renderStage1();
       else renderStage2();
+      // 화면을 다 그린 뒤 친구 소개 + 예상하기. 닫으면 미뤄 둔 말풍선·모달이 이어진다.
+      if (learn) {
+        showFriendIntro('europe', learn, () => {
+          introGate = false;
+          if (pendingSay) {
+            const p = pendingSay;
+            pendingSay = null;
+            say(p.text, p.cue);
+          }
+          const auto = pendingAutoModal;
+          pendingAutoModal = null;
+          auto?.();
+        });
+      }
     },
 
     unmount() {

@@ -12,12 +12,15 @@ import {
   consumeMissionReturn,
   playJourneyTransition
 } from '../ui/journeyTransition';
+import { readLearnCard } from '../ui/learnFrame';
 import { CONTINENT_IDS, type MissionId, type MissionStatus } from '../types';
 
 interface Spot {
   id: MissionId;
   name: string;
   route: string;
+  /** 학습 주제 2~6자 — 지도가 "무엇을 배우는 지도"로 읽히게 노드·안내판에 표시 */
+  topic: string;
   objective: string;
   steps: [string, string, string];
   minutes: number;
@@ -30,42 +33,45 @@ interface Spot {
 /** 화살표키 탐색 순서와 지도 번호가 같다. */
 const SPOTS: Spot[] = [
   {
-    id: 'americas', name: '아메리카', route: '#/mission/americas', minutes: 8,
+    id: 'americas', name: '아메리카', route: '#/mission/americas', topic: '함께 정하기', minutes: 8,
     objective: '친구들의 필요를 살펴 함께할 하루를 계획해요.',
     steps: ['친구 자료 관찰', '두 계획 비교', '근거로 일정 완성'],
     x: 0.15, y: 0.44, assetId: 'deco.landmark_liberty', assetAlt: '아메리카 미션의 자유의 여신상'
   },
   {
-    id: 'europe', name: '유럽', route: '#/mission/europe', minutes: 8,
+    id: 'europe', name: '유럽', route: '#/mission/europe', topic: '유산과 오늘', minutes: 8,
     objective: '문화유산과 오늘의 생활을 잇는 여행 경로를 만들어요.',
     steps: ['자료 살펴보기', '경로 이어 보기', '선택 근거 말하기'],
     x: 0.49, y: 0.24, assetId: 'deco.landmark_eiffel', assetAlt: '유럽 미션의 에펠탑'
   },
   {
-    id: 'africa', name: '아프리카', route: '#/mission/africa', minutes: 7,
+    id: 'africa', name: '아프리카', route: '#/mission/africa', topic: '소리로 대화', minutes: 7,
     objective: '서로의 소리를 듣고 리듬 대화를 완성해요.',
     steps: ['악기 소리 듣기', '리듬 차례 맞추기', '주고받는 연주 완성'],
     x: 0.51, y: 0.53, assetId: 'deco.landmark_pyramid', assetAlt: '아프리카 미션의 피라미드'
   },
   {
-    id: 'asia', name: '아시아', route: '#/mission/asia', minutes: 8,
+    id: 'asia', name: '아시아', route: '#/mission/asia', topic: '하루와 생활', minutes: 8,
     objective: '하루 자료에서 사실과 나의 해석을 구분해요.',
     steps: ['생활 장면 관찰', '사실과 해석 분류', '새 근거로 생각 수정'],
     x: 0.73, y: 0.36, assetId: 'deco.landmark_taj', assetAlt: '아시아 미션의 타지마할'
   },
   {
-    id: 'oceania', name: '오세아니아', route: '#/mission/oceania', minutes: 9,
+    id: 'oceania', name: '오세아니아', route: '#/mission/oceania', topic: '환경과 공동체', minutes: 9,
     objective: '여러 관점으로 섬과 바다를 지키는 선택을 해요.',
     steps: ['네 관점 듣기', '3턴 선택하기', '지표 변화 돌아보기'],
     x: 0.84, y: 0.71, assetId: 'deco.landmark_sydney', assetAlt: '오세아니아 미션의 시드니 오페라하우스'
   },
   {
-    id: 'dialogue', name: '다름을 잇는 대화', route: '#/mission/respect-dialogue', minutes: 7,
+    id: 'dialogue', name: '다름을 잇는 대화', route: '#/mission/respect-dialogue', topic: '존중 대화', minutes: 7,
     objective: '관찰하고 물어보며 존중하는 대화를 완성해요.',
     steps: ['상황 관찰', '공감 질문 선택', '생각을 고쳐 말하기'],
     x: 0.51, y: 0.85, assetId: 'deco.portal_globe', assetAlt: '마지막 존중 대화 미션으로 가는 지구본 문'
   }
 ];
+
+/** 배움 카드 칩 아이콘 (이모지 금지 — §6) */
+const SVG_CARD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6"/></svg>`;
 
 const STATUS_LABEL: Record<MissionStatus, string> = {
   locked: '다섯 대륙 완료 후 열림',
@@ -122,6 +128,11 @@ const MAP_CSS = `
 .map-hotspot .node-label { display:none; }
 .map-hotspot.is-selected .node-label { display:block;font-size:var(--fs-small); }
 .map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--c-success);color:#fff;border:2px solid #fff;font-weight:900; }
+/* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
+.map-hotspot .node-topic { display:block;font-size:calc(var(--fs-small)*.85);font-weight:700;color:var(--c-ink-soft);line-height:1.15;white-space:nowrap; }
+.map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
+/* 완료 노드의 배움 카드 획득 칩 */
+.map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
 .map-world-deco.globe { right:2%;bottom:2%;width:clamp(58px,8vw,105px);opacity:.88; }
 .map-world-deco.jet { left:3%;top:4%;width:clamp(52px,7vw,90px); }
@@ -130,6 +141,13 @@ const MAP_CSS = `
 .map-brief__head .mission-brief__hero { width:64px;height:64px;aspect-ratio:1;border-radius:50%;border:3px solid #fff;box-shadow:var(--shadow-card); }
 .map-brief__head h2 { color:var(--c-navy);font-size:var(--fs-title);line-height:1.05; }
 .map-brief__meta { font-size:var(--fs-small);color:var(--c-ink-soft);font-weight:700; }
+.map-brief__topic {
+  display:inline-block;vertical-align:middle;margin-left:6px;padding:1px 10px;border-radius:999px;
+  background:rgba(242,193,78,.24);border:2px solid rgba(242,193,78,.75);color:#6f5514;
+  font-size:var(--fs-small);font-family:var(--font-head);white-space:nowrap;
+}
+.map-brief__learned { display:flex;align-items:center;gap:6px;font-size:var(--fs-small);font-weight:800;color:#6f5514; }
+.map-brief__learned .map-node-learn { position:static;flex:0 0 auto; }
 .map-brief__status { display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:3px 9px;border-radius:999px;background:#fff;border:2px solid var(--c-line);font-size:16px;font-weight:800; }
 .map-brief__status::before { content:'●';color:var(--c-violet); }
 .map-brief__stamp img { width:44px;height:44px;object-fit:contain; }
@@ -283,17 +301,19 @@ export function createPage(): Page {
 
       const renderBrief = (spot: Spot) => {
         const mission = saveRepo.get().missions[spot.id];
+        const learn = readLearnCard(spot.id);
         brief.innerHTML = `
           <div class="map-brief__head">
             ${hasAsset(spot.assetId) ? `<img class="mission-brief__hero" src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="${spot.assetAlt}">` : ''}
-            <div><h2>${spot.name}</h2><p class="map-brief__meta">약 ${spot.minutes}분 · ${mission.bestScore > 0 ? `최고 ${mission.bestScore}점` : '첫 도전'}</p></div>
+            <div><h2>${spot.name}<span class="map-brief__topic">${spot.topic}</span></h2><p class="map-brief__meta">약 ${spot.minutes}분 · ${mission.bestScore > 0 ? `최고 ${mission.bestScore}점` : '첫 도전'}</p></div>
           </div>
           <span class="map-brief__status">${STATUS_LABEL[mission.status]}</span>
           <p class="mission-brief__objective">${spot.objective}</p>
           <ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
+          ${learn.earned ? `<p class="map-brief__learned"><span class="map-node-learn" aria-hidden="true">${SVG_CARD}</span>배움 카드 획득 완료</p>` : ''}
           <div class="mission-brief__stamp map-brief__stamp">
             ${hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="${spot.name} 완료 때 받는 도장">` : ''}
-            <span>완료 보상: ${spot.name} 도장</span>
+            <span>완료 보상: ${spot.name} 도장 + 배움 카드</span>
           </div>
           <button class="btn btn-primary btn-big" data-act="depart">이 미션으로 출발</button>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');
@@ -343,7 +363,8 @@ export function createPage(): Page {
         node.dataset.missionId = spot.id;
         node.setAttribute('role', 'radio');
         node.setAttribute('aria-checked', 'false');
-        node.setAttribute('aria-label', `${spot.name}, ${STATUS_LABEL[mission.status]}`);
+        const hasLearnCard = mission.status === 'completed' && readLearnCard(spot.id).earned;
+        node.setAttribute('aria-label', `${spot.name}, ${spot.topic}, ${STATUS_LABEL[mission.status]}${hasLearnCard ? ', 배움 카드 획득' : ''}`);
         node.disabled = mission.status === 'locked';
         node.style.left = `${spot.x * 100}%`;
         node.style.top = `${spot.y * 100}%`;
@@ -351,7 +372,8 @@ export function createPage(): Page {
           ${hasAsset(spot.assetId) ? `<img class="node-img" src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="${spot.assetAlt}">` : ''}
           <span class="node-badge" aria-hidden="true">${index + 1}</span>
           ${mission.status === 'completed' ? '<span class="map-node-check" aria-hidden="true">✓</span>' : ''}
-          <span class="node-label">${spot.name}</span>`;
+          ${hasLearnCard ? `<span class="map-node-learn" aria-hidden="true">${SVG_CARD}</span>` : ''}
+          <span class="node-label">${spot.name}<span class="node-topic">${spot.topic}</span></span>`;
         node.addEventListener('click', () => selectSpot(spot));
         node.addEventListener('keydown', (event) => {
           if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;

@@ -8,8 +8,9 @@ import { buildTopBar } from '../ui/chrome';
 import { createGuide, type GuideController } from '../ui/guide';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { cancelJourneyTransition, playJourneyTransition } from '../ui/journeyTransition';
+import { readLearnCard } from '../ui/learnFrame';
 import { showToast } from '../ui/toast';
-import { CONTINENT_IDS } from '../types';
+import { CONTINENT_IDS, type MissionId } from '../types';
 
 interface CommonContent {
   nickname?: { minLen: number; maxLen: number; banned: string[] };
@@ -25,6 +26,12 @@ const FALLBACK_QUESTIONS = [
 const STAMP_LABELS: Record<string, string> = {
   asia: '아시아', europe: '유럽', africa: '아프리카',
   americas: '아메리카', oceania: '오세아니아', dialogue: '존중 대화'
+};
+
+/** 배움 카드 목록의 미션 명칭 — 지도(SPOTS)와 동일하게 유지한다 */
+const LEARN_TITLES: Record<string, string> = {
+  asia: '아시아', europe: '유럽', africa: '아프리카',
+  americas: '아메리카', oceania: '오세아니아', dialogue: '다름을 잇는 대화'
 };
 
 /** label = 스크린리더용 전체 설명, short = 화면에 보이는 한 줄 라벨(2~4자) */
@@ -91,13 +98,31 @@ const PASSPORT_CSS = `
 .passport-inquiry { min-height:52px;display:flex;align-items:center;gap:7px;padding:6px 8px;border:2px solid var(--c-line);border-radius:12px;background:#fff;font-size:var(--fs-small);font-weight:700;cursor:pointer; }
 .passport-inquiry input { width:24px;height:24px;flex:0 0 auto;accent-color:var(--c-violet); }
 /* 미리보기 — 고른 캐릭터를 크게 보여 준다(§7 최소 clamp(120px,14vw,240px)) */
-.passport-preview { position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--sp-2);padding:var(--sp-3); }
-.passport-hero { width:min(clamp(120px,14vw,240px),26vh);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(25,50,77,.3)); }
+.passport-preview { position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:var(--sp-3); }
+.passport-hero { width:min(clamp(120px,14vw,240px),15vh);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(25,50,77,.3)); }
 .passport-cover { width:min(120px,44%);object-fit:contain;filter:drop-shadow(0 6px 14px rgba(25,50,77,.25)); }
 .passport-emblem { position:absolute;right:6px;top:6px;width:min(56px,22%);filter:drop-shadow(0 5px 12px rgba(25,50,77,.25)); }
 .passport-stamps { grid-template-columns:repeat(6,minmax(0,1fr));width:100%; }
-.passport-stamps .stamp-collection__slot { min-width:0; }
-.passport-dock { grid-template-columns:minmax(0,1fr) auto; }
+.passport-stamps .stamp-collection__slot { min-width:0;width:100%;aspect-ratio:auto;height:clamp(34px,5.5vh,52px); }
+/* 도장마다 대륙명 라벨 — "빈 네모"가 아니라 "채울 곳"으로 읽히게 */
+.passport-stamp-cell { display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0; }
+.passport-stamp-cell .stamp-name {
+  font-size:calc(var(--fs-small)*.8);font-weight:800;color:var(--c-ink-soft);
+  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+}
+/* 배움 카드 목록 — 미션마다 만난 친구와 한 줄 발견이 쌓인다. 한 줄 압축형(전문은 미션·수료증에서) */
+.passport-learn { width:100%;display:flex;flex-direction:column;gap:5px; }
+.passport-learn .learn-card-row { padding:4px 10px; }
+.passport-learn .learn-card-row img { width:28px;height:28px; }
+.passport-learn-title { align-self:flex-start;margin-bottom:-2px; }
+.learn-card-row .learn-card-main { display:flex;align-items:baseline;gap:6px;min-width:0;text-align:left; }
+.learn-card-row .learn-card-title { font-family:var(--font-head);color:var(--c-navy);line-height:1.2;white-space:nowrap;flex-shrink:0; }
+.learn-card-row .learn-card-line {
+  color:var(--c-ink-soft);font-weight:600;font-size:calc(var(--fs-small)*.9);line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+}
+/* 초광폭에서 CTA가 오른쪽 구석에 고립되지 않게 — 하단바 내용을 콘텐츠 폭에 맞춰 중앙 정렬 */
+.passport-dock { grid-template-columns:minmax(0,1fr) auto;padding-inline:max(var(--scene-safe),calc((100% - 1180px) / 2)); }
 .passport-dock .btn-primary { min-width:200px; }
 .passport-privacy { color:#fff;font-size:var(--fs-small);font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.55); }
 @media (max-width:1100px), (max-height:620px) {
@@ -113,8 +138,25 @@ const PASSPORT_CSS = `
   .passport-inquiry { min-height:44px;padding:3px 6px; }
   .passport-preview { padding:var(--sp-2);gap:6px; }
   .passport-cover { width:min(76px,34%); }
+  .passport-learn { gap:4px; }
+  .passport-learn .learn-card-row { padding:3px 8px; }
+  .passport-learn .learn-card-row img { width:26px;height:26px; }
+  .passport-learn .learn-card-line { -webkit-line-clamp:1; }
   .passport-dock { padding-block:4px; }
   .passport-dock .btn-primary { min-width:170px; }
+}
+/* 낮은 화면: 장식(여권 표지)을 접고 배움 카드가 스크롤 없이 들어오게 */
+@media (max-height:949px) {
+  .passport-cover { display:none; }
+}
+@media (max-height:620px) {
+  .passport-learn-title { display:none; }
+  .passport-hero { width:min(clamp(96px,10vw,160px),14vh); }
+  .passport-preview { gap:4px; }
+  .passport-learn { gap:3px; }
+  .passport-learn .learn-card-row { padding:2px 8px; }
+  .passport-learn .learn-card-row img { width:22px;height:22px; }
+  .passport-stamp-cell .stamp-name { font-size:calc(var(--fs-small)*.72); }
 }
 /* 좁은 화면: 여권·도장 영역을 아래로 접는다(단일 컬럼) */
 @media (max-width:900px) {
@@ -203,8 +245,12 @@ export function createPage(): Page {
             <div class="stamp-collection passport-stamps">
               ${[...CONTINENT_IDS, 'dialogue' as const].map((id) => {
                 const earned = save.stamps.includes(id);
-                return `<div class="stamp-collection__slot ${earned ? 'is-earned' : ''}" role="img" aria-label="${STAMP_LABELS[id]} ${earned ? '도장 획득' : '도장 빈자리'}">${earned && hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="">` : ''}</div>`;
+                return `<div class="passport-stamp-cell"><div class="stamp-collection__slot ${earned ? 'is-earned' : ''}" role="img" aria-label="${STAMP_LABELS[id]} ${earned ? '도장 획득' : '도장 빈자리'}">${earned && hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="">` : ''}</div><span class="stamp-name" aria-hidden="true">${STAMP_LABELS[id]}</span></div>`;
               }).join('')}
+            </div>
+            <p class="passport-label passport-learn-title">여행에서 얻는 배움 카드</p>
+            <div class="passport-learn" aria-label="미션별 배움 카드 목록">
+              ${[...CONTINENT_IDS, 'dialogue' as const].map((id) => learnRowHtml(id)).join('')}
             </div>
           </aside>
         </div>`;
@@ -319,6 +365,23 @@ function choiceHtml(kind: 'avatar' | 'plane', saveId: string, assetId: string, l
     ${hasAsset(assetId) ? `<img src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="" aria-hidden="true">` : ''}
     <span class="label">${short}</span>
   </button>`;
+}
+
+/** 배움 카드 한 줄 — 획득 시 친구 얼굴·이름·발견, 미획득 시 기다리는 친구 안내 */
+function learnRowHtml(id: MissionId): string {
+  const card = readLearnCard(id);
+  const title = LEARN_TITLES[id] ?? id;
+  if (!card.earned) {
+    return `<div class="learn-card-row is-empty"><div class="learn-card-main"><span class="learn-card-title">${title}</span><span class="learn-card-line">만날 친구가 기다려요</span></div></div>`;
+  }
+  const img = card.friendImageId && hasAsset(card.friendImageId)
+    ? `<img src="${assetUrl(card.friendImageId)}" data-asset-id="${card.friendImageId}" alt="" aria-hidden="true">`
+    : '';
+  return `<div class="learn-card-row">${img}<div class="learn-card-main"><span class="learn-card-title">${escapeText(card.friendName)} · ${title}</span><span class="learn-card-line">${escapeText(card.line)}</span></div></div>`;
+}
+
+function escapeText(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
 }
 
 function assetImg(assetId: string, className: string, alt: string, decorative = false): string {

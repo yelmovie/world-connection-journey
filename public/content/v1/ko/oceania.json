@@ -111,34 +111,119 @@
   ],
   "sim": {
     "controls": {
-      "tourism": ["적게", "보통", "많이"],
-      "protection": ["좁게", "보통", "넓게"],
-      "transport": ["도보·자전거", "전기차", "기존 차량"]
+      "tourism": [
+        "적게",
+        "보통",
+        "많이"
+      ],
+      "protection": [
+        "좁게",
+        "보통",
+        "넓게"
+      ],
+      "transport": [
+        "도보·자전거",
+        "전기차",
+        "기존 차량"
+      ]
     },
     "effects": {
       "tourism": {
-        "적게": { "eco": 3, "community": 2, "economy": -3, "culture": 1 },
-        "보통": { "eco": 0, "community": 0, "economy": 2, "culture": 1 },
-        "많이": { "eco": -4, "community": -2, "economy": 5, "culture": -1 }
+        "적게": {
+          "eco": 3,
+          "community": 2,
+          "economy": -3,
+          "culture": 1
+        },
+        "보통": {
+          "eco": 0,
+          "community": 0,
+          "economy": 2,
+          "culture": 1
+        },
+        "많이": {
+          "eco": -4,
+          "community": -2,
+          "economy": 5,
+          "culture": -1
+        }
       },
       "protection": {
-        "좁게": { "eco": -3, "community": 0, "economy": 2, "culture": -1 },
-        "보통": { "eco": 1, "community": 0, "economy": 0, "culture": 1 },
-        "넓게": { "eco": 4, "community": -1, "economy": -1, "culture": 2 }
+        "좁게": {
+          "eco": -3,
+          "community": 0,
+          "economy": 2,
+          "culture": -1
+        },
+        "보통": {
+          "eco": 1,
+          "community": 0,
+          "economy": 0,
+          "culture": 1
+        },
+        "넓게": {
+          "eco": 4,
+          "community": -1,
+          "economy": -1,
+          "culture": 2
+        }
       },
       "transport": {
-        "도보·자전거": { "eco": 2, "community": 1, "economy": -2, "culture": 1 },
-        "전기차": { "eco": 1, "community": 0, "economy": 1, "culture": 0 },
-        "기존 차량": { "eco": -2, "community": 1, "economy": 2, "culture": -1 }
+        "도보·자전거": {
+          "eco": 2,
+          "community": 1,
+          "economy": -2,
+          "culture": 1
+        },
+        "전기차": {
+          "eco": 1,
+          "community": 0,
+          "economy": 1,
+          "culture": 0
+        },
+        "기존 차량": {
+          "eco": -2,
+          "community": 1,
+          "economy": 2,
+          "culture": -1
+        }
       }
     },
     "turns": 3,
-    "turnLabels": ["지금", "몇 달 뒤", "먼 미래"],
-    "thresholds": { "good": 55, "warn": 45 }
+    "turnLabels": [
+      "지금",
+      "몇 달 뒤",
+      "먼 미래"
+    ],
+    "thresholds": {
+      "good": 55,
+      "warn": 45
+    }
   },
   "feedback": {
     "collapse": "한 지표가 크게 무너졌어요. 실패가 아니라 발견이에요. 어떤 선택이 이 지표를 계속 깎았는지 되짚어 볼까요? 네 사람의 이야기 중 이 지표와 관련된 목소리를 다시 읽어 보면, 다음 계획에서 무엇을 바꿔야 할지 단서가 보여요.",
     "balanced": "네 지표가 모두 무너지지 않게 섬의 미래를 이끌었어요! 그리고 중요한 발견 하나. 균형을 이루는 길은 하나가 아니에요. 생태를 앞세우는 길도, 살림살이를 앞세우는 길도, 서로 다른 것을 조금씩 양보하면 균형에 닿을 수 있어요.",
     "tradeoffNote": "모든 지표를 동시에 다 올리는 선택은 없어요. 진짜 세계의 결정이 어려운 이유죠. 중요한 건 무엇을 얻고 무엇을 양보했는지 스스로 설명할 수 있는 선택이에요."
+  },
+  "learn": {
+    "friend": {
+      "name": "카일라",
+      "imageId": "oceania.youth",
+      "region": "남태평양의 섬(가상)"
+    },
+    "goal": "섬 친구 카일라와 함께 바다를 지키는 선택을 연습해요",
+    "prediction": {
+      "question": "관광객이 많이 오면 섬에 좋기만 할까요?",
+      "options": [
+        "좋기만 해",
+        "나쁘기만 해",
+        "좋은 점과 걱정이 같이 있어"
+      ]
+    },
+    "discoveries": [
+      "한 선택이 환경·생활·경제·문화에 동시에 영향을 줘요.",
+      "지금 좋아 보여도 먼 미래엔 다른 결과가 나올 수 있어요.",
+      "균형을 잡는 방법은 하나가 아니에요."
+    ]
   }
 }

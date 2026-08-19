@@ -8,6 +8,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, countUp, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
+import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 
 /* ===== 콘텐츠 스키마 (public/content/v1/ko/dialogue.json 기준) ===== */
@@ -174,6 +175,10 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       disposed = false;
       const content = await loadContent<DialogueContent>('dialogue');
+      // 배움 루프(친구 소개 → 예상 → 활동 → 배움 확인). learn 없으면 기존 흐름 그대로.
+      const learn = getLearn(content);
+      // 계약 §2 — 리본 sub는 '한 줄 학습 목표'로 고정, 조작 안내는 가이드 말풍선 전담
+      const ribbonSub = (fallback: string): string => learn?.goal ?? fallback;
       await preloadImages([
         'bg.dialogue',
         'icon.compass',
@@ -246,6 +251,8 @@ export function createPage(): Page {
 
       const checkpoint = (id: 'stage1' | 'stage2' | 'stage3') => {
         saveRepo.setCheckpoint('dialogue', id, {
+          // setCheckpoint은 data를 스냅샷으로 통째 교체하므로, learnFrame 기록(data.learn)을 함께 실어 보존한다
+          learn: saveRepo.get().missions.dialogue.data.learn,
           matched: [...matched],
           greetingMistakes: [...greetingMistakes],
           scenarioMistakes: [...scenarioMistakes],
@@ -335,7 +342,7 @@ export function createPage(): Page {
             <div class="dl-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">세계의 인사</span>
-                <span class="ribbon-sub">설명을 읽고 어울리는 사진을 골라요</span>
+                <span class="ribbon-sub">${ribbonSub('설명을 읽고 어울리는 사진을 골라요')}</span>
               </div>
             </div>
             <div class="dl-greet-row">
@@ -468,7 +475,7 @@ export function createPage(): Page {
             <div class="dl-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">경청 렌즈</span>
-                <span class="ribbon-sub">상황 ${scenarioIndex + 1}/${scenarios.length} · 단서를 보고 반응을 골라요</span>
+                <span class="ribbon-sub">${ribbonSub(`상황 ${scenarioIndex + 1}/${scenarios.length} · 단서를 보고 반응을 골라요`)}</span>
               </div>
             </div>
             <section class="panel dl-listen">
@@ -641,7 +648,7 @@ export function createPage(): Page {
             <div class="dl-head">
               <div class="ribbon-title">
                 <span class="ribbon-main">${npc.name}와 대화</span>
-                <span class="ribbon-sub">마음에 다가가는 말을 골라요</span>
+                <span class="ribbon-sub">${ribbonSub('마음에 다가가는 말을 골라요')}</span>
               </div>
             </div>
             <div class="dl-talk">
@@ -810,16 +817,30 @@ export function createPage(): Page {
           { evidence: 30, perspective: 25, communication: 25, revision: 15 },
           speedBonus
         );
-        completeMissionFlow('dialogue', '존중 대화', result);
-        rememberCompletionModal();
+        // 배움 확인(③) — 마지막 대화 확정 직후 · 점수 모달 직전 한 곳만
+        const conclude = (): void => {
+          const learnRec = saveRepo.get().missions.dialogue.data.learn;
+          completeMissionFlow('dialogue', '존중 대화', result);
+          // completeMission이 data를 비우므로 배움 카드 기록을 복원한다(여권·수료증이 읽음)
+          if (learnRec !== undefined) saveRepo.update((s) => { s.missions.dialogue.data.learn = learnRec; });
+          rememberCompletionModal();
+        };
+        if (learn) showLearningWrap('dialogue', learn, conclude);
+        else conclude();
       }
 
       /* ===== 시작 ===== */
-      if (stage === 1) renderStage1();
-      else if (stage === 2) renderStage2();
-      else renderStage3();
+      const renderCurrent = (): void => {
+        if (stage === 1) renderStage1();
+        else if (stage === 2) renderStage2();
+        else renderStage3();
+      };
+      renderCurrent();
 
-      if (stage === 1 && matched.size === 0) {
+      if (learn) {
+        // ①친구 만나기+②예상이 기존 인트로 모달을 대체 — 닫힌 뒤 재렌더로 첫 guide.say
+        if (!disposed) showFriendIntro('dialogue', learn, renderCurrent);
+      } else if (stage === 1 && matched.size === 0) {
         presentModal({
           id: 'dialogue-intro',
           title: content.intro.title,
