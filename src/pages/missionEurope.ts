@@ -70,7 +70,7 @@ type PurposeId = 'balanced' | 'access' | 'heritage' | 'community';
 
 const PURPOSES: ReadonlyArray<{ id: PurposeId; label: string; help: string }> = [
   { id: 'balanced', label: '균형 탐방', help: '접근성·주민 생활·보존 목표를 모두 챙겨요.' },
-  { id: 'access', label: '함께 이동', help: '계단 많은 다리를 피하고 접근하기 쉬운 지점을 두 곳 이상 골라요.' },
+  { id: 'access', label: '함께 이동', help: '계단이 있는 다리를 피하고 이동이 편한 지점을 두 곳 이상 골라요.' },
   { id: 'heritage', label: '흔적 보기', help: '보존 규칙이 있는 역사 지점을 두 곳 이상 연결해요.' },
   { id: 'community', label: '생활 만나기', help: '주민 생활·교류 지점을 두 곳 이상 연결해요.' }
 ];
@@ -431,7 +431,7 @@ export function createPage(): Page {
         // 읽기 → 비교 두 국면을 한 보드에서 갈아 끼운다(한 화면에 쌓지 않는다).
         const scene = el(`<section class="mission-scene scene-read" aria-label="벨라리바 자료 조사 장면">
           <main class="scene-board">
-            <div class="board-title"><h2 data-phase-title>자료 서랍</h2><span class="chip">가상 도시</span></div>
+            <div class="board-title"><h2 data-phase-title>자료 서랍</h2><span class="chip">체코 프라하</span></div>
             <div class="source-row" data-source-grid></div>
             <article class="source-viewer" data-source-viewer role="status" aria-live="polite"></article>
             <div class="source-lens" data-compare-buttons role="group" aria-label="비교할 자료 두 개 선택" hidden></div>
@@ -440,7 +440,7 @@ export function createPage(): Page {
           <aside class="scene-cast" aria-hidden="true">
             ${imageHtml('europe.guide', '', 'cast-hero bob')}
             <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'europe.heritage', 'deco.accordion'])}</div>
-            <p class="cast-note">벨라리바는 학습용 가상 도시예요. 그림은 실제 유럽 사례를 떠올리는 장식이에요.</p>
+            <p class="cast-note">프라하는 체코의 수도예요. 그림은 도시 분위기를 담은 장식이에요.</p>
           </aside>
         </section>`);
         body.appendChild(scene);
@@ -666,7 +666,7 @@ export function createPage(): Page {
           <aside class="scene-cast" aria-hidden="true">
             ${imageHtml('europe.guide', '', 'cast-hero bob')}
             <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'deco.tulip'])}</div>
-            <p class="cast-note">가상 도시예요</p>
+            <p class="cast-note">체코 프라하</p>
           </aside>
           <main class="scene-board map-wrap">
             <div class="board-title"><h2>${c.city.name} 노선판</h2><span class="chip">도보 ━ · 트램 ┅</span></div>

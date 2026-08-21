@@ -42,22 +42,20 @@ interface AmericasContent {
 
 /** JSON의 needs/prefs id → 학생용 한글 라벨 (콘텐츠에 라벨이 없어 코드에 둔다) */
 const ITEM_LABELS: Record<string, string> = {
-  nut_free_meal: '견과류 없는 음식',
-  prayer_time: '기도할 조용한 시간',
-  wheelchair_access: '휠체어가 다니는 길',
-  quiet_break: '조용히 쉬는 시간',
-  hearing_support: '눈으로 보는 자막·그림',
-  veggie_option: '채소 중심 메뉴',
-  language_support: '그림·몸짓 소통 도움',
-  movement_break: '몸을 움직이는 시간',
+  halal_meal: '돼지고기를 뺀 음식',
+  veggie_option: '고기 없는 채식 밥상',
+  prayer_time: '기도하는 조용한 시간',
+  family_day: '가족 명절 날 피하기',
+  language_support: '쉬운 말·그림 안내',
+  name_respect: '이름을 원래 발음대로',
   pref_soccer: '축구',
   pref_drawing: '그림 그리기',
   pref_boardgame: '보드게임',
-  pref_music: '음악 듣기',
+  pref_kpop: '케이팝 듣기',
   pref_reading: '책 읽기',
-  pref_gardening: '식물 가꾸기',
   pref_photo: '사진 찍기',
-  pref_cooking: '요리'
+  pref_cooking: '같이 요리하기',
+  pref_dance: '함께 춤추기'
 };
 const labelOf = (id: string): string => ITEM_LABELS[id] ?? id;
 
@@ -80,10 +78,10 @@ const FOOD_IMG: Record<string, string> = {
 const BLOCK_PREFS: Record<string, string[]> = {
   team_mural: ['pref_drawing'],
   board_game_corner: ['pref_boardgame'],
-  open_gym_games: ['pref_soccer'],
-  garden_snack_time: ['pref_gardening'],
+  open_gym_games: ['pref_soccer', 'pref_dance'],
+  garden_snack_time: ['pref_cooking'],
   picture_story_exchange: ['pref_reading', 'pref_photo'],
-  subtitle_movie_time: ['pref_music'],
+  name_circle: ['pref_kpop'],
   shared_lunch_table: ['pref_cooking']
 };
 
@@ -92,17 +90,17 @@ const BLOCK_PLACES: Record<string, { id: string; label: string }> = {
   shared_lunch_table: { id: 'dining', label: '식당' },
   food_truck_lunch: { id: 'plaza', label: '광장' },
   quiet_room_time: { id: 'quiet-room', label: '조용한 방' },
-  paved_park_walk: { id: 'park', label: '공원' },
+  schedule_check: { id: 'meeting', label: '회의실' },
+  name_circle: { id: 'studio', label: '활동실' },
   team_mural: { id: 'studio', label: '활동실' },
   picture_story_exchange: { id: 'studio', label: '활동실' },
-  subtitle_movie_time: { id: 'studio', label: '활동실' },
   board_game_corner: { id: 'studio', label: '활동실' },
   open_gym_games: { id: 'gym', label: '체육관' },
   garden_snack_time: { id: 'garden', label: '텃밭' }
 };
 const DEFAULT_PLACE = { id: 'activity-room', label: '활동 공간' };
 const TRAVEL_MINUTES = 10;
-const MOVEMENT_BLOCKS = new Set(['paved_park_walk', 'open_gym_games']);
+const MOVEMENT_BLOCKS = new Set(['name_circle', 'open_gym_games']);
 const QUIET_BLOCKS = new Set(['quiet_room_time', 'board_game_corner']);
 const LOUD_BLOCKS = new Set(['open_gym_games']);
 const MAX_SEATED_MINUTES = 120;
