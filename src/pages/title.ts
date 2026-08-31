@@ -73,17 +73,20 @@ const TITLE_CSS = `
   justify-self: center;
   display: flex; flex-direction: column; align-items: center;
   /* 소제목은 로고와 떨어뜨려 배경의 한국 지도 아래에 오게 하고, 한반도 지도가 중심에 오도록 우측으로 이동 */
-  width:min(1120px,92vw);gap:clamp(48px,6vh,80px);min-width:0;
+  width:min(1120px,92vw);gap:clamp(14px,2.2vh,26px);min-width:0;
   position: relative; z-index: 2;
   transform: translateX(clamp(70px, 8.2vw, 160px));
+  transition: opacity var(--t-fast);
 }
+/* 친구가 말하는 동안에는 제목을 비워 준다 — 말풍선이 로고에 묻히던 문제 */
+.title-page:has(.title-speech:not([hidden])) .title-copy { opacity: 0; pointer-events: none; }
 .title-logo {
-  width:min(clamp(585px,64.5vw,975px),100%);max-height:36vh;object-fit:contain;
+  width:min(clamp(585px,64.5vw,975px),100%);max-height:30vh;object-fit:contain;
   filter: drop-shadow(0 9px 24px rgba(10,25,45,.42));
 }
 .title-subtitle {
   margin:0;max-width:36em;color:#fff;
-  font-family:var(--font-head);font-size:clamp(34px,2.8vw,46px);font-weight:800;line-height:1.22;
+  font-family:var(--font-head);font-size:clamp(26px,2.25vw,38px);font-weight:800;line-height:1.22;
   text-wrap: balance; word-break: keep-all; text-shadow: 0 3px 12px rgba(9,34,63,.82);
   white-space: nowrap;
 }
@@ -102,7 +105,7 @@ const TITLE_CSS = `
 .title-character--left { left:clamp(20px,5vw,104px);animation:bob 3.8s ease-in-out 2; }
 .title-character--right { right:clamp(20px,5vw,104px);animation:bob 4.4s ease-in-out 2;animation-delay:.65s; }
 .title-speech {
-  position:absolute;left:clamp(22px,5.5vw,108px);bottom:min(53vh,490px);z-index:5;
+  position:absolute;left:clamp(22px,5.5vw,108px);bottom:min(47vh,430px);z-index:5;
   width:min(430px,31vw);min-height:126px;padding:18px 58px 16px 22px;
   color:var(--c-navy);text-align:left;background:rgba(255,252,242,.97);
   border:3px solid var(--c-gold);border-radius:26px;

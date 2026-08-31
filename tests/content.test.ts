@@ -84,12 +84,13 @@ describe('콘텐츠 공통 스키마', () => {
         expect(typeof visual.needsReview).toBe('boolean');
       }
     }
-    expect(europe.requirements).toEqual({
-      minCountries: 7,
-      minVisualsPerVisitedCountry: 3,
-      minSavedVisuals: 7,
-      minSavedCountries: 7
-    });
+    // 콘텐츠는 일곱 나라를 모두 갖추되, 완료에 필요한 수는 그보다 적어도 된다.
+    // (학생이 궁금한 나라를 고르게 하고, 한 차시 분량을 넘기지 않기 위한 여유)
+    expect(europe.requirements.minVisualsPerVisitedCountry).toBe(3);
+    for (const key of ['minCountries', 'minSavedVisuals', 'minSavedCountries'] as const) {
+      expect(europe.requirements[key], key).toBeGreaterThanOrEqual(4);
+      expect(europe.requirements[key], key).toBeLessThanOrEqual(europe.countries.length);
+    }
   });
 
   it('oceania는 여러 지역·사례·환경 신호·관점을 하나의 바다 흐름으로 제공한다', () => {

@@ -3,7 +3,7 @@
  * VERSION은 package.json의 version과 맞춘다. 배포 버전을 올릴 때 여기도 함께 수정하면
  * activate 단계에서 구버전 캐시가 통째로 삭제된다.
  */
-const VERSION = '0.1.3';
+const VERSION = '0.1.11';
 const PRECACHE = `wcj-precache-v${VERSION}`;
 const RUNTIME = `wcj-runtime-v${VERSION}`;
 
@@ -20,8 +20,48 @@ const PRECACHE_URLS = [
   './assets/bg_map.webp',
   './assets/title_logo.webp',
   './assets/plane_main.webp',
+  './assets/plane_alt1.webp',
+  './assets/plane_alt2.webp',
+  './assets/plane_africa.webp',
+  './assets/plane_explorer.webp',
+  './assets/plane_jet.webp',
+  './assets/plane_green.webp',
+  './assets/plane_portrait_classic.webp',
+  './assets/plane_portrait_flower.webp',
+  './assets/plane_portrait_violet.webp',
+  './assets/plane_portrait_coral.webp',
+  './assets/plane_portrait_mint.webp',
+  './assets/plane_portrait_peach.webp',
+  './assets/plane_portrait_navy.webp',
+  './assets/plane_portrait_rose.webp',
+  './assets/plane_portrait_ice.webp',
+  './assets/plane_portrait_forest.webp',
+  './assets/prop_plane3d.webp',
+  './assets/prop_globe.webp',
+  './assets/deco_flight_kids.webp',
   './assets/prop_passport.webp',
+  './assets/prop_passport_builder.webp',
   './assets/prop_stamp.webp',
+  './assets/europe_prague_charles_bridge.webp',
+  './assets/europe_prague_castle.webp',
+  './assets/europe_prague_clock.webp',
+  './assets/europe_prague_old_town.webp',
+  './assets/europe_prague_lennon_wall.webp',
+  './assets/europe_prague_tram.webp',
+  './assets/africa_photo_djembe.webp',
+  './assets/africa_photo_talkingdrum.webp',
+  './assets/africa_photo_shekere.webp',
+  './assets/africa_photo_kalimba.webp',
+  './assets/africa_photo_kora.webp',
+  './assets/africa_region_north.webp',
+  './assets/africa_region_west.webp',
+  './assets/africa_region_central.webp',
+  './assets/africa_region_east.webp',
+  './assets/africa_region_south.webp',
+  './assets/oceania_resident_youth-v2.webp',
+  './assets/oceania_resident_researcher-v2.webp',
+  './assets/oceania_resident_fisher-v2.webp',
+  './assets/oceania_resident_elder-v2.webp',
   './assets/icon_compass.webp',
   './content/v1/ko/common.json',
   './content/v1/ko/asia.json',
@@ -29,7 +69,8 @@ const PRECACHE_URLS = [
   './content/v1/ko/africa.json',
   './content/v1/ko/americas.json',
   './content/v1/ko/oceania.json',
-  './content/v1/ko/dialogue.json'
+  './content/v1/ko/dialogue.json',
+  './content/v1/ko/environment.json'
 ];
 
 /* 엔트리 번들(js/css)은 파일명에 해시가 붙어 목록에 못 적는다.
@@ -77,7 +118,8 @@ self.addEventListener('activate', (event) => {
 });
 
 // runtime 캐시 대상: 이미지·소리·콘텐츠·빌드 산출물(js/css/폰트)
-const RUNTIME_PATH = /\/(assets|sound|content)\/|\.(js|css|woff2)$/;
+const RUNTIME_PATH = /\/(assets|sound|video|content)\/|\.(js|css|woff2)$/;
+const NETWORK_FIRST_PATH = /\/content\/|\/precache-manifest\.json$|\.(js|css)$/;
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
@@ -100,6 +142,24 @@ self.addEventListener('fetch', (event) => {
           return res;
         })
         .catch(() => caches.match('./index.html', { ignoreVary: true }).then((page) => page ?? Response.error()))
+    );
+    return;
+  }
+
+  // 콘텐츠 JSON과 화면 청크는 서로 같은 배포본이어야 한다. 같은 URL의 예전 JSON을
+  // cache-first로 돌려주면 최신 페이지 코드와 스키마가 어긋나 화면 로드가 실패한다.
+  if (NETWORK_FIRST_PATH.test(url.pathname)) {
+    event.respondWith(
+      fetch(req, { cache: 'no-cache' })
+        .then((res) => {
+          if (!res.ok) {
+            return caches.match(req, { ignoreVary: true }).then((hit) => hit ?? res);
+          }
+          const copy = res.clone();
+          caches.open(RUNTIME).then((cache) => cache.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req, { ignoreVary: true }).then((hit) => hit ?? Response.error()))
     );
     return;
   }

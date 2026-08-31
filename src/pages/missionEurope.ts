@@ -556,7 +556,7 @@ export function createPage(): Page {
         next.addEventListener('click', () => setScreen('gallery'));
         const hint = progress.incompleteVisitedCountryIds.length
           ? `${progress.incompleteVisitedCountryIds.map((id) => countryById.get(id)?.name ?? id).join('·')}에서 한 장 더 살펴봐.`
-          : progress.complete ? '이야기를 모아 보니 친구들의 걱정이 모두 환경과 이어져 있었어. 스테이지 6으로 가져갈 이야기를 정리해 보자.' : '일곱 나라에서 사진을 살펴보고 여행가와 자연스럽게 이야기해 봐.';
+          : progress.complete ? '이야기를 모아 보니 친구들의 걱정이 모두 환경과 이어져 있었어. 스테이지 6으로 가져갈 이야기를 정리해 보자.' : `궁금한 나라 ${content.requirements.minCountries}곳을 골라 사진을 살펴보고 여행가와 이야기해 봐.`;
         setBottom(hint, [next]);
         showKeyPoint({
           id: 'europe.geo',
