@@ -103,7 +103,11 @@ export function playVideoOverlay(opts: {
 export const VIDEO_OVERLAY_CSS = `
 .video-overlay { position:fixed;inset:0;z-index:var(--z-modal);background:#05111f;display:flex;align-items:center;justify-content:center; }
 .video-overlay__video { width:100%;height:100%;object-fit:contain;background:#05111f; }
-.video-overlay__skip { position:absolute;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));min-height:52px; }
+.video-overlay__skip { position:absolute;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));min-height:52px;
+  /* 밝은 장면 위에서도 반드시 보이게 — 영상을 못 건너뛰면 아이는 그냥 기다린다 */
+  background:rgba(10,26,44,.82);color:#fff;border:2px solid rgba(255,255,255,.7);
+  padding-inline:18px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,.4);backdrop-filter:blur(4px); }
+.video-overlay__skip:hover,.video-overlay__skip:focus-visible { background:rgba(10,26,44,.94); }
 .video-overlay__play { position:absolute;left:50%;top:50%;transform:translate(-50%,-50%); }
 .video-overlay__caption {
   position:absolute;left:50%;bottom:max(6vh,env(safe-area-inset-bottom));transform:translateX(-50%);max-width:min(92vw,30em);margin:0;
