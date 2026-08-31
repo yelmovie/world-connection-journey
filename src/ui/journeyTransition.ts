@@ -59,7 +59,8 @@ export function playJourneyTransition(opts: {
   cancelJourneyTransition();
 
   const reduced = reducedMotion();
-  const duration = reduced ? 120 : opts.kind === 'flight' ? 650 : 1450;
+  // 도장 연출은 아이들이 '쾅' 찍히는 순간과 찍힌 여권을 충분히 볼 수 있게 길게 유지한다.
+  const duration = reduced ? 120 : opts.kind === 'flight' ? 650 : 4500;
   const assetId = opts.assetId
     ?? (opts.kind === 'flight' ? selectedAirplanePortraitAssetId(saveRepo.get().profile?.airplaneId) : 'prop.stamp');
   const companionAssetId = opts.companionAssetId !== assetId
@@ -112,6 +113,8 @@ export function playJourneyTransition(opts: {
   let resolveFinished: () => void = () => undefined;
   const finished = new Promise<void>((resolve) => { resolveFinished = resolve; });
   let timer: number | null = window.setTimeout(() => finish(), duration);
+  // 기다리기 싫으면 화면을 탭해서 바로 넘어갈 수 있다 (도장 연출만)
+  if (opts.kind === 'stamp') overlay.addEventListener('pointerdown', () => finish(), { once: true });
 
   const finish = () => {
     if (settled) return;

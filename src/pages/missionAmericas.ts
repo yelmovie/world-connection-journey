@@ -47,6 +47,7 @@ interface CountryDef {
 }
 interface DaySlotDef {
   id: string; label: string;
+  prompt: string; stickerLabel: string;
   scenes: Array<{ studentId: string; text: string }>;
   pairs: string[][];
   commonLine: string;
@@ -148,7 +149,7 @@ function restoreState(data: Record<string, unknown>, countryIds: string[]): ExpS
 
 const PAGE_CSS = `
 .am-scene { --am-copy:max(18px,var(--fs-body)); --am-label:max(18px,var(--fs-small)); }
-.am-scene .page-body { min-height:0; padding:var(--sp-3) clamp(14px,2.5vw,40px) clamp(10px,1.5vh,18px); display:flex; }
+.am-scene .page-body { min-height:0; max-width:min(1840px,100%); padding:var(--sp-3) clamp(12px,1.5vw,28px) clamp(10px,1.5vh,18px); display:flex; }
 .am-stage { flex:1; min-height:0; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:var(--sp-3); }
 .am-scene .panel { background:var(--glass-panel); backdrop-filter:blur(9px) saturate(1.05); border:2px solid rgba(255,255,255,.72); border-radius:var(--radius-l); box-shadow:var(--shadow-card); padding:clamp(12px,1.2vw,20px); }
 .am-scene .btn { color:#0F172A; text-shadow:none; }
@@ -158,7 +159,7 @@ const PAGE_CSS = `
 .am-actions .btn { min-height:56px; font-size:max(20px,var(--am-label)); }
 
 /* ---- 대륙 지도 ---- */
-.exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(330px,.78fr); grid-template-rows:minmax(0,1fr); gap:var(--sp-3); }
+.exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.85fr) minmax(340px,.68fr); grid-template-rows:minmax(0,1fr); gap:clamp(12px,1.2vw,20px); }
 .exp-map-fit { min-width:0; min-height:0; display:grid; }
 .exp-wrap > .exp-map-fit, .am-stage > .exp-map-fit { min-height:0; }
 .am-stage > .exp-map-fit { flex:1; }
@@ -185,7 +186,9 @@ const PAGE_CSS = `
 
 /* 엽서 */
 .exp-cards { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 14px 10px 62px; min-height:76px; border:3px solid #d9c9a3; border-radius:16px; background:linear-gradient(160deg,#fffdf4,#fbf3dd); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; }
+#scene-root .am-scene .exp-cards.panel { align-self:start; max-height:100%; padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; box-shadow:none; }
+.exp-cards__title { margin:0 0 2px; padding:2px 6px; color:#fff; font:900 var(--fs-title) var(--font-head); text-shadow:0 3px 10px rgba(3,29,52,.88),0 1px 2px rgba(3,29,52,.95); }
+.postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 14px 10px 62px; min-height:76px; border:3px solid rgba(217,201,163,.85); border-radius:16px; background:rgba(255,252,240,.72); backdrop-filter:blur(6px); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; }
 .postcard::after { content:''; position:absolute; right:10px; top:10px; width:26px; height:32px; border:2px dashed #c9a86a; border-radius:4px; }
 .postcard img { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:var(--shadow-card); }
 .postcard.is-selected { border-color:var(--c-gold); background:#fff6cf; }
@@ -204,7 +207,7 @@ const PAGE_CSS = `
 .exp-map[data-lens=nature] .exp-map__land i { background:linear-gradient(160deg,#c9d98a,#7c9a52); }
 .exp-map[data-lens=life] { background:linear-gradient(180deg,#254b70,#122f4c); }
 .exp-map[data-lens=life] .exp-map__land i { background:linear-gradient(160deg,#5d7d68,#3c5a49); }
-.lens-point { position:absolute; transform:translate(-50%,-50%); min-width:64px; min-height:64px; border-radius:50%; border:4px solid #fff; background:#ffd75ee8; color:#5b430a; font:900 16px/1.15 var(--font-head); padding:6px; box-shadow:0 0 0 0 rgba(255,215,94,.6); animation:lensPing 1.6s ease-out infinite; }
+.lens-point { position:absolute; transform:translate(-50%,-50%); min-width:84px; min-height:68px; border-radius:999px; border:3px solid #fff; background:#ffd75ed9; color:#5b430a; font:900 clamp(19px,1.5vw,25px)/1.2 var(--font-head); padding:10px 16px; box-shadow:0 0 0 0 rgba(255,215,94,.6); animation:lensPing 1.6s ease-out infinite; }
 .lens-point.is-seen { background:#e0f6ed; border-color:var(--c-success); color:#116d5b; animation:none; }
 @keyframes lensPing { 70%{box-shadow:0 0 0 18px rgba(255,215,94,0)} 100%{box-shadow:0 0 0 0 rgba(255,215,94,0)} }
 .lens-note { position:absolute; left:14px; right:14px; bottom:14px; padding:11px 16px; border-radius:14px; background:#fffdf2ee; color:#173b53; font-size:var(--am-label); font-weight:850; line-height:1.4; box-shadow:var(--shadow-card); }
@@ -223,10 +226,10 @@ const PAGE_CSS = `
 .country-scene .scene-bg { position:absolute; inset:0; background-position:center; background-size:cover; transition:background .5s, background-position .5s; }
 .country-guide { position:absolute; left:14px; top:14px; right:14px; z-index:4; background:#fffdf1ee; border-left:7px solid #f3bf45; border-radius:14px; padding:10px 15px; font-size:var(--am-label); font-weight:850; color:#173b53; }
 .country-side { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.stop-card { padding:12px 14px; border-radius:14px; background:rgba(255,255,255,.94); border-left:6px solid #cdd8de; font-size:var(--am-label); line-height:1.4; }
+.stop-card { padding:12px 14px; border-radius:14px; background:rgba(255,255,255,.6); backdrop-filter:blur(6px); border-left:6px solid rgba(205,216,222,.9); font-size:var(--am-label); line-height:1.4; }
 .stop-card.is-seen { border-left-color:var(--c-success); }
 .stop-card strong { display:block; color:#155b4c; }
-.stop-node { position:absolute; transform:translate(-50%,-50%); min-width:70px; min-height:70px; border-radius:50%; border:4px solid #fff; background:#173e5ee8; color:#fff; font:900 16px/1.15 var(--font-head); padding:8px; box-shadow:0 7px 18px #051e3280; z-index:3; }
+.stop-node { position:absolute; transform:translate(-50%,-50%); min-width:96px; min-height:64px; max-width:200px; border-radius:999px; border:3px solid #fff; background:#173e5ecc; backdrop-filter:blur(3px); color:#fff; font:900 clamp(19px,1.5vw,25px)/1.2 var(--font-head); padding:10px 16px; box-shadow:0 7px 18px #051e3266; z-index:3; word-break:keep-all; }
 .stop-node.is-seen { background:#147b63; }
 .stop-node.is-next { animation:lensPing 1.4s ease-out infinite; background:#e2842d; }
 .voyage-rail { position:absolute; left:10%; right:10%; bottom:14px; z-index:5; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; background:#fffdf2ee; box-shadow:var(--shadow-card); }
@@ -241,13 +244,15 @@ const PAGE_CSS = `
 .alt-slider input { writing-mode:vertical-lr; direction:rtl; height:100%; width:46px; }
 .alt-slider span { background:#fff; border-radius:999px; padding:3px 10px; font-weight:900; font-size:15px; box-shadow:var(--shadow-card); }
 .friend-meet { position:absolute; right:16px; bottom:14px; z-index:6; border:0; background:transparent; display:grid; justify-items:center; gap:4px; cursor:pointer; animation:friendBob 2.2s ease-in-out infinite; }
+/* 캐릭터 주변에 노란 안내 박스(tap-cue 아웃라인)를 씌우지 않는다 — 캐릭터 자체가 행동 유도다 */
+.friend-meet.tap-cue, .hub-pin.tap-cue { outline:0 !important; animation:friendBob 2.2s ease-in-out infinite; }
 .friend-meet img { width:clamp(110px,11vw,160px); filter:drop-shadow(0 8px 14px #05203a66); }
 .friend-meet span { background:var(--c-gold); color:#4c3600; border-radius:999px; padding:6px 16px; font:900 max(17px,var(--am-label)) var(--font-head); box-shadow:var(--shadow-card); }
 @keyframes friendBob { 50%{transform:translateY(-8px)} }
 
 /* 문화 가방 */
 .bag-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.bag-item { min-height:110px; border:3px solid #cbd7df; border-radius:18px; background:#fff; padding:12px; font:900 max(18px,var(--am-label)) var(--font-head); color:#173b53; display:grid; place-items:center; text-align:center; cursor:pointer; }
+.bag-item { min-height:110px; border:3px solid rgba(203,215,223,.85); border-radius:18px; background:rgba(255,255,255,.72); backdrop-filter:blur(6px); padding:12px; font:900 max(18px,var(--am-label)) var(--font-head); color:#173b53; display:grid; place-items:center; text-align:center; cursor:pointer; }
 .bag-item.is-open { border-color:var(--c-success); font:750 var(--am-label)/1.4 var(--font-body); place-items:start; text-align:left; background:#f4fbf8; }
 .bag-item.is-open strong { display:block; font-family:var(--font-head); margin-bottom:4px; color:#155b4c; }
 .bag-item.is-env.is-open { background:#fdf6e4; border-color:#e2b13c; }
@@ -259,11 +264,16 @@ const PAGE_CSS = `
 .day-slot { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
 .day-cards { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
 .lens-tabs .btn.is-solved::after { content:' ✓'; color:#149067; }
-.day-card { position:relative; border:3px solid #cbd7df; border-radius:16px; background:#fff; padding:12px; display:grid; gap:8px; justify-items:center; align-content:center; text-align:center; font-size:var(--am-label); line-height:1.35; cursor:pointer; }
-.day-card img { width:56px; height:56px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:var(--shadow-card); }
+.day-card { position:relative; border:3px solid rgba(255,255,255,.65); border-radius:20px; background:rgba(255,255,255,.42); backdrop-filter:blur(7px) saturate(1.05); padding:clamp(10px,1.2vw,18px); display:grid; gap:clamp(8px,1.2vh,14px); justify-items:center; align-content:center; text-align:center; cursor:pointer; }
+.day-card strong { font:900 clamp(22px,1.8vw,30px)/1.1 var(--font-head); color:var(--c-navy); text-shadow:0 1px 3px rgba(255,255,255,.8); }
+.day-card span { font-size:clamp(19px,1.4vw,25px); font-weight:800; line-height:1.4; color:#12293d; word-break:keep-all; text-wrap:balance; }
+.day-card img { width:clamp(96px,10vw,150px); height:clamp(96px,10vw,150px); border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow:var(--shadow-card); background:rgba(255,255,255,.7); }
 .day-card.is-selected { border-color:var(--c-gold); background:#fff6cf; }
 .day-card.is-linked { border-color:var(--c-success); background:#f0fbf6; }
-.day-common { min-height:60px; padding:10px 14px; border-radius:14px; background:#e0f6ed; border:2px solid #18836a; color:#116d5b; font-weight:900; font-size:var(--am-label); display:none; }
+/* 과제 배너 — 지금 해야 할 미션이 화면에서 가장 먼저 읽히게 */
+.am-task { display:flex; align-items:center; justify-content:center; gap:12px; margin:0 auto; max-width:min(920px,94%); padding:12px 24px; border-radius:999px; background:linear-gradient(180deg,#fff8e2f2,#ffedbdf2); border:3px solid #f3bf45; box-shadow:var(--shadow-card); color:#5b430a; font:900 clamp(21px,1.8vw,30px)/1.3 var(--font-head); text-align:center; word-break:keep-all; text-wrap:balance; }
+.am-task::before { content:'미션'; flex-shrink:0; padding:5px 14px; border-radius:999px; background:#f3bf45; color:#4c3600; font-size:.68em; }
+.day-common { min-height:60px; padding:12px 18px; border-radius:14px; background:rgba(224,246,237,.88); backdrop-filter:blur(4px); border:2px solid #18836a; color:#0d5a44; font-weight:900; font-size:clamp(19px,1.4vw,25px); text-align:center; word-break:keep-all; text-wrap:balance; display:none; }
 .day-slot.is-solved .day-common { display:block; }
 
 /* ---- 탐험 노트 ---- */
@@ -274,7 +284,7 @@ const PAGE_CSS = `
 .note-zone { min-height:0; overflow:auto; padding:12px; border-radius:18px; border:3px dashed rgba(255,255,255,.8); background:var(--glass-panel-soft); display:flex; flex-direction:column; gap:8px; }
 .note-zone h3 { margin:0; font:900 max(20px,var(--am-copy)) var(--font-head); color:var(--c-navy); }
 .note-zone small { color:var(--c-ink-soft); font-weight:800; }
-.note-chip { flex:0 0 auto; min-height:56px; padding:9px 15px; border-radius:999px; border:3px solid #cbd7df; background:#fff; font-weight:900; font-size:max(16px,var(--am-label)); line-height:1.25; white-space:nowrap; cursor:pointer; }
+.note-chip { flex:0 0 auto; min-height:56px; padding:9px 15px; border-radius:999px; border:3px solid rgba(203,215,223,.85); background:rgba(255,255,255,.8); font-weight:900; font-size:max(16px,var(--am-label)); line-height:1.25; white-space:nowrap; cursor:pointer; }
 .note-zone .note-chip { min-height:48px; padding:7px 13px; white-space:normal; }
 .note-chip.is-selected { border-color:var(--c-gold); background:#fff6cf; }
 .keyword-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
@@ -283,7 +293,7 @@ const PAGE_CSS = `
 
 /* ---- 지구 신호 ---- */
 .signal-final { flex:1; min-height:0; display:grid; place-content:center; gap:14px; justify-items:center; }
-.signal-token { display:flex; align-items:center; gap:14px; width:min(680px,92vw); padding:14px 18px; border-radius:18px; border:3px solid #cbd7df; background:#fff; text-align:left; font-size:var(--am-label); line-height:1.4; cursor:pointer; }
+.signal-token { display:flex; align-items:center; gap:14px; width:min(680px,92vw); padding:14px 18px; border-radius:18px; border:3px solid rgba(203,215,223,.85); background:rgba(255,255,255,.78); backdrop-filter:blur(6px); text-align:left; font-size:var(--am-label); line-height:1.4; cursor:pointer; }
 .signal-token::before { content:''; width:52px; height:52px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 35% 30%,#9fdcff,#2b7fc0); box-shadow:0 4px 10px #0a304d55; }
 .signal-token[data-issue=forest]::before { background:radial-gradient(circle at 35% 30%,#bfe8a5,#3e8a4f); }
 .signal-token[data-issue=life]::before { background:radial-gradient(circle at 35% 30%,#ffe29f,#d99027); }
@@ -483,7 +493,7 @@ export function createPage(): Page {
         const wrap = el('<div class="exp-wrap"></div>');
         const map = buildMap();
         const side = el('<div class="exp-cards panel"></div>');
-        side.appendChild(el('<h2 style="margin:0;font:900 var(--fs-title) var(--font-head);color:var(--c-navy)">친구들의 엽서</h2>'));
+        side.appendChild(el('<h2 class="exp-cards__title">친구들의 엽서</h2>'));
 
         const zones: HTMLElement[] = [];
         const items: HTMLElement[] = [];
@@ -516,8 +526,12 @@ export function createPage(): Page {
         const refresh = (): void => {
           const all = E.countries.every((c) => S.placed.includes(c.id));
           next.disabled = !all;
-          setBottom(all ? '네 친구의 나라를 모두 찾았어!' : '엽서를 읽고 지도의 맞는 자리에 놓아 봐', next);
-          if (all) guide?.say('네 나라의 위치를 모두 찾았어! 이제 렌즈로 대륙을 더 자세히 볼까?', { cue: next });
+          setBottom(all ? '' : '엽서를 읽고 지도의 맞는 자리에 놓아 봐', next);
+          if (all) guide?.say('네 친구의 나라를 모두 찾았어!', {
+            cue: next,
+            autoStart: true,
+            persist: true
+          });
         };
 
         dnd = enablePickPlace({
@@ -782,7 +796,7 @@ export function createPage(): Page {
             else startDialogue();
           });
           scene.appendChild(meet);
-          guide?.say(`저기 ${student?.name ?? '친구'}가 기다리고 있어! 만나러 가 보자.`, { cue: meet });
+          guide?.say(`저기 ${student?.name ?? '친구'}가 기다리고 있어! 만나러 가 보자.`);
         }
 
         function refresh(): void {
@@ -865,6 +879,7 @@ export function createPage(): Page {
       const renderDay = (): void => {
         const wrap = el('<div class="am-stage" style="gap:12px"></div>');
         const tabs = el('<div class="lens-tabs"></div>');
+        const task = el('<p class="am-task" role="status"></p>');
         const board = el('<div class="day-board"></div>');
         const next = nextButton('탐험 노트 펼치기', 'note');
         let active = E.day.slots.find((slot) => !S.daySolved.includes(slot.id)) ?? E.day.slots[0]!;
@@ -885,6 +900,7 @@ export function createPage(): Page {
 
         const drawSlot = (): void => {
           const slot = active;
+          task.textContent = S.daySolved.includes(slot.id) ? slot.commonLine : slot.prompt;
           const section = el(`<section class="day-slot ${S.daySolved.includes(slot.id) ? 'is-solved' : ''}"></section>`);
           const cards = el('<div class="day-cards"></div>');
           const common = el(`<p class="day-common">${slot.commonLine}</p>`);
@@ -913,6 +929,7 @@ export function createPage(): Page {
                 S.daySolved.push(slot.id);
                 persist();
                 section.classList.add('is-solved');
+                task.textContent = slot.commonLine;
                 cards.querySelectorAll('.day-card').forEach((b) => b.classList.remove('is-selected'));
                 cards.querySelectorAll(`[data-sid="${pair[0]}"],[data-sid="${pair[1]}"]`).forEach((b) => b.classList.add('is-linked'));
                 burstConfetti(common, 6);
@@ -923,7 +940,7 @@ export function createPage(): Page {
                 if (nextSlot) later(() => { active = nextSlot; drawSlot(); }, 1800);
               } else {
                 void audio.playSfx('partial');
-                guide?.say('두 장면이 어떤 점에서 닮았는지 한 번 더 살펴볼까?');
+                guide?.say(`그 둘도 닮은 데가 있을 수 있어! 그런데 이번 미션은 이거야 — ${slot.prompt}`);
                 cards.querySelectorAll('.day-card').forEach((b) => b.classList.remove('is-selected'));
                 picked = null;
               }
@@ -941,7 +958,7 @@ export function createPage(): Page {
           tabs.appendChild(b);
         });
 
-        wrap.append(tabs, board);
+        wrap.append(tabs, task, board);
         stage.replaceChildren(wrap);
         drawSlot();
         showKeyPoint({
@@ -969,13 +986,14 @@ export function createPage(): Page {
           if (item) out.push({ id: `keep-${item.id}`, label: item.label, cats: item.kind === 'env' ? ['nature', 'common'] : ['culture', 'common'] });
         });
         E.day.slots.forEach((slot) => {
-          if (S.daySolved.includes(slot.id)) out.push({ id: `day-${slot.id}`, label: `${slot.label}의 닮은 점`, cats: ['common'] });
+          if (S.daySolved.includes(slot.id)) out.push({ id: `day-${slot.id}`, label: slot.stickerLabel, cats: ['common'] });
         });
         return out;
       };
 
       const renderNote = (): void => {
         const stickers = buildStickers();
+        const task = el('<p class="am-task" role="status"></p>');
         const layout = el('<div class="note-layout"></div>');
         const pool = el('<div class="note-pool panel"></div>');
         const zonesWrap = el('<div class="note-zones"></div>');
@@ -995,12 +1013,10 @@ export function createPage(): Page {
           const allPlaced = stickers.every((s) => S.notePlaced[s.id]);
           keywordRow.hidden = !allPlaced;
           next.disabled = !(allPlaced && S.keywords.length >= E.note.keywordSlots);
-          setBottom(
-            next.disabled
-              ? allPlaced ? `우리 여행을 나타내는 말 ${E.note.keywordSlots}개를 골라 봐` : '노트의 발견을 어울리는 칸으로 옮겨 봐'
-              : '탐험 노트 완성!',
-            next
-          );
+          task.textContent = next.disabled
+            ? allPlaced ? `우리 여행을 나타내는 말 ${E.note.keywordSlots}개를 골라 봐!` : '발견 스티커를 어울리는 칸으로 옮겨 봐!'
+            : '탐험 노트 완성! 지구 신호로 바꿔 보자.';
+          setBottom('', next);
         };
 
         const items: HTMLElement[] = [];
@@ -1054,7 +1070,7 @@ export function createPage(): Page {
         });
 
         layout.append(pool, zonesWrap);
-        stage.replaceChildren(layout, keywordRow);
+        stage.replaceChildren(task, layout, keywordRow);
         refresh();
         guide?.say('여행에서 모은 발견이야! 자연환경, 생활과 문화, 여러 나라에서 함께 보인 것으로 나눠 보자.');
       };

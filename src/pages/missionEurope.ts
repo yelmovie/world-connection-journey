@@ -236,6 +236,7 @@ const PAGE_CSS = `
 .europe-mission .eu-window-panel h3 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }
 .europe-mission .eu-window-panel p { margin:0;font-size:var(--eu-copy);font-weight:750;line-height:1.42; }
 .europe-mission .eu-look { padding:11px 13px;border-left:6px solid #efbd45;border-radius:10px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35; }
+.europe-mission .eu-tap-hint { margin:0;padding:8px 12px;border-radius:10px;background:rgba(243,191,69,.18);border:2px dashed rgba(214,157,32,.6);color:#6b4a00;font-size:var(--eu-small);font-weight:850;line-height:1.3;word-break:keep-all;text-wrap:balance; }
 .europe-mission .eu-look strong { display:block;color:#725600;font-weight:900; }
 .europe-mission .eu-thumbs { display:grid;grid-template-columns:repeat(3,1fr);gap:7px; }
 .europe-mission .eu-thumb { min-height:68px;padding:0;border:3px solid transparent;border-radius:13px;overflow:hidden;background:#cddde2;cursor:pointer; }
@@ -452,7 +453,13 @@ export function createPage(): Page {
         state.activeVisualId = visual.id;
         if (!state.viewedVisualIds.includes(visual.id)) state.viewedVisualIds.push(visual.id);
         persist();
-        render();
+        if (!alreadyRecorded) {
+          // 이야기를 기록했으면 창에 머물지 않고 지도로 돌아가 다음 나라로 흐름을 잇는다
+          showToast(`${country.name} 친구의 이야기를 기록했어!`, 'success');
+          setScreen('map');
+        } else {
+          render();
+        }
       };
 
       const openTravelerDialogue = (country: EuropeCountry, visual: EuropeVisual): void => {
@@ -598,6 +605,7 @@ export function createPage(): Page {
               <span class="eu-label">${CATEGORY_LABEL[visual.category]}</span>
               <p>${esc(visual.caption)}</p>
               <div class="eu-look"><strong>찾아봐</strong>${esc(visual.lookFor)}</div>
+              <p class="eu-tap-hint">작은 사진을 누르면 문화 설명과 여행가 이야기가 열려.</p>
               <div class="eu-thumbs" role="group" aria-label="${esc(country.name)} 장면 3개">${thumbnails}</div>
               <div class="eu-traveler-slot">
                 <button type="button" class="btn btn-primary" data-meet-traveler>${esc(meetLabel)}</button>
@@ -631,7 +639,7 @@ export function createPage(): Page {
         const back = button('지도', 'ghost');
         back.addEventListener('click', () => setScreen('map'));
         setBottom(saved ? '친구 이야기 들음' : '문화 장면 살펴보기', [back]);
-        say('작은 사진을 누르면 문화 설명과 여행가 이야기가 열려.', screen.querySelector<HTMLElement>('[data-visual]'));
+        // 반복 말풍선 대신 패널에 상시 안내(아래 eu-tap-hint)로 보여 준다
       };
 
       const renderGallery = (): void => {

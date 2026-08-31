@@ -859,52 +859,48 @@
       }
     ],
     "day": {
-      "guide": "네 친구의 하루를 시간대별로 비교해 보자. 닮은 장면 두 개를 이어 봐!",
+      "guide": "시간대마다 미션이 달라! 미션에 맞는 두 친구를 찾아 이어 봐.",
       "slots": [
         {
           "id": "morning",
           "label": "아침",
+          "prompt": "가족과 함께 아침을 시작하는 두 친구를 이어 봐!",
+          "stickerLabel": "아침은 가족과 함께",
           "scenes": [
             {
               "studentId": "noah",
-              "text": "따뜻한 죽을 먹고 두꺼운 옷을 입어"
+              "text": "가족과 따뜻한 아침을 먹고 두꺼운 옷을 골라 입어"
             },
             {
               "studentId": "valeria",
-              "text": "가족과 아침을 먹고 광장을 지나 걸어가"
+              "text": "광장 시장 골목에서 이웃들과 인사하며 걸어가"
             },
             {
               "studentId": "lucas",
-              "text": "마당 조회 전에 친구들과 이야기해"
+              "text": "강가 선착장에서 학교 가는 배를 기다려"
             },
             {
               "studentId": "camila",
-              "text": "시장을 지나며 아침 인사를 나눠"
+              "text": "가족과 아침을 먹고 고원 시장 골목을 지나가"
             }
           ],
           "pairs": [
             [
               "noah",
-              "valeria"
-            ],
-            [
-              "valeria",
               "camila"
-            ],
-            [
-              "noah",
-              "lucas"
             ]
           ],
-          "commonLine": "아침을 가족과 시작하고, 이웃과 인사하는 건 어디나 닮았어!"
+          "commonLine": "추운 아침도, 높은 고원의 아침도 — 가족과 함께 시작하는 건 닮았어!"
         },
         {
           "id": "school",
           "label": "학교",
+          "prompt": "쉬는 시간에 운동장에서 몸으로 노는 두 친구를 이어 봐!",
+          "stickerLabel": "쉬는 시간을 기다리는 마음",
           "scenes": [
             {
               "studentId": "noah",
-              "text": "여러 말로 인사하는 친구들과 공부해"
+              "text": "교실에서 여러 나라 말로 인사를 배워"
             },
             {
               "studentId": "valeria",
@@ -912,40 +908,38 @@
             },
             {
               "studentId": "lucas",
-              "text": "배 또는 버스로 등교한 친구들과 공부해"
+              "text": "배를 타고 온 친구들과 마당 조회로 하루를 열어"
             },
             {
               "studentId": "camila",
-              "text": "쉬는 시간에 친구들과 술래잡기를 해"
+              "text": "쉬는 시간에 운동장에서 술래잡기를 해"
             }
           ],
           "pairs": [
             [
               "valeria",
               "camila"
-            ],
-            [
-              "noah",
-              "lucas"
             ]
           ],
-          "commonLine": "배우고, 쉬는 시간에 노는 건 네 나라 모두 똑같아!"
+          "commonLine": "노는 방법은 달라도 쉬는 시간을 기다리는 마음은 똑같아!"
         },
         {
           "id": "afternoon",
           "label": "오후",
+          "prompt": "바깥에서 몸을 움직이며 노는 두 친구를 이어 봐!",
+          "stickerLabel": "바깥에서 노는 즐거움",
           "scenes": [
             {
               "studentId": "noah",
-              "text": "호수 근처에서 자전거를 타"
+              "text": "호숫가 길에서 자전거를 타"
             },
             {
               "studentId": "valeria",
-              "text": "사촌들과 광장에서 놀아"
+              "text": "집 안에서 사촌들과 보드게임을 해"
             },
             {
               "studentId": "lucas",
-              "text": "친구들과 골목에서 공을 차"
+              "text": "골목에서 친구들과 공을 차"
             },
             {
               "studentId": "camila",
@@ -956,54 +950,40 @@
             [
               "noah",
               "lucas"
-            ],
-            [
-              "valeria",
-              "lucas"
-            ],
-            [
-              "valeria",
-              "camila"
             ]
           ],
-          "commonLine": "노는 장소는 달라도, 친구·가족과 시간을 보내는 건 닮았어!"
+          "commonLine": "호숫가와 골목 — 장소는 달라도 바깥에서 노는 즐거움은 닮았어!"
         },
         {
           "id": "evening",
           "label": "저녁",
+          "prompt": "이야기를 나누며 하루를 마무리하는 두 친구를 이어 봐!",
+          "stickerLabel": "이야기로 마무리하는 하루",
           "scenes": [
             {
               "studentId": "noah",
-              "text": "가족과 저녁을 먹으며 하루 이야기를 해"
+              "text": "가족과 저녁을 먹으며 오늘 있었던 일을 이야기해"
             },
             {
               "studentId": "valeria",
-              "text": "광장에서 음악을 듣고 집에 돌아와"
+              "text": "광장에서 저녁 음악을 듣고 집으로 돌아와"
             },
             {
               "studentId": "lucas",
-              "text": "할머니가 들려주는 이야기를 들어"
+              "text": "할머니가 들려주는 옛이야기를 들어"
             },
             {
               "studentId": "camila",
-              "text": "가족과 저녁을 먹고 별을 봐"
+              "text": "지붕 위로 뜬 별을 올려다보며 하루를 마쳐"
             }
           ],
           "pairs": [
             [
               "noah",
-              "camila"
-            ],
-            [
-              "noah",
               "lucas"
-            ],
-            [
-              "lucas",
-              "camila"
             ]
           ],
-          "commonLine": "하루의 끝은 가족과 함께 — 이건 대륙을 건너도 닮았어!"
+          "commonLine": "저녁 식탁의 이야기도, 할머니의 옛이야기도 — 이야기로 하루를 마무리해!"
         }
       ]
     },

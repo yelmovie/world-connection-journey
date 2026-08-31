@@ -940,7 +940,12 @@
 .keypoint__text {
   min-height: 3.4em; margin: 0;
   font-family: var(--font-head); font-size: clamp(23px, 2.1vw, 31px); line-height: 1.5;
-  color: var(--c-navy); word-break: keep-all;
+  color: var(--c-navy); word-break: keep-all; text-wrap: balance;
+}
+
+/* 한글 짧은 문장 줄바꿈 균형 — 팝업·안내 문장에서 마지막 한 어절만 다음 줄로 떨어지는 것을 막는다 */
+.modal h2, .modal h3, .modal p, .feedback, .learn-question, .learn-goal, .learn-hint {
+  text-wrap: balance; word-break: keep-all;
 }
 .keypoint__dots { display: flex; gap: 8px; }
 .keypoint__dots i { width: 11px; height: 11px; border-radius: 50%; background: rgba(23, 58, 91, 0.18); }

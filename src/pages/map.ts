@@ -186,7 +186,10 @@ const MAP_CSS = `
    대륙 이름은 오른쪽 안내판과 aria-label에 그대로 남는다. */
 .map-hotspot .node-label { display:none; }
 .map-hotspot.is-selected .node-label { display:none; }
-.map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c-success);color:#fff;border:2px solid #fff;font-size:20px;font-weight:900; }
+.map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--c-success);color:#fff;border:3px solid #fff;font-size:24px;font-weight:900;box-shadow:var(--shadow-card); }
+/* 완료 스테이지는 멀리서도 구분되게 — 초록 링 + 완료 리본 */
+.map-hotspot[data-state="completed"] .node-img { box-shadow:0 0 0 5px rgba(46,173,120,.85),0 0 0 9px rgba(46,173,120,.28),var(--shadow-card); }
+.map-hotspot[data-state="completed"]::after { content:'완료!'; position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);padding:3px 14px;border-radius:999px;background:var(--c-success);color:#fff;font:900 15px/1.2 var(--font-head);border:2px solid #fff;box-shadow:var(--shadow-card);white-space:nowrap;z-index:4; }
 /* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
 .map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap; }
 .map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
