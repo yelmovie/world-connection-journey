@@ -6,14 +6,20 @@ import { saveRepo, recomputeUnlocks } from '../core/SaveRepository';
 import { createPhaserHost, GAME_H, GAME_W, type PhaserHost } from '../core/phaserHost';
 import { buildTopBar } from '../ui/chrome';
 import { createGuide, type GuideController } from '../ui/guide';
-import { burstConfetti, stampSlam } from '../ui/fx';
+import { burstConfetti } from '../ui/fx';
 import {
   cancelJourneyTransition,
   consumeMissionReturn,
   playJourneyTransition
 } from '../ui/journeyTransition';
 import { readLearnCard } from '../ui/learnFrame';
-import { CONTINENT_IDS, type MissionId, type MissionStatus } from '../types';
+import {
+  missionCompanionAssetId,
+  selectedAirplaneAssetId,
+  selectedAirplanePortraitAssetId
+} from '../ui/airplaneFleet';
+import { selectedAvatarSpeaker } from '../ui/avatarRoster';
+import type { MissionId, MissionStatus } from '../types';
 
 interface Spot {
   id: MissionId;
@@ -33,163 +39,251 @@ interface Spot {
 /** 화살표키 탐색 순서와 지도 번호가 같다. */
 const SPOTS: Spot[] = [
   {
-    id: 'americas', name: '아메리카', route: '#/mission/americas', topic: '함께 정하기', minutes: 8,
-    objective: '친구들의 필요를 살펴 함께할 하루를 계획해요.',
-    steps: ['친구 자료 관찰', '두 계획 비교', '근거로 일정 완성'],
-    x: 0.15, y: 0.44, assetId: 'deco.landmark_liberty', assetAlt: '아메리카 미션의 자유의 여신상'
+    id: 'americas', name: '아메리카', route: '#/mission/americas', topic: '대륙 탐험과 생활', minutes: 12,
+    objective: '지도를 직접 움직여 네 나라를 탐험하고, 그곳에 사는 친구들을 만나 봐.',
+    steps: ['지도에서 네 나라 찾기', '나라 속 탐험과 친구의 문화 가방', '하루 비교로 닮은 점 찾기'],
+    x: 0.70, y: 0.34, assetId: 'americas.student1', assetAlt: '아메리카 미션에서 만날 친구'
   },
   {
-    id: 'europe', name: '유럽', route: '#/mission/europe', topic: '유산과 오늘', minutes: 8,
-    objective: '문화유산과 오늘의 생활을 잇는 여행 경로를 만들어요.',
-    steps: ['자료 살펴보기', '경로 이어 보기', '선택 근거 말하기'],
-    x: 0.49, y: 0.24, assetId: 'deco.landmark_eiffel', assetAlt: '유럽 미션의 에펠탑'
+    id: 'europe', name: '유럽', route: '#/mission/europe', topic: '여러 나라와 도시', minutes: 8,
+    objective: '유럽 여러 나라의 모습을 비교하고, 가장 궁금한 나라를 사진 근거와 질문으로 남겨.',
+    steps: ['일곱 나라 문화 장면 탐색', '사진과 여행가 이야기 듣기', '여행에서 알게 된 것 연결하기'],
+    x: 0.18, y: 0.32, assetId: 'europe.guide', assetAlt: '유럽 미션에서 만날 여행 가이드'
   },
   {
-    id: 'africa', name: '아프리카', route: '#/mission/africa', topic: '소리로 대화', minutes: 7,
-    objective: '서로의 소리를 듣고 리듬 대화를 완성해요.',
-    steps: ['악기 소리 듣기', '리듬 차례 맞추기', '주고받는 연주 완성'],
-    x: 0.51, y: 0.53, assetId: 'deco.landmark_pyramid', assetAlt: '아프리카 미션의 피라미드'
+    id: 'africa', name: '아프리카', route: '#/mission/africa', topic: '다섯 지역과 연결', minutes: 12,
+    objective: '다섯 지역의 열 나라 사례를 살피고, 소리와 환경 신호를 이어 공동 해결안을 만들어.',
+    steps: ['다섯 지역과 열 나라 탐험', '실제 악기·여덟 박 신호 체험', '환경 영향과 공동 해결안 연결'],
+    x: 0.24, y: 0.58, assetId: 'africa.host', assetAlt: '아프리카 미션에서 만날 리듬 안내 친구'
   },
   {
-    id: 'asia', name: '아시아', route: '#/mission/asia', topic: '하루와 생활', minutes: 8,
-    objective: '하루 자료에서 사실과 나의 해석을 구분해요.',
-    steps: ['생활 장면 관찰', '사실과 해석 분류', '새 근거로 생각 수정'],
-    x: 0.73, y: 0.36, assetId: 'deco.landmark_taj', assetAlt: '아시아 미션의 타지마할'
+    id: 'asia', name: '아시아', route: '#/mission/asia', topic: '여러 지역과 이어진 지구', minutes: 8,
+    objective: '비행기로 아시아 여러 나라를 둘러보고 네팔 친구의 하루를 탐험해.',
+    steps: ['아시아 항로 둘러보기', '네팔에 착륙해 대화', '이야기 나누며 퀴즈 풀기'],
+    x: 0.39, y: 0.46, assetId: 'asia.mina', assetAlt: '아시아 여러 지역을 함께 살펴볼 여행 친구'
   },
   {
-    id: 'oceania', name: '오세아니아', route: '#/mission/oceania', topic: '환경과 공동체', minutes: 9,
-    objective: '여러 관점으로 섬과 바다를 지키는 선택을 해요.',
-    steps: ['네 관점 듣기', '3턴 선택하기', '지표 변화 돌아보기'],
-    x: 0.84, y: 0.71, assetId: 'deco.landmark_sydney', assetAlt: '오세아니아 미션의 시드니 오페라하우스'
+    id: 'oceania', name: '오세아니아', route: '#/mission/oceania', topic: '섬·대륙과 하나의 바다', minutes: 11,
+    objective: '다섯 탐험 구역의 자연·오늘날 생활·살아 있는 문화를 비교하고 바다로 이어진 공동 제안을 만들어.',
+    steps: ['다섯 탐험 구역 지도 비교', '지역 사례와 환경 신호 관찰', '여러 주체의 공동 제안 만들기'],
+    x: 0.51, y: 0.75, assetId: 'oceania.youth', assetAlt: '오세아니아 미션에서 만날 섬 탐험 친구'
   },
   {
-    id: 'dialogue', name: '다름을 잇는 대화', route: '#/mission/respect-dialogue', topic: '존중 대화', minutes: 7,
-    objective: '관찰하고 물어보며 존중하는 대화를 완성해요.',
-    steps: ['상황 관찰', '공감 질문 선택', '생각을 고쳐 말하기'],
-    x: 0.51, y: 0.85, assetId: 'deco.portal_globe', assetAlt: '마지막 존중 대화 미션으로 가는 지구본 문'
+    id: 'dialogue', name: '하나의 지구, 여섯 개의 신호', route: '#/mission/respect-dialogue', topic: '세계 친구와 환경', minutes: 14,
+    objective: '여섯 나라 친구를 만나 인사와 경청을 연습하고, 친구들이 보낸 사진 속 환경 신호를 이어 세계 친구 지구회의에서 공동약속을 만들어.',
+    steps: ['여섯 친구의 인사와 경청', '사진 속 환경 신호 찾기', '지구회의에서 공동약속 만들기'],
+    x: 0.69, y: 0.70, assetId: 'greeting.colombia', assetAlt: '마지막 존중 대화를 함께할 인사 친구'
   }
 ];
+
+if (new Set(SPOTS.map((spot) => spot.route)).size !== SPOTS.length) {
+  throw new Error('세계 지도 설정 오류: 서로 다른 단계가 같은 경로를 사용하고 있어요.');
+}
+
+/** 새 태평양 중심 배경에서 한국의 위치. 첫 항로와 비행기는 여기서 출발한다. */
+const KOREA_HOME = { x: 0.505, y: 0.43 } as const;
+const PLANE_Y_OFFSET = 132;
+
+function planePosition(x: number, y: number): { x: number; y: number } {
+  return { x: x * GAME_W, y: Math.max(92, y * GAME_H - PLANE_Y_OFFSET) };
+}
 
 /** 배움 카드 칩 아이콘 (이모지 금지 — §6) */
 const SVG_CARD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6"/></svg>`;
 
+/** 새 사진 도착 신호 아이콘 */
+const SVG_MAIL = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
+
 const STATUS_LABEL: Record<MissionStatus, string> = {
-  locked: '다섯 대륙 완료 후 열림',
+  locked: '아직 잠겨 있음',
   available: '지금 도전 가능',
   in_progress: '이어서 할 수 있음',
   completed: '완료'
 };
 
 const MAP_CSS = `
-.map-page { background: linear-gradient(#0e2440, #19324d); }
-/* 리본 제목이 화면 위로 잘리지 않게 */
-.map-page .top-bar { height:auto;min-height:var(--top-bar-h);padding-block:var(--sp-2); }
+.map-node-mail {
+  position:absolute;top:-4px;right:-4px;width:34px;height:34px;border-radius:50%;background:var(--c-coral);color:#fff;
+  display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:var(--shadow-card);z-index:3;
+  animation:map-mail-ping 1.3s ease-out infinite;
+}
+.map-node-mail.is-arriving { animation:map-mail-pop .45s cubic-bezier(.2,1.4,.4,1) both, map-mail-ping 1.3s ease-out .45s infinite; }
+@keyframes map-mail-ping { 0%{box-shadow:0 0 0 0 rgba(242,109,109,.65)} 100%{box-shadow:0 0 0 16px rgba(242,109,109,0)} }
+@keyframes map-mail-pop { from{transform:scale(0)} to{transform:scale(1)} }
+:root[data-reduced-motion="true"] .map-node-mail { animation:none; }
+/* 지도 원화가 화면 전체를 채우고 상단바·안내판·캐릭터만 그 위에 뜬다. */
+.map-page {
+  --guide-size:clamp(140px,15vw,220px);
+  grid-template-rows:auto minmax(0,1fr);background:#69b9dc;isolation:isolate;overflow:hidden;
+}
+.map-page::before {
+  content:'';position:absolute;inset:-3%;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(14,46,76,.16),rgba(14,46,76,.26)),var(--map-bg);
+  background-position:center;background-size:cover;opacity:.28;filter:blur(12px) saturate(.8);transform:scale(1.04);
+}
+.map-page .top-bar {
+  position:relative;z-index:calc(var(--z-panel) + 2);height:auto;min-height:var(--top-bar-h);padding-block:var(--sp-2);
+  background:linear-gradient(180deg,rgba(12,43,73,.64) 0%,rgba(12,43,73,.36) 72%,rgba(12,43,73,.14) 100%);
+  box-shadow:0 18px 28px rgba(10,38,68,.14);backdrop-filter:blur(3px) saturate(1.08);
+}
+.map-page > .guide-wrap {
+  position:absolute;left:clamp(4px,2vw,34px);bottom:clamp(4px,1.5vh,18px);grid-row:auto;height:calc(var(--guide-size) + var(--scene-safe));
+  z-index:calc(var(--z-panel) + 1);pointer-events:none;
+}
+.map-page > .guide-wrap .guide-mascot-button { bottom:var(--scene-safe);pointer-events:auto; }
+.map-page > .guide-wrap .guide-bubble { bottom:var(--scene-safe);pointer-events:auto; }
+/* 왼쪽 안내 캐릭터가 지도 안쪽을 바라보도록 좌우 반전한다. */
+.map-page > .guide-wrap .guide-mascot { transform:scaleX(-1);animation-name:map-guide-bob; }
+@keyframes map-guide-bob {
+  0%,100% { transform:scaleX(-1) translateY(0); }
+  50% { transform:scaleX(-1) translateY(-12px); }
+}
 .map-layout {
-  min-height: 0; width: 100%; max-width: 1440px; margin: 0 auto;
-  display: grid; grid-template-columns: var(--map-progress-w) minmax(0, 1fr) var(--map-brief-w);
-  gap: var(--scene-gap); padding: var(--sp-2) var(--scene-safe);
-  overflow: hidden;
+  position:relative;min-height:0;width:100%;max-width:none;margin:0;padding:0;display:block;overflow:hidden;
 }
 /* §7 반투명 패널 — 배경 지도가 비쳐 보이게 */
 .map-layout .scene-board, .map-layout .mission-brief {
-  background: rgba(255,252,240,.9); backdrop-filter: blur(6px);
+  background: var(--glass-panel); backdrop-filter: blur(9px) saturate(1.05);
 }
-.map-progress { display:flex;flex-direction:column;gap:var(--sp-2);padding:var(--sp-3);overflow:hidden; }
-.map-progress h2 { color:var(--c-navy);font-size:var(--fs-title);line-height:1.05; }
-.map-progress__count { display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-small);font-weight:700; }
-/* progress-track은 flex:1이 기본이라 세로 배치에서 빈 큰 박스로 늘어난다 — 높이를 고정한다 */
-.map-progress .progress-track { flex:0 0 12px;width:100%; }
-.map-progress__reward { margin-top:auto;display:grid;grid-template-columns:48px 1fr;gap:var(--sp-2);align-items:center;padding:var(--sp-2);background:rgba(255,255,255,.92);border-radius:14px;border:2px solid var(--c-line); }
-.map-progress__reward img { width:48px;height:48px;object-fit:contain; }
-.map-progress__reward p { font-size:var(--fs-small);font-weight:800;color:var(--c-navy); }
-.map-progress__reward .btn { grid-column:1/-1;width:100%;padding:7px 9px; }
 /* 지도는 "패널"이 아니라 배경 일러스트 자체다 — 창처럼 덮지 않고 테두리만 둔다 */
 .map-world {
-  position:relative;isolation:isolate;background:#12395e;min-width:0;min-height:0;
-  border:2px solid rgba(227,211,166,.55);border-radius:var(--radius-l);overflow:hidden;
-  box-shadow:var(--shadow-card);
+  position:absolute;inset:0;isolation:isolate;width:100%;height:100%;max-width:none;aspect-ratio:auto;
+  background:transparent;min-width:0;min-height:0;border:0;border-radius:0;overflow:hidden;box-shadow:none;
 }
 .map-canvas,.map-overlay { position:absolute;inset:0; }
 .map-canvas { z-index:var(--z-canvas);touch-action:none; }
+.map-canvas canvas { display:block; }
 .map-overlay { z-index:var(--z-overlay);pointer-events:none; }
 .map-route-layer { position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none; }
 .map-route-shadow { fill:none;stroke:rgba(25,50,77,.45);stroke-width:1.3; }
 .map-route-focus { fill:none;stroke:#f2c14e;stroke-width:.75;stroke-linecap:round;stroke-dasharray:2.2 1.5;opacity:0;filter:drop-shadow(0 0 3px rgba(242,193,78,.9)); }
 .map-route-focus.is-lit { opacity:1;animation:map-route-dash 650ms linear 1; }
 @keyframes map-route-dash { from{stroke-dashoffset:10}to{stroke-dashoffset:0} }
-.map-hotspot { position:absolute!important;transform:translate(-50%,-50%);pointer-events:auto!important;--node-size:84px; }
-.map-hotspot .node-img { background:#d7ecfb; }
-.map-hotspot[data-state="locked"] { filter:grayscale(.8) brightness(.75); }
+.map-hotspot { position:absolute!important;z-index:2;transform:translate(-50%,-50%);pointer-events:auto!important;--node-size:clamp(84px,7vw,116px); }
+.map-hotspot.is-selected { z-index:4; }
+.map-home {
+  position:absolute;z-index:1;transform:translate(-50%,-50%);display:grid;place-items:center;
+  width:18px;height:18px;border:3px solid #fff;border-radius:50%;background:var(--c-coral);
+  box-shadow:0 0 0 6px rgba(242,193,78,.45),0 4px 12px rgba(13,38,66,.38);
+}
+.map-home::after {
+  content:'한국 출발점';position:absolute;top:20px;left:50%;transform:translateX(-50%);
+  padding:3px 8px;border-radius:999px;background:rgba(14,36,64,.88);color:#fff;
+  font-size:16px;font-weight:800;line-height:1.2;white-space:nowrap;
+}
+.map-hotspot .node-img,
+.map-brief__head .mission-brief__hero {
+  object-fit:contain;object-position:center bottom;padding:6px 7px 0;
+  background:radial-gradient(circle at 50% 38%,rgba(224,250,255,.46),rgba(34,126,161,.18) 68%,transparent 72%);
+}
+.map-hotspot[data-state="locked"] { filter:grayscale(.8) brightness(.75);cursor:pointer; }
+.map-hotspot[data-state="locked"].is-selected { filter:grayscale(.2) brightness(.94); }
 .map-hotspot[data-state="available"] .node-label { border-color:var(--c-coral); }
 .map-hotspot[data-state="in_progress"] .node-label { border-color:var(--c-violet); }
 .map-hotspot[data-state="completed"] .node-label { background:var(--c-success);color:#fff;border-color:#17633f; }
 /* 라벨 겹침 원천 차단: 고른 대륙만 이름표를 보여 주고, 나머지는 그림+번호로 안내한다.
    대륙 이름은 오른쪽 안내판과 aria-label에 그대로 남는다. */
 .map-hotspot .node-label { display:none; }
-.map-hotspot.is-selected .node-label { display:block;font-size:var(--fs-small); }
-.map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--c-success);color:#fff;border:2px solid #fff;font-weight:900; }
+.map-hotspot.is-selected .node-label { display:none; }
+.map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--c-success);color:#fff;border:2px solid #fff;font-size:20px;font-weight:900; }
 /* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
-.map-hotspot .node-topic { display:block;font-size:calc(var(--fs-small)*.85);font-weight:700;color:var(--c-ink-soft);line-height:1.15;white-space:nowrap; }
+.map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap; }
 .map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
 /* 완료 노드의 배움 카드 획득 칩 */
 .map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
-.map-world-deco.globe { right:2%;bottom:2%;width:clamp(58px,8vw,105px);opacity:.88; }
-.map-world-deco.jet { left:3%;top:4%;width:clamp(52px,7vw,90px); }
-.map-brief { height:100%;overflow:hidden; }
-.map-brief__head { display:grid;grid-template-columns:64px 1fr;gap:9px;align-items:center; }
-.map-brief__head .mission-brief__hero { width:64px;height:64px;aspect-ratio:1;border-radius:50%;border:3px solid #fff;box-shadow:var(--shadow-card); }
-.map-brief__head h2 { color:var(--c-navy);font-size:var(--fs-title);line-height:1.05; }
-.map-brief__meta { font-size:var(--fs-small);color:var(--c-ink-soft);font-weight:700; }
-.map-brief__topic {
-  display:inline-block;vertical-align:middle;margin-left:6px;padding:1px 10px;border-radius:999px;
-  background:rgba(242,193,78,.24);border:2px solid rgba(242,193,78,.75);color:#6f5514;
-  font-size:var(--fs-small);font-family:var(--font-head);white-space:nowrap;
+.map-brief {
+  position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
+  height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
+  padding:clamp(12px,1.5vw,20px);gap:10px;border:2px solid rgba(255,255,255,.72);box-shadow:var(--shadow-pop);
 }
-.map-brief__learned { display:flex;align-items:center;gap:6px;font-size:var(--fs-small);font-weight:800;color:#6f5514; }
-.map-brief__learned .map-node-learn { position:static;flex:0 0 auto; }
-.map-brief__status { display:inline-flex;align-items:center;gap:5px;min-height:34px;padding:3px 9px;border-radius:999px;background:#fff;border:2px solid var(--c-line);font-size:16px;font-weight:800; }
+.map-brief__head { display:grid;grid-template-columns:88px 1fr;gap:var(--sp-3);align-items:center; }
+.map-brief__head .mission-brief__hero { width:88px;height:88px;aspect-ratio:1;border-radius:50%;border:4px solid #fff;box-shadow:var(--shadow-card); }
+.map-brief__head h2 { color:var(--c-navy);font-size:var(--fs-title);line-height:1.05; }
+.map-brief__topic {
+  display:inline-block;vertical-align:middle;margin-top:var(--sp-2);padding:4px 12px;border-radius:999px;
+  background:rgba(242,193,78,.24);border:2px solid rgba(242,193,78,.75);color:#6f5514;
+  font-size:max(18px,var(--fs-small));font-family:var(--font-head);white-space:nowrap;
+}
+.map-brief__status { display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:6px 12px;border-radius:999px;background:#fff;border:2px solid var(--c-line);font-size:max(18px,var(--fs-small));font-weight:800; }
 .map-brief__status::before { content:'●';color:var(--c-violet); }
-.map-brief__stamp img { width:44px;height:44px;object-fit:contain; }
-.map-brief__stamp { display:flex;align-items:center;gap:8px;font-size:var(--fs-small);font-weight:800; }
+.map-brief__objective { display:none;max-width:32ch;line-height:1.4; }
+.map-brief__flow { display:grid;gap:5px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.58);border:1px solid rgba(25,50,77,.14); }
+.map-brief__flow strong { font-size:max(16px,var(--fs-small)); }
+.map-brief__flow .mission-brief__steps { font-size:max(16px,var(--fs-small));line-height:1.35; }
+.map-brief__locked { margin:0;padding:9px 11px;border-radius:12px;background:rgba(242,193,78,.2);border:2px solid rgba(199,166,77,.55);font-weight:850;line-height:1.35; }
+.map-brief .btn-primary { min-height:60px;position:relative;overflow:visible; }
+.map-brief .btn-primary:not(:disabled)::before {
+  /* 패널이 overflow-x:hidden이라 버튼 밖에 두면 잘린다 — 버튼 안쪽 왼편에 배치 */
+  content:'☝';position:absolute;left:10px;top:50%;transform:translate(0,-50%) rotate(-18deg);
+  font-size:26px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.28));animation:map-point 1.15s ease-in-out infinite;
+}
+@keyframes map-point { 0%,100%{transform:translate(0,-45%) rotate(-18deg)}50%{transform:translate(0,-62%) rotate(-18deg)} }
+.map-brief__actions { display:grid;gap:var(--sp-2);margin-top:auto; }
+.map-teacher-mode {
+  display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:12px;
+  color:#4d3510;background:rgba(242,193,78,.24);border:2px solid rgba(199,166,77,.7);
+  font-size:max(16px,var(--fs-small));font-weight:900;line-height:1.3;
+}
+.map-teacher-mode::before { content:'✓';display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--c-gold);color:#4d3510; }
+.map-page:has(.map-teacher-mode) .map-brief__status { display:none; }
 .map-live { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }
 @media (max-width:1100px), (max-height:620px) {
-  .map-layout { padding-block:6px 8px; }
-  .map-progress { padding:9px;gap:6px; }
-  .stamp-collection { gap:4px; }
-  .stamp-collection__slot { min-width:42px;border-radius:10px; }
-  .map-progress__reward { grid-template-columns:42px 1fr;padding:5px; }
-  .map-progress__reward img { width:42px;height:42px; }
-  .map-progress__reward p { font-size:16px; }
-  .map-hotspot { --node-size:64px; }
+  .map-layout { padding:0; }
+  .map-brief { top:6px;right:8px;width:270px;max-height:calc(100% - 12px); }
+  .map-hotspot { --node-size:74px; }
+  .map-home::after { font-size:16px; }
   .map-hotspot.is-selected .node-label { padding:3px 9px; }
-  .map-hotspot .node-badge { width:26px;height:26px;font-size:16px; }
-  .map-brief__head { grid-template-columns:52px 1fr; }
-  .map-brief__head .mission-brief__hero { width:52px;height:52px; }
-  .map-brief__status { min-height:34px;padding:2px 7px;font-size:16px; }
-  .map-brief__stamp img { width:34px;height:34px; }
+  .map-hotspot .node-badge { width:32px;height:32px;font-size:18px; }
+  .map-brief { padding:12px;gap:9px; }
+  .map-brief__head { grid-template-columns:68px 1fr; }
+  .map-brief__head .mission-brief__hero { width:68px;height:68px; }
+  .map-brief__status { min-height:48px;padding:4px 9px;font-size:18px; }
 }
-@media (max-width:900px) {
-  /* 지도가 주인공이다 — 아래로 접힌 안내판이 지도 높이를 뺏지 않게 지도에 최소 높이를 준다 */
-  .map-layout { grid-template-columns:176px minmax(0,1fr);grid-template-rows:minmax(180px,1fr) auto; }
-  .map-brief { grid-column:1/-1;height:auto;display:grid;grid-template-columns:1fr 1.45fr auto;align-items:center;gap:10px; }
-  .map-brief__steps,.map-brief__stamp { display:none; }
-  .map-brief .btn-primary { width:auto;min-width:190px; }
+@media (max-height:760px) and (min-width:901px) {
+  .map-layout { padding:0; }
+  .map-brief { padding:9px;gap:6px; }
+  .map-brief__head { grid-template-columns:60px 1fr;gap:8px; }
+  .map-brief__head .mission-brief__hero { width:60px;height:60px;border-width:3px; }
+  .map-brief__head h2 { font-size:clamp(26px,2.2vw,34px); }
+  .map-brief__topic { margin-top:2px;padding:2px 8px;font-size:16px; }
+  .map-brief__status { min-height:40px;padding:3px 8px;font-size:16px; }
+  .map-brief__objective { font-size:18px;line-height:1.3; }
+  .map-brief__flow { padding:6px 9px;gap:2px; }
+  .map-brief__flow strong,.map-brief__flow .mission-brief__steps { font-size:16px; }
+  .map-brief__flow .mission-brief__steps { gap:1px; }
+  .map-brief__locked { padding:6px 8px;font-size:16px; }
+  .map-brief .btn-primary { min-height:50px;font-size:18px; }
+}
+@media (max-width:1100px) {
+  .map-page > .guide-wrap { display:none; }
+  .map-layout { display:grid;grid-template-rows:minmax(0,1fr) auto;padding:0;overflow:hidden; }
+  .map-world { position:relative;inset:auto;width:100%;height:100%;min-height:0; }
+  .map-brief {
+    position:relative;inset:auto;width:auto;height:auto;max-height:none;margin:0 8px 8px;
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,32vw);align-items:center;gap:8px;padding:9px 11px;
+  }
+  .map-brief__head,.map-brief__status,.map-brief__flow { display:none; }
+  .map-brief__objective { display:block;max-width:none;font-size:18px;line-height:1.3; }
+  .map-brief__locked,.map-teacher-mode { grid-column:1/-1; }
+  .map-brief__actions { margin-top:0; }
+  .map-brief .btn-primary { width:100%;min-width:0; }
 }
 @media (max-width:600px) {
-  .map-layout { grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;padding:6px 10px; }
-  .map-progress { display:none; }
-  .map-world { min-height:0;background-position:center;background-size:cover; }
-  .map-canvas,.map-route-layer,.map-world-deco { display:none; }
-  .map-overlay { position:relative!important;inset:auto!important;width:100%!important;height:100%!important;padding:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;overflow-y:auto;pointer-events:auto; }
-  .map-hotspot { position:relative!important;left:auto!important;top:auto!important;transform:none!important;width:100%;min-height:56px;--node-size:50px;display:grid;grid-template-columns:50px 1fr; }
-  .map-hotspot .node-img { width:50px;height:50px;grid-row:1/3; }
+  .map-layout { display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;gap:6px;padding:6px 10px;overflow-y:auto; }
+  .map-world { position:relative;inset:auto;width:100%;height:auto;min-height:300px;aspect-ratio:auto;background-position:center;background-size:cover;border:2px solid rgba(255,255,255,.72);border-radius:var(--radius-m); }
+  .map-canvas,.map-route-layer,.map-world-deco,.map-home { display:none; }
+  .map-overlay { position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:100%;padding:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;overflow:visible;pointer-events:auto; }
+  .map-hotspot { position:relative!important;left:auto!important;top:auto!important;transform:none!important;width:100%;min-height:72px;--node-size:64px;display:grid;grid-template-columns:64px 1fr; }
+  .map-hotspot .node-img { width:64px;height:64px;grid-row:1/3; }
   .map-hotspot .node-badge { display:none; }
   /* 목록 모드에서는 이름표가 유일한 단서다 — 전부 다시 보여 준다 */
   .map-hotspot .node-label { display:block;white-space:normal;width:100%; }
-  .map-brief { grid-template-columns:1fr auto;padding:8px; }
+  .map-brief { position:relative;inset:auto;width:100%;max-height:none;margin:0;display:grid;grid-template-columns:1fr auto;padding:8px;overflow:visible; }
+  .map-brief { min-height:136px;align-self:start; }
   .map-brief__head { display:none; }
-  .map-brief__objective { font-size:16px; }
+  .map-teacher-mode { grid-column:1/-1; }
+  .map-brief__objective { font-size:18px; }
   .map-brief .btn-primary { min-width:168px; }
 }
 @media (prefers-reduced-motion:reduce) { .map-route-focus.is-lit { animation:none; } }
@@ -210,67 +304,55 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       compactMedia = window.matchMedia('(max-width:600px)');
       const compact = compactMedia.matches;
+      const save = saveRepo.get();
+      recomputeUnlocks(save);
+      const selectedPlaneFlight = selectedAirplaneAssetId(save.profile?.airplaneId);
+      const selectedPlanePortrait = selectedAirplanePortraitAssetId(save.profile?.airplaneId);
+      const playerSpeaker = selectedAvatarSpeaker(save.profile);
+      const missionCompanions = SPOTS.map((spot) => missionCompanionAssetId(spot.id, selectedPlaneFlight));
       const preloadIds = [
-        'bg.map', 'plane.explorer', 'plane.jet', 'prop.globe_glow', 'deco.portal_globe',
+        'bg.map', selectedPlanePortrait, selectedPlaneFlight, playerSpeaker.assetId, ...missionCompanions,
+        'prop.globe_glow', 'prop.passport', 'deco.portal_globe',
         'prop.stamp', ...SPOTS.map((spot) => spot.assetId)
       ];
       await preloadImages(preloadIds);
       audio.playBgm('main');
 
-      const save = saveRepo.get();
-      recomputeUnlocks(save);
-      const doneContinents = CONTINENT_IDS.filter((id) => save.missions[id].status === 'completed');
-      const doneMissions = SPOTS.filter((spot) => save.missions[spot.id].status === 'completed');
       const availableSpots = SPOTS.filter((spot) => save.missions[spot.id].status !== 'locked');
-      const recommended = availableSpots.find((spot) => ['in_progress', 'available'].includes(save.missions[spot.id].status))
+      const photosPending = save.missions.dialogue.status !== 'completed' && save.missions.dialogue.checkpointId === 'stage4';
+      const recommended = (photosPending || save.teacherUnlocked ? availableSpots.find((spot) => spot.id === 'dialogue') : undefined)
+        ?? availableSpots.find((spot) => ['in_progress', 'available'].includes(save.missions[spot.id].status))
         ?? availableSpots[availableSpots.length - 1]
         ?? SPOTS[0]!;
 
       const page = document.createElement('div');
       page.className = 'page map-page';
+      page.style.setProperty('--map-bg', `url('${assetUrl('bg.map')}')`);
       const style = document.createElement('style');
       style.textContent = MAP_CSS;
       page.appendChild(style);
       page.appendChild(buildTopBar({
         title: '세계 항로 지도',
-        subtitle: '대륙을 고르고 오른쪽 출발 버튼을 눌러요',
-        backTo: '#/',
-        showPassport: true
+        backTo: '#/'
       }));
 
       const layout = document.createElement('main');
       layout.className = 'page-body map-layout';
       layout.innerHTML = `
-        <aside class="scene-board map-progress" aria-label="탐험 진행판">
-          <h2>나의 여행</h2>
-          <div class="map-progress__count"><span>대륙 도장</span><strong>${doneContinents.length} / 5</strong></div>
-          <div class="progress-track" role="progressbar" aria-label="대륙 여행 진행" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${doneContinents.length}"><div class="progress-fill" style="width:${doneContinents.length * 20}%"></div></div>
-          <p style="font-size:var(--fs-small);font-weight:800;color:var(--c-ink-soft)">스탬프 컬렉션</p>
-          <div class="stamp-collection">
-            ${SPOTS.map((spot) => stampSlotHtml(spot, save.missions[spot.id].status === 'completed')).join('')}
-          </div>
-          <div class="map-progress__reward">
-            ${hasAsset(save.completion.unlocked ? 'deco.portal_globe' : 'prop.globe_glow') ? `<img src="${assetUrl(save.completion.unlocked ? 'deco.portal_globe' : 'prop.globe_glow')}" data-asset-id="${save.completion.unlocked ? 'deco.portal_globe' : 'prop.globe_glow'}" alt="">` : ''}
-            <p>${save.completion.unlocked ? '최종 세계 연결 보드가 열렸어요!' : `다음 지구본 조각까지 ${Math.max(0, 5 - doneContinents.length)}개 남았어요.`}</p>
-            ${save.completion.unlocked ? '<button class="btn btn-success" data-act="completion">완주 기록 보기</button>' : ''}
-          </div>
-        </aside>
         <section class="map-world" aria-label="세계 대륙 미션 지도">
           <div class="map-canvas"></div>
           <div class="map-overlay" role="radiogroup" aria-label="여행할 대륙 선택">
+            <span class="map-home" style="left:${KOREA_HOME.x * 100}%;top:${KOREA_HOME.y * 100}%" aria-hidden="true"></span>
             <svg class="map-route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               <path class="map-route-shadow"></path><path class="map-route-focus"></path>
             </svg>
           </div>
-          ${hasAsset('plane.jet') ? `<img class="map-world-deco jet" src="${assetUrl('plane.jet')}" data-asset-id="plane.jet" alt="" aria-hidden="true">` : ''}
-          ${hasAsset('prop.globe_glow') ? `<img class="map-world-deco globe" src="${assetUrl('prop.globe_glow')}" data-asset-id="prop.globe_glow" alt="" aria-hidden="true">` : ''}
         </section>
         <aside class="mission-brief map-brief" aria-label="선택한 미션 안내"></aside>
         <p class="map-live" aria-live="polite"></p>`;
       page.appendChild(layout);
       root.appendChild(page);
 
-      const progressPanel = layout.querySelector('.map-progress') as HTMLElement;
       const world = layout.querySelector('.map-world') as HTMLElement;
       const canvasWrap = layout.querySelector('.map-canvas') as HTMLElement;
       const overlay = layout.querySelector('.map-overlay') as HTMLElement;
@@ -279,19 +361,27 @@ export function createPage(): Page {
       const routeShadow = overlay.querySelector('.map-route-shadow') as SVGPathElement;
       const routeFocus = overlay.querySelector('.map-route-focus') as SVGPathElement;
       const nodeById = new Map<MissionId, HTMLButtonElement>();
+      const returnCuePeek = consumeMissionReturn();
+      const returnCueIsPhotos = returnCuePeek?.kind === 'photos';
       let selectedId = recommended.id;
 
-      layout.querySelector('[data-act="completion"]')?.addEventListener('click', () => navigate('#/completion'));
-      guide = createGuide({ assetId: hasAsset('plane.explorer') ? 'plane.explorer' : 'plane.main' });
+      guide = createGuide({
+        assetId: playerSpeaker.assetId,
+        speakerName: playerSpeaker.name
+      });
       page.appendChild(guide.el);
 
       const lastDone = [...SPOTS].reverse().find((spot) => save.missions[spot.id].status === 'completed');
-      const routeStart = lastDone ?? { x: 0.5, y: 0.88 };
+      const routeStart = lastDone ?? KOREA_HOME;
 
       const updateRoute = (spot: Spot) => {
-        const cx = (routeStart.x + spot.x) / 2;
-        const cy = Math.max(8, Math.min(routeStart.y, spot.y) - 12);
-        const d = `M ${routeStart.x * 100} ${routeStart.y * 100} Q ${cx * 100} ${cy} ${spot.x * 100} ${spot.y * 100}`;
+        const startX = routeStart.x * 100;
+        const startY = routeStart.y * 100;
+        const endX = spot.x * 100;
+        const endY = spot.y * 100;
+        const cx = (startX + endX) / 2;
+        const cy = Math.max(8, Math.min(startY, endY) - 12);
+        const d = `M ${startX} ${startY} Q ${cx} ${cy} ${endX} ${endY}`;
         routeShadow.setAttribute('d', d);
         routeFocus.setAttribute('d', d);
         routeFocus.classList.remove('is-lit');
@@ -300,42 +390,58 @@ export function createPage(): Page {
       };
 
       const renderBrief = (spot: Spot) => {
-        const mission = saveRepo.get().missions[spot.id];
-        const learn = readLearnCard(spot.id);
+        const currentSave = saveRepo.get();
+        const mission = currentSave.missions[spot.id];
+        const isLocked = mission.status === 'locked' && !currentSave.teacherUnlocked;
+        const lockMessage = spot.id === 'dialogue'
+          ? '1~5번 대륙 미션을 모두 완료하면 마지막 단계가 열려요.'
+          : '앞선 여행을 완료하면 열려요.';
+        const photosArrived = spot.id === 'dialogue' && mission.status !== 'completed' && mission.checkpointId === 'stage4';
+        const statusLabel = currentSave.teacherUnlocked && mission.status !== 'completed'
+          ? '교사용 해금 · 바로 체험 가능'
+          : isLocked ? '마지막 단계 · 미리보기 가능' : STATUS_LABEL[mission.status];
         brief.innerHTML = `
           <div class="map-brief__head">
             ${hasAsset(spot.assetId) ? `<img class="mission-brief__hero" src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="${spot.assetAlt}">` : ''}
-            <div><h2>${spot.name}<span class="map-brief__topic">${spot.topic}</span></h2><p class="map-brief__meta">약 ${spot.minutes}분 · ${mission.bestScore > 0 ? `최고 ${mission.bestScore}점` : '첫 도전'}</p></div>
+            <div><h2>${photosArrived ? '친구들의 마지막 사진' : spot.name}</h2><span class="map-brief__topic">${photosArrived ? '새 사진 6장 도착' : spot.topic}</span></div>
           </div>
-          <span class="map-brief__status">${STATUS_LABEL[mission.status]}</span>
-          <p class="mission-brief__objective">${spot.objective}</p>
-          <ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
-          ${learn.earned ? `<p class="map-brief__learned"><span class="map-node-learn" aria-hidden="true">${SVG_CARD}</span>배움 카드 획득 완료</p>` : ''}
-          <div class="mission-brief__stamp map-brief__stamp">
-            ${hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="${spot.name} 완료 때 받는 도장">` : ''}
-            <span>완료 보상: ${spot.name} 도장 + 배움 카드</span>
-          </div>
-          <button class="btn btn-primary btn-big" data-act="depart">이 미션으로 출발</button>`;
+          ${currentSave.teacherUnlocked ? '<p class="map-teacher-mode">교사용 전체 해금 중 · 마지막 단계와 완주 화면까지 열림</p>' : ''}
+          <span class="map-brief__status">${photosArrived ? '여행이 끝난 뒤 도착한 사진' : statusLabel}</span>
+          <p class="mission-brief__objective">${photosArrived ? '사진 속에서 친구들이 걱정하는 변화를 찾아보세요.' : spot.objective}</p>
+          ${photosArrived ? '' : `<div class="map-brief__flow"><ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>`}
+          ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
+          <div class="map-brief__actions">
+            <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
+            ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">완주 기록 보기</button>' : ''}
+          </div>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');
+        brief.querySelector('[data-act="completion"]')?.addEventListener('click', () => navigate('#/completion'));
         depart?.addEventListener('click', () => {
           if (disposed || depart.disabled) return;
           depart.disabled = true;
           nodeById.forEach((node) => { node.disabled = true; });
           updateRoute(spot);
           flyTo?.(spot.x, spot.y);
-          const transition = playJourneyTransition({
-            kind: 'flight',
-            label: `${spot.name}로 날아가요!`,
-            assetId: hasAsset('plane.explorer') ? 'plane.explorer' : 'plane.main'
-          });
-          void transition.finished.then(() => {
+          try {
+            const transition = playJourneyTransition({
+              kind: 'flight',
+              label: `${spot.name}로 날아가요!`,
+              assetId: selectedPlanePortrait,
+              companionAssetId: missionCompanionAssetId(spot.id, selectedPlaneFlight)
+            });
+            void transition.finished.then(() => {
+              if (!disposed) navigate(spot.route);
+            });
+          } catch (err) {
+            console.warn('[Map] 전환 연출 예외, 직접 이동합니다:', err);
             if (!disposed) navigate(spot.route);
-          });
+          }
         });
       };
 
       const selectSpot = (spot: Spot, announce = true) => {
-        if (saveRepo.get().missions[spot.id].status === 'locked') return;
+        const mission = saveRepo.get().missions[spot.id];
+        const isLocked = mission.status === 'locked';
         selectedId = spot.id;
         nodeById.forEach((node, id) => {
           const selected = id === selectedId;
@@ -346,11 +452,16 @@ export function createPage(): Page {
         updateRoute(spot);
         renderBrief(spot);
         if (announce) {
-          live.textContent = `${spot.name} 선택. ${spot.objective} 오른쪽 출발 버튼을 눌러요.`;
+          live.textContent = isLocked
+            ? `${spot.name} 미리보기. ${spot.objective} 1번부터 5번까지 완료하면 시작할 수 있어요.`
+            : `${spot.name} 선택. ${spot.objective} 오른쪽 출발 버튼을 눌러요.`;
           void audio.playSfx('tap');
         }
-        guide?.say(`${spot.name} 미션을 확인했어요. 출발 버튼을 눌러요!`, {
-          cue: brief.querySelector<HTMLElement>('[data-act="depart"]')
+        guide?.say(isLocked
+          ? `${spot.name}은 1~5번을 마치면 열려요. 지금은 다른 활동 내용을 미리 볼 수 있어요.`
+          : `${spot.name}를 골랐어요. 준비되면 출발해요.`, {
+          cue: brief.querySelector<HTMLElement>('[data-act="depart"]'),
+          speaker: playerSpeaker
         });
       };
 
@@ -364,27 +475,32 @@ export function createPage(): Page {
         node.setAttribute('role', 'radio');
         node.setAttribute('aria-checked', 'false');
         const hasLearnCard = mission.status === 'completed' && readLearnCard(spot.id).earned;
-        node.setAttribute('aria-label', `${spot.name}, ${spot.topic}, ${STATUS_LABEL[mission.status]}${hasLearnCard ? ', 배움 카드 획득' : ''}`);
-        node.disabled = mission.status === 'locked';
+        node.setAttribute('aria-label', `${spot.name}, ${spot.topic}, ${STATUS_LABEL[mission.status]}${mission.status === 'locked' ? ', 활동 미리보기 가능' : ''}${hasLearnCard ? ', 배움 카드 획득' : ''}`);
         node.style.left = `${spot.x * 100}%`;
         node.style.top = `${spot.y * 100}%`;
         node.innerHTML = `
           ${hasAsset(spot.assetId) ? `<img class="node-img" src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="${spot.assetAlt}">` : ''}
           <span class="node-badge" aria-hidden="true">${index + 1}</span>
           ${mission.status === 'completed' ? '<span class="map-node-check" aria-hidden="true">✓</span>' : ''}
+          ${photosPending && !returnCueIsPhotos ? `<span class="map-node-mail" aria-hidden="true">${SVG_MAIL}</span>` : ''}
           ${hasLearnCard ? `<span class="map-node-learn" aria-hidden="true">${SVG_CARD}</span>` : ''}
           <span class="node-label">${spot.name}<span class="node-topic">${spot.topic}</span></span>`;
-        node.addEventListener('click', () => selectSpot(spot));
+        node.addEventListener('click', () => {
+          selectSpot(spot);
+          // 원형 캐릭터를 누르면 바로 그 나라로 출발한다(잠금 상태는 미리보기만).
+          const save = saveRepo.get();
+          if (save.missions[spot.id].status === 'locked' && !save.teacherUnlocked) return;
+          brief.querySelector<HTMLButtonElement>('[data-act="depart"]')?.click();
+        });
         node.addEventListener('keydown', (event) => {
           if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();
-          const enabled = SPOTS.filter((candidate) => saveRepo.get().missions[candidate.id].status !== 'locked');
-          const current = enabled.findIndex((candidate) => candidate.id === selectedId);
+          const current = SPOTS.findIndex((candidate) => candidate.id === selectedId);
           const nextIndex = event.key === 'Home' ? 0
-            : event.key === 'End' ? enabled.length - 1
-              : ['ArrowRight', 'ArrowDown'].includes(event.key) ? (current + 1) % enabled.length
-                : (current - 1 + enabled.length) % enabled.length;
-          const next = enabled[nextIndex];
+            : event.key === 'End' ? SPOTS.length - 1
+              : ['ArrowRight', 'ArrowDown'].includes(event.key) ? (current + 1) % SPOTS.length
+                : (current - 1 + SPOTS.length) % SPOTS.length;
+          const next = SPOTS[nextIndex];
           if (next) { selectSpot(next); nodeById.get(next.id)?.focus(); }
         });
         nodeById.set(spot.id, node);
@@ -395,31 +511,55 @@ export function createPage(): Page {
 
       if (!compact) {
         const backgroundUrl = assetUrl('bg.map');
-        const planeId = hasAsset('plane.explorer') ? 'plane.explorer' : 'plane.main';
+        const planeId = hasAsset(selectedPlanePortrait) ? selectedPlanePortrait : 'plane.portrait.classic';
         const planeUrl = assetUrl(planeId);
         host = await createPhaserHost(canvasWrap, (Phaser) => {
           class MapScene extends Phaser.Scene {
             private plane?: Phaser.GameObjects.Image;
             constructor() { super('map'); }
-            preload() { this.load.image('bg', backgroundUrl); this.load.image('plane', planeUrl); }
+            preload() { this.load.image('bg', backgroundUrl); this.load.image('planeSource', planeUrl); }
             create() {
               const bg = this.add.image(GAME_W / 2, GAME_H / 2, 'bg');
-              bg.setScale(Math.max(GAME_W / bg.width, GAME_H / bg.height)).setAlpha(.97);
-              const plane = this.add.image(routeStart.x * GAME_W, routeStart.y * GAME_H - 34, 'plane');
+              bg.setScale(Math.max(GAME_W / bg.width, GAME_H / bg.height)).setAlpha(1);
+              const source = this.textures.get('planeSource').getSourceImage() as CanvasImageSource;
+              const badgeTexture = this.textures.createCanvas('selectedPlaneBadge', 160, 160);
+              if (badgeTexture) {
+                const context = badgeTexture.context;
+                context.clearRect(0, 0, 160, 160);
+                context.save();
+                context.beginPath();
+                context.arc(80, 80, 72, 0, Math.PI * 2);
+                context.clip();
+                context.drawImage(source, 0, 0, 160, 160);
+                context.restore();
+                context.beginPath();
+                context.arc(80, 80, 73, 0, Math.PI * 2);
+                context.lineWidth = 8;
+                context.strokeStyle = 'rgba(255,255,255,.96)';
+                context.stroke();
+                badgeTexture.refresh();
+              }
+              const initialPlanePosition = planePosition(routeStart.x, routeStart.y);
+              const plane = this.add.image(
+                initialPlanePosition.x,
+                initialPlanePosition.y,
+                badgeTexture ? 'selectedPlaneBadge' : 'planeSource'
+              );
               this.plane = plane;
-              plane.setScale(Math.min(1, 118 / plane.width));
+              plane.setDisplaySize(110, 110);
               if (!isReducedMotion()) {
                 this.tweens.add({ targets: plane, y: plane.y - 8, duration: 1200, yoyo: true, repeat: 1, ease: 'Sine.easeInOut' });
               }
               flyTo = (x, y) => {
                 this.tweens.killTweensOf(plane);
-                if (isReducedMotion()) { plane.setPosition(x * GAME_W, y * GAME_H - 34); return; }
-                this.tweens.add({ targets: plane, x: x * GAME_W, y: y * GAME_H - 34, duration: 650, ease: 'Cubic.easeInOut' });
+                const destination = planePosition(x, y);
+                if (isReducedMotion()) { plane.setPosition(destination.x, destination.y); return; }
+                this.tweens.add({ targets: plane, x: destination.x, y: destination.y, duration: 650, ease: 'Cubic.easeInOut' });
               };
             }
           }
           return new MapScene();
-        });
+        }, { scaleMode: 'envelop' });
         if (disposed) { host.destroy(); host = null; return; }
 
         const syncOverlay = () => {
@@ -439,17 +579,49 @@ export function createPage(): Page {
         world.style.backgroundImage = `linear-gradient(rgba(12,40,70,.12),rgba(12,40,70,.28)),url('${assetUrl('bg.map')}')`;
       }
 
-      const returnCue = consumeMissionReturn();
-      if (returnCue) {
+      const returnCue = returnCuePeek;
+      if (returnCue?.kind === 'photos') {
+        // 친구들의 마지막 사진 도착 — 노드마다 메시지 신호가 차례로 켜지고, BGM이 잠깐 잦아든다.
+        audio.duck(2200);
+        void audio.playSfx('pickup');
+        SPOTS.forEach((spot, index) => {
+          const node = nodeById.get(spot.id);
+          if (!node) return;
+          window.setTimeout(() => {
+            if (disposed) return;
+            const badge = document.createElement('span');
+            badge.className = 'map-node-mail is-arriving';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.innerHTML = SVG_MAIL;
+            node.appendChild(badge);
+            void audio.playSfx('tap');
+          }, isReducedMotion() ? 0 : 260 + index * 220);
+        });
+        celebrateTimer = window.setTimeout(() => {
+          if (disposed) return;
+          const dialogueSpot = SPOTS.find((spot) => spot.id === 'dialogue');
+          if (dialogueSpot) selectSpot(dialogueSpot, false);
+          live.textContent = '여행이 끝난 뒤, 여섯 친구에게 새로운 사진이 도착했어요. 오른쪽의 환경 신호 확인하기를 눌러요.';
+          guide?.say('여행이 끝난 뒤, 여섯 친구에게 새로운 사진이 도착했어요.', {
+            cue: brief.querySelector<HTMLElement>('[data-act="depart"]'),
+            speaker: playerSpeaker,
+            autoStart: true
+          });
+        }, isReducedMotion() ? 0 : 260 + SPOTS.length * 220 + 200);
+      } else if (returnCue) {
         celebrateTimer = window.setTimeout(() => {
           if (disposed) return;
           const node = nodeById.get(returnCue.missionId);
-          const stamp = progressPanel.querySelector<HTMLElement>(`[data-stamp-id="${returnCue.missionId}"]`);
+          const passportTicket = page.querySelector<HTMLElement>('.journey-ticket');
           if (node) burstConfetti(node, 8);
-          if (stamp) { stamp.classList.add('is-new'); stampSlam(stamp); }
+          if (passportTicket) {
+            passportTicket.classList.add('is-new-stamp');
+            burstConfetti(passportTicket, 8);
+          }
           live.textContent = `${returnCue.missionTitle} 도장이 여권에 찍혔어요. 다음 추천 미션을 확인해 보세요.`;
-          guide?.say(`${returnCue.missionTitle} 도장을 받았어요! 다음 미션도 오른쪽에서 확인해요.`, {
-            cue: brief.querySelector<HTMLElement>('[data-act="depart"]')
+          guide?.say(`${returnCue.missionTitle} 도장을 받았어요. 다음 여행을 골라요.`, {
+            cue: brief.querySelector<HTMLElement>('[data-act="depart"]'),
+            speaker: playerSpeaker
           });
         }, isReducedMotion() ? 0 : 180);
       }
@@ -475,12 +647,6 @@ export function createPage(): Page {
       host = null;
     }
   };
-}
-
-function stampSlotHtml(spot: Spot, earned: boolean): string {
-  return `<div class="stamp-collection__slot ${earned ? 'is-earned' : ''}" data-stamp-id="${spot.id}" role="img" aria-label="${spot.name} ${earned ? '도장 획득' : '도장 빈자리'}">
-    ${earned && hasAsset(spot.assetId) ? `<img src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="">` : ''}
-  </div>`;
 }
 
 function isReducedMotion(): boolean {

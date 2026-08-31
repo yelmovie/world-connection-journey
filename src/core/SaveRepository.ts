@@ -4,6 +4,12 @@ import { CONTINENT_IDS, MISSION_IDS } from '../types';
 
 export const SAVE_KEY = 'world_connection_journey.save.v1';
 const BACKUP_KEY = 'world_connection_journey.save.v1.corrupt-backup';
+const TEACHER_PASSWORD = 'yelsam';
+
+/** 교사용 비밀번호는 저장 데이터와 분리하고 입력값만 대소문자 구분 없이 비교한다. */
+export function matchesTeacherPassword(value: string): boolean {
+  return value.trim().toLowerCase() === TEACHER_PASSWORD;
+}
 
 function defaultMission(status: MissionSave['status']): MissionSave {
   return { status, checkpointId: null, bestScore: 0, attempts: 0, completedAt: null, scoreDimensions: {}, data: {} };
@@ -23,7 +29,12 @@ export function defaultSave(): GameSaveV1 {
       unlocked: false,
       reflection: '',
       placedPuzzlePieceIds: [],
-      reflectionDrafts: { initialThought: '', evidenceLearned: '', revisedThought: '' },
+      reflectionDrafts: {
+        initialThought: '',
+        evidenceLearned: '',
+        revisedThought: '',
+        transferApplication: ''
+      },
       actionPrinciples: [],
       certificateIssued: false
     },
@@ -46,8 +57,7 @@ export function validateSave(raw: unknown): GameSaveV1 {
       nickname: p.nickname,
       createdAt: typeof p.createdAt === 'string' ? p.createdAt : new Date().toISOString(),
       avatarId: typeof p.avatarId === 'string' ? p.avatarId : 'a1',
-      airplaneId: typeof p.airplaneId === 'string' ? p.airplaneId : 'plane1',
-      inquiryQuestionId: typeof p.inquiryQuestionId === 'string' ? p.inquiryQuestionId : 'q1'
+      airplaneId: typeof p.airplaneId === 'string' ? p.airplaneId : 'plane1'
     };
   }
 
@@ -95,6 +105,7 @@ export function validateSave(raw: unknown): GameSaveV1 {
       if (typeof drafts.initialThought === 'string') base.completion.reflectionDrafts.initialThought = drafts.initialThought.slice(0, 60);
       if (typeof drafts.evidenceLearned === 'string') base.completion.reflectionDrafts.evidenceLearned = drafts.evidenceLearned.slice(0, 60);
       if (typeof drafts.revisedThought === 'string') base.completion.reflectionDrafts.revisedThought = drafts.revisedThought.slice(0, 60);
+      if (typeof drafts.transferApplication === 'string') base.completion.reflectionDrafts.transferApplication = drafts.transferApplication.slice(0, 100);
     }
     if (Array.isArray(c.actionPrinciples)) {
       base.completion.actionPrinciples = [...new Set(c.actionPrinciples
@@ -129,6 +140,42 @@ function normalizeMissionRewards(save: GameSaveV1): void {
     if (save.missions[id].status === 'completed') save.rewardClaimedById[key] = true;
     else delete save.rewardClaimedById[key];
   }
+}
+
+/**
+ * 교사용 전체 정답 처리의 단일 상태 변환.
+ *
+ * 학생이 이미 만든 점수·배움 기록은 덮어쓰지 않고, 미션 완료 여부와 보상만
+ * 일관되게 맞춘다. 비밀번호 검증은 UI 세션에서만 맡고 저장 데이터에는 남기지 않는다.
+ */
+export function markAllMissionsCompletedForTeacher(
+  save: GameSaveV1,
+  completedAt = new Date().toISOString()
+): void {
+  for (const id of MISSION_IDS) {
+    const mission = save.missions[id];
+    mission.status = 'completed';
+    mission.checkpointId = null;
+    mission.completedAt ??= completedAt;
+  }
+  // 모든 미션이 실제 완료 상태가 되므로 임시 해금 플래그는 더 이상 필요하지 않다.
+  save.teacherUnlocked = false;
+  recomputeUnlocks(save);
+  normalizeMissionRewards(save);
+}
+
+/**
+ * 교사용 해금 상태를 적용하는 단일 변환.
+ *
+ * 다섯 대륙은 원래부터 열려 있으므로 실제 변화는 마지막 대화와 완주 화면에
+ * 집중된다. 기존 진행/완료 상태는 건드리지 않고 잠긴 항목만 연다.
+ */
+export function applyTeacherUnlock(save: GameSaveV1): void {
+  save.teacherUnlocked = true;
+  for (const id of MISSION_IDS) {
+    if (save.missions[id].status === 'locked') save.missions[id].status = 'available';
+  }
+  recomputeUnlocks(save);
 }
 
 /** 해금 규칙 단일 소스: 대화는 5대륙 완료 시, 완료 화면은 대화까지 완료 시. */
@@ -275,10 +322,12 @@ class SaveRepository {
       if (m.status === 'available') m.status = 'in_progress';
       m.checkpointId = checkpointId;
       // 체크포인트는 스냅샷이다. 이전 회차의 필드가 새 회차에 섞이지 않도록 교체하되,
-      // 배움 기록(learn: 첫 생각·배움 카드)은 회차와 무관한 성찰 데이터라 항상 보존한다.
+      // 배움 기록과 완성된 학습 산출물은 회차와 무관하므로 항상 보존한다.
       const learn = m.data.learn;
+      const artifact = m.data.artifact;
       m.data = data ? { ...data } : {};
       if (learn !== undefined && m.data.learn === undefined) m.data.learn = learn;
+      if (artifact !== undefined && m.data.artifact === undefined) m.data.artifact = artifact;
     });
     bus.emit('MISSION_CHECKPOINT', { missionId, checkpointId });
   }
@@ -299,8 +348,24 @@ class SaveRepository {
         m.completedAt = new Date().toISOString();
       }
       m.checkpointId = null;
-      // 진행 스냅샷은 비우되 배움 기록은 남긴다 — 여권·수료증의 배움 카드가 이걸 읽는다.
-      m.data = m.data.learn !== undefined ? { learn: m.data.learn } : {};
+      // 진행 스냅샷은 비우되 배움 기록과 미션 산출물은 남긴다 — 여권·세계 협의가 이걸 읽는다.
+      const persistentData: Record<string, unknown> = {};
+      if (m.data.learn !== undefined) persistentData.learn = m.data.learn;
+      if (m.data.artifact !== undefined) persistentData.artifact = m.data.artifact;
+      // 유럽 관심 엽서는 완료 뒤 다시 열어 볼 수 있어야 하므로 진행 산출물도 보존한다.
+      if (m.data.europeProgress !== undefined) persistentData.europeProgress = m.data.europeProgress;
+      // 아시아 공동 제안은 완료 뒤 세계회의·재방문에서 다시 읽을 수 있어야 한다.
+      if (m.data.asiaProgress !== undefined) persistentData.asiaProgress = m.data.asiaProgress;
+      // 오세아니아 바다 공동 제안도 완료 뒤 세계회의·재방문에서 다시 읽을 수 있어야 한다.
+      if (m.data.oceaniaProgress !== undefined) persistentData.oceaniaProgress = m.data.oceaniaProgress;
+      // 아프리카 공동 제안과 해결 실험도 재방문·세계회의에서 다시 읽을 수 있어야 한다.
+      if (m.data.africaProgress !== undefined) persistentData.africaProgress = m.data.africaProgress;
+      // 지구회의 공동약속은 완료 뒤에도 다시 볼 수 있어야 한다.
+      if (m.data.earth !== undefined) persistentData.earth = m.data.earth;
+      // 아메리카 탐험 진행과 지구 신호 — 재방문·지구회의(Stage 6)가 읽는다.
+      if (m.data.exploreProgress !== undefined) persistentData.exploreProgress = m.data.exploreProgress;
+      if (m.data.earthSignals !== undefined) persistentData.earthSignals = m.data.earthSignals;
+      m.data = persistentData;
       if (!s.rewardClaimedById[rewardKey]) {
         s.rewardClaimedById[rewardKey] = true;
         if (!s.stamps.includes(missionId)) s.stamps.push(missionId);
@@ -322,11 +387,24 @@ class SaveRepository {
    */
   unlockAllForTeacher(): void {
     this.update((s) => {
-      s.teacherUnlocked = true;
-      for (const id of MISSION_IDS) {
-        if (s.missions[id].status === 'locked') s.missions[id].status = 'available';
-      }
-      s.completion.unlocked = true;
+      applyTeacherUnlock(s);
+    });
+  }
+
+  /**
+   * 교사용 전체 정답 처리 — 명시 확인 뒤에만 UI에서 호출한다.
+   * 모든 미션을 완료 상태로 바꾸고 도장·보상·완료 화면 접근을 한 번에 맞춘다.
+   */
+  completeAllForTeacher(): void {
+    this.update((s) => {
+      markAllMissionsCompletedForTeacher(s);
+    });
+  }
+
+  /** 교사용 전체 해금을 끝내고 학생의 실제 완료 기록에 맞는 순서 잠금으로 돌아간다. */
+  restoreProgressionAfterTeacherUnlock(): void {
+    this.update((s) => {
+      s.teacherUnlocked = false;
     });
   }
 
