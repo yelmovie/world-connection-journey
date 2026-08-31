@@ -15,6 +15,7 @@ import {
 import { burstConfetti, popBounce } from '../ui/fx';
 import type { GuideController, GuideSpeaker } from '../ui/guide';
 import { showFeedback } from '../ui/feedback';
+import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 
 export interface EarthSceneHost {
   body: HTMLElement;
@@ -156,27 +157,35 @@ export const EARTH_CSS = `
 .ec-reason { text-align:left;font-size:max(18px,var(--fs-small));line-height:1.35;min-height:52px;padding:8px 12px; }
 
 /* 장면 3 — 문제 고르기 */
-.ec-orbit { position:relative;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:var(--sp-3);align-items:center; }
+.ec-orbit { position:relative;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:var(--sp-3);align-items:start; }
+.ec-orbit .ec-globe { align-self:center; }
 .ec-orbit .ec-globe { width:min(34vh,320px);justify-self:center;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:ec-float 4s ease-in-out infinite; }
 @keyframes ec-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
 .ec-issues { display:flex;flex-direction:column;gap:var(--sp-2);min-height:0; }
 .ec-issue { display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:0;overflow:hidden;text-align:left;border-radius:var(--radius-l); }
-.ec-issue img { width:100%;height:clamp(96px,16vh,170px);object-fit:cover; }
+.ec-issue img { width:100%;height:clamp(72px,11vh,120px);object-fit:cover; }
 .ec-issue .ec-issue-body { padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px; }
 .ec-issue strong { font:900 max(20px,var(--fs-body))/1.2 var(--font-head);color:var(--c-navy); }
-.ec-issue .ec-issue-q { font-size:max(17px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.3; }
+.ec-issue .ec-issue-mine { display:block;padding:6px 9px;border-radius:10px;background:#eef6ee;border:1.5px dashed #7fae86;font-size:max(13px,calc(var(--fs-small) - 2px));font-weight:800;line-height:1.45;color:#2c5a38; }
+.ec-issue-mine em { display:inline-block;margin-right:5px;padding:0 7px;border-radius:999px;background:#d9ecd9;color:#1e4e2a;font-style:normal;font-size:12px;font-weight:900; }
+.ec-issue-q { font-size:max(17px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.3; }
 
 /* 장면 4 — 원탁 */
-.ec-table { position:relative;flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:var(--sp-2); }
+.ec-table { position:relative;flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:var(--sp-2); }
+/* 지구회의 장면은 정보가 많다 — 가이드 레인을 줄여 대화 패널이 잘리지 않게 한다 */
+.dialogue-scene:has(.ec) { --guide-lane-h: 84px; }
+.ec-head-compact { display:flex;align-items:baseline;justify-content:center;gap:12px;padding:2px 0; }
+.ec-head-compact strong { font:900 clamp(21px,1.9vw,28px) var(--font-head);color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65); }
+.ec-head-compact span { font:800 max(15px,var(--fs-small)) var(--font-body);color:#ffe9a8;text-shadow:0 1px 6px rgba(0,0,0,.6); }
 .ec-seats { position:relative;min-height:0;display:flex;justify-content:center;align-items:flex-end;gap:clamp(4px,1.2vw,22px);padding:0 12px; }
 .ec-seat { position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;padding:4px;cursor:pointer;min-width:var(--hotspot-min); }
-.ec-seat img { width:clamp(90px,11vw,170px);height:clamp(90px,11vw,170px);object-fit:contain;transition:transform 260ms,filter 260ms;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)); }
-.ec-seat .ec-seat-name { background:rgba(255,252,240,.95);border-radius:999px;padding:3px 12px;font:800 max(16px,var(--fs-small))/1.2 var(--font-body);box-shadow:var(--shadow-card); }
-.ec-seat.is-active img { transform:scale(1.16) translateY(-8px); }
+.ec-seat img { width:clamp(60px,8.5vh,120px);height:clamp(60px,8.5vh,120px);object-fit:contain;transition:transform 260ms,filter 260ms;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)); }
+.ec-seat .ec-seat-name { background:rgba(255,252,240,.95);border-radius:999px;padding:2px 10px;font:800 max(14px,calc(var(--fs-small) - 2px))/1.2 var(--font-body);box-shadow:var(--shadow-card); }
+.ec-seat.is-active img { transform:scale(1.1); }
 .ec-seat.is-heard .ec-seat-name::before { content:'✓ ';color:var(--c-success-ink); }
 .ec-seat:not(.is-active):not(.is-heard) img { filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)) saturate(.7); }
-.ec-bubble { position:relative;background:linear-gradient(180deg,#fff,#f4efff);border:3px solid var(--c-violet);border-radius:var(--radius-l);padding:12px 16px;box-shadow:var(--shadow-pop);display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center; }
-.ec-bubble .ec-p-icon { width:54px;height:54px;border-radius:50%;background:var(--c-violet);color:#fff;display:flex;align-items:center;justify-content:center; }
+.ec-bubble { position:relative;background:linear-gradient(180deg,#fff,#f4efff);border:3px solid var(--c-violet);border-radius:var(--radius-l);padding:8px 14px;box-shadow:var(--shadow-pop);display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center; }
+.ec-bubble .ec-p-icon { width:44px;height:44px;border-radius:50%;background:var(--c-violet);color:#fff;display:flex;align-items:center;justify-content:center; }
 .ec-choices { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px; }
 .ec-choice { min-height:56px;font-size:max(18px,var(--fs-small));font-weight:800;padding:8px 10px; }
 .ec-choice.is-wrong { opacity:.55; }
@@ -626,9 +635,17 @@ function hashSeed(s: string): number {
 }
 
 /* ===== 장면 3 — 탐구할 환경문제 선택 ===== */
+/** 대륙에서 모은 신호를 회의 주제와 잇는 러프한 갈래 — 정확한 분류보다 '내 여행이 여기 쓰인다'는 연결이 목적이다. */
+function issueIdForSignal(label: string): string {
+  if (/바다|플라스틱|쓰레기|해안|섬/.test(label)) return 'ocean';
+  if (/숲|생물|서식지|나무|분지/.test(label)) return 'ecosystem';
+  return 'climate';
+}
+
 function renderIssue(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
   const t = content.titles;
+  const bag = collectedEarthSignals();
   body.innerHTML = `
     <div class="ec">
       ${head(t.council, t.councilSub)}
@@ -647,9 +664,11 @@ function renderIssue(host: EarthSceneHost): void {
     b.type = 'button';
     b.className = 'card card-pick ec-issue';
     b.setAttribute('aria-pressed', String(p.selectedIssueId === issue.id));
+    const mySignals = bag.filter((item) => issueIdForSignal(item.label) === issue.id);
     b.innerHTML = `${img(signalImageId(content, hero), '')}
       <div class="ec-issue-body"><strong>${esc(issue.title)}</strong>
         <span class="chip">${icon('mail', 18)} 관련 친구 ${friendCountForIssue(content, issue.id)}명</span>
+        ${mySignals.length ? `<span class="ec-issue-mine">${mySignals.slice(0, 2).map((item) => `<em>${esc(continentLabel(item.missionId))}</em>${esc(item.label)}`).join('<br>')}${mySignals.length > 2 ? `<br>…외 ${mySignals.length - 2}개` : ''}</span>` : ''}
         <span class="ec-issue-q">${esc(issue.question)}</span></div>`;
     b.addEventListener('click', () => {
       if (host.isDisposed()) return;
@@ -680,7 +699,12 @@ function renderIssue(host: EarthSceneHost): void {
     bottom.querySelector('[data-act="go"]')?.addEventListener('click', () => { if (p.selectedIssueId) goto(host, 'roundtable'); });
   };
   renderBottom();
-  host.guide?.say('지구본 옆의 문제 중 하나를 골라.', { speaker: host.speaker, cue: left });
+  host.guide?.say(
+    bag.length
+      ? '네가 여행에서 모은 신호가 어느 문제와 이어지는지 보여. 더 알아보고 싶은 문제를 골라!'
+      : '지구본 옆의 문제 중 하나를 골라.',
+    { speaker: host.speaker, cue: left }
+  );
 }
 
 /* ===== 장면 4 — 세계 친구 원탁회의 ===== */
@@ -697,10 +721,10 @@ function renderRoundtable(host: EarthSceneHost): void {
 
   body.innerHTML = `
     <div class="ec" style="background:linear-gradient(rgba(10,25,45,.25),rgba(10,25,45,.45))${hasAsset('bg.spare') ? `,url('${assetUrl('bg.spare')}') center/cover` : ''};border-radius:var(--radius-l);padding:8px">
-      ${head(t.council, issue.title)}
+      <div class="ec-head-compact"><strong>${esc(t.council)}</strong><span>${esc(issue.title)}</span></div>
       <div class="ec-table">
         <div class="ec-seats" id="ec-seats" role="group" aria-label="회의에 모인 친구들"></div>
-        <section class="panel" id="ec-talk" style="display:grid;gap:8px;min-height:0;overflow-y:auto"></section>
+        <section class="panel" id="ec-talk" style="display:grid;gap:6px;min-height:0;overflow-y:auto;padding:10px 14px"></section>
       </div>
     </div>`;
   const seatsEl = body.querySelector<HTMLElement>('#ec-seats')!;
@@ -1021,7 +1045,8 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
       overlay.querySelectorAll<SVGPathElement>('path').forEach((path) => { path.style.opacity = '1'; });
     }, 350);
   }
-  window.setTimeout(() => { if (!host.isDisposed()) onDone(); }, total);
+  // 연출을 정리한 뒤 다음 모달(배움 카드·도장)을 연다 — 남겨 두면 모달 뒤에 비쳐 겹쳐 보인다
+  window.setTimeout(() => { overlay.remove(); if (!host.isDisposed()) onDone(); }, total + (reduced ? 0 : 900));
 }
 
 export type { ActionTierId };
