@@ -1,5 +1,6 @@
 import type { Page } from '../router';
 import { navigate } from '../router';
+import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { saveRepo, recomputeUnlocks } from '../core/SaveRepository';
@@ -192,6 +193,13 @@ const MAP_CSS = `
 /* 완료 노드의 배움 카드 획득 칩 */
 .map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
+/* 대륙에서 모은 것이 마지막 회의로 이어진다는 걸 매 화면에서 보이게 한다 */
+.map-bag { margin-top:var(--sp-2);padding:10px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
+.map-bag strong { display:block;font-family:var(--font-head);font-size:max(17px,var(--fs-small));color:var(--c-navy); }
+.map-bag ul { margin:6px 0 0;padding:0;list-style:none;display:grid;gap:4px; }
+.map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(15px,var(--fs-small));font-weight:800;color:var(--c-ink); }
+.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:13px;font-weight:900; }
+.map-bag__more { color:var(--c-ink-soft);font-size:13px;font-weight:750; }
 .map-brief {
   position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
   height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
@@ -410,6 +418,14 @@ export function createPage(): Page {
           <p class="mission-brief__objective">${photosArrived ? '사진 속에서 친구들이 걱정하는 변화를 찾아보세요.' : spot.objective}</p>
           ${photosArrived ? '' : `<div class="map-brief__flow"><ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>`}
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
+          ${(() => {
+            const bag = collectedEarthSignals();
+            if (bag.length === 0) return '';
+            const shown = bag.slice(-4);
+            return `<div class="map-bag"><strong>지구회의 가방 · ${bag.length}개</strong><ul>${shown
+              .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
+              .join('')}${bag.length > shown.length ? `<li class="map-bag__more">…앞서 모은 ${bag.length - shown.length}개도 들어 있어</li>` : ''}</ul></div>`;
+          })()}
           <div class="map-brief__actions">
             <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
             ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">완주 기록 보기</button>' : ''}

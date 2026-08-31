@@ -20,6 +20,7 @@ import { completeMissionFlow } from '../ui/feedback';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
 import { fitAspect } from '../ui/aspectBox';
+import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
 import { createGuide, type GuideController } from '../ui/guide';
@@ -839,6 +840,7 @@ export function createPage(): Page {
           revision: 1
         }, { evidence: 30, perspective: 25, communication: 25, revision: 15 }, 5);
         burstConfetti(buttonEl);
+        recordEarthSignals('europe', pair ? [`${pair.country.name} · ${pair.visual.title}`] : []);
         completeMissionFlow('europe', '유럽', result);
       };
 

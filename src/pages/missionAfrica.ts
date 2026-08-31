@@ -3,6 +3,7 @@ import type { AfricaMissionProgress } from '../types';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { fitAspect } from '../ui/aspectBox';
+import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
 import { loadContent } from '../core/ContentRepository';
@@ -361,7 +362,7 @@ export function createPage(): Page {
       };
 
       const finishMission = (): void => {
-        if(finishing||!canCompleteAfrica(P))return;finishing=true;P.passportStampAwarded=true;P.updatedAt=new Date().toISOString();saveRepo.setCheckpoint('africa','proposal',{africaProgress:structuredClone(P)});const issue=content.issues.find((i)=>i.id===P.environmentInvestigation.selectedIssueId);writeMissionArtifact({schemaVersion:1,missionId:'africa',title:'아프리카 공동 제안',purpose:'다섯 지역의 다양한 지리와 오늘의 생활을 살피고 연결된 환경문제에 협력 방안을 제안해.',initialHypothesis:'아프리카를 하나의 모습으로 묶지 않고 지도에서 직접 확인했어.',evidenceIds:[...P.visitedCountries,...P.environmentInvestigation.inspectedSignalIds],evidenceLabel:`다섯 권역과 ${P.visitedCountries.length}개 국가 사례, 환경 신호 ${P.environmentInvestigation.inspectedSignalIds.length}개를 살폈어.`,voiceId:'africa-regional-voices',voiceName:'여러 지역의 친구들',voiceLine:'지역마다 생활과 변화는 다르지만 물길·숲·도시·바다를 따라 서로 연결돼 있어.',firstDecision:issue?.name??'연결된 환경문제',observedConsequence:P.solutionLab.selectedActions.join(', '),revisedDecision:P.jointProposal.selectedIdeas.join(', '),rationale:P.jointProposal.reason||content.proposal.reasonExample,transferPrompt:'마지막 세계 회의에서 지역의 목소리와 여러 주체의 책임을 함께 제안해 볼까?',earnedAt:new Date().toISOString()});completeMissionFlow('africa','아프리카');
+        if(finishing||!canCompleteAfrica(P))return;finishing=true;P.passportStampAwarded=true;P.updatedAt=new Date().toISOString();saveRepo.setCheckpoint('africa','proposal',{africaProgress:structuredClone(P)});const issue=content.issues.find((i)=>i.id===P.environmentInvestigation.selectedIssueId);writeMissionArtifact({schemaVersion:1,missionId:'africa',title:'아프리카 공동 제안',purpose:'다섯 지역의 다양한 지리와 오늘의 생활을 살피고 연결된 환경문제에 협력 방안을 제안해.',initialHypothesis:'아프리카를 하나의 모습으로 묶지 않고 지도에서 직접 확인했어.',evidenceIds:[...P.visitedCountries,...P.environmentInvestigation.inspectedSignalIds],evidenceLabel:`다섯 권역과 ${P.visitedCountries.length}개 국가 사례, 환경 신호 ${P.environmentInvestigation.inspectedSignalIds.length}개를 살폈어.`,voiceId:'africa-regional-voices',voiceName:'여러 지역의 친구들',voiceLine:'지역마다 생활과 변화는 다르지만 물길·숲·도시·바다를 따라 서로 연결돼 있어.',firstDecision:issue?.name??'연결된 환경문제',observedConsequence:P.solutionLab.selectedActions.join(', '),revisedDecision:P.jointProposal.selectedIdeas.join(', '),rationale:P.jointProposal.reason||content.proposal.reasonExample,transferPrompt:'마지막 세계 회의에서 지역의 목소리와 여러 주체의 책임을 함께 제안해 볼까?',earnedAt:new Date().toISOString()});recordEarthSignals('africa',[issue?.name,...content.environmentSignals.filter((s)=>P.environmentInvestigation.inspectedSignalIds.includes(s.id)).map((s)=>s.title)].filter((x): x is string => Boolean(x)));completeMissionFlow('africa','아프리카');
       };
 
       const renderProposal = (): void => {

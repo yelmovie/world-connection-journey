@@ -13,6 +13,7 @@ import { createGuide, type GuideController } from '../ui/guide';
 import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { showKeyPoint } from '../ui/keyPoint';
+import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 import { queueMissionReturn } from '../ui/journeyTransition';
 import { validateEarthProgress, type EarthContent, type GlobalEnvironmentProgress } from '../core/earthCouncil';
@@ -191,6 +192,9 @@ const DIALOGUE_CSS = `
 .dl-compass .c-dial { position: relative; width: 78px; height: 78px; flex-shrink: 0; }
 .dl-compass .c-num { font-family: var(--font-head); font-size: var(--fs-title); }
 .dl-side-btn { display: inline-flex; min-height: 52px; font-size: var(--dl-label); }
+.dl-bag-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.dl-bag-list li { display: flex; gap: 9px; align-items: baseline; font-size: var(--dl-copy); font-weight: 800; }
+.dl-bag-list em { flex: 0 0 auto; padding: 2px 10px; border-radius: 999px; background: #e8f2fb; color: #1c5a8c; font-style: normal; font-size: 14px; font-weight: 900; }
 
 /* 안내선·진행 띠보다 캐릭터와 활동이 먼저 보이게 한다. */
 .dialogue-scene > .bottom-bar {
@@ -460,6 +464,19 @@ export function createPage(): Page {
             </div>
           </div>`;
 
+        // 다섯 대륙에서 모아 온 것을 먼저 펼쳐 보인다 — 마지막 단계가 갑자기 등장한 별개 게임으로 보이지 않게
+        const bag = collectedEarthSignals();
+        if (bag.length > 0) {
+          openModal({
+            id: 'dialogue-bag',
+            title: '다섯 대륙에서 모아 온 이야기',
+            bodyHtml: `<ul class="dl-bag-list">${bag
+              .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
+              .join('')}</ul><p style="margin-top:12px;font-weight:800">이제 이 이야기들을 들고 세계 친구들을 만나러 가자.</p>`,
+            dismissible: false,
+            actions: [{ label: '가방 챙겼어!', kind: 'primary', autofocus: true, onClick: (close) => close() }]
+          });
+        }
         showKeyPoint({
           id: 'dialogue.listen',
           lines: [

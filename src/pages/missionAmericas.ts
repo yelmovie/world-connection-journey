@@ -3,6 +3,7 @@ import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
+import { recordEarthSignals } from '../core/earthSignals';
 import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
@@ -1114,10 +1115,8 @@ export function createPage(): Page {
             transferPrompt: '다른 대륙의 친구들에게서도 물·숲·생활 신호를 찾아 이어 볼까?',
             earnedAt: new Date().toISOString()
           });
-          // Stage 6 지구회의가 읽을 대륙별 지구 신호 — 아티팩트 스키마 밖이라 세이브 데이터에 둔다
-          saveRepo.update((save) => {
-            save.missions.americas.data.earthSignals = E.signals.map((s) => s.issueId);
-          });
+          // 지구회의로 가져갈 신호 — 지도 화면과 마지막 회의가 이걸 읽는다
+          recordEarthSignals('americas', E.signals.map((s) => s.label));
           completeMissionFlow('americas', '아메리카', result, { directToStamp: true });
         };
         const learn = getLearn(content);
