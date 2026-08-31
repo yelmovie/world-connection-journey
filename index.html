@@ -17,12 +17,12 @@
     <div id="overlay-root"></div>
   </div>
   <!-- 부팅 스플래시: 외부 요청 없이 인라인 스타일만 사용. main.ts가 진행률을 갱신하고 첫 화면 준비 후 제거한다. -->
-  <div id="boot-splash" role="status" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#19324D;color:#FFFDF4;font-family:'Jua','Pretendard',sans-serif;transition:opacity .35s ease">
-    <p style="margin:0;font-size:1.8rem;font-weight:700;letter-spacing:.02em">세계를 잇는 여행</p>
-    <div style="width:min(60vw,320px);height:10px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden">
+  <div id="boot-splash" role="status" style="position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:18px;padding:clamp(36px,9vh,96px) 24px 24px;background:linear-gradient(rgba(10,38,62,.2),rgba(10,38,62,.54)),url('/assets/bg_title.webp') center/cover;color:#FFFDF4;font-family:'Jua','Pretendard',sans-serif;transition:opacity .35s ease">
+    <img src="./assets/title_logo.webp" alt="세계를 잇는 여행" style="width:min(60vw,560px);max-height:150px;object-fit:contain;filter:drop-shadow(0 10px 24px rgba(7,28,48,.4))">
+    <div style="width:min(64vw,360px);height:12px;padding:2px;border:1px solid rgba(255,255,255,.6);border-radius:999px;background:rgba(12,43,69,.35);overflow:hidden;box-shadow:0 10px 24px rgba(7,28,48,.18);backdrop-filter:blur(8px)">
       <div id="boot-bar" style="width:8%;height:100%;border-radius:999px;background:#F2C14E;transition:width .3s ease"></div>
     </div>
-    <p id="boot-msg" style="margin:0;font-size:1rem;opacity:.85">여행을 준비하고 있어요...</p>
+    <p id="boot-msg" style="margin:0;padding:7px 16px;border-radius:999px;background:rgba(12,43,69,.48);font-size:1rem;font-weight:700;box-shadow:0 8px 20px rgba(7,28,48,.16);backdrop-filter:blur(8px)">여행을 준비하고 있어요...</p>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
