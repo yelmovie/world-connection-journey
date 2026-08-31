@@ -16,6 +16,7 @@ import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
+import { enableMapZoom } from '../ui/mapZoom';
 
 /* ================= 콘텐츠 타입 ================= */
 
@@ -160,7 +161,8 @@ const PAGE_CSS = `
 .exp-map-fit { min-width:0; min-height:0; display:grid; }
 .exp-wrap > .exp-map-fit, .am-stage > .exp-map-fit { min-height:0; }
 .am-stage > .exp-map-fit { flex:1; }
-.exp-map { position:relative; border-radius:24px; overflow:hidden; background:linear-gradient(180deg,#3f9fd4,#1c72ad); border:3px solid rgba(255,255,255,.7); box-shadow:var(--shadow-card); touch-action:none; }
+.exp-map-viewport { position:relative; overflow:hidden; border-radius:24px; border:3px solid rgba(255,255,255,.7); box-shadow:var(--shadow-card); background:#1c72ad; touch-action:none; }
+.exp-map { position:absolute; inset:0; background:linear-gradient(180deg,#3f9fd4,#1c72ad); transform-origin:50% 50%; transition:transform .12s ease-out; }
 /* 지도 이미지는 16:9다. 상자를 같은 비율로 고정해야 %로 찍은 나라·렌즈 좌표가 그림 위 실제 위치와 일치한다. */
 .exp-map::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; transition:background var(--t-med) ease; }
 .exp-map[data-lens=nature]::before { background:linear-gradient(180deg,rgba(46,150,92,.26),rgba(24,104,74,.34)); }
@@ -441,10 +443,15 @@ export function createPage(): Page {
          그림 위 실제 위치와 일치한다(contain 레터박스가 생기면 전부 어긋난다). */
       const fitMap = (map: HTMLElement): HTMLElement => {
         clearMapFits();
+        const viewport = document.createElement('div');
+        viewport.className = 'exp-map-viewport';
+        viewport.appendChild(map);
+        viewport.insertAdjacentHTML('beforeend', '<span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span>');
         const holder = document.createElement('div');
         holder.className = 'exp-map-fit';
-        holder.appendChild(map);
-        mapFits.add(fitAspect(map));
+        holder.appendChild(viewport);
+        mapFits.add(fitAspect(viewport));
+        mapFits.add(enableMapZoom(viewport, map));
         return holder;
       };
 

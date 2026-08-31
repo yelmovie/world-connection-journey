@@ -9,6 +9,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { openModal } from '../ui/modal';
 import { showKeyPoint } from '../ui/keyPoint';
+import { enableMapZoom } from '../ui/mapZoom';
 
 type Hotspot = { id: string; x: number; y: number; label: string };
 type Area = { id: string; name: string; short: string; description: string; x: number; y: number; color: string };
@@ -133,7 +134,9 @@ const PAGE_CSS = `
 .regional-mission .regional-body{min-height:0;padding:14px clamp(12px,2vw,28px);overflow:auto}
 .regional-shell{width:min(1500px,100%);min-height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px);margin:auto;display:grid;grid-template-columns:minmax(520px,1.5fr) minmax(330px,.72fr);gap:14px}
 .regional-map,.regional-side,.regional-connections{border:2px solid rgba(255,255,255,.78);border-radius:28px;box-shadow:0 18px 45px rgba(7,31,54,.28);overflow:hidden}
-.regional-map{position:relative;min-height:0;aspect-ratio:16/9;background-color:#1689c7;background-position:center;background-repeat:no-repeat;background-size:contain;isolation:isolate}
+.regional-map{position:relative;min-height:0;aspect-ratio:16/9;background-color:#1689c7;isolation:isolate;touch-action:none}
+/* 확대·이동은 이 층에만 — 표식이 지도와 함께 움직여야 위치가 어긋나지 않는다 */
+.regional-map-layer{position:absolute;inset:0;background-position:center;background-repeat:no-repeat;background-size:contain;transform-origin:50% 50%;transition:transform .12s ease-out}
 .regional-map::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(2,42,70,.05),rgba(2,42,70,.28));pointer-events:none}
 .regional-map-note{position:absolute;z-index:2;left:18px;bottom:18px;max-width:min(520px,72%);padding:10px 14px;border-radius:16px;background:rgba(255,253,246,.92);font-weight:800;line-height:1.4}
 .regional-pin{position:absolute;z-index:3;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:104px;min-height:62px;padding:7px 12px;border:3px solid #fff;border-radius:22px;background:var(--pin);color:#fff;font:800 18px/1.1 var(--font-head);box-shadow:0 7px 0 rgba(7,38,62,.28),0 12px 25px rgba(5,30,50,.28)}
@@ -261,6 +264,7 @@ function imageFor(model: RegionalModel, assetId: string): string {
 function createRegionalPage(load: () => Promise<RegionalModel>): Page {
   let disposed = false;
   let closeModal: (() => void) | null = null;
+  let stopMapZoom: (() => void) | null = null;
   return {
     async mount(root) {
       const model = await load();
@@ -362,10 +366,10 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         if (example && state.activeExampleId !== example.id) state.activeExampleId = example.id;
         const scenes = example ? model.scenes.filter((item) => example.sceneIds.includes(item.id)) : [];
         body.innerHTML = `<section class="regional-shell">
-          <div class="regional-map" style="background-image:url('${assetUrl(model.mapAssetId)}')" aria-label="${esc(model.title)} 권역 지도">
+          <div class="regional-map" aria-label="${esc(model.title)} 권역 지도"><div class="regional-map-layer" style="background-image:url('${assetUrl(model.mapAssetId)}')">
             ${model.areas.map((item) => `<button type="button" class="regional-pin ${state.activeAreaId === item.id ? 'is-active' : ''} ${state.visitedAreaIds.includes(item.id) ? 'is-visited' : ''}" style="--x:${item.x}%;--y:${item.y}%;--pin:${item.color}" data-area="${item.id}">${esc(item.name)}<small>${esc(item.short)}</small></button>`).join('')}
             ${koreaShortcut ? `<button type="button" class="regional-country-shortcut ${state.activeExampleId === koreaShortcut.id ? 'is-active' : ''}" data-country-shortcut="${koreaShortcut.id}">대한민국<small>서울 · 바로 보기</small></button>` : ''}
-          </div>
+          </div><span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span></div>
           <aside class="regional-side">
             ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><div class="regional-example-list">${examples.map((item) => `<button class="btn btn-ghost regional-example" data-example="${item.id}">${state.viewedExampleIds.includes(item.id) ? '✓ ' : ''}${esc(item.country)}<span>${esc(item.place)}</span></button>`).join('')}</div>${example ? `<h3>${model.id === 'oceania' ? `${esc(example.country)} · 지역과 대표 장소` : `${esc(example.country)} · ${esc(example.place)}`}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : '<p>이 장소와 연결된 장면을 준비하고 있어.</p>'}</div><p class="regional-source">${model.id === 'oceania' ? `앞의 세 장면은 ${esc(area.name)} 안 서로 다른 장소의 사례이고, 대표 장소 장면은 선택한 나라와 연결돼 있어. 장면을 열면 범위 안내와 출처를 확인할 수 있어.` : `${esc(example.scope)}<br><a href="${esc(example.sourceUrl)}" target="_blank" rel="noreferrer">${esc(example.sourceTitle)}</a>`}</p>` : ''}` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도에서 궁금한 ${model.areaLabel}을 눌러 봐.</p><button type="button" class="btn btn-ghost regional-info" data-map-info>이 지도는 어떤 그림이야?</button>`}
             ${goalList()}
@@ -383,6 +387,10 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             actions: [{ label: '알겠어', kind: 'primary', onClick: (close) => close() }]
           });
         });
+        const mapEl = body.querySelector<HTMLElement>('.regional-map');
+        const layerEl = body.querySelector<HTMLElement>('.regional-map-layer');
+        stopMapZoom?.();
+        stopMapZoom = mapEl && layerEl ? enableMapZoom(mapEl, layerEl) : null;
         const keys = KEY_POINTS[model.id];
         if (keys) showKeyPoint({ id: `${model.id}.geo`, lines: keys.geo, onDone: () => undefined });
       };
@@ -410,6 +418,8 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       disposed = true;
       closeModal?.();
       closeModal = null;
+      stopMapZoom?.();
+      stopMapZoom = null;
     }
   };
 }

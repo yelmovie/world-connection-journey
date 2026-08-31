@@ -4,6 +4,7 @@ import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
+import { enableMapZoom } from '../ui/mapZoom';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
@@ -148,6 +149,7 @@ export function createPage(): Page {
   const timers = new Set<number>();
   let stopInstrument: (() => void) | null = null;
   let stopMapFit: (() => void) | null = null;
+  let stopMapZoom: (() => void) | null = null;
   const later = (fn: () => void, ms: number): number => { const id = window.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, ms); timers.add(id); return id; };
   const clearTimers = (): void => { timers.forEach((id) => window.clearTimeout(id)); timers.clear(); };
 
@@ -179,7 +181,7 @@ export function createPage(): Page {
         P.updatedAt = new Date().toISOString();
         saveRepo.setCheckpoint('africa', P.screen, { africaProgress: structuredClone(P) });
       };
-      const go = (screen: Screen): void => { stopInstrument?.(); stopInstrument = null; stopMapFit?.(); stopMapFit = null; clearTimers(); P.screen = screen; persist(); render(); };
+      const go = (screen: Screen): void => { stopInstrument?.(); stopInstrument = null; stopMapFit?.(); stopMapFit = null; stopMapZoom?.(); stopMapZoom = null; clearTimers(); P.screen = screen; persist(); render(); };
       const setStep = (): void => { const now = STEP[P.screen]; updateSteps(top, 8, Math.min(7, now), Math.min(7, now)); };
       const panel = (title: string, subtitle: string, main: HTMLElement, actions?: HTMLElement): void => {
         shell.replaceChildren();
@@ -214,14 +216,9 @@ export function createPage(): Page {
           pin.addEventListener('click',()=>{ P.activeRegionId=region.id; plane.style.left=`${region.position.x}%`; plane.style.top=`${region.position.y}%`; later(()=>go('region'),540); }); canvas.appendChild(pin);
         });
         const help=document.createElement('p'); help.className='map-help'; help.textContent=reviewedRegions()?'다 살펴봤어! 이제 소리를 만나러 가자.':'표식을 눌러 다섯 지역을 탐험해!'; map.appendChild(help);
-        let zoom=1,dx=0,dy=0,drag=false,lastX=0,lastY=0;
-        const apply=()=>{canvas.style.transform=`translate(${dx}px,${dy}px) scale(${zoom})`;};
-        map.addEventListener('pointerdown',(event)=>{if((event.target as HTMLElement).closest('button'))return;drag=true;lastX=event.clientX;lastY=event.clientY;map.setPointerCapture(event.pointerId);});
-        map.addEventListener('pointermove',(event)=>{if(!drag)return;dx+=event.clientX-lastX;dy+=event.clientY-lastY;lastX=event.clientX;lastY=event.clientY;apply();});
-        map.addEventListener('pointerup',()=>{drag=false});
-        const controls=document.createElement('div'); controls.className='map-controls';
-        const minus=button('−','btn'); minus.setAttribute('aria-label','지도 축소'); const plus=button('+','btn'); plus.setAttribute('aria-label','지도 확대');
-        minus.addEventListener('click',()=>{zoom=Math.max(1,zoom-.2);if(zoom===1){dx=0;dy=0}apply()}); plus.addEventListener('click',()=>{zoom=Math.min(1.8,zoom+.2);apply()}); controls.append(minus,plus); map.appendChild(controls);
+        // 두 손가락 확대·끌기는 공용 헬퍼가 처리한다 (아메리카·유럽·아시아와 같은 조작)
+        stopMapZoom?.(); stopMapZoom = enableMapZoom(map, canvas, { max: 2.2 });
+        map.insertAdjacentHTML('beforeend', '<span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span>');
         const next=button('여행지에서 만난 소리 듣기'); next.disabled=!reviewedRegions(); next.addEventListener('click',()=>go('instrument'));
         panel('아프리카 지도 펼치기',reviewedRegions()?'다섯 지역을 모두 탐험했어!':'표식을 눌러 지역을 탐험해 봐!',map,reviewedRegions()?actionBar(next):undefined);
         // 지도 상자를 원본 비율로 맞춰야 다섯 표식이 모두 화면 안에 들어온다(남부가 잘려 못 누르던 문제)
@@ -378,6 +375,6 @@ export function createPage(): Page {
       };
       render();
     },
-    unmount(){disposed=true;clearTimers();stopMapFit?.();stopMapFit=null;stopInstrument?.();audio.stopClip();audio.stopBgm();}
+    unmount(){disposed=true;clearTimers();stopMapFit?.();stopMapFit=null;stopMapZoom?.();stopMapZoom=null;stopInstrument?.();audio.stopClip();audio.stopBgm();}
   };
 }

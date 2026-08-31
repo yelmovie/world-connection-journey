@@ -21,6 +21,7 @@ import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
+import { enableMapZoom } from '../ui/mapZoom';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -183,8 +184,10 @@ const PAGE_CSS = `
   background:#f7f2df;box-shadow:0 14px 34px rgba(8,25,45,.34);color:var(--c-ink);overflow:hidden;
 }
 .europe-mission .eu-map-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
-.europe-mission .eu-map {
-  position:relative;min-height:390px;background:
+.europe-mission .eu-map { position:relative;min-height:390px;background:#12496e;touch-action:none;overflow:hidden; }
+/* 확대·이동은 이 층에만 건다 — 표식이 지도와 함께 움직여야 위치가 어긋나지 않는다 */
+.europe-mission .eu-map-layer {
+  position:absolute;inset:0;transform-origin:50% 50%;transition:transform .12s ease-out;background:
     linear-gradient(rgba(16,48,72,.12),rgba(16,48,72,.18)),
     url('${assetUrl('europe.map.illustrated')}') center/cover no-repeat;
 }
@@ -356,6 +359,7 @@ export function createPage(): Page {
   let guide: GuideController | null = null;
   let saveTimer: number | null = null;
   let stopMapFit: (() => void) | null = null;
+  let stopMapZoom: (() => void) | null = null;
 
   return {
     async mount(root: HTMLElement) {
@@ -522,8 +526,15 @@ export function createPage(): Page {
         body.replaceChildren(screen);
         const mapEl = screen.querySelector<HTMLElement>('.eu-map');
         if (mapEl) {
+          const layer = document.createElement('div');
+          layer.className = 'eu-map-layer';
+          layer.append(...mapEl.childNodes);
+          mapEl.appendChild(layer);
+          mapEl.insertAdjacentHTML('beforeend', '<span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span>');
           stopMapFit?.();
+          stopMapZoom?.();
           stopMapFit = fitAspect(mapEl);
+          stopMapZoom = enableMapZoom(mapEl, layer);
         }
         screen.querySelectorAll<HTMLButtonElement>('[data-country]').forEach((countryButton) => {
           countryButton.addEventListener('click', () => {
@@ -862,7 +873,7 @@ export function createPage(): Page {
       };
 
       const render = (): void => {
-        if (state.screen !== 'map') { stopMapFit?.(); stopMapFit = null; }
+        if (state.screen !== 'map') { stopMapFit?.(); stopMapFit = null; stopMapZoom?.(); stopMapZoom = null; }
         const progress = statusNow();
         const guarded = guardEuropeScreen(state, progress);
         if (guarded !== state.screen) {
@@ -885,6 +896,8 @@ export function createPage(): Page {
       disposed = true;
       stopMapFit?.();
       stopMapFit = null;
+      stopMapZoom?.();
+      stopMapZoom = null;
       if (saveTimer !== null) window.clearTimeout(saveTimer);
       guide?.dispose();
       guide = null;
