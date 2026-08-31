@@ -3,6 +3,7 @@ import type { AfricaMissionProgress } from '../types';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { fitAspect } from '../ui/aspectBox';
+import { showKeyPoint } from '../ui/keyPoint';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
@@ -225,6 +226,15 @@ export function createPage(): Page {
         panel('아프리카 지도 펼치기',reviewedRegions()?'다섯 지역을 모두 탐험했어!':'표식을 눌러 지역을 탐험해 봐!',map,reviewedRegions()?actionBar(next):undefined);
         // 지도 상자를 원본 비율로 맞춰야 다섯 표식이 모두 화면 안에 들어온다(남부가 잘려 못 누르던 문제)
         stopMapFit?.(); stopMapFit = fitAspect(map, 1672 / 941);
+        showKeyPoint({
+          id: 'africa.geo',
+          imageId: 'plane.africa',
+          lines: [
+            '아프리카는 하나의 나라가 아니라, 54개 나라가 모인 아주 넓은 대륙이야.',
+            '사막, 초원, 열대우림, 높은 산이 한 대륙 안에 모두 있어.'
+          ],
+          onDone: () => undefined
+        });
       };
 
       const renderRegionTool = (region: Region, visual: HTMLElement, onProgress: (count: number) => void): HTMLElement => {
@@ -324,6 +334,14 @@ export function createPage(): Page {
         const spots=[{x:29,y:45},{x:50,y:58},{x:50,y:80}];const viewed=()=>content.environmentSignals.every((s)=>P.environmentInvestigation.inspectedSignalIds.includes(s.id));
         content.environmentSignals.forEach((signal,i)=>{const pin=button(`? ${i+1}`,'signal-pin');pin.style.left=`${spots[i]?.x??50}%`;pin.style.top=`${spots[i]?.y??50}%`;pin.classList.toggle('is-viewed',P.environmentInvestigation.inspectedSignalIds.includes(signal.id));pin.setAttribute('aria-label',`${signal.title} 살펴보기`);pin.addEventListener('click',()=>{
           addUnique(P.environmentInvestigation.inspectedSignalIds,signal.id);if(!P.environmentInvestigation.selectedIssueId)P.environmentInvestigation.selectedIssueId=signal.issueId;pin.classList.add('is-viewed');persist();const sceneId=content.regions.find((r)=>r.id===signal.regionId)?.sceneAssetId??'africa.map';detail.innerHTML=`<h2>${safe(signal.title)}</h2><div class="detail-photo" style="background-image:url('${assetUrl(sceneId)}')"></div><p><strong>어디에서?</strong> ${safe(signal.where)}</p><p><strong>자연의 변화</strong> ${safe(signal.nature)}</p><p><strong>생활의 영향</strong> ${safe(signal.life)}</p><p><strong>서로 연결된 까닭</strong> ${safe(signal.world)}</p><div class="signal-interaction" style="background:linear-gradient(#0e405d66,#0e405d66),url('${assetUrl(sceneId)}') center/cover"><span class="marker" style="color:#fff;text-shadow:0 1px 4px #000c">${signal.interaction==='water-path'?'손잡이로 도시 → 강 → 바다를 따라가':'손잡이로 변화를 비교해'}</span><input type="range" min="0" max="100" value="0" aria-label="환경 변화 살펴보기"></div><p class="source"><a href="${safe(signal.source.url)}" target="_blank" rel="noreferrer">출처: ${safe(signal.source.title)}</a>${signal.needsReview?' · 교사 검토 필요':''}</p>`;const slider=detail.querySelector<HTMLInputElement>('input')!;slider.addEventListener('input',()=>{if(Number(slider.value)>72)slider.parentElement?.classList.add('is-done')});refresh()});map.appendChild(pin)});
+        showKeyPoint({
+          id: 'africa.connect',
+          lines: [
+            '한 지역의 물과 숲이 줄면, 이웃 지역 사람들의 하루까지 달라져.',
+            '그래서 이런 문제는 한 나라만 노력해서는 풀리지 않아.'
+          ],
+          onDone: () => undefined
+        });
         layout.append(map,detail);const next=button('같은 문제의 다른 영향 보기');const refresh=()=>{next.disabled=!viewed()};next.addEventListener('click',()=>go('impact'));panel('여러 지역에서 온 환경 신호','환경 신호 3개를 눌러 살펴봐!',layout,actionBar(next));refresh();
       };
 

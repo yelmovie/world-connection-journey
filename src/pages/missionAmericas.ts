@@ -15,6 +15,7 @@ import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '..
 import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
+import { showKeyPoint } from '../ui/keyPoint';
 
 /* ================= 콘텐츠 타입 ================= */
 
@@ -529,7 +530,15 @@ export function createPage(): Page {
         wrap.append(fitMap(map), side);
         stage.replaceChildren(wrap);
         refresh();
-        guide?.say('아메리카 대륙에 도착했어! 친구들이 보낸 엽서를 읽고, 어느 나라에서 왔는지 지도에 놓아 보자.');
+        showKeyPoint({
+          id: 'americas.geo',
+          imageId: 'americas.student1',
+          lines: [
+            '아메리카는 북아메리카와 남아메리카, 두 대륙이 길게 이어져 있어.',
+            '적도는 남아메리카 북쪽을 지나가서, 그 근처는 일 년 내내 더워.'
+          ],
+          onDone: () => guide?.say('친구들이 보낸 엽서를 읽고, 어느 나라에서 왔는지 지도에 놓아 보자.')
+        });
       };
 
       /* ===== 화면 2 — 탐험 렌즈 ===== */
@@ -919,7 +928,14 @@ export function createPage(): Page {
         wrap.append(tabs, board);
         stage.replaceChildren(wrap);
         drawSlot();
-        guide?.say(E.day.guide);
+        showKeyPoint({
+          id: 'americas.compare',
+          lines: [
+            '자연환경이 다르면 먹는 것도, 입는 옷도, 노는 곳도 달라져.',
+            '그래도 아침·낮·저녁을 보내는 하루에는 닮은 점이 남아 있어.'
+          ],
+          onDone: () => guide?.say(E.day.guide)
+        });
       };
 
       /* ===== 화면 5 — 탐험 노트: 분류 + 키워드 ===== */

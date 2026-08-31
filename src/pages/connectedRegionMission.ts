@@ -8,6 +8,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { openModal } from '../ui/modal';
+import { showKeyPoint } from '../ui/keyPoint';
 
 type Hotspot = { id: string; x: number; y: number; label: string };
 type Area = { id: string; name: string; short: string; description: string; x: number; y: number; color: string };
@@ -102,6 +103,30 @@ interface OceaniaSource {
 
 const COLORS = ['#3979c8', '#16a39b', '#e79b2f', '#8b64c6', '#d85f7b'];
 
+/** 스테이지마다 반드시 읽고 넘어가야 하는 핵심 개념 두 지점(지리 → 세계 공통 문제). */
+const KEY_POINTS: Record<string, { geo: string[]; connect: string[] }> = {
+  asia: {
+    geo: [
+      '아시아는 세계에서 가장 넓은 대륙이야. 사막, 초원, 큰 강, 섬이 한 대륙 안에 다 있어.',
+      '자연이 다르니 집 짓는 방법도, 먹는 것도, 축제도 지역마다 달라.'
+    ],
+    connect: [
+      '강과 바다와 바람은 국경에서 멈추지 않아. 한 곳의 변화가 이웃 나라의 하루를 바꿔.',
+      '그래서 이런 문제는 크기가 다른 행동을 함께 골라야 풀려.'
+    ]
+  },
+  oceania: {
+    geo: [
+      '오세아니아는 큰 대륙 하나와 수천 개의 섬이 넓은 바다로 이어진 곳이야.',
+      '바다는 사람들을 갈라놓는 벽이 아니라, 오래전부터 서로를 이어 준 길이었어.'
+    ],
+    connect: [
+      '바닷물의 온도와 높이가 조금만 달라져도 섬마을의 집과 밭이 가장 먼저 영향을 받아.',
+      '멀리 있는 나라의 선택도 이 바다로 이어져 있어서, 함께 정해야 해.'
+    ]
+  }
+};
+
 const PAGE_CSS = `
 .regional-mission{background-position:center;background-size:cover;color:var(--c-ink)}
 .regional-mission .top-bar{background:linear-gradient(180deg,rgba(10,46,78,.94),rgba(10,46,78,.62))}
@@ -130,7 +155,7 @@ const PAGE_CSS = `
 .regional-photo strong{display:block;padding:8px 7px;font-size:14px;line-height:1.25}
 .regional-photo.is-viewed{border-color:var(--c-success)}
 .regional-photo.is-viewed::after{content:"✓";position:absolute;right:7px;top:7px;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:var(--c-success);color:#fff;font-weight:900}
-.regional-source{margin-top:auto;padding-top:10px;border-top:1px solid var(--c-line);font-size:14px;line-height:1.4}
+.regional-source{padding-top:10px;border-top:1px solid var(--c-line);font-size:14px;line-height:1.4}
 .regional-source a{color:#165ca9;font-weight:800}
 .regional-dock{background:rgba(10,42,68,.9);align-items:center}
 .regional-dock [data-next]{margin-left:auto}
@@ -144,6 +169,13 @@ const PAGE_CSS = `
 .regional-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .regional-action{text-align:left;padding:10px;border-radius:16px;min-height:66px}
 .regional-media-note{font-size:13px;color:var(--c-ink-soft);font-weight:700}
+.regional-info{align-self:start;min-height:48px;padding:8px 16px;border-radius:999px;font-size:16px}
+.regional-goals{margin-top:auto;display:grid;gap:7px;padding-top:12px;border-top:1px solid var(--c-line)}
+.regional-goal{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:42px;font-weight:850;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
+.regional-goal .mark{width:24px;height:24px;border-radius:50%;border:3px solid #b9cbd6}
+.regional-goal.is-done{color:#277147}
+.regional-goal.is-done .mark{border-color:#277147;background:#dff2df}
+.regional-goal.is-done .mark::after{content:'✓';display:block;text-align:center;font-size:15px;line-height:18px;color:#277147}
 .regional-modal{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(270px,1.1fr);gap:18px;max-width:820px}
 .regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:300px}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
@@ -253,6 +285,18 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       const persist = () => saveRepo.setCheckpoint(model.id, state.screen === 'connections' ? 'regional-connections' : 'regional-explore', { regionalExploration: structuredClone(state) });
       const add = (items: string[], value: string) => { if (!items.includes(value)) items.push(value); };
       const exploreReady = () => teacherUnlocked || (state.visitedAreaIds.length >= model.requirements.minAreas && state.viewedExampleIds.length >= model.requirements.minExamples && state.viewedSceneIds.length >= model.requirements.minDiscoveries);
+      /** 남은 할 일을 눈으로 보여 준다 — 빈 패널을 채우고 '언제 끝나는지'를 알게 한다. */
+      const goalList = (): string => {
+        const rows: Array<[string, number, number]> = [
+          [`${model.areaLabel} 살펴보기`, state.visitedAreaIds.length, model.requirements.minAreas],
+          ['나라·장소 열어 보기', state.viewedExampleIds.length, model.requirements.minExamples],
+          ['장면 자세히 보기', state.viewedSceneIds.length, model.requirements.minDiscoveries]
+        ];
+        return `<div class="regional-goals" aria-label="탐험 진행">${rows.map(([label, got, need]) =>
+          `<div class="regional-goal ${got >= need ? 'is-done' : ''}"><span class="mark" aria-hidden="true"></span><span>${label}</span><b>${Math.min(got, need)} / ${need}</b></div>`
+        ).join('')}</div>`;
+      };
+
       const chosenTierCount = () => new Set(model.actions.filter((item) => state.selectedActionIds.includes(item.id)).map((item) => item.tier)).size;
       const finishReady = () => teacherUnlocked || (state.discoveredSignalIds.length >= model.requirements.minSignals && state.listenedPerspectiveIds.length >= 2 && state.selectedActionIds.length >= 3 && chosenTierCount() >= 2);
 
@@ -321,16 +365,26 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           <div class="regional-map" style="background-image:url('${assetUrl(model.mapAssetId)}')" aria-label="${esc(model.title)} 권역 지도">
             ${model.areas.map((item) => `<button type="button" class="regional-pin ${state.activeAreaId === item.id ? 'is-active' : ''} ${state.visitedAreaIds.includes(item.id) ? 'is-visited' : ''}" style="--x:${item.x}%;--y:${item.y}%;--pin:${item.color}" data-area="${item.id}">${esc(item.name)}<small>${esc(item.short)}</small></button>`).join('')}
             ${koreaShortcut ? `<button type="button" class="regional-country-shortcut ${state.activeExampleId === koreaShortcut.id ? 'is-active' : ''}" data-country-shortcut="${koreaShortcut.id}">대한민국<small>서울 · 바로 보기</small></button>` : ''}
-            <p class="regional-map-note">${esc(model.guide)}</p>
           </div>
           <aside class="regional-side">
-            ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><div class="regional-example-list">${examples.map((item) => `<button class="btn btn-ghost regional-example" data-example="${item.id}">${state.viewedExampleIds.includes(item.id) ? '✓ ' : ''}${esc(item.country)}<span>${esc(item.place)}</span></button>`).join('')}</div>${example ? `<h3>${model.id === 'oceania' ? `${esc(example.country)} · 지역과 대표 장소` : `${esc(example.country)} · ${esc(example.place)}`}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : '<p>이 장소와 연결된 장면을 준비하고 있어.</p>'}</div><p class="regional-source">${model.id === 'oceania' ? `앞의 세 장면은 ${esc(area.name)} 안 서로 다른 장소의 사례이고, 대표 장소 장면은 선택한 나라와 연결돼 있어. 장면을 열면 범위 안내와 출처를 확인할 수 있어.` : `${esc(example.scope)}<br><a href="${esc(example.sourceUrl)}" target="_blank" rel="noreferrer">${esc(example.sourceTitle)}</a>`}</p>` : ''}` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도 표식을 누르면 나라·장소와 자연, 오늘날의 생활, 살아 있는 문화와 대표 장소 장면이 이어져.</p><p class="regional-media-note">이 지도는 상대 위치를 익히는 학습용 그림이며 실제 축척 지도는 아니야.</p>`}
+            ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><div class="regional-example-list">${examples.map((item) => `<button class="btn btn-ghost regional-example" data-example="${item.id}">${state.viewedExampleIds.includes(item.id) ? '✓ ' : ''}${esc(item.country)}<span>${esc(item.place)}</span></button>`).join('')}</div>${example ? `<h3>${model.id === 'oceania' ? `${esc(example.country)} · 지역과 대표 장소` : `${esc(example.country)} · ${esc(example.place)}`}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : '<p>이 장소와 연결된 장면을 준비하고 있어.</p>'}</div><p class="regional-source">${model.id === 'oceania' ? `앞의 세 장면은 ${esc(area.name)} 안 서로 다른 장소의 사례이고, 대표 장소 장면은 선택한 나라와 연결돼 있어. 장면을 열면 범위 안내와 출처를 확인할 수 있어.` : `${esc(example.scope)}<br><a href="${esc(example.sourceUrl)}" target="_blank" rel="noreferrer">${esc(example.sourceTitle)}</a>`}</p>` : ''}` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도에서 궁금한 ${model.areaLabel}을 눌러 봐.</p><button type="button" class="btn btn-ghost regional-info" data-map-info>이 지도는 어떤 그림이야?</button>`}
+            ${goalList()}
           </aside>
         </section>`;
         body.querySelectorAll<HTMLElement>('[data-area]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.area!; state.activeAreaId = id; state.activeExampleId = model.examples.find((item) => item.areaId === id)?.id ?? null; add(state.visitedAreaIds, id); persist(); render(); }));
         body.querySelector<HTMLElement>('[data-country-shortcut]')?.addEventListener('click', () => { if (!koreaShortcut) return; state.activeAreaId = koreaShortcut.areaId; state.activeExampleId = koreaShortcut.id; add(state.visitedAreaIds, koreaShortcut.areaId); add(state.viewedExampleIds, koreaShortcut.id); persist(); render(); });
         body.querySelectorAll<HTMLElement>('[data-example]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.example!; state.activeExampleId = id; add(state.viewedExampleIds, id); persist(); render(); }));
         body.querySelectorAll<HTMLElement>('[data-scene]').forEach((button) => button.addEventListener('click', () => { const scene = model.scenes.find((item) => item.id === button.dataset.scene); if (scene) openScene(scene); }));
+        body.querySelector<HTMLElement>('[data-map-info]')?.addEventListener('click', () => {
+          openModal({
+            id: `${model.id}-map-info`,
+            title: '이 지도와 장면에 대해',
+            bodyHtml: `<p style="line-height:1.6">${esc(model.guide)}</p><p style="margin-top:12px;line-height:1.6">이 지도는 상대 위치를 익히는 학습용 그림이며, 실제 축척 지도는 아니야.</p>`,
+            actions: [{ label: '알겠어', kind: 'primary', onClick: (close) => close() }]
+          });
+        });
+        const keys = KEY_POINTS[model.id];
+        if (keys) showKeyPoint({ id: `${model.id}.geo`, lines: keys.geo, onDone: () => undefined });
       };
 
       const renderConnections = () => {
@@ -338,6 +392,8 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           <section class="regional-section"><span class="chip">1. 바다·물·기후의 연결</span><h2>멀리 떨어진 지역도 이어져 있어</h2><p>신호를 눌러 변화의 근거와 출처를 확인해 봐.</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}"><strong>${state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong><br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span></button>`).join('')}</div><span class="chip">2. 지역의 목소리</span><div class="regional-choice-grid">${model.perspectives.map((item) => `<button class="card card-pick regional-choice" data-voice="${item.id}" aria-pressed="${state.listenedPerspectiveIds.includes(item.id)}"><img src="${imageFor(model, item.assetId)}" alt=""><span><strong>${esc(item.name)} · ${esc(item.role)}</strong><br>${esc(item.line)}</span></button>`).join('')}</div></section>
           <section class="regional-section"><span class="chip">3. 책임을 나누는 행동</span><h2>서로 다른 크기의 행동을 함께 골라 봐</h2><p>나·학교와 지역사회·정부와 기업·여러 나라의 행동 중 세 가지 이상을 골라.</p><div class="regional-action-grid">${model.actions.map((item) => `<button class="card card-pick regional-action" data-action="${item.id}" aria-pressed="${state.selectedActionIds.includes(item.id)}"><strong>${esc(item.label)}</strong><br><small>${esc(item.detail)}</small></button>`).join('')}</div><p class="regional-discovery">완료 조건: 환경 신호 ${model.requirements.minSignals}개, 친구 목소리 2개, 서로 다른 주체의 행동 3개.</p></section>
         </div></div></section>`;
+        const connectKeys = KEY_POINTS[model.id];
+        if (connectKeys) showKeyPoint({ id: `${model.id}.connect`, lines: connectKeys.connect, onDone: () => undefined });
         body.querySelectorAll<HTMLElement>('[data-signal]').forEach((button) => button.addEventListener('click', () => { const signal = model.signals.find((item) => item.id === button.dataset.signal); if (signal) openSignal(signal); }));
         body.querySelectorAll<HTMLElement>('[data-voice]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.voice!; if (state.listenedPerspectiveIds.includes(id)) state.listenedPerspectiveIds = state.listenedPerspectiveIds.filter((item) => item !== id); else { if (state.listenedPerspectiveIds.length >= 2) state.listenedPerspectiveIds.shift(); state.listenedPerspectiveIds.push(id); } persist(); render(); }));
         body.querySelectorAll<HTMLElement>('[data-action]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.action!; state.selectedActionIds = state.selectedActionIds.includes(id) ? state.selectedActionIds.filter((item) => item !== id) : [...state.selectedActionIds, id].slice(-4); persist(); render(); }));

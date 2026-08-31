@@ -20,6 +20,7 @@ import { completeMissionFlow } from '../ui/feedback';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
 import { fitAspect } from '../ui/aspectBox';
+import { showKeyPoint } from '../ui/keyPoint';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -545,7 +546,15 @@ export function createPage(): Page {
           ? `${progress.incompleteVisitedCountryIds.map((id) => countryById.get(id)?.name ?? id).join('·')}에서 한 장 더 살펴봐.`
           : progress.complete ? '이야기를 모아 보니 친구들의 걱정이 모두 환경과 이어져 있었어. 스테이지 6으로 가져갈 이야기를 정리해 보자.' : '일곱 나라에서 사진을 살펴보고 여행가와 자연스럽게 이야기해 봐.';
         setBottom(hint, [next]);
-        say(content.intro.guide, screen.querySelector<HTMLElement>('[data-country]'));
+        showKeyPoint({
+          id: 'europe.geo',
+          imageId: 'europe.guide',
+          lines: [
+            '유럽은 여러 나라가 가까이 붙어 있어서, 기차로 이웃 나라에 갈 수 있어.',
+            '쓰는 말과 문화는 달라도 강과 산은 국경을 넘어 이어져 있어.'
+          ],
+          onDone: () => say('나라를 골라 창을 열어 봐.', screen.querySelector<HTMLElement>('[data-country]'))
+        });
       };
 
       const renderWindow = (): void => {
@@ -658,7 +667,14 @@ export function createPage(): Page {
         next.disabled = !state.selectedCountryId || !state.selectedEvidenceId;
         next.addEventListener('click', () => setScreen('reason'));
         setBottom(state.selectedEvidenceId ? '선택한 장면을 보며 내 이유를 써 보자.' : '나라를 고르고 장면 하나를 눌러.', [back, next]);
-        say('네 이유와 바로 이어질 장면 하나를 골라 봐.', screen.querySelector<HTMLElement>('[data-pick]'));
+        showKeyPoint({
+          id: 'europe.respect',
+          lines: [
+            '사진 한 장으로 그 나라 전체를 다 안다고 말할 수는 없어.',
+            '그래서 우리는 더 알고 싶은 점을 질문으로 남기는 거야.'
+          ],
+          onDone: () => say('네 이유와 바로 이어질 장면 하나를 골라 봐.', screen.querySelector<HTMLElement>('[data-pick]'))
+        });
       };
 
       const selectedPair = (): { country: EuropeCountry; visual: EuropeVisual } | null => {

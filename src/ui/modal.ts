@@ -13,15 +13,25 @@ export interface ModalOptions {
 let openId: string | null = null;
 let modalSequence = 0;
 let activeClose: (() => void) | null = null;
+/**
+ * 다른 모달이 열려 있는 동안 들어온 요청. 예전에는 그냥 버렸는데,
+ * 그러면 핵심 학습 카드처럼 꼭 보여 줘야 할 내용이 조용히 사라진다.
+ */
+let pending: ModalOptions[] = [];
 
 /** 라우트 전환처럼 모달 소유 페이지가 사라질 때 남은 backdrop과 포커스 trap을 정리한다. */
 export function closeActiveModal(): void {
+  pending = [];
   activeClose?.();
 }
 
-/** 모달은 동시에 1개만. 중복 열기 무시(빠른 연속 클릭 방지). */
+/** 모달은 동시에 1개만. 같은 id의 중복 열기는 무시하고(빠른 연속 클릭 방지), 다른 id는 줄을 세운다. */
 export function openModal(opts: ModalOptions): () => void {
-  if (openId) return () => undefined;
+  if (openId) {
+    const alreadyQueued = openId === opts.id || pending.some((item) => item.id === opts.id);
+    if (!alreadyQueued) pending.push(opts);
+    return () => undefined;
+  }
   openId = opts.id;
   void audio.playSfx('tap');
 
@@ -105,6 +115,8 @@ export function openModal(opts: ModalOptions): () => void {
     }
     if (previouslyFocused?.isConnected) previouslyFocused.focus();
     bus.emit('MODAL_CLOSED', { id: opts.id });
+    const next = pending.shift();
+    if (next) queueMicrotask(() => openModal(next));
   };
 
   if (opts.dismissible !== false) {

@@ -927,3 +927,23 @@
 }
 .learn-card-row.is-empty { opacity: 0.55; border-style: dashed; }
 .learn-card-row img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+
+/* ===== 핵심 학습 카드 (타이핑 후에만 통과) ===== */
+.keypoint { display: grid; gap: var(--sp-3); justify-items: center; text-align: center; max-width: 640px; }
+.keypoint__hero { display: flex; align-items: center; gap: var(--sp-3); }
+.keypoint__hero img { width: clamp(64px, 8vw, 104px); height: auto; filter: drop-shadow(0 8px 16px rgba(10, 25, 45, 0.32)); }
+.keypoint__eyebrow {
+  padding: 6px 18px; border-radius: 999px;
+  background: var(--c-gold); color: #4c3600;
+  font-family: var(--font-head); font-size: max(17px, var(--fs-small)); font-weight: 900;
+}
+.keypoint__text {
+  min-height: 3.4em; margin: 0;
+  font-family: var(--font-head); font-size: clamp(23px, 2.1vw, 31px); line-height: 1.5;
+  color: var(--c-navy); word-break: keep-all;
+}
+.keypoint__dots { display: flex; gap: 8px; }
+.keypoint__dots i { width: 11px; height: 11px; border-radius: 50%; background: rgba(23, 58, 91, 0.18); }
+.keypoint__dots i.is-now { background: var(--c-gold); }
+.keypoint__hint { margin: 0; color: var(--c-ink-soft); font-size: var(--fs-small); font-weight: 800; }
+.modal:has(.keypoint) { cursor: pointer; }

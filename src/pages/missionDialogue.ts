@@ -12,6 +12,7 @@ import { openCharacterDialogue, splitDialogueSentences } from '../ui/characterDi
 import { createGuide, type GuideController } from '../ui/guide';
 import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
+import { showKeyPoint } from '../ui/keyPoint';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 import { queueMissionReturn } from '../ui/journeyTransition';
 import { validateEarthProgress, type EarthContent, type GlobalEnvironmentProgress } from '../core/earthCouncil';
@@ -127,9 +128,15 @@ const DIALOGUE_CSS = `
 
 /* 1단계 — 인사 사진(크게) + 오른쪽 질문 패널 */
 .dl-greet-row { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1.32fr) minmax(340px,0.68fr); gap: var(--sp-4); align-items: start; }
-.dl-greet-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; align-content: center; min-height: 0; overflow-y: auto; }
-.dl-greet-card { min-height: 182px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 9px; }
-.dl-greet-card img { width: 100%; height: clamp(132px, 13vw, 196px); object-fit: contain; }
+/* 여섯 친구가 한 화면에 다 보여야 한다 — 스크롤 아래로 밀리면 절반은 만나지 못한다 */
+.dl-greet-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; align-content: start; min-height: 0; overflow-y: auto; }
+.dl-greet-card { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 7px; }
+.dl-greet-card img { width: 100%; height: clamp(84px, 8.4vw, 126px); object-fit: contain; }
+/* 넓은 화면에서는 여섯 친구를 한 줄로 — 두 줄이면 아래 세 명이 스크롤 밖으로 사라진다 */
+@media (min-width: 1100px) {
+  .dl-greet-grid { grid-template-columns: repeat(6, minmax(0,1fr)); align-content: center; }
+  .dl-greet-card img { height: clamp(104px, 13vh, 158px); }
+}
 .dl-greet-card .g-name { font-family: var(--font-head); font-size: var(--dl-copy); }
 .dl-greet-card .g-location {
   padding:3px 10px;border-radius:999px;background:#e7f6ff;color:#175888;
@@ -453,6 +460,14 @@ export function createPage(): Page {
             </div>
           </div>`;
 
+        showKeyPoint({
+          id: 'dialogue.listen',
+          lines: [
+            '나라가 달라도 물, 숲, 바다처럼 함께 풀어야 하는 문제가 있어.',
+            '함께 풀려면 상대의 말을 끝까지 듣는 것부터 시작해야 해.'
+          ],
+          onDone: () => undefined
+        });
         const grid = body.querySelector<HTMLElement>('#greet-grid');
         const fb = body.querySelector<HTMLElement>('#stage1-fb');
         if (grid) {
