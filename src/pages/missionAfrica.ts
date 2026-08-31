@@ -2,6 +2,7 @@ import type { Page } from '../router';
 import type { AfricaMissionProgress } from '../types';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
+import { fitAspect } from '../ui/aspectBox';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
@@ -96,8 +97,9 @@ const CSS = `
 .africa-main{min-height:0;position:relative;padding:clamp(12px,2vh,24px);overflow:auto}
 .africa-actions{display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;padding:12px 18px;background:#eef7f8;border-top:1px solid #c8dde1}
 .africa-actions .btn{min-height:52px;font-size:var(--button-text)}
-.africa-main:has(> .africa-map){display:flex;align-items:center;justify-content:center;overflow:hidden}
-.africa-map{position:relative;height:100%;width:auto;max-width:100%;min-height:0;aspect-ratio:1672/941;overflow:hidden;border-radius:20px;background:#1275a8;touch-action:none;outline:none}
+.africa-main:has(.africa-map){display:grid;overflow:hidden;min-height:0}
+/* 지도는 fitAspect가 원본 비율 상자로 맞춘다 — height:100%로 두면 아래쪽(남부 지역)이 잘려 못 누른다 */
+.africa-map{position:relative;min-height:0;overflow:hidden;border-radius:20px;background:#1275a8;touch-action:none;outline:none}
 .africa-map__canvas{position:absolute;inset:0;background:url('${assetUrl('africa.map')}') center/contain no-repeat;transition:transform .18s ease;transform-origin:center}
 .africa-map__ocean{position:absolute;padding:5px 10px;border-radius:999px;background:#0e405dcc;color:white;font-size:clamp(14px,1vw,18px);font-weight:850;pointer-events:none}
 .africa-map__equator{position:absolute;left:20%;right:18%;top:57%;border-top:3px dashed #ffe276;pointer-events:none}.africa-map__equator span{position:absolute;right:0;top:6px;background:#173c55dd;color:white;padding:3px 8px;border-radius:8px}
@@ -144,6 +146,7 @@ export function createPage(): Page {
   let disposed = false;
   const timers = new Set<number>();
   let stopInstrument: (() => void) | null = null;
+  let stopMapFit: (() => void) | null = null;
   const later = (fn: () => void, ms: number): number => { const id = window.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, ms); timers.add(id); return id; };
   const clearTimers = (): void => { timers.forEach((id) => window.clearTimeout(id)); timers.clear(); };
 
@@ -175,7 +178,7 @@ export function createPage(): Page {
         P.updatedAt = new Date().toISOString();
         saveRepo.setCheckpoint('africa', P.screen, { africaProgress: structuredClone(P) });
       };
-      const go = (screen: Screen): void => { stopInstrument?.(); stopInstrument = null; clearTimers(); P.screen = screen; persist(); render(); };
+      const go = (screen: Screen): void => { stopInstrument?.(); stopInstrument = null; stopMapFit?.(); stopMapFit = null; clearTimers(); P.screen = screen; persist(); render(); };
       const setStep = (): void => { const now = STEP[P.screen]; updateSteps(top, 8, Math.min(7, now), Math.min(7, now)); };
       const panel = (title: string, subtitle: string, main: HTMLElement, actions?: HTMLElement): void => {
         shell.replaceChildren();
@@ -220,6 +223,8 @@ export function createPage(): Page {
         minus.addEventListener('click',()=>{zoom=Math.max(1,zoom-.2);if(zoom===1){dx=0;dy=0}apply()}); plus.addEventListener('click',()=>{zoom=Math.min(1.8,zoom+.2);apply()}); controls.append(minus,plus); map.appendChild(controls);
         const next=button('여행지에서 만난 소리 듣기'); next.disabled=!reviewedRegions(); next.addEventListener('click',()=>go('instrument'));
         panel('아프리카 지도 펼치기',reviewedRegions()?'다섯 지역을 모두 탐험했어!':'표식을 눌러 지역을 탐험해 봐!',map,reviewedRegions()?actionBar(next):undefined);
+        // 지도 상자를 원본 비율로 맞춰야 다섯 표식이 모두 화면 안에 들어온다(남부가 잘려 못 누르던 문제)
+        stopMapFit?.(); stopMapFit = fitAspect(map, 1672 / 941);
       };
 
       const renderRegionTool = (region: Region, visual: HTMLElement, onProgress: (count: number) => void): HTMLElement => {
@@ -355,6 +360,6 @@ export function createPage(): Page {
       };
       render();
     },
-    unmount(){disposed=true;clearTimers();stopInstrument?.();audio.stopClip();audio.stopBgm();}
+    unmount(){disposed=true;clearTimers();stopMapFit?.();stopMapFit=null;stopInstrument?.();audio.stopClip();audio.stopBgm();}
   };
 }
