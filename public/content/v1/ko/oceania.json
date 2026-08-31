@@ -1,229 +1,155 @@
 {
   "schemaVersion": 1,
-  "missionId": "oceania_shared_future",
+  "missionId": "oceania_one_ocean",
   "needsReview": true,
-  "reviewNote": "사실 정보 교사 검수 필요",
+  "reviewNote": "생성 시각 자료와 지역별 사례 문구는 수업 사용 전 지역 전문가·교사 검토가 필요합니다.",
+  "factCheck": {
+    "status": "공식 자료 대조 완료",
+    "verifiedAt": "2026-08-31",
+    "scope": "오세아니아 다섯 구역과 사례 장소의 상대 위치, 해양 환경, 살아 있는 항해 지식과 카카두 공동 관리",
+    "peopleNote": "주민 이름과 대화는 여러 관점을 설명하기 위한 학습용 가상 사례다.",
+    "mediaNote": "생성 장면은 실제 현장 사진이나 축척 지도가 아닌 학습용 재현 이미지다.",
+    "sources": [
+      { "title": "UN Statistics M49 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
+      { "title": "호주 정부 카카두 공동 관리", "url": "https://www.dcceew.gov.au/parks-heritage/national-parks/kakadu-national-park/management-and-conservation/park-management" },
+      { "title": "UNESCO 태평양 전통 항해 교육", "url": "https://www.unesco.org/en/articles/promoting-transmission-traditional-navigation-knowledge-pacific-classrooms" },
+      { "title": "Pacific Community 해양 문해 자료", "url": "https://www.spc.int/updates/blog/blog-post/2025/10/connecting-classrooms-to-the-sea-new-ocean-literacy-resource-hub" },
+      { "title": "뉴질랜드 환경부 Our Marine Environment 2025", "url": "https://environment.govt.nz/publications/our-marine-environment-2025/" },
+      { "title": "Transport for NSW Sydney Ferries", "url": "https://transportnsw.info/routes/sydney-ferries" }
+    ]
+  },
   "standards": [
     {
       "code": "[6사10-02]",
       "alignmentLevel": "부분 연계",
       "activityEvidence": [
-        "가상 섬의 산호 백화 사례에서 바닷물 온도 변화와 생태·주민 생활의 연결을 살펴본다.",
-        "환경 변화가 어업과 관광, 공동체의 삶에 미치는 영향을 원인과 영향으로 연결한다."
+        "오세아니아의 대륙과 여러 섬 지역을 지도에서 비교하고 자연환경과 생활의 관계를 관찰한다.",
+        "바다와 기후를 통해 멀리 떨어진 지역의 환경 변화가 이어지는 모습을 살펴본다."
       ],
       "assessmentEvidence": [
-        "산호 백화의 원인과 생태·생활 영향을 올바르게 연결한다.",
-        "결정에 따른 환경, 공동체, 자원 지표 변화를 비교한다."
+        "서로 다른 두 장면에서 관찰 근거를 말하고 사진만으로 알 수 없는 점을 질문한다.",
+        "환경 신호와 여러 관점을 바탕으로 개인·지역사회·제도의 행동을 포함한 공동 제안을 작성한다."
       ],
-      "scopeNote": "기후 환경과 인간 생활의 관계 가운데 해수 온도와 섬 생활의 한 사례만 부분적으로 탐구한다. 세계의 다양한 기후를 비교하지 않으므로 이 미션만으로 성취기준 전체 달성을 판단하지 않는다."
-    },
-    {
-      "code": "[6사12-02]",
-      "alignmentLevel": "직접 연계",
-      "activityEvidence": [
-        "산호 백화, 해양 쓰레기, 관광 과밀 문제의 원인과 영향을 조사한다.",
-        "주민, 연구자, 어업 종사자, 방문객의 관점을 듣고 세 차례의 공동체 결정을 내린다."
-      ],
-      "assessmentEvidence": [
-        "선택의 단기 효과와 장기 효과를 환경, 공동체, 자원 지표로 비교한다.",
-        "서로 충돌하는 관점을 고려해 지속 가능한 미래를 위한 선택 근거를 설명한다."
-      ],
-      "scopeNote": "문제 파악과 해결 방안 탐색을 직접 연습하지만, 가상 사례를 한 번 플레이한 결과만으로 성취기준을 완전히 달성했다고 판단하지 않는다."
+      "scopeNote": "오세아니아 전체를 하나의 문화권으로 대표하지 않고, 선택한 장소의 한 사례로만 탐구합니다."
     }
   ],
   "learningObjectives": [
-    "가상 섬의 환경 문제에서 원인과 생태·생활 영향을 연결하는 연습을 한다.",
-    "서로 다른 공동체 구성원의 관점을 비교하고 선택에 반영하는 연습을 한다.",
-    "세 차례의 결정 결과를 바탕으로 단기 효과와 장기 효과, 환경과 공동체의 균형을 설명하는 연습을 한다."
+    "오세아니아의 다섯 탐험 구역과 넓은 태평양의 상대적 위치를 설명한다.",
+    "검증된 지역 사례를 통해 자연환경, 오늘날의 생활, 살아 있는 문화를 관찰하고 비교한다.",
+    "바다로 이어진 환경 신호와 여러 사람의 필요를 연결해 공동 해결안을 제안한다."
   ],
   "intro": {
-    "title": "오세아니아: 함께 지키는 섬과 바다",
-    "subtitle": "가상의 섬 '모아나누이'의 미래 회의",
-    "guide": "남태평양의 가상 섬 커뮤니티 '모아나누이'에 오신 것을 환영해요. 모아나누이는 이 게임을 위해 만든 가상의 섬이지만, 산호 백화, 해양 쓰레기, 관광 과밀 같은 문제는 실제 태평양의 여러 섬 지역이 겪고 있는 고민을 참고했어요. 섬을 조사하고, 네 사람의 이야기를 듣고, 세 번의 결정을 내려 보세요. 모든 것을 한 번에 다 지키는 마법 같은 답은 없어요. 무엇을 지키고 무엇을 양보할지, 근거를 갖고 선택하는 게 이번 미션이에요."
+    "title": "오세아니아: 섬과 대륙, 하나의 바다",
+    "subtitle": "넓은 바다에 이어진 여러 지역의 자연과 생활문화를 만나보세요.",
+    "guide": "넓은 바다에 흩어진 여러 지역을 눌러 위치와 생활 모습을 살펴봐. 화면은 출처로 확인한 특징을 바탕으로 만든 학습용 재현 장면이며 실제 현장 사진은 아니야. 한 장면을 그 지역 전체의 모습으로 단정하지 말자."
   },
-  "hotspots": [
-    {
-      "id": "coral_reef",
-      "name": "무지개 산호 지대",
-      "x": 0.28,
-      "y": 0.62,
-      "issue": "산호가 하얗게 변하는 백화 현상이 나타나고 있어요.",
-      "cause": "바닷물 온도가 높아진 데다, 스노클링하는 사람들이 산호를 밟거나 만지는 일이 잦아졌어요.",
-      "effect": "산호가 약해지면 그곳에 사는 물고기가 줄고, 물고기를 잡아 생활하는 주민들의 삶에도 영향이 이어져요."
-    },
-    {
-      "id": "trash_beach",
-      "name": "북쪽 표류 해변",
-      "x": 0.55,
-      "y": 0.2,
-      "issue": "파도를 타고 밀려온 플라스틱 쓰레기가 해변에 쌓이고 있어요.",
-      "cause": "섬에서 버린 쓰레기도 있지만, 먼바다에서 흘러온 쓰레기가 해류를 타고 도착하는 경우가 많아요.",
-      "effect": "바다거북 같은 생물이 쓰레기를 먹이로 착각하고, 해변을 찾는 사람들도 줄어들어요."
-    },
-    {
-      "id": "harbor_crowd",
-      "name": "중앙 항구 마을",
-      "x": 0.5,
-      "y": 0.55,
-      "issue": "성수기마다 관광객이 한꺼번에 몰려 마을이 혼잡해져요.",
-      "cause": "큰 배가 도착하는 날이면 좁은 마을 길에 사람과 차가 동시에 몰려요.",
-      "effect": "가게는 활기를 띠지만, 주민들은 시장 보기와 등하교가 힘들어지고 조용한 일상을 잃는다고 느끼기도 해요."
-    },
-    {
-      "id": "sacred_cove",
-      "name": "이야기 바위 후미",
-      "x": 0.75,
-      "y": 0.72,
-      "issue": "공동체가 오래 아껴 온 장소에 방문객이 함부로 들어가는 일이 생겨요.",
-      "cause": "이곳이 공동체에 어떤 의미인지 안내가 부족했고, 사진 명소로 소문이 났어요.",
-      "effect": "공동체가 이어 온 이야기와 약속이 존중받지 못한다고 느끼는 주민이 늘어요."
-    }
+  "requirements": {
+    "minZones": 4,
+    "minExamples": 6,
+    "minDiscoveries": 4,
+    "minSignals": 3
+  },
+  "zones": [
+    { "id": "australia", "name": "오스트레일리아", "short": "대륙", "x": 29, "y": 66, "color": "#e9953f", "description": "건조 지역부터 열대 습지와 큰 해안 도시까지 다양한 환경이 있는 대륙이야." },
+    { "id": "new_zealand", "name": "뉴질랜드", "short": "두 큰 섬", "x": 47, "y": 84, "color": "#3f8d73", "description": "산과 해안, 도시가 가까이 이어지고 바다는 생활과 정체성에 깊게 연결돼 있어." },
+    { "id": "melanesia", "name": "멜라네시아", "short": "여러 나라", "x": 50, "y": 47, "color": "#4678bf", "description": "파푸아뉴기니와 피지 등 서로 다른 나라와 언어 공동체가 있는 넓은 구역이야." },
+    { "id": "micronesia", "name": "미크로네시아", "short": "북태평양", "x": 49, "y": 16, "color": "#8b6fc1", "description": "북태평양의 여러 섬과 환초가 아주 넓은 바다에 흩어져 있어." },
+    { "id": "polynesia", "name": "폴리네시아", "short": "넓은 삼각 해역", "x": 76, "y": 48, "color": "#d85f7b", "description": "사모아와 쿡 제도 등 각기 다른 공동체가 항해와 교류로 이어져 온 구역이야." }
+  ],
+  "countryExamples": [
+    { "id": "australia_kakadu", "zoneId": "australia", "country": "오스트레일리아", "place": "노던 준주 카카두", "mapX": 26, "mapY": 54, "scopeNote": "카카두의 습지와 공동 관리 사례이며 오스트레일리아 전체를 대표하지 않습니다.", "sourceTitle": "Kakadu National Park", "sourceUrl": "https://www.dcceew.gov.au/parks-heritage/national-parks/kakadu-national-park", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "australia_sydney", "zoneId": "australia", "country": "오스트레일리아", "place": "뉴사우스웨일스 시드니", "mapX": 35, "mapY": 70, "scopeNote": "시드니의 오늘날 해안 도시 생활 한 사례입니다.", "sourceTitle": "Transport for NSW Sydney Ferries", "sourceUrl": "https://transportnsw.info/routes/sydney-ferries", "verifiedAt": "2026-08-31", "needsReview": false },
+    { "id": "newzealand_auckland", "zoneId": "new_zealand", "country": "뉴질랜드", "place": "오클랜드 해안", "mapX": 47, "mapY": 80, "scopeNote": "오클랜드 해안 도시의 한 사례이며 뉴질랜드 전체를 대표하지 않습니다.", "sourceTitle": "Our Marine Environment 2025", "sourceUrl": "https://environment.govt.nz/publications/our-marine-environment-2025/", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "fiji_viti_levu", "zoneId": "melanesia", "country": "피지", "place": "비티레부섬", "mapX": 54, "mapY": 50, "scopeNote": "멜라네시아에 속한 피지 비티레부섬의 여러 사례 중 일부입니다.", "sourceTitle": "UNESCO SIDS Pacific highlights", "sourceUrl": "https://www.unesco.org/en/sids/highlights", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "png_port_moresby", "zoneId": "melanesia", "country": "파푸아뉴기니", "place": "포트모르즈비 공동체", "mapX": 45, "mapY": 42, "scopeNote": "포트모르즈비의 현대 공동체 활동 한 사례이며 파푸아뉴기니의 다양한 문화를 대표하지 않습니다.", "sourceTitle": "Pacific Ocean Literacy Resource Repository", "sourceUrl": "https://www.spc.int/updates/blog/blog-post/2025/10/connecting-classrooms-to-the-sea-new-ocean-literacy-resource-hub", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "palau_koror", "zoneId": "micronesia", "country": "팔라우", "place": "코로르와 주변 바다", "mapX": 49, "mapY": 15, "scopeNote": "팔라우 코로르 주변의 해안·도시 생활 한 사례입니다.", "sourceTitle": "Pacific Ocean Literacy Resource Repository", "sourceUrl": "https://www.spc.int/updates/blog/blog-post/2025/10/connecting-classrooms-to-the-sea-new-ocean-literacy-resource-hub", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "fsm_navigation", "zoneId": "micronesia", "country": "미크로네시아연방", "place": "공동체 항해 학습", "mapX": 54, "mapY": 17, "scopeNote": "태평양 항해 지식의 지역별 차이를 존중하는 공동체 학습 장면입니다.", "sourceTitle": "The Canoe is the People", "sourceUrl": "https://www.unesco.org/en/links/canoe", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "samoa_apia", "zoneId": "polynesia", "country": "사모아", "place": "아피아", "mapX": 75, "mapY": 49, "scopeNote": "아피아의 오늘날 생활과 공동체 활동 한 사례입니다.", "sourceTitle": "UNESCO SIDS Pacific highlights", "sourceUrl": "https://www.unesco.org/en/sids/highlights", "verifiedAt": "2026-08-30", "needsReview": true },
+    { "id": "cook_navigation", "zoneId": "polynesia", "country": "쿡 제도", "place": "라로통가 항해 교실", "mapX": 83, "mapY": 54, "scopeNote": "라로통가에서 열린 항해 교육 사례이며 폴리네시아 전체를 대표하지 않습니다.", "sourceTitle": "Promoting traditional navigation knowledge in Pacific classrooms", "sourceUrl": "https://www.unesco.org/en/articles/promoting-transmission-traditional-navigation-knowledge-pacific-classrooms", "verifiedAt": "2026-08-30", "needsReview": true }
+  ],
+  "scenes": [
+    { "id": "australia_nature", "zoneId": "australia", "exampleId": "australia_kakadu", "category": "nature", "categoryLabel": "자연과 공간", "title": "카카두의 습지", "assetId": "oceania.australia.nature", "summary": "넓은 습지와 숲이 계절에 따라 이어지는 모습을 살펴봐.", "detail": "카카두는 열대 습지·하천·돌산 등 여러 환경이 이어진 곳이야. 전통 소유자와 공원 관리자가 함께 돌보는 살아 있는 문화 경관이기도 해.", "discovery": "대륙 안에도 바다와 이어진 습지가 있고, 사람은 그곳을 함께 돌보며 살아.", "hotspots": [{"id":"wetland","x":35,"y":58,"label":"물이 머무는 습지"},{"id":"ranger","x":68,"y":63,"label":"함께 관찰하는 사람들"}] },
+    { "id": "australia_daily", "zoneId": "australia", "exampleId": "australia_sydney", "category": "daily", "categoryLabel": "오늘날의 생활", "title": "시드니의 항구 통학길", "assetId": "oceania.australia.daily", "summary": "배와 기차, 걷는 길이 이어진 큰 해안 도시의 하루야.", "detail": "시드니에서는 항구를 건너는 배가 일상 교통의 하나로 쓰여. 같은 나라 안에도 큰 도시와 작은 마을, 건조 지대와 열대 지역이 모두 있어.", "discovery": "바다는 섬나라에서만이 아니라 큰 대륙의 도시 생활도 이어 줘.", "hotspots": [{"id":"ferry","x":42,"y":55,"label":"항구를 건너는 배"},{"id":"commute","x":70,"y":68,"label":"오늘날의 통학과 출근"}] },
+    { "id": "australia_culture", "zoneId": "australia", "exampleId": "australia_kakadu", "category": "culture", "categoryLabel": "문화와 표현", "title": "오늘도 이어지는 Country 돌봄", "assetId": "oceania.australia.culture", "summary": "땅·물·하늘과 사람을 함께 생각하는 돌봄 활동을 살펴봐.", "detail": "Aboriginal and Torres Strait Islander peoples는 매우 다양한 공동체야. 여기서는 카카두의 Bininj/Mungguy 전통 소유자와 Parks Australia가 함께 관리하는 한 사례만 살펴봐.", "discovery": "Bininj/Mungguy의 지식과 책임은 오늘날의 공원 관리와 다음 세대 교육에도 이어져.", "hotspots": [{"id":"country","x":30,"y":48,"label":"땅과 물을 함께 보는 지도"},{"id":"team","x":69,"y":55,"label":"전통 소유자와 관리자의 협력"}] },
+    { "id": "newzealand_nature", "zoneId": "new_zealand", "exampleId": "newzealand_auckland", "category": "nature", "categoryLabel": "자연과 공간", "title": "오클랜드의 화산섬과 항구", "assetId": "oceania.newzealand.nature", "summary": "큰 도시 가까이에 항구와 화산섬, 여러 해안이 이어져 있어.", "detail": "오클랜드의 항구와 섬은 도시 생활과 가깝지만, 이 한 장면이 뉴질랜드의 모든 산·빙하·농촌을 보여 주는 건 아니야.", "discovery": "같은 해안 도시라도 주변 지형과 바닷물의 흐름은 서로 달라.", "hotspots": [{"id":"island","x":65,"y":35,"label":"항구 너머의 화산섬"},{"id":"harbor","x":45,"y":66,"label":"도시와 바다 사이 항구"}] },
+    { "id": "newzealand_daily", "zoneId": "new_zealand", "exampleId": "newzealand_auckland", "category": "daily", "categoryLabel": "오늘날의 생활", "title": "오클랜드의 바다 곁 하루", "assetId": "oceania.newzealand.daily", "summary": "학생과 가족이 버스·배·자전거를 이용하는 오늘날의 해안 도시야.", "detail": "뉴질랜드 사람들은 도시와 마을에서 여러 방식으로 살아. 많은 사람에게 해안은 이동·휴식·일과 연결된 생활 공간이야.", "discovery": "바다는 풍경만이 아니라 이동, 일, 놀이가 이루어지는 생활 공간이야.", "hotspots": [{"id":"ferry","x":28,"y":54,"label":"사람을 잇는 여객선"},{"id":"public","x":72,"y":68,"label":"함께 쓰는 해안 공간"}] },
+    { "id": "newzealand_culture", "zoneId": "new_zealand", "exampleId": "newzealand_auckland", "category": "culture", "categoryLabel": "문화와 표현", "title": "와카와 항해를 배우는 교실", "assetId": "oceania.newzealand.culture", "summary": "청소년이 바람·별·파도를 읽는 항해 지식을 오늘의 배움으로 이어 가.", "detail": "마오리 문화는 지역과 iwi에 따라 다르고 오늘도 변화하며 이어져. 이 장면은 바다와 연결된 학습 한 사례야.", "discovery": "오래된 항해 지식은 박물관에만 있는 것이 아니라 오늘의 청소년이 배우고 활용해.", "hotspots": [{"id":"star","x":43,"y":30,"label":"방향을 찾는 하늘 관찰"},{"id":"waka","x":58,"y":64,"label":"함께 배우는 와카 항해"}] },
+    { "id": "fiji_nature", "zoneId": "melanesia", "exampleId": "fiji_viti_levu", "category": "nature", "categoryLabel": "자연과 공간", "title": "비티레부의 산·강·해안", "assetId": "oceania.melanesia.nature", "summary": "큰 섬 안에서 산의 물이 강과 맹그로브, 산호 바다로 이어져.", "detail": "비티레부는 피지에서 가장 큰 섬이야. 이 장면은 피지와 멜라네시아의 수많은 섬 생활 중 하나야.", "discovery": "섬 안의 높은 산과 강에서 시작한 물이 해안 생태계까지 이어져.", "hotspots": [{"id":"river","x":42,"y":46,"label":"산에서 내려오는 강"},{"id":"reef","x":71,"y":72,"label":"해안 바깥의 산호초"}] },
+    { "id": "fiji_daily", "zoneId": "melanesia", "exampleId": "fiji_viti_levu", "category": "daily", "categoryLabel": "오늘날의 생활", "title": "수바의 시장과 버스 정류장", "assetId": "oceania.melanesia.daily", "summary": "시장·학교·버스가 이어지는 피지 수도권의 오늘날 생활이야.", "detail": "피지 사람 모두가 같은 방식으로 사는 건 아니야. 여기서는 비티레부의 도시 수바에서 이동하고 장을 보는 한 장면을 살펴봐.", "discovery": "태평양 섬에도 도시와 학교, 대중교통, 여러 직업의 일상이 있어.", "hotspots": [{"id":"bus","x":30,"y":62,"label":"섬 안의 대중교통"},{"id":"market","x":70,"y":54,"label":"이웃이 만나는 시장"}] },
+    { "id": "png_culture", "zoneId": "melanesia", "exampleId": "png_port_moresby", "category": "culture", "categoryLabel": "문화와 표현", "title": "포트모르즈비의 공동체 창작", "assetId": "oceania.melanesia.culture", "summary": "서로 다른 언어 배경의 청소년이 그림과 음악으로 이야기를 나눠.", "detail": "파푸아뉴기니에는 매우 많은 언어 공동체가 있어. 이 장면은 수도의 현대 청소년 창작 모임 한 사례일 뿐이야.", "discovery": "문화는 옛 모습으로 멈추지 않고 도시의 청소년 창작에서도 새롭게 이어져.", "hotspots": [{"id":"languages","x":32,"y":48,"label":"여러 언어로 붙인 설명"},{"id":"art","x":69,"y":58,"label":"함께 만드는 현대 작품"}] },
+    { "id": "palau_nature", "zoneId": "micronesia", "exampleId": "palau_koror", "category": "nature", "categoryLabel": "자연과 공간", "title": "팔라우의 석회암 섬과 산호 바다", "assetId": "oceania.micronesia.nature", "summary": "작은 섬과 얕은 바다, 깊은 바다가 가까이 만나는 모습을 봐.", "detail": "미크로네시아는 한 나라가 아니야. 여기서는 팔라우 코로르 주변의 석회암 섬과 산호 바다 한 사례를 살펴봐.", "discovery": "육지는 작아 보여도 주변 바다와 생태계는 아주 넓게 이어져.", "hotspots": [{"id":"islets","x":36,"y":38,"label":"바다 위 여러 작은 섬"},{"id":"reef","x":67,"y":68,"label":"색이 달라 보이는 얕은 바다"}] },
+    { "id": "palau_daily", "zoneId": "micronesia", "exampleId": "palau_koror", "category": "daily", "categoryLabel": "오늘날의 생활", "title": "코로르의 학교와 장보기", "assetId": "oceania.micronesia.daily", "summary": "차와 배, 가게와 학교가 이어지는 작은 도시의 하루야.", "detail": "섬의 크기와 거리에 따라 물건과 사람의 이동 방식이 달라질 수 있어. 하지만 모든 주민의 생활이 똑같지는 않아.", "discovery": "바다를 건너오는 물건과 에너지는 섬 도시의 생활과 밀접하게 이어져.", "hotspots": [{"id":"school","x":36,"y":54,"label":"오늘날의 학교 생활"},{"id":"harbor","x":72,"y":54,"label":"생활 물자가 오가는 항구"}] },
+    { "id": "fsm_culture", "zoneId": "micronesia", "exampleId": "fsm_navigation", "category": "culture", "categoryLabel": "문화와 표현", "title": "바람과 별을 읽는 항해 교실", "assetId": "oceania.micronesia.culture", "summary": "공동체 어른과 청소년이 별·파도·바람으로 길을 찾는 법을 나눠.", "detail": "항해 지식은 섬과 공동체마다 다르게 이어져. 여기서는 미크로네시아 지역의 교육 장면 한 사례만 살펴봐.", "discovery": "바다는 섬을 떼어 놓는 공간이면서 지식과 사람을 이어 주는 길이기도 해.", "hotspots": [{"id":"model","x":38,"y":55,"label":"파도 방향을 익히는 모형"},{"id":"stars","x":69,"y":28,"label":"별의 위치를 보는 하늘"}] },
+    { "id": "samoa_nature", "zoneId": "polynesia", "exampleId": "samoa_apia", "category": "nature", "categoryLabel": "자연과 공간", "title": "우폴루섬의 화산 지형과 해안", "assetId": "oceania.polynesia.nature", "summary": "높은 화산 지형에서 짧은 강이 해안으로 이어지는 모습을 살펴봐.", "detail": "사모아에도 도시·농촌·산지·해안이 있어. 이 장면은 우폴루섬의 한 지역일 뿐, 폴리네시아 전체의 모습이 아니야.", "discovery": "작은 섬에서도 높은 지형과 해안의 거리가 생활과 물의 흐름을 바꿔.", "hotspots": [{"id":"ridge","x":40,"y":32,"label":"섬 안쪽의 높은 지형"},{"id":"coast","x":68,"y":68,"label":"마을과 이어진 해안"}] },
+    { "id": "samoa_daily", "zoneId": "polynesia", "exampleId": "samoa_apia", "category": "daily", "categoryLabel": "오늘날의 생활", "title": "아피아의 방과 후", "assetId": "oceania.polynesia.daily", "summary": "학생들이 버스를 기다리고 운동·음악 활동을 하는 오늘날의 도시야.", "detail": "사모아의 일상은 전통과 현대 중 하나로 나뉘지 않아. 학교·가족·직업·온라인 활동이 함께 이어져.", "discovery": "섬나라의 오늘날 생활도 교통과 디지털, 학교와 공동체 활동이 함께 있어.", "hotspots": [{"id":"bus","x":30,"y":60,"label":"방과 후 버스를 기다리는 학생"},{"id":"community","x":69,"y":54,"label":"함께 쓰는 운동·음악 공간"}] },
+    { "id": "cook_culture", "zoneId": "polynesia", "exampleId": "cook_navigation", "category": "culture", "categoryLabel": "문화와 표현", "title": "라로통가의 항해 지식 교실", "assetId": "oceania.polynesia.culture", "summary": "교실과 해변에서 청소년이 바다 길을 읽는 지식을 배워.", "detail": "UNESCO 교육 자료는 여러 태평양 공동체의 항해 지식을 청소년 배움과 연결해. 공동체마다 지식과 가르치는 방식은 달라.", "discovery": "항해 지식은 여러 섬의 언어·기억·관찰을 오늘의 배움으로 이어 줘.", "hotspots": [{"id":"chart","x":34,"y":54,"label":"바람과 파도를 표시한 학습 자료"},{"id":"practice","x":70,"y":60,"label":"바다를 보며 방향을 익히는 학생"}] },
+    { "id": "australia_landmark", "zoneId": "australia", "exampleId": "australia_sydney", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "시드니 오페라하우스", "assetId": "oceania.australia.landmark", "summary": "항구의 물결 옆에 모인 흰 조개껍데기 모양 지붕을 살펴봐.", "detail": "시드니 오페라하우스는 베넬롱 포인트에 세워진 공연 예술 건축물이야. 여러 개의 흰 지붕 껍질이 시드니항의 경관과 함께 이어져.", "discovery": "대표 건축은 모양뿐 아니라 공연, 항구, 도시의 생활과도 연결돼.", "hotspots": [{"id":"shells","x":42,"y":39,"label":"겹쳐 보이는 지붕 껍질"},{"id":"harbour","x":75,"y":66,"label":"시드니항과 여객선"}], "sourceTitle": "UNESCO 시드니 오페라하우스", "sourceUrl": "https://whc.unesco.org/en/list/166" },
+    { "id": "newzealand_landmark", "zoneId": "new_zealand", "exampleId": "newzealand_auckland", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "오클랜드 스카이 타워", "assetId": "oceania.newzealand.landmark", "summary": "항구와 화산 지형 위로 솟은 도시의 높은 탑을 봐.", "detail": "스카이 타워는 오클랜드 중심부에 있는 전망·통신 시설이야. 전망 공간에서는 항구와 여러 화산 지형이 이어진 도시 모습을 넓게 볼 수 있어.", "discovery": "높은 전망 시설에서는 도시와 바다, 주변 지형의 관계를 한눈에 비교할 수 있어.", "hotspots": [{"id":"deck","x":50,"y":43,"label":"둥근 전망 공간"},{"id":"harbour","x":72,"y":58,"label":"도시 가까운 항구"}], "sourceTitle": "오클랜드 스카이 타워 공식 안내", "sourceUrl": "https://skycityauckland.co.nz/sky-tower/" },
+    { "id": "fiji_landmark", "zoneId": "melanesia", "exampleId": "fiji_viti_levu", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "레부카 역사 항구 도시", "assetId": "oceania.fiji.landmark", "summary": "바닷가 건물과 뒤편의 가파른 산이 가까이 이어져 있어.", "detail": "오발라우섬의 레부카는 피지의 역사 항구 도시야. 낮은 목조 건물과 베란다, 해안 도로가 숲이 우거진 산기슭 아래에 이어져 있어.", "discovery": "항구 도시의 길과 건물 배치는 좁은 해안 평지와 높은 산의 영향을 함께 받아.", "hotspots": [{"id":"waterfront","x":65,"y":67,"label":"항구와 해안 도로"},{"id":"mountain","x":58,"y":25,"label":"도시 바로 뒤의 산"}], "sourceTitle": "UNESCO 레부카 역사 항구 도시", "sourceUrl": "https://whc.unesco.org/en/list/1399" },
+    { "id": "png_landmark", "zoneId": "melanesia", "exampleId": "png_port_moresby", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "포트모르즈비 국회의사당", "assetId": "oceania.png.landmark", "summary": "큰 삼각 지붕과 넓은 계단이 만든 건축의 모양을 살펴봐.", "detail": "파푸아뉴기니 국회의사당은 포트모르즈비에 있는 국가 의회 건물이야. 건축에는 세픽 지역의 하우스 탐바란에서 영감을 받은 큰 지붕 형태가 반영돼 있어.", "discovery": "오늘날의 공공건축도 지역의 건축 전통을 새롭게 해석해 표현할 수 있어.", "hotspots": [{"id":"roof","x":52,"y":29,"label":"높은 삼각 지붕"},{"id":"approach","x":51,"y":71,"label":"시민이 다가가는 넓은 계단"}], "sourceTitle": "파푸아뉴기니 국회 공식 안내", "sourceUrl": "https://old.parliament.gov.pg/about/parliament" },
+    { "id": "palau_landmark", "zoneId": "micronesia", "exampleId": "palau_koror", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "록아일랜드 남부 석호", "assetId": "oceania.palau.landmark", "summary": "버섯처럼 보이는 석회암 섬과 얕은 바다의 색을 살펴봐.", "detail": "팔라우의 록아일랜드 남부 석호에는 숲이 덮인 석회암 섬들과 산호초, 바닷물이 고인 해양 호수가 모여 있어. 자연유산과 문화유산의 가치가 함께 인정된 곳이야.", "discovery": "작은 섬의 모양과 얕은 바다의 깊이는 지질과 산호 생태계의 오랜 변화를 보여 줘.", "hotspots": [{"id":"islets","x":48,"y":43,"label":"버섯 모양 석회암 섬"},{"id":"reef","x":37,"y":67,"label":"밝게 보이는 얕은 산호 바다"}], "sourceTitle": "UNESCO 록아일랜드 남부 석호", "sourceUrl": "https://whc.unesco.org/en/list/1386" },
+    { "id": "fsm_landmark", "zoneId": "micronesia", "exampleId": "fsm_navigation", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "폰페이 난마돌", "assetId": "oceania.fsm.landmark", "summary": "현무암 벽으로 만든 작은 섬과 수로를 관찰해.", "detail": "난마돌은 폰페이섬 앞 얕은 바다에 현무암과 산호를 쌓아 만든 인공 섬과 수로의 유적이야. 의식과 정치의 중심지로 사용됐어.", "discovery": "바다 위의 건축도 돌을 옮기고 쌓는 기술, 수로를 이용한 이동과 연결돼.", "hotspots": [{"id":"basalt","x":63,"y":46,"label":"기둥 모양 현무암을 쌓은 벽"},{"id":"canal","x":45,"y":69,"label":"섬 사이의 수로"}], "sourceTitle": "UNESCO 난마돌", "sourceUrl": "https://whc.unesco.org/en/list/1503/" },
+    { "id": "samoa_landmark", "zoneId": "polynesia", "exampleId": "samoa_apia", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "아피아 시계탑과 해안", "assetId": "oceania.samoa.landmark", "summary": "도시의 교차로와 항구 사이에 선 시계탑을 봐.", "detail": "아피아 시계탑은 도심과 해안 공간을 잇는 잘 알려진 표식이야. 주변 도로와 보행 공간은 아피아 항구의 도시 생활과 이어져 있어.", "discovery": "도시의 랜드마크는 사람들이 길을 찾고 함께 기억하는 장소가 되기도 해.", "hotspots": [{"id":"clock","x":54,"y":39,"label":"네 방향에서 볼 수 있는 시계"},{"id":"harbour","x":75,"y":36,"label":"가까운 아피아 항구"}], "sourceTitle": "사모아 정부 아피아 워터프런트 계획", "sourceUrl": "https://www.mwti.gov.ws/wp-content/uploads/2022/09/Waterfront-Plan-2017-2026.pdf" },
+    { "id": "cook_landmark", "zoneId": "polynesia", "exampleId": "cook_navigation", "category": "landmark", "categoryLabel": "대표 장소 관찰", "title": "아바루아 CICC 교회", "assetId": "oceania.cook.landmark", "summary": "산 앞에 놓인 하얀 산호석 교회와 초록 창을 살펴봐.", "detail": "라로통가 아바루아의 Cook Islands Christian Church는 19세기에 세워진 산호석 교회야. 교회와 묘지, 산이 가까이 이어진 장소로 오늘도 공동체 생활과 연결돼 있어.", "discovery": "건축 재료와 주변 지형을 함께 보면 섬의 환경과 공동체 역사를 살펴볼 수 있어.", "hotspots": [{"id":"coral","x":54,"y":52,"label":"산호석으로 쌓은 벽"},{"id":"mountain","x":73,"y":22,"label":"라로통가의 높은 산"}], "sourceTitle": "Cook Islands Tourism 아바루아 CICC", "sourceUrl": "https://cookislands.travel/avarua-cicc" }
+  ],
+  "comparisonLenses": [
+    { "id": "landform", "label": "땅과 바다 모양", "prompt": "대륙·큰 섬·작은 섬의 크기와 주변 바다를 비교해 봐." },
+    { "id": "daily_connection", "label": "생활과 이동", "prompt": "사람과 물건이 어떻게 이동하고 만나는지 비교해 봐." },
+    { "id": "living_culture", "label": "살아 있는 문화", "prompt": "문화가 오늘의 생활에서 어떻게 이어지는지 비교해 봐." }
+  ],
+  "signals": [
+    { "id": "coral_change", "title": "따뜻해진 바다와 산호 변화", "zoneIds": ["melanesia", "micronesia"], "beforeAssetId": "oceania.viti_levu_video_poster", "afterAssetId": "oceania.viti_levu_polluted_now", "prompt": "같은 해안에서 산호와 물빛이 어떻게 달라졌을까?", "connectionType": "해양 생태계", "connectionNote": "바닷물 온도와 산호의 변화는 생물의 서식지와 해안 생활에 함께 영향을 줄 수 있어.", "sourceTitle": "UNESCO SIDS Pacific highlights", "sourceUrl": "https://www.unesco.org/en/sids/highlights", "needsReview": true },
+    { "id": "marine_debris", "title": "바다를 건너온 쓰레기", "zoneIds": ["australia", "micronesia", "polynesia"], "beforeAssetId": "oceania.micronesia.nature", "afterAssetId": "oceania.signal.debris", "prompt": "해류를 따라 움직인 쓰레기는 어느 해안까지 갈 수 있을까?", "connectionType": "자원과 쓰레기의 이동", "connectionNote": "바다는 국경에서 멈추지 않아서 쓰레기를 줄이고 처리하는 책임도 여러 곳에 이어져 있어.", "sourceTitle": "Pacific Ocean Literacy Resource Repository", "sourceUrl": "https://www.spc.int/updates/blog/blog-post/2025/10/connecting-classrooms-to-the-sea-new-ocean-literacy-resource-hub", "needsReview": true },
+    { "id": "coastal_water", "title": "높아진 물과 거센 날씨", "zoneIds": ["new_zealand", "melanesia", "polynesia"], "beforeAssetId": "oceania.polynesia.nature", "afterAssetId": "oceania.signal.coast", "prompt": "높은 파도와 물이 길·집·공동체 공간에 어떤 변화를 만들까?", "connectionType": "기후와 해안 생활", "connectionNote": "해안 지역의 위험은 위치와 준비 정도에 따라 다르며, 영향을 만든 책임도 모두 같지 않아.", "sourceTitle": "Our Marine Environment 2025", "sourceUrl": "https://environment.govt.nz/publications/our-marine-environment-2025/impacts-of-our-changing-ocean-on-people-society-and-the-economy/", "needsReview": true },
+    { "id": "weather_route", "title": "바람과 날씨가 바꾼 이동", "zoneIds": ["australia", "new_zealand", "polynesia"], "beforeAssetId": "oceania.newzealand.daily", "afterAssetId": "oceania.signal.weather", "prompt": "거센 날씨가 배와 학교, 물건의 이동을 멈추면 누가 먼저 어려워질까?", "connectionType": "바람과 날씨", "connectionNote": "멀리 떨어진 섬의 생활은 항로와 날씨 정보, 안전한 시설을 함께 준비할 때 더 안전해져.", "sourceTitle": "UNESCO SIDS Pacific highlights", "sourceUrl": "https://www.unesco.org/en/sids/highlights", "needsReview": true },
+    { "id": "water_energy", "title": "섬의 물과 에너지", "zoneIds": ["micronesia", "polynesia"], "beforeAssetId": "oceania.micronesia.daily", "afterAssetId": "oceania.signal.water", "prompt": "비가 적거나 운송이 늦어질 때 물과 에너지를 오래 쓰려면 무엇이 필요할까?", "connectionType": "물과 에너지 이용", "connectionNote": "저장 시설과 재생에너지, 수리·운영 인력까지 함께 살펴야 오래 이어질 수 있어.", "sourceTitle": "UNESCO SIDS Pacific highlights", "sourceUrl": "https://www.unesco.org/en/sids/highlights", "needsReview": true }
+  ],
+  "issues": [
+    { "id": "shared_ocean_waste", "name": "바다를 건너는 쓰레기", "signalIds": ["marine_debris"], "heroAssetId": "oceania.signal.debris", "question": "쓰레기가 다른 섬까지 이동할 때 여러 지역은 책임과 해결을 어떻게 나눌까?" },
+    { "id": "reef_and_life", "name": "산호초와 함께 사는 삶", "signalIds": ["coral_change", "water_energy"], "heroAssetId": "oceania.viti_levu_polluted_now", "question": "산호초의 변화와 사람들의 생활을 함께 돌보려면 무엇이 필요할까?" },
+    { "id": "safe_coasts", "name": "변화하는 해안의 안전", "signalIds": ["coastal_water", "weather_route"], "heroAssetId": "oceania.signal.coast", "question": "해안 지역이 안전하게 지내도록 지역사회와 여러 나라는 어떻게 협력할까?" }
   ],
   "perspectives": [
-    {
-      "id": "youth_moana",
-      "role": "청소년",
-      "name": "테아",
-      "quote": "저는 이 섬에서 계속 살고 싶어요. 그런데 어른이 됐을 때 산호가 다 사라져 있으면 어떡하죠? 관광도 좋지만, 우리가 어른이 된 뒤의 바다도 생각해 줬으면 해요.",
-      "concern": "먼 미래의 생태와 삶의 터전"
-    },
-    {
-      "id": "researcher_kim",
-      "role": "연구자",
-      "name": "리사",
-      "quote": "관찰 기록을 보면 산호 백화는 사람 손이 닿는 구역에서 더 빨리 진행되는 경향이 있어요. 보호구역을 넓히면 회복될 수 있지만, 시간이 걸린다는 것도 사실이에요.",
-      "concern": "자료에 근거한 생태계 회복"
-    },
-    {
-      "id": "fisher_rau",
-      "role": "어업 종사자",
-      "name": "마누",
-      "quote": "물고기가 줄면 저희 가족 생계가 흔들려요. 그렇다고 보호구역을 무작정 넓히면 당장 고기잡이할 곳이 좁아지죠. 바다를 지키는 것과 바다로 먹고사는 것, 둘 다 저희 일이에요.",
-      "concern": "생계와 바다 보전의 균형"
-    },
-    {
-      "id": "visitor_dana",
-      "role": "방문객",
-      "name": "다나",
-      "quote": "이 섬이 좋아서 왔는데, 저 같은 방문객이 너무 많으면 섬이 힘들어진다는 것도 알겠어요. 규칙을 알려 주시면 지킬게요. 좋은 방문객이 되는 법을 배우고 싶어요.",
-      "concern": "존중하는 방문 방법"
-    }
+    { "id": "student_litia", "name": "리티아", "role": "비티레부 학생 관찰자", "zoneId": "melanesia", "imageId": "oceania.resident.youth", "icon": "home", "line": "우리 가족의 오늘 생활도 중요하고, 내가 어른이 된 뒤의 바다도 중요해. 청소년도 관찰과 결정에 함께하고 싶어." },
+    { "id": "ranger_mia", "name": "미아", "role": "해안 생태 관찰자", "zoneId": "australia", "imageId": "oceania.researcher", "icon": "leaf", "line": "한 번의 사진만으로 단정하지 말고, 지역 지식과 관찰 기록을 같은 지도에서 오래 살펴보자." },
+    { "id": "navigator_teo", "name": "테오", "role": "항해 학습 모임 친구", "zoneId": "micronesia", "imageId": "oceania.resident.fisher", "icon": "route", "line": "바다는 우리를 떼어 놓기만 하는 곳이 아니야. 바람과 파도, 배움과 도움도 바다를 따라 이어져." },
+    { "id": "planner_ana", "name": "아나", "role": "지역 안전 모임 친구", "zoneId": "polynesia", "imageId": "oceania.resident.elder", "icon": "shield", "line": "주민이 정한 우선순위를 듣고, 큰 책임을 가진 정부와 기업도 비용과 행동을 공정하게 나눠야 해." }
   ],
-  "sim": {
-    "controls": {
-      "tourism": [
-        "적게",
-        "보통",
-        "많이"
-      ],
-      "protection": [
-        "좁게",
-        "보통",
-        "넓게"
-      ],
-      "transport": [
-        "도보·자전거",
-        "전기차",
-        "기존 차량"
-      ]
-    },
-    "effects": {
-      "tourism": {
-        "적게": {
-          "eco": 3,
-          "community": 2,
-          "economy": -3,
-          "culture": 1
-        },
-        "보통": {
-          "eco": 0,
-          "community": 0,
-          "economy": 2,
-          "culture": 1
-        },
-        "많이": {
-          "eco": -4,
-          "community": -2,
-          "economy": 5,
-          "culture": -1
-        }
-      },
-      "protection": {
-        "좁게": {
-          "eco": -3,
-          "community": 0,
-          "economy": 2,
-          "culture": -1
-        },
-        "보통": {
-          "eco": 1,
-          "community": 0,
-          "economy": 0,
-          "culture": 1
-        },
-        "넓게": {
-          "eco": 4,
-          "community": -1,
-          "economy": -1,
-          "culture": 2
-        }
-      },
-      "transport": {
-        "도보·자전거": {
-          "eco": 2,
-          "community": 1,
-          "economy": -2,
-          "culture": 1
-        },
-        "전기차": {
-          "eco": 1,
-          "community": 0,
-          "economy": 1,
-          "culture": 0
-        },
-        "기존 차량": {
-          "eco": -2,
-          "community": 1,
-          "economy": 2,
-          "culture": -1
-        }
-      }
-    },
-    "turns": 3,
-    "turnLabels": [
-      "지금",
-      "몇 달 뒤",
-      "먼 미래"
+  "actionTiers": [
+    { "id": "self", "label": "나와 우리 생활" },
+    { "id": "community", "label": "학교와 지역사회" },
+    { "id": "institution", "label": "정부와 기업" },
+    { "id": "international", "label": "여러 나라의 협력" }
+  ],
+  "actions": [
+    { "id": "reuse_report", "tier": "self", "label": "일회용품을 줄이고 어디서 나온 쓰레기인지 기록하기", "icon": "reuse", "metrics": {"ecosystem":2,"safety":1,"livelihood":1,"culture":1,"feasibility":3,"fairness":1} },
+    { "id": "listen_local", "tier": "self", "label": "여행 전 지역의 출입·촬영·바다 이용 약속 묻기", "icon": "listen", "metrics": {"ecosystem":1,"safety":1,"livelihood":1,"culture":3,"feasibility":3,"fairness":2} },
+    { "id": "school_monitor", "tier": "community", "label": "학교와 주민이 해안 변화를 같은 지도에 꾸준히 기록하기", "icon": "map", "metrics": {"ecosystem":2,"safety":2,"livelihood":1,"culture":2,"feasibility":2,"fairness":2} },
+    { "id": "repair_share", "tier": "community", "label": "수리·재사용·분리 수거 거점을 지역에서 함께 운영하기", "icon": "repair", "metrics": {"ecosystem":2,"safety":1,"livelihood":2,"culture":1,"feasibility":2,"fairness":2} },
+    { "id": "waste_system", "tier": "institution", "label": "기업과 정부가 포장 감축·회수·처리 비용을 책임지기", "icon": "building", "metrics": {"ecosystem":3,"safety":2,"livelihood":2,"culture":1,"feasibility":2,"fairness":3} },
+    { "id": "restore_coast", "tier": "institution", "label": "주민과 함께 산호·맹그로브·해안 서식지를 보호하기", "icon": "reef", "metrics": {"ecosystem":3,"safety":3,"livelihood":2,"culture":2,"feasibility":2,"fairness":2} },
+    { "id": "safe_infrastructure", "tier": "institution", "label": "학교·길·물 시설을 지역 우선순위에 따라 안전하게 바꾸기", "icon": "shield", "metrics": {"ecosystem":1,"safety":3,"livelihood":3,"culture":2,"feasibility":2,"fairness":3} },
+    { "id": "shared_data", "tier": "international", "label": "여러 나라가 해류·날씨·생태 관찰 자료와 경보를 나누기", "icon": "route", "metrics": {"ecosystem":2,"safety":3,"livelihood":2,"culture":1,"feasibility":2,"fairness":2} },
+    { "id": "climate_support", "tier": "international", "label": "온실가스를 줄이고 피해가 큰 지역의 적응 비용을 지원하기", "icon": "hands", "metrics": {"ecosystem":3,"safety":3,"livelihood":2,"culture":2,"feasibility":1,"fairness":3} }
+  ],
+  "proposal": {
+    "title": "바다로 이어진 공동 제안",
+    "prompts": [
+      "우리가 탐험한 오세아니아의 지역들은 __________ 점이 달랐어.",
+      "하지만 여러 지역은 __________을 통해 서로 이어져 있었어.",
+      "우리가 함께 해결하고 싶은 문제는 __________이야.",
+      "우리 생활과 지역사회에서는 __________을 실천할 수 있어.",
+      "정부·기업·여러 나라는 __________을 위해 협력해야 해.",
+      "내가 더 알아보고 싶은 것은 __________이야."
     ],
-    "thresholds": {
-      "good": 55,
-      "warn": 45
-    }
+    "finalQuestion": "지도와 친구들의 말을 다시 떠올려 봐. 네가 더 알아보고 싶은 것을 한 문장으로 적어 줘.",
+    "modelNote": "표시되는 변화는 해결 방법의 장단점을 비교하는 학습용 모형이며 실제 미래를 정확한 수치로 예측하지 않습니다."
   },
-  "feedback": {
-    "collapse": "한 지표가 크게 무너졌어요. 실패가 아니라 발견이에요. 어떤 선택이 이 지표를 계속 깎았는지 되짚어 볼까요? 네 사람의 이야기 중 이 지표와 관련된 목소리를 다시 읽어 보면, 다음 계획에서 무엇을 바꿔야 할지 단서가 보여요.",
-    "balanced": "네 지표가 모두 무너지지 않게 섬의 미래를 이끌었어요! 그리고 중요한 발견 하나. 균형을 이루는 길은 하나가 아니에요. 생태를 앞세우는 길도, 살림살이를 앞세우는 길도, 서로 다른 것을 조금씩 양보하면 균형에 닿을 수 있어요.",
-    "tradeoffNote": "모든 지표를 동시에 다 올리는 선택은 없어요. 진짜 세계의 결정이 어려운 이유죠. 중요한 건 무엇을 얻고 무엇을 양보했는지 스스로 설명할 수 있는 선택이에요."
-  },
-  "learn": {
-    "friend": {
-      "name": "카일라",
-      "imageId": "oceania.youth",
-      "region": "남태평양의 섬(가상)"
-    },
-    "goal": "섬 친구 카일라와 함께 바다를 지키는 선택을 연습해요",
-    "prediction": {
-      "question": "관광객이 많이 오면 섬에 좋기만 할까요?",
-      "options": [
-        "좋기만 해",
-        "나쁘기만 해",
-        "좋은 점과 걱정이 같이 있어"
-      ]
-    },
-    "discoveries": [
-      "한 선택이 환경·생활·경제·문화에 동시에 영향을 줘요.",
-      "지금 좋아 보여도 먼 미래엔 다른 결과가 나올 수 있어요.",
-      "균형을 잡는 방법은 하나가 아니에요."
-    ]
-  }
+  "sources": [
+    { "title": "The Canoe is the People", "url": "https://www.unesco.org/en/links/canoe", "organization": "UNESCO", "verifiedAt": "2026-08-30" },
+    { "title": "UNESCO SIDS Pacific highlights", "url": "https://www.unesco.org/en/sids/highlights", "organization": "UNESCO", "verifiedAt": "2026-08-30" },
+    { "title": "Pacific Ocean Literacy Resource Repository", "url": "https://www.spc.int/updates/blog/blog-post/2025/10/connecting-classrooms-to-the-sea-new-ocean-literacy-resource-hub", "organization": "Pacific Community", "verifiedAt": "2026-08-30" },
+    { "title": "Country and connections", "url": "https://soe.dcceew.gov.au/indigenous/environment/country-and-connections", "organization": "Australian Government", "verifiedAt": "2026-08-30" },
+    { "title": "Our Marine Environment 2025", "url": "https://environment.govt.nz/publications/our-marine-environment-2025/", "organization": "New Zealand Ministry for the Environment", "verifiedAt": "2026-08-30" }
+  ]
 }

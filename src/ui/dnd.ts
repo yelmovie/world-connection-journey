@@ -14,6 +14,9 @@ export function enablePickPlace(opts: {
   items: HTMLElement[];
   zones: HTMLElement[];
   canPlace?: (itemId: string, zoneId: string) => boolean;
+  touchDragThreshold?: number;
+  dropHitSlop?: number;
+  onSelectionChange?: (itemId: string | null) => void;
   onPlace: (itemId: string, zoneId: string) => void;
 }): PickPlaceController {
   let items = opts.items;
@@ -27,9 +30,19 @@ export function enablePickPlace(opts: {
   const canPlace = (itemId: string, zoneId: string) => opts.canPlace?.(itemId, zoneId) ?? true;
 
   const clearSelection = () => {
+    const hadSelection = selected !== null;
     selected?.classList.remove('is-selected');
     selected?.setAttribute('aria-pressed', 'false');
     selected = null;
+    if (hadSelection) opts.onSelectionChange?.(null);
+  };
+
+  const selectItem = (item: HTMLElement) => {
+    clearSelection();
+    selected = item;
+    item.classList.add('is-selected');
+    item.setAttribute('aria-pressed', 'true');
+    opts.onSelectionChange?.(item.dataset.itemId ?? null);
   };
 
   const place = (item: HTMLElement, zone: HTMLElement) => {
@@ -41,12 +54,21 @@ export function enablePickPlace(opts: {
     opts.onPlace(itemId, zoneId);
   };
 
-  const zoneAt = (x: number, y: number): HTMLElement | null => {
+  const zoneAt = (x: number, y: number, slop = 0): HTMLElement | null => {
     for (const z of zones) {
       const r = z.getBoundingClientRect();
       if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return z;
     }
-    return null;
+    if (slop <= 0) return null;
+    let nearest: { zone: HTMLElement; distance: number } | null = null;
+    for (const zone of zones) {
+      const rect = zone.getBoundingClientRect();
+      const dx = Math.max(rect.left - x, 0, x - rect.right);
+      const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+      const distance = Math.hypot(dx, dy);
+      if (distance <= slop && (!nearest || distance < nearest.distance)) nearest = { zone, distance };
+    }
+    return nearest?.zone ?? null;
   };
 
   const onPointerDown = (item: HTMLElement) => (e: PointerEvent) => {
@@ -55,12 +77,18 @@ export function enablePickPlace(opts: {
     dragging = item;
     const startX = e.clientX;
     const startY = e.clientY;
+    const itemRect = item.getBoundingClientRect();
+    const grabX = startX - itemRect.left;
+    const grabY = startY - itemRect.top;
+    const moveThreshold = e.pointerType === 'touch' ? (opts.touchDragThreshold ?? 10) : 6;
+    const dropSlop = opts.dropHitSlop ?? (e.pointerType === 'touch' ? 44 : e.pointerType === 'pen' ? 28 : 18);
     let moved = false;
+    try { item.setPointerCapture(e.pointerId); } catch { /* 오래된 브라우저는 window 이벤트로 계속 추적한다. */ }
 
     const onMove = (ev: PointerEvent) => {
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
-      if (!moved && Math.hypot(dx, dy) < 6) return;
+      if (!moved && Math.hypot(dx, dy) < moveThreshold) return;
       if (!moved) {
         moved = true;
         void audio.playSfx('pickup');
@@ -70,26 +98,27 @@ export function enablePickPlace(opts: {
         document.body.appendChild(ghost);
       }
       if (ghost) {
-        ghost.style.transform = `translate(${ev.clientX - item.offsetWidth / 2}px, ${ev.clientY - 24}px)`;
+        const ghostX = e.pointerType === 'touch' ? ev.clientX - item.offsetWidth / 2 : ev.clientX - grabX;
+        const ghostY = e.pointerType === 'touch' ? ev.clientY - item.offsetHeight - 18 : ev.clientY - grabY;
+        ghost.style.transform = `translate(${ghostX}px, ${ghostY}px)`;
       }
-      zones.forEach((z) => z.classList.toggle('is-over', z === zoneAt(ev.clientX, ev.clientY)));
+      const hoveredZone = zoneAt(ev.clientX, ev.clientY, dropSlop);
+      zones.forEach((z) => z.classList.toggle('is-over', z === hoveredZone));
       ev.preventDefault();
     };
 
     let cleanupDrag = () => undefined;
     const onUp = (ev: PointerEvent) => {
-      const zone = moved ? zoneAt(ev.clientX, ev.clientY) : null;
+      const zone = moved ? zoneAt(ev.clientX, ev.clientY, dropSlop) : null;
       cleanupDrag();
       if (moved) {
         if (zone) place(item, zone);
+        else selectItem(item);
       } else {
         if (selected === item) {
           clearSelection();
         } else {
-          clearSelection();
-          selected = item;
-          item.classList.add('is-selected');
-          item.setAttribute('aria-pressed', 'true');
+          selectItem(item);
           void audio.playSfx('pickup');
         }
       }
@@ -98,7 +127,10 @@ export function enablePickPlace(opts: {
     cleanupDrag = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      try {
+        if (item.hasPointerCapture(e.pointerId)) item.releasePointerCapture(e.pointerId);
+      } catch { /* 포인터가 이미 해제된 경우 */ }
       item.classList.remove('is-dragging');
       zones.forEach((z) => z.classList.remove('is-over'));
       ghost?.remove();
@@ -107,10 +139,12 @@ export function enablePickPlace(opts: {
       if (activeDragCleanup === cleanupDrag) activeDragCleanup = null;
     };
 
+    const onCancel = () => cleanupDrag();
+
     activeDragCleanup = cleanupDrag;
     window.addEventListener('pointermove', onMove, { passive: false });
     window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('pointercancel', onCancel);
   };
 
   const bindItem = (item: HTMLElement) => {
@@ -124,12 +158,7 @@ export function enablePickPlace(opts: {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if (selected === item) clearSelection();
-        else {
-          clearSelection();
-          selected = item;
-          item.classList.add('is-selected');
-          item.setAttribute('aria-pressed', 'true');
-        }
+        else selectItem(item);
       }
     };
     item.addEventListener('keydown', key);

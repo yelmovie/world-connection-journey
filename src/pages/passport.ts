@@ -5,176 +5,479 @@ import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
-import { createGuide, type GuideController } from '../ui/guide';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { cancelJourneyTransition, playJourneyTransition } from '../ui/journeyTransition';
-import { readLearnCard } from '../ui/learnFrame';
 import { showToast } from '../ui/toast';
-import { CONTINENT_IDS, type MissionId } from '../types';
+import { AIRPLANE_CHOICES as PLANES } from '../ui/airplaneFleet';
+import { AVATAR_CHOICES as AVATARS } from '../ui/avatarRoster';
+import { validatePassportNickname } from '../core/passportNickname';
+export { validatePassportNickname } from '../core/passportNickname';
 
 interface CommonContent {
   nickname?: { minLen: number; maxLen: number; banned: string[] };
-  inquiryQuestions?: string[];
 }
 
-const FALLBACK_QUESTIONS = [
-  '친구들의 하루는 무엇이 같고 다를까?',
-  '문화와 자연을 어떻게 지킬까?',
-  '서로 다를 때 어떻게 이야기할까?'
-];
+interface PassportDraft {
+  nickname: string;
+  avatarId: string;
+  airplaneId: string;
+  step: number;
+  maxReached: number;
+}
 
-const STAMP_LABELS: Record<string, string> = {
-  asia: '아시아', europe: '유럽', africa: '아프리카',
-  americas: '아메리카', oceania: '오세아니아', dialogue: '존중 대화'
-};
-
-/** 배움 카드 목록의 미션 명칭 — 지도(SPOTS)와 동일하게 유지한다 */
-const LEARN_TITLES: Record<string, string> = {
-  asia: '아시아', europe: '유럽', africa: '아프리카',
-  americas: '아메리카', oceania: '오세아니아', dialogue: '다름을 잇는 대화'
-};
-
-/** label = 스크린리더용 전체 설명, short = 화면에 보이는 한 줄 라벨(2~4자) */
-const AVATARS = [
-  { saveId: 'a1', assetId: 'char.boy3d', label: '호기심 많은 탐험가', short: '탐험가' },
-  { saveId: 'a2', assetId: 'deco.explorer1', label: '지도를 든 탐험가', short: '지도' },
-  { saveId: 'a3', assetId: 'deco.explorer2', label: '나침반을 든 탐험가', short: '나침반' },
-  { saveId: 'a4', assetId: 'asia.child1', label: '자료를 살피는 어린이', short: '관찰' },
-  { saveId: 'a5', assetId: 'americas.student1', label: '함께 계획하는 학생', short: '계획' },
-  { saveId: 'a6', assetId: 'oceania.youth', label: '바다를 지키는 청소년', short: '바다' }
-] as const;
-
-const PLANES = [
-  { saveId: 'plane1', assetId: 'plane.main', label: '코리 탐험 비행기', short: '코리' },
-  { saveId: 'plane2', assetId: 'plane.explorer', label: '프로펠러 탐험 비행기', short: '프로펠러' },
-  { saveId: 'plane3', assetId: 'plane.jet', label: '빠른 세계 여행 비행기', short: '제트' }
-] as const;
+const PASSPORT_DRAFT_KEY = 'world-connection-journey.passport-draft.v1';
 
 const PASSPORT_CSS = `
-.passport-page { background-position:center;background-size:cover; }
+.passport-page {
+  --passport-panel-inset:clamp(8px,1.3vh,16px);
+  --passport-shell-h:clamp(560px,72dvh,680px);
+  --guide-size:clamp(168px,15vw,220px);
+  background-position:center;background-size:cover;
+  grid-template-rows:auto minmax(0,1fr);
+}
+.passport-page.passport-step-3 { --passport-shell-h:clamp(620px,78dvh,780px); }
+.passport-page > .page-body { grid-row:2;overflow:hidden; }
+/* 안내 캐릭터의 발끝을 두 패널의 하단선에 맞춘다. */
+.passport-page > .guide-wrap {
+  position:absolute;left:0;bottom:max(var(--passport-panel-inset),calc((100dvh - var(--top-bar-h) - var(--passport-shell-h))/2));grid-row:auto;
+  width:min(820px,86vw);height:calc(var(--guide-size) + var(--passport-panel-inset));
+  padding:0 var(--scene-safe);z-index:calc(var(--z-panel) + 2);
+}
+.passport-page > .guide-wrap .guide-mascot-button {
+  left:var(--scene-safe);bottom:var(--passport-panel-inset);
+}
+.passport-page > .guide-wrap .guide-bubble {
+  left:calc(var(--scene-safe) + var(--guide-size) + var(--sp-2));
+  bottom:calc(var(--passport-panel-inset) + var(--sp-2));
+}
+/* 탐험가·비행기 선택을 가리지 않도록 안내 캐릭터는 별명 단계에서만 둔다. */
+.passport-page:not(.passport-step-1) > .guide-wrap { display:none; }
 /* 리본 제목이 화면 위로 잘리지 않게 상단바 높이를 내용에 맞춘다 */
 .passport-page .top-bar { height:auto;min-height:var(--top-bar-h);padding-block:var(--sp-2); }
-.passport-body { padding-block:var(--sp-2); }
+.passport-body { max-width:none;padding:var(--passport-panel-inset) clamp(18px,2vw,38px);display:grid;align-items:center; }
 /* 셸은 배경이 그대로 보이도록 투명. 패널은 두 개만(§7) */
 .passport-shell {
-  width:min(1180px,100%);margin:0 auto;
-  display:grid;grid-template-columns:minmax(0,1.32fr) minmax(220px,.68fr);
-  gap:var(--scene-gap);align-items:start;
+  width:min(1540px,100%);height:min(var(--passport-shell-h),calc(100dvh - var(--top-bar-h) - var(--passport-panel-inset) - var(--passport-panel-inset)));min-height:0;margin:0 auto;
+  display:grid;grid-template-columns:minmax(0,970px) minmax(440px,560px);
+  gap:clamp(18px,1.4vw,28px);align-items:stretch;justify-content:center;
 }
 /* §7 반투명 패널 — 배경 일러스트가 비쳐 보이게 */
 .passport-shell .scene-board {
-  background:rgba(255,252,240,.9);backdrop-filter:blur(6px);
-  border-color:rgba(227,211,166,.9);
+  background:rgba(255,252,240,.5);backdrop-filter:blur(4px) saturate(1.03);
+  border-color:rgba(255,255,255,.72);box-shadow:0 14px 34px rgba(7,37,62,.16);
 }
-.passport-form { min-width:0;display:grid;gap:var(--sp-2);padding:var(--sp-3);align-content:start; }
-.passport-section { min-width:0; }
-.passport-label { display:block;margin-bottom:4px;font-weight:900;color:var(--c-navy);font-size:var(--fs-small);font-family:var(--font-head); }
-.passport-nickname { width:100%;min-height:48px;padding:8px 12px;border:2px solid var(--c-line);border-radius:var(--radius-s);font-size:var(--fs-body);background:#fff; }
-/* 별명은 라벨을 같은 줄에 둬서 한 행을 아낀다 */
-.passport-nick-row { display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--sp-2);align-items:center; }
-.passport-nick-row .passport-label { margin-bottom:0;white-space:nowrap; }
-.passport-nick-row #nick-msg { grid-column:1/-1; }
+.passport-form {
+  min-width:0;min-height:0;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);
+  gap:var(--sp-3);padding:clamp(14px,1.2vw,22px);align-content:stretch;
+}
+.passport-stepper { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2); }
+.passport-step-chip {
+  min-width:0;min-height:56px;padding:8px 12px;border:2px solid var(--c-line);border-radius:var(--radius-m);
+  background:rgba(255,255,255,.82);color:var(--c-ink-soft);font-size:max(18px,var(--fs-small));font-weight:800;
+}
+.passport-step-chip[aria-current="step"] { border-color:var(--c-violet);background:#fff;color:var(--c-violet-ink);box-shadow:var(--shadow-card); }
+.passport-step-chip.is-done::before { content:'✓ ';color:var(--c-success-ink); }
+.passport-step-chip:disabled { opacity:.48;cursor:not-allowed; }
+.passport-section { min-width:0;min-height:0;display:grid;gap:var(--sp-3);align-content:center; }
+.passport-section[data-passport-step="2"],
+.passport-section[data-passport-step="3"] { grid-template-rows:auto auto minmax(0,1fr);align-content:stretch; }
+.passport-section[hidden] { display:none!important; }
+.passport-label { display:block;margin-bottom:4px;font-weight:900;color:var(--c-navy);font-size:var(--fs-body);font-family:var(--font-head);line-height:1.45; }
+.passport-nickname {
+  width:100%;min-height:76px;padding:12px 20px;border:2px solid rgba(242,193,78,.9);
+  border-radius:var(--radius-m);font-size:clamp(24px,1.65vw,32px);background:rgba(255,255,255,.76);
+  box-shadow:0 8px 24px rgba(12,42,68,.1);backdrop-filter:blur(5px);
+}
+.passport-nick-row {
+  width:min(920px,96%);min-height:0;justify-self:center;align-self:center;
+  padding:clamp(22px,4vh,56px) clamp(8px,1.2vw,18px);
+  padding-left:clamp(176px,17vw,230px);
+}
 /* 빈 상태에서 테두리만 남은 빨간 박스가 보이지 않게 */
 .passport-form #nick-msg[hidden] { display:none !important; }
-.passport-form #nick-msg { padding:var(--sp-2) var(--sp-3);margin-top:6px;font-size:var(--fs-small); }
-.passport-choice-row { display:grid;gap:var(--sp-2); }
-.passport-avatars { grid-template-columns:repeat(6,minmax(0,1fr)); }
-.passport-planes { grid-template-columns:repeat(3,minmax(0,1fr)); }
-/* 그림이 주인공, 라벨은 한 줄 (.card-visual 규격) */
+.passport-form #nick-msg { padding:var(--sp-2) var(--sp-3);margin-top:6px;font-size:max(18px,var(--fs-small)); }
+.passport-choice-row { display:grid;gap:var(--sp-3); }
+.passport-avatars {
+  grid-template-columns:repeat(6,minmax(0,1fr));align-self:center;
+  gap:clamp(10px,1vw,16px);
+}
+.passport-planes {
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-template-rows:repeat(2,minmax(0,1fr));
+  min-height:0;gap:clamp(10px,1vw,16px);padding:4px;overflow:visible;align-self:stretch;
+}
+.passport-choice-hint { margin:0;color:var(--c-ink-soft);font-size:max(18px,var(--fs-small));font-weight:750;line-height:1.35; }
 .passport-choice {
-  position:relative;min-width:48px;padding:5px 4px;border:3px solid transparent;border-radius:14px;
-  background:#fff;box-shadow:var(--shadow-card);overflow:hidden;
+  position:relative;min-width:64px;min-height:210px;padding:10px;border:3px solid transparent;border-radius:var(--radius-m);
+  display:grid;grid-template-rows:minmax(0,1fr) auto;align-items:end;
+  background:rgba(255,255,255,.6)!important;box-shadow:var(--shadow-card);overflow:hidden;
+  backdrop-filter:blur(6px) saturate(1.04);
 }
 .passport-choice img { width:100%;object-fit:contain;aspect-ratio:auto; }
-.passport-avatar img { height:min(clamp(56px,7.2vw,104px),11vh);object-fit:cover;border-radius:10px; }
-.passport-plane img { height:min(clamp(48px,6vw,88px),9vh); }
-.passport-choice .label { font-size:var(--fs-small);color:var(--c-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%; }
+.passport-avatar img { height:clamp(140px,9vw,176px);object-fit:contain;border-radius:var(--radius-s); }
+.passport-plane {
+  min-height:0;padding:8px 8px 10px;
+  grid-template-rows:minmax(0,1fr) auto;align-items:stretch;
+}
+.passport-plane img {
+  width:100%;height:100%;min-height:0;object-fit:contain;border-radius:var(--radius-s);
+  background:transparent;mix-blend-mode:multiply;
+}
+.passport-choice .label {
+  display:grid;place-items:center;min-width:0;min-height:2em;max-width:100%;
+  color:var(--c-navy);font-size:max(18px,var(--fs-small));line-height:1.2;text-align:center;
+  white-space:normal;overflow:visible;text-overflow:clip;word-break:keep-all;overflow-wrap:anywhere;
+}
+.passport-choice .choice-name { display:block;font-weight:900; }
+.passport-plane .label {
+  min-height:42px;padding:6px 2px 2px;align-self:stretch;align-content:center;
+  font-size:clamp(21px,1.35vw,27px);line-height:1.2;
+}
 .passport-choice[aria-checked="true"] { border-color:var(--c-violet);box-shadow:0 0 0 3px rgba(108,76,232,.2),var(--shadow-card); }
 .passport-choice[aria-checked="true"]::after {
-  content:'✓';position:absolute;right:4px;top:4px;width:24px;height:24px;border-radius:50%;
-  display:grid;place-items:center;background:var(--c-violet);color:#fff;font-size:15px;font-weight:900;
+  content:'✓';position:absolute;right:6px;top:6px;width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;background:var(--c-violet);color:#fff;font-size:20px;font-weight:900;
 }
-.passport-inquiries { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2); }
-.passport-inquiry { min-height:52px;display:flex;align-items:center;gap:7px;padding:6px 8px;border:2px solid var(--c-line);border-radius:12px;background:#fff;font-size:var(--fs-small);font-weight:700;cursor:pointer; }
-.passport-inquiry input { width:24px;height:24px;flex:0 0 auto;accent-color:var(--c-violet); }
-/* 미리보기 — 고른 캐릭터를 크게 보여 준다(§7 최소 clamp(120px,14vw,240px)) */
-.passport-preview { position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:var(--sp-3); }
-.passport-hero { width:min(clamp(120px,14vw,240px),15vh);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(25,50,77,.3)); }
-.passport-cover { width:min(120px,44%);object-fit:contain;filter:drop-shadow(0 6px 14px rgba(25,50,77,.25)); }
-.passport-emblem { position:absolute;right:6px;top:6px;width:min(56px,22%);filter:drop-shadow(0 5px 12px rgba(25,50,77,.25)); }
-.passport-stamps { grid-template-columns:repeat(6,minmax(0,1fr));width:100%; }
-.passport-stamps .stamp-collection__slot { min-width:0;width:100%;aspect-ratio:auto;height:clamp(34px,5.5vh,52px); }
-/* 도장마다 대륙명 라벨 — "빈 네모"가 아니라 "채울 곳"으로 읽히게 */
-.passport-stamp-cell { display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0; }
-.passport-stamp-cell .stamp-name {
-  font-size:calc(var(--fs-small)*.8);font-weight:800;color:var(--c-ink-soft);
-  white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+/* 내가 직접 만든 여권 — 원화의 빈 칸에 고른 탐험가와 비행기를 실시간으로 합성한다. */
+.passport-preview {
+  position:relative;min-width:0;min-height:0;height:100%;
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-content:stretch;justify-items:center;
+  gap:8px;padding:clamp(14px,1.3vw,24px);overflow:visible;
+  background:rgba(239,250,252,.48)!important;
 }
-/* 배움 카드 목록 — 미션마다 만난 친구와 한 줄 발견이 쌓인다. 한 줄 압축형(전문은 미션·수료증에서) */
-.passport-learn { width:100%;display:flex;flex-direction:column;gap:5px; }
-.passport-learn .learn-card-row { padding:4px 10px; }
-.passport-learn .learn-card-row img { width:28px;height:28px; }
-.passport-learn-title { align-self:flex-start;margin-bottom:-2px; }
-.learn-card-row .learn-card-main { display:flex;align-items:baseline;gap:6px;min-width:0;text-align:left; }
-.learn-card-row .learn-card-title { font-family:var(--font-head);color:var(--c-navy);line-height:1.2;white-space:nowrap;flex-shrink:0; }
-.learn-card-row .learn-card-line {
-  color:var(--c-ink-soft);font-weight:600;font-size:calc(var(--fs-small)*.9);line-height:1.25;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+.passport-preview-heading {
+  width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;
+  position:relative;z-index:2;
 }
-/* 초광폭에서 CTA가 오른쪽 구석에 고립되지 않게 — 하단바 내용을 콘텐츠 폭에 맞춰 중앙 정렬 */
-.passport-dock { grid-template-columns:minmax(0,1fr) auto;padding-inline:max(var(--scene-safe),calc((100% - 1180px) / 2)); }
-.passport-dock .btn-primary { min-width:200px; }
-.passport-privacy { color:#fff;font-size:var(--fs-small);font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.55); }
+.passport-heading-copy { min-width:0;display:grid;justify-items:center;gap:2px; }
+.passport-maker-kicker {
+  display:inline-flex;align-items:center;min-height:28px;padding:3px 14px;border-radius:999px;
+  background:#eaf8f7;color:#186b6c;border:2px dashed rgba(24,107,108,.32);
+  font-size:max(16px,var(--fs-small));font-weight:900;letter-spacing:.02em;
+}
+.passport-preview__title {
+  max-width:100%;margin:0;color:var(--c-navy);font-family:var(--font-head);
+  font-size:clamp(32px,2.5vw,46px);line-height:1.12;text-align:center;word-break:keep-all;
+}
+.passport-advance {
+  width:auto;min-width:clamp(168px,11.5vw,220px);max-width:230px;min-height:54px;
+  padding:10px 16px;font-size:clamp(18px,1.15vw,22px);line-height:1.15;white-space:normal;
+}
+.passport-book {
+  position:relative;align-self:center;width:min(620px,118%);max-width:none;aspect-ratio:3/2;isolation:isolate;
+  filter:drop-shadow(0 14px 26px rgba(8,35,58,.2));
+}
+.passport-book-art { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:0; }
+.passport-book-slot { position:absolute;z-index:1;display:grid;place-items:center;pointer-events:none; }
+.passport-explorer-slot { left:14.2%;top:14.2%;width:30.4%;height:60.5%; }
+.passport-plane-slot {
+  left:54.7%;top:16.5%;width:27.5%;height:41.5%;border-radius:50%;overflow:hidden;
+  border:3px solid rgba(255,255,255,.94);background:radial-gradient(circle at 50% 38%,#fff 0 34%,#e9f8ff 68%,#bfe7f5 100%);
+  box-shadow:0 6px 16px rgba(25,50,77,.2);
+}
+.passport-hero {
+  width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 5px 8px rgba(25,50,77,.28));
+  transform-origin:50% 100%;animation:passport-arrive .42s cubic-bezier(.2,.85,.35,1.2) both;
+}
+.passport-plane-preview {
+  width:100%;height:100%;object-fit:cover;border-radius:50%;clip-path:circle(49% at 50% 50%);
+  filter:drop-shadow(0 5px 8px rgba(25,50,77,.24));
+  animation:passport-arrive .42s cubic-bezier(.2,.85,.35,1.2) both;
+}
+.passport-book-label {
+  position:absolute;z-index:2;margin:0;display:grid;justify-items:center;align-content:center;min-width:0;
+  padding:3px 8px;border-radius:12px;background:rgba(255,253,245,.91);border:1px solid rgba(29,74,111,.16);
+  box-shadow:0 3px 9px rgba(25,50,77,.12);color:var(--c-navy);text-align:center;line-height:1.08;
+}
+.passport-book-label span { font-size:18px;font-weight:800;color:#397277; }
+.passport-book-label strong { max-width:100%;font-size:clamp(18px,1.15vw,20px);font-weight:950;white-space:normal;word-break:keep-all; }
+.passport-avatar-label { left:16%;bottom:19.2%;width:27%; }
+.passport-plane-label { left:57%;top:58.5%;width:24%; }
+.passport-owner-mark {
+  display:none;
+}
+.passport-selected-label {
+  width:100%;max-width:100%;min-height:1.6em;margin:0;color:var(--c-navy);font-size:max(18px,var(--fs-small));font-weight:900;
+  text-align:center;line-height:1.45;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
+}
+.passport-selected-label span { display:block; }
+@keyframes passport-arrive { from { opacity:0;transform:translateY(6px) scale(.94); } to { opacity:1;transform:none; } }
 @media (max-width:1100px), (max-height:620px) {
-  .passport-shell { grid-template-columns:minmax(0,1.4fr) minmax(190px,.6fr);gap:var(--sp-2); }
+  .passport-shell { grid-template-columns:minmax(0,1.55fr) minmax(300px,.78fr);gap:var(--sp-2); }
   .passport-body { padding-block:4px; }
-  .passport-form { gap:4px;padding:6px; }
+  .passport-form { gap:var(--sp-3);padding:var(--sp-3); }
   .passport-label { margin-bottom:2px;line-height:1.15; }
-  .passport-nickname { min-height:44px;padding:6px 10px; }
-  .passport-choice { padding:3px; }
-  .passport-avatar img { height:min(clamp(42px,5.4vw,64px),7.4vh); }
-  .passport-plane img { height:min(clamp(38px,4.8vw,58px),6.4vh); }
-  .passport-inquiry { font-size:15px;line-height:1.2; }
-  .passport-inquiry { min-height:44px;padding:3px 6px; }
-  .passport-preview { padding:var(--sp-2);gap:6px; }
-  .passport-cover { width:min(76px,34%); }
-  .passport-learn { gap:4px; }
-  .passport-learn .learn-card-row { padding:3px 8px; }
-  .passport-learn .learn-card-row img { width:26px;height:26px; }
-  .passport-learn .learn-card-line { -webkit-line-clamp:1; }
-  .passport-dock { padding-block:4px; }
-  .passport-dock .btn-primary { min-width:170px; }
-}
-/* 낮은 화면: 장식(여권 표지)을 접고 배움 카드가 스크롤 없이 들어오게 */
-@media (max-height:949px) {
-  .passport-cover { display:none; }
+  .passport-nickname { min-height:56px;padding:8px 12px; }
+  .passport-nick-row { padding-left:clamp(150px,17vw,188px); }
+  .passport-choice { min-height:142px;padding:6px; }
+  .passport-avatar img { height:92px; }
+  .passport-plane { min-height:0;padding:7px 7px 9px;grid-template-rows:minmax(0,1fr) auto; }
+  .passport-plane img { height:100%; }
+  .passport-plane .label { min-height:34px;padding-top:4px;font-size:18px; }
+  .passport-planes { gap:7px; }
+  .passport-preview { padding:10px; }
+  .passport-book { width:min(430px,112%); }
+  .passport-preview-heading { gap:6px; }
+  .passport-advance { min-width:128px;max-width:148px;min-height:48px;padding:7px 9px;font-size:18px; }
 }
 @media (max-height:620px) {
-  .passport-learn-title { display:none; }
-  .passport-hero { width:min(clamp(96px,10vw,160px),14vh); }
-  .passport-preview { gap:4px; }
-  .passport-learn { gap:3px; }
-  .passport-learn .learn-card-row { padding:2px 8px; }
-  .passport-learn .learn-card-row img { width:22px;height:22px; }
-  .passport-stamp-cell .stamp-name { font-size:calc(var(--fs-small)*.72); }
+  .passport-page > .page-body { overflow-y:auto; }
+  .passport-shell { height:auto;min-height:560px; }
+  .passport-page > .guide-wrap { bottom:0; }
+  .passport-form,.passport-preview { height:auto;min-height:560px; }
+  .passport-preview__title { font-size:clamp(22px,2vw,30px); }
+  .passport-selected-label { min-height:0;line-height:1.25; }
 }
 /* 좁은 화면: 여권·도장 영역을 아래로 접는다(단일 컬럼) */
-@media (max-width:900px) {
-  .passport-shell { grid-template-columns:1fr; }
-  .passport-preview { flex-direction:row;flex-wrap:wrap;justify-content:center; }
-  .passport-stamps { grid-template-columns:repeat(6,minmax(0,1fr));flex:1 1 240px; }
+@media (max-width:760px) {
+  .passport-page > .page-body { overflow-y:auto; }
+  .passport-shell { grid-template-columns:1fr;height:auto; }
+  .passport-preview { width:min(620px,100%);justify-self:center; }
+  .passport-preview-heading { grid-template-columns:1fr; }
+  .passport-advance { width:min(240px,100%);max-width:100%; }
 }
 @media (max-width:600px) {
   .passport-avatars { grid-template-columns:repeat(3,1fr); }
-  .passport-inquiries { grid-template-columns:1fr; }
-  .passport-privacy { display:none; }
-  .passport-dock { grid-template-columns:1fr; }
-  .passport-dock .btn-primary { width:100%;min-width:0; }
+  .passport-planes { grid-template-columns:repeat(2,1fr);max-height:300px; }
+}
+
+/* 2026 passport journey redesign: three immersive travel-preparation scenes. */
+.passport-page {
+  --passport-footer-h:86px;--passport-route-h:66px;
+  background-position:center 42%;
+}
+.passport-page > .guide-wrap { display:none!important; }
+.passport-page > .page-body { overflow:hidden; }
+.passport-body { padding:clamp(8px,1.4vh,16px) clamp(14px,2vw,36px); }
+.passport-shell {
+  position:relative;width:min(1480px,100%);height:calc(100% - clamp(16px,2.8vh,32px));max-height:820px;
+  display:block;margin:0 auto;
+}
+.passport-form {
+  position:relative;width:100%;height:100%;min-height:0;padding:0;
+  display:grid;grid-template-rows:var(--passport-route-h) minmax(0,1fr) var(--passport-footer-h);gap:0;
+  border:1px solid rgba(255,255,255,.76);border-radius:30px;
+  background:linear-gradient(135deg,#e8f8fd,#fff8e0);
+  box-shadow:0 24px 54px rgba(8,35,58,.26);overflow:hidden;
+  backdrop-filter:none;
+}
+.passport-stepper {
+  position:relative;z-index:4;width:min(720px,calc(100% - 180px));height:100%;margin:0 auto;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;align-items:center;
+}
+.passport-stepper::before {
+  content:'';position:absolute;left:16.66%;right:16.66%;top:50%;height:3px;
+  background:rgba(39,76,105,.24);transform:translateY(-50%);z-index:-1;
+}
+.passport-step-chip {
+  justify-self:center;width:auto;min-width:132px;min-height:48px;padding:7px 17px;
+  border:2px solid rgba(40,78,109,.22);border-radius:999px;background:rgba(245,250,250,.9);
+  color:#38566d;font-family:var(--font-head);font-size:clamp(17px,1.25vw,21px);font-weight:900;
+  box-shadow:0 4px 10px rgba(13,45,68,.08);
+}
+.passport-step-chip[aria-current='step'] {
+  border-color:#f2c14e;background:#173653;color:#fff;box-shadow:0 0 0 4px rgba(242,193,78,.24),0 7px 16px rgba(13,45,68,.2);
+}
+.passport-step-chip.is-done { border-color:#63a88c;background:#e5f6ee;color:#245c49; }
+.passport-step-chip.is-done::before { content:'✓';margin-right:7px; }
+.passport-step-chip:disabled { opacity:.58; }
+.passport-scenes { position:relative;min-height:0;overflow:hidden; }
+.passport-section {
+  position:absolute;inset:0;min-width:0;min-height:0;padding:clamp(12px,2vh,24px) clamp(22px,3.5vw,54px);
+  display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(10px,1.6vh,18px);align-content:stretch;
+}
+.passport-section[hidden] { display:none!important; }
+.passport-section:not([hidden]) { animation:passport-scene-in .28s ease-out both; }
+@keyframes passport-scene-in { from { opacity:.35;transform:translateX(10px); } to { opacity:1;transform:none; } }
+.passport-scene-heading { text-align:center;align-self:start; }
+.passport-scene-kicker {
+  display:inline-flex;align-items:center;min-height:28px;padding:3px 13px;border-radius:999px;
+  background:#e6f4ef;color:#22634f;font-size:clamp(15px,1.05vw,18px);font-weight:900;
+}
+.passport-scene-heading h1 {
+  margin:5px 0 2px;color:#173653;font-family:var(--font-head);font-size:clamp(28px,2.45vw,44px);line-height:1.08;
+}
+.passport-scene-heading p { margin:0;color:#486175;font-size:clamp(17px,1.15vw,21px);font-weight:750; }
+.passport-actions {
+  position:relative;z-index:5;display:grid;grid-template-columns:190px minmax(0,1fr) 310px;gap:18px;align-items:center;
+  padding:12px clamp(18px,2.2vw,34px);border-top:1px solid rgba(45,78,102,.16);
+  background:rgba(241,247,246,.9);box-shadow:0 -8px 22px rgba(19,52,76,.08);
+}
+.passport-actions .btn { min-height:58px;font-size:clamp(18px,1.2vw,22px);font-weight:950; }
+.passport-back-step { color:#294c65;background:rgba(255,255,255,.84); }
+.passport-back-step[hidden] { visibility:hidden;display:block!important; }
+.passport-advance { width:100%;max-width:none;min-height:58px;white-space:normal; }
+.passport-step-status { margin:0;text-align:center;color:#31556d;font-size:clamp(17px,1.1vw,20px);font-weight:900; }
+.passport-peek {
+  position:absolute;right:24px;top:14px;z-index:8;width:138px;min-height:58px;padding:5px 10px;
+  display:grid;grid-template-columns:42px 1fr;gap:8px;align-items:center;border:2px solid rgba(242,193,78,.8);
+  border-radius:16px;background:#173653;color:#fff;box-shadow:0 8px 18px rgba(8,35,58,.22);
+  font-size:16px;font-weight:900;
+}
+.passport-peek img { width:42px;height:48px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.2)); }
+.passport-preview {
+  position:absolute;right:20px;top:78px;z-index:12;width:min(530px,calc(100% - 40px));height:auto;min-height:0;
+  padding:16px;border:2px solid rgba(255,255,255,.82);border-radius:24px;
+  background:rgba(225,244,248,.96)!important;box-shadow:0 24px 50px rgba(6,31,53,.36);
+  display:grid;grid-template-rows:auto auto auto;gap:8px;justify-items:center;
+}
+.passport-preview[hidden] { display:none!important; }
+.passport-preview-heading { width:100%;display:grid;grid-template-columns:1fr auto;align-items:center; }
+.passport-preview-heading .passport-heading-copy { justify-items:start; }
+.passport-preview__title { font-size:clamp(24px,1.8vw,32px);text-align:left; }
+.passport-preview-close { width:46px;height:46px;padding:0;border-radius:50%;font-size:26px; }
+.passport-preview .passport-book { width:min(480px,100%); }
+.passport-preview .passport-selected-label { font-size:18px; }
+.passport-preview-scrim { position:absolute;inset:0;z-index:10;background:rgba(8,32,54,.18);border:0; }
+.passport-preview-scrim[hidden] { display:none!important; }
+
+.passport-nick-row { width:auto;justify-self:stretch;align-self:stretch;padding:clamp(12px,2vh,22px) clamp(24px,4vw,64px); }
+.passport-station {
+  min-height:0;display:grid;grid-template-columns:minmax(240px,.7fr) minmax(430px,1.15fr) minmax(250px,.72fr);
+  gap:clamp(18px,3vw,48px);align-items:center;
+}
+.passport-station-guide { position:relative;height:100%;min-height:260px;display:grid;place-items:end center; }
+.passport-station-guide img { width:min(260px,90%);height:min(380px,100%);object-fit:contain;object-position:center bottom;filter:drop-shadow(0 12px 16px rgba(22,50,72,.22)); }
+.passport-guide-bubble {
+  position:absolute;left:0;top:7%;width:min(240px,94%);margin:0;padding:14px 18px;border-radius:20px 20px 20px 6px;
+  background:#fffdf5;color:#24455e;box-shadow:0 9px 20px rgba(18,51,73,.17);font-size:clamp(17px,1.18vw,21px);font-weight:850;line-height:1.35;
+}
+.passport-tag-wrap { align-self:center; }
+.passport-label { margin:0 0 10px;color:#173653;font-size:clamp(19px,1.3vw,23px); }
+.passport-luggage-tag {
+  position:relative;padding:26px 30px 24px;border:3px solid #e8b940;border-radius:18px 34px 34px 18px;
+  background:linear-gradient(145deg,#fffefa,#f7eed2);box-shadow:0 15px 30px rgba(28,54,72,.16);
+}
+.passport-luggage-tag::before { content:'';position:absolute;right:18px;top:18px;width:16px;height:16px;border:4px solid #d8c99a;border-radius:50%;background:#fff; }
+.passport-nickname {
+  width:calc(100% - 4px);min-height:74px;padding:11px 18px;border:0;border-bottom:4px solid #6e9f9a;border-radius:4px;
+  background:rgba(255,255,255,.7);box-shadow:none;font-size:clamp(26px,2vw,36px);font-weight:950;text-align:center;
+}
+.passport-nickname:focus { outline:4px solid rgba(71,119,217,.28); }
+.passport-nickname-meta { display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:#516879;font-size:17px;font-weight:800; }
+#nick-msg { margin:10px 0 0; }
+.passport-cover-live { position:relative;display:grid;place-items:center;justify-self:center;width:min(255px,100%);aspect-ratio:.75; }
+.passport-cover-live img { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 16px 22px rgba(8,35,58,.28)); }
+.passport-cover-name { position:relative;z-index:1;width:58%;margin-top:27%;color:#f6d76f;text-align:center;font-family:var(--font-head);font-size:clamp(17px,1.35vw,24px);line-height:1.15;word-break:keep-all; }
+
+.passport-selection-layout { min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 126px;gap:10px;touch-action:pan-y; }
+.passport-selector-stage { min-height:0;display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:12px;align-items:center; }
+.passport-arrow {
+  width:64px;height:64px;padding:0;border:2px solid rgba(38,75,103,.22);border-radius:50%;background:rgba(255,255,255,.88);
+  display:grid;place-items:center;color:#173653;box-shadow:0 7px 16px rgba(12,43,65,.15);
+}
+.passport-arrow svg { width:30px;height:30px;stroke:currentColor;stroke-width:3;fill:none; }
+.passport-feature {
+  position:relative;height:100%;min-height:260px;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(320px,1fr);
+  align-items:center;gap:clamp(20px,4vw,70px);padding:8px clamp(14px,3vw,46px);
+}
+.passport-stage-art { position:relative;align-self:stretch;min-height:0;display:grid;place-items:center;isolation:isolate; }
+.passport-stage-art::before {
+  content:'';position:absolute;width:min(340px,82%);aspect-ratio:1;border:2px dashed rgba(41,105,113,.36);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.76) 0 38%,rgba(190,227,222,.45) 39% 58%,transparent 59%);z-index:-1;
+}
+.passport-avatar-stage-img { width:min(330px,90%);height:100%;max-height:390px;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 14px 16px rgba(16,48,69,.24)); }
+.passport-stage-copy { align-self:center;min-width:0; }
+.passport-stage-role { margin:0;color:#39706c;font-size:clamp(18px,1.25vw,23px);font-weight:900; }
+.passport-stage-name { margin:4px 0 12px;color:#173653;font-family:var(--font-head);font-size:clamp(38px,3vw,58px);line-height:1; }
+.passport-stage-line { margin:0;max-width:560px;padding:16px 20px;border-radius:22px 22px 22px 6px;background:#fffdf7;color:#27485e;box-shadow:0 10px 22px rgba(15,48,71,.15);font-size:clamp(19px,1.35vw,24px);font-weight:800;line-height:1.4;word-break:keep-all; }
+.passport-choice-row { width:min(720px,100%);justify-self:center;display:flex;gap:10px;align-items:flex-start;justify-content:flex-start;min-width:0;padding:4px 8px;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity; }
+.passport-choice {
+  flex:0 0 92px;width:92px;min-width:92px;min-height:100px;height:100px;padding:5px;border:3px solid transparent;border-radius:16px;
+  display:grid;grid-template-rows:minmax(0,1fr) auto;background:rgba(255,255,255,.76)!important;box-shadow:0 5px 12px rgba(11,43,65,.12);overflow:hidden;scroll-snap-align:center;
+}
+.passport-choice img,.passport-avatar img,.passport-plane img { width:100%;height:66px;object-fit:contain;border-radius:10px;background:transparent; }
+.passport-choice .label,.passport-plane .label { min-height:24px;padding:0;font-size:15px;line-height:1.05; }
+.passport-choice-item { flex:0 0 104px;width:104px;display:grid;grid-template-rows:94px 24px;gap:4px;align-items:start;scroll-snap-align:center; }
+.passport-choice-item .passport-avatar { width:100%;min-width:0;height:94px;min-height:94px;padding:2px;display:block;overflow:visible;scroll-snap-align:unset; }
+.passport-choice-item .passport-avatar img { width:100%;height:88px;object-fit:contain;object-position:center bottom; }
+.passport-choice-name { display:block;color:#173653;font-family:var(--font-head);font-size:15px;font-weight:900;line-height:1.2;text-align:center;white-space:nowrap; }
+.passport-choice[aria-checked='true'] { border-color:#f2c14e;background:#fff!important;box-shadow:0 0 0 3px rgba(242,193,78,.24),0 8px 16px rgba(11,43,65,.16);transform:translateY(-3px) scale(1.04);filter:brightness(1.05); }
+.passport-choice-item .passport-avatar[aria-checked='true'] { transform:none; }
+.passport-choice[aria-checked='true']::after { content:'✓';right:4px;top:4px;width:25px;height:25px;background:#26705a;font-size:16px; }
+.passport-plane-feature { grid-template-columns:minmax(330px,1fr) minmax(300px,.85fr); }
+.passport-plane-stage-img { --plane-stage-lift:clamp(24px,4vh,38px);width:min(500px,90%);height:min(320px,84%);object-fit:contain;object-position:center;filter:drop-shadow(0 16px 18px rgba(17,49,72,.24));transform:translateY(calc(-1 * var(--plane-stage-lift)));animation:passport-plane-float 3.6s ease-in-out infinite; }
+.passport-plane-stage .passport-stage-art::before { width:min(500px,92%);aspect-ratio:1.7;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.9),rgba(185,224,239,.5) 58%,transparent 60%); }
+@keyframes passport-plane-float { 0%,100% { transform:translateY(calc(2px - var(--plane-stage-lift))) rotate(-.5deg); } 50% { transform:translateY(calc(-7px - var(--plane-stage-lift))) rotate(.5deg); } }
+
+@media (max-width:1100px) {
+  .passport-page { --passport-footer-h:76px;--passport-route-h:58px; }
+  .passport-shell { height:min(710px,calc(100dvh - var(--top-bar-h) - 12px)); }
+  .passport-station { grid-template-columns:190px minmax(360px,1fr) 200px;gap:15px; }
+  .passport-guide-bubble { left:0;top:2%;width:100%;font-size:16px; }
+  .passport-station-guide img { width:185px; }
+  .passport-actions { grid-template-columns:150px 1fr 270px;padding-block:8px; }
+  .passport-actions .btn { min-height:52px; }
+  .passport-selection-layout { grid-template-rows:minmax(0,1fr) 112px; }
+  .passport-feature { min-height:210px; }
+  .passport-avatar-stage-img { max-height:285px; }
+  .passport-choice { flex-basis:82px;width:82px;min-width:82px;height:82px;min-height:82px; }
+  .passport-choice img,.passport-avatar img,.passport-plane img { height:52px; }
+  .passport-choice .label,.passport-plane .label { font-size:13px; }
+  .passport-choice-item { flex-basis:88px;width:88px;grid-template-rows:82px 20px; }
+  .passport-choice-item .passport-avatar { height:82px;min-height:82px; }
+  .passport-choice-item .passport-avatar img { height:76px; }
+  .passport-choice-name { font-size:13px; }
+}
+@media (max-width:760px) {
+  .passport-page > .page-body { overflow:auto; }
+  .passport-shell { min-height:0;height:calc(100% - 12px); }
+  .passport-stepper { width:calc(100% - 20px); }
+  .passport-step-chip { min-width:0;padding-inline:10px;font-size:15px; }
+  .passport-peek { right:10px;top:64px;width:56px;min-height:52px;grid-template-columns:1fr;padding:3px; }
+  .passport-peek span { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0); }
+  .passport-station { grid-template-columns:120px minmax(0,1fr); }
+  .passport-cover-live { display:none; }
+  .passport-guide-bubble { display:none; }
+  .passport-station-guide img { width:120px; }
+  .passport-feature,.passport-plane-feature { grid-template-columns:1fr;gap:5px;text-align:center; }
+  .passport-stage-art { max-height:260px; }
+  .passport-stage-line { margin-inline:auto; }
+  .passport-selector-stage { grid-template-columns:52px minmax(0,1fr) 52px; }
+  .passport-arrow { width:48px;height:48px; }
+  .passport-actions { grid-template-columns:80px 1fr 200px;gap:8px;padding-inline:10px; }
+  .passport-step-status { font-size:15px; }
+}
+@media (max-height:800px) {
+  .passport-section { padding-block:10px;gap:8px; }
+  .passport-selection-layout { grid-template-rows:minmax(0,1fr) 108px;gap:6px; }
+  .passport-feature { min-height:210px; }
+  .passport-avatar-stage-img { max-height:240px; }
+  .passport-choice { flex-basis:80px;width:80px;min-width:80px;min-height:80px;height:80px; }
+  .passport-choice img,.passport-avatar img,.passport-plane img { height:50px; }
+  .passport-choice .label,.passport-plane .label { min-height:20px;font-size:13px; }
+  .passport-choice-item { flex-basis:88px;width:88px;grid-template-rows:80px 20px; }
+  .passport-choice-item .passport-avatar { height:80px;min-height:80px; }
+  .passport-choice-item .passport-avatar img { height:74px; }
+}
+@media (max-height:620px) {
+  .passport-page > .page-body { overflow:hidden; }
+  .passport-shell { min-height:0;height:calc(100% - 16px); }
+  .passport-form { min-height:0;height:100%; }
+  .passport-scene-heading h1 { font-size:25px; }
+  .passport-scene-heading p { display:none; }
+  .passport-section { padding-block:6px;gap:4px; }
+  .passport-station-guide { min-height:180px; }
+  .passport-station-guide img { max-height:235px; }
+  .passport-luggage-tag { padding:16px 24px; }
+  .passport-selection-layout { grid-template-rows:minmax(0,1fr) 94px;gap:4px; }
+  .passport-feature { min-height:145px; }
+  .passport-avatar-stage-img { max-height:230px; }
+  .passport-stage-line { padding:10px 15px;font-size:17px; }
+  .passport-choice { flex-basis:70px;width:70px;min-width:70px;min-height:70px;height:70px; }
+  .passport-choice img,.passport-avatar img,.passport-plane img { height:42px; }
+  .passport-choice .label,.passport-plane .label { min-height:20px;font-size:12px; }
+  .passport-choice-item { flex-basis:74px;width:74px;grid-template-rows:68px 18px;gap:2px; }
+  .passport-choice-item .passport-avatar { height:68px;min-height:68px; }
+  .passport-choice-item .passport-avatar img { height:62px; }
+  .passport-choice-name { font-size:12px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .passport-section,.passport-choice,.passport-avatar-stage-img,.passport-plane-stage-img { animation:none!important;transition:none!important; }
 }
 `;
 
 export function createPage(): Page {
-  let guide: GuideController | null = null;
   let disposed = false;
 
   return {
@@ -184,28 +487,38 @@ export function createPage(): Page {
       catch { console.warn('[passport] common.json 없음 — 기본값 사용'); }
 
       const assetIds = [
-        'bg.title', 'prop.passport', 'prop.stamp', 'deco.emblem_stamp',
+        'bg.title', 'prop.stamp', 'prop.passport', 'prop.passport_builder', 'deco.emblem_stamp',
         ...AVATARS.map((item) => item.assetId), ...PLANES.map((item) => item.assetId)
       ];
       await preloadImages(assetIds);
 
       const save = saveRepo.get();
       const profile = save.profile;
-      const questions = (common.inquiryQuestions ?? FALLBACK_QUESTIONS).slice(0, 3);
       const banned = common.nickname?.banned ?? [];
       const maxLen = common.nickname?.maxLen ?? 10;
-      let avatarId = profile?.avatarId ?? 'a1';
-      let airplaneId = profile?.airplaneId ?? 'plane1';
+      const draft = (() => {
+        try {
+          const raw = sessionStorage.getItem(PASSPORT_DRAFT_KEY);
+          return raw ? JSON.parse(raw) as Partial<PassportDraft> : null;
+        } catch {
+          return null;
+        }
+      })();
+      const draftAvatarId = draft?.avatarId && AVATARS.some((item) => item.saveId === draft.avatarId) ? draft.avatarId : null;
+      const draftPlaneId = draft?.airplaneId && PLANES.some((item) => item.saveId === draft.airplaneId) ? draft.airplaneId : null;
+      let avatarId = draftAvatarId ?? profile?.avatarId ?? 'a1';
+      let airplaneId = draftPlaneId ?? profile?.airplaneId ?? 'plane1';
+      const initialAvatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
+      const initialPlane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
 
       const page = document.createElement('div');
       page.className = 'page passport-page';
-      page.style.backgroundImage = `linear-gradient(rgba(20,45,80,.28),rgba(20,45,80,.48)),url('${assetUrl('bg.title')}')`;
+      page.style.backgroundImage = `linear-gradient(rgba(20,45,80,.12),rgba(20,45,80,.28)),url('${assetUrl('bg.title')}')`;
       const style = document.createElement('style');
       style.textContent = PASSPORT_CSS;
       page.appendChild(style);
       page.appendChild(buildTopBar({
         title: '나의 여행 여권',
-        subtitle: '별명과 세 가지 선택만 하면 바로 출발해요',
         backTo: profile ? '#/map' : undefined
       }));
 
@@ -213,60 +526,151 @@ export function createPage(): Page {
       body.className = 'page-body passport-body';
       body.innerHTML = `
         <div class="passport-shell">
-          <section class="scene-board passport-form" aria-label="여행자 정보">
-            <div class="passport-section passport-nick-row">
-              <label class="passport-label" for="nickname">1. 별명</label>
-              <input class="passport-nickname" id="nickname" type="text" maxlength="${maxLen}" autocomplete="off" placeholder="여행에서 쓸 별명 (예: 씩씩한여행자)">
-              <p id="nick-msg" class="feedback retry" role="alert" hidden></p>
+          <section class="passport-form" aria-label="여권 만들기">
+            <nav class="passport-stepper" aria-label="여권 만들기 진행 경로">
+              <button type="button" class="passport-step-chip" data-step-jump="1">1 이름</button>
+              <button type="button" class="passport-step-chip" data-step-jump="2">2 탐험가</button>
+              <button type="button" class="passport-step-chip" data-step-jump="3">3 비행기</button>
+            </nav>
+
+            <div class="passport-scenes">
+              <section class="passport-section passport-nick-row" data-passport-step="1" aria-labelledby="passport-nickname-heading">
+                <header class="passport-scene-heading">
+                  <h1 id="passport-nickname-heading">여행 이름을 정해요</h1>
+                </header>
+                <div class="passport-station">
+                  <div class="passport-station-guide" aria-hidden="true">
+                    <img src="${assetUrl('oceania.visitor')}" data-asset-id="oceania.visitor" alt="">
+                    <p class="passport-guide-bubble">여권에 쓸 이름을 적어 줘.</p>
+                  </div>
+                  <div class="passport-tag-wrap">
+                    <div class="passport-luggage-tag">
+                      <label class="passport-label" for="nickname">나의 여행 이름</label>
+                      <input class="passport-nickname" id="nickname" type="text" maxlength="${maxLen}" autocomplete="name" enterkeyhint="next" placeholder="한글 또는 영어 이름">
+                      <div class="passport-nickname-meta"><span></span><span id="nickname-count">0 / ${maxLen}</span></div>
+                    </div>
+                    <p id="nick-msg" class="feedback retry" role="alert" hidden></p>
+                  </div>
+                  <div class="passport-cover-live" aria-label="여권 표지 미리보기">
+                    <img src="${assetUrl('prop.passport')}" data-asset-id="prop.passport" alt="">
+                    <strong class="passport-cover-name" id="passport-cover-name">나의 여행 여권</strong>
+                  </div>
+                </div>
+              </section>
+
+              <section class="passport-section" data-passport-step="2" hidden aria-labelledby="passport-avatar-heading">
+                <header class="passport-scene-heading">
+                  <h1 id="passport-avatar-heading">함께 떠날 탐험가는 누구?</h1>
+                </header>
+                <div class="passport-selection-layout" data-swipe-kind="avatar">
+                  <div class="passport-selector-stage">
+                    <button type="button" class="passport-arrow" data-select-prev="avatar" aria-label="이전 탐험가">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                    </button>
+                    <div class="passport-feature">
+                      <div class="passport-stage-art">
+                        <img class="passport-avatar-stage-img" id="passport-avatar-stage-img" src="${assetUrl(initialAvatar.assetId)}" data-asset-id="${initialAvatar.assetId}" alt="">
+                      </div>
+                      <div class="passport-stage-copy" aria-live="polite">
+                        <p class="passport-stage-role" id="passport-avatar-stage-role">${initialAvatar.role}</p>
+                        <h2 class="passport-stage-name" id="passport-avatar-stage-name">${initialAvatar.name}</h2>
+                        <p class="passport-stage-line" id="passport-avatar-stage-line">${initialAvatar.sampleLine}</p>
+                      </div>
+                    </div>
+                    <button type="button" class="passport-arrow" data-select-next="avatar" aria-label="다음 탐험가">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                  <div class="passport-choice-row passport-avatars" role="radiogroup" aria-label="탐험가 목록">
+                    ${AVATARS.map((item) => choiceHtml('avatar', item.saveId, item.assetId, item.label, item.name)).join('')}
+                  </div>
+                </div>
+              </section>
+
+              <section class="passport-section passport-plane-stage" data-passport-step="3" hidden aria-labelledby="passport-plane-heading">
+                <header class="passport-scene-heading">
+                  <h1 id="passport-plane-heading">어떤 비행기로 출발할까?</h1>
+                </header>
+                <div class="passport-selection-layout" data-swipe-kind="plane">
+                  <div class="passport-selector-stage">
+                    <button type="button" class="passport-arrow" data-select-prev="plane" aria-label="이전 비행기">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                    </button>
+                    <div class="passport-feature passport-plane-feature">
+                      <div class="passport-stage-art">
+                        <img class="passport-plane-stage-img" id="passport-plane-stage-img" src="${assetUrl(initialPlane.assetId)}" data-asset-id="${initialPlane.assetId}" alt="">
+                      </div>
+                      <div class="passport-stage-copy" aria-live="polite">
+                        <p class="passport-stage-role">나의 여행 비행기</p>
+                        <h2 class="passport-stage-name" id="passport-plane-stage-name">${initialPlane.name}</h2>
+                        <p class="passport-stage-line" id="passport-plane-stage-line">${initialPlane.label}</p>
+                      </div>
+                    </div>
+                    <button type="button" class="passport-arrow" data-select-next="plane" aria-label="다음 비행기">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                  <div class="passport-choice-row passport-planes" role="radiogroup" aria-label="비행기 목록">
+                    ${PLANES.map((item) => choiceHtml('plane', item.saveId, item.assetId, item.label, item.name)).join('')}
+                  </div>
+                </div>
+              </section>
             </div>
-            <fieldset class="passport-section" style="border:0;padding:0;margin:0">
-              <legend class="passport-label">2. 나를 나타낼 탐험가</legend>
-              <div class="passport-choice-row passport-avatars" role="radiogroup" aria-label="탐험가 아바타">
-                ${AVATARS.map((item) => choiceHtml('avatar', item.saveId, item.assetId, item.label, item.short)).join('')}
-              </div>
-            </fieldset>
-            <fieldset class="passport-section" style="border:0;padding:0;margin:0">
-              <legend class="passport-label">3. 함께 갈 비행기</legend>
-              <div class="passport-choice-row passport-planes" role="radiogroup" aria-label="여행 비행기">
-                ${PLANES.map((item) => choiceHtml('plane', item.saveId, item.assetId, item.label, item.short)).join('')}
-              </div>
-            </fieldset>
-            <fieldset class="passport-section" style="border:0;padding:0;margin:0">
-              <legend class="passport-label">4. 가장 궁금한 질문</legend>
-              <div class="passport-inquiries">
-                ${questions.map((question, index) => `<label class="passport-inquiry"><input type="radio" name="inquiry" value="q${index + 1}" ${(profile?.inquiryQuestionId ?? 'q1') === `q${index + 1}` ? 'checked' : ''}><span>${question}</span></label>`).join('')}
-              </div>
-            </fieldset>
+
+            <footer class="passport-actions">
+              <button type="button" class="btn passport-back-step" data-act="previous" hidden>이전</button>
+              <p class="passport-step-status" id="passport-step-status" aria-live="polite">1 / 3</p>
+              <button type="button" class="btn btn-primary passport-advance" data-act="advance">다음 · 탐험가 만나기</button>
+            </footer>
           </section>
-          <aside class="scene-board passport-preview" aria-label="완성될 여행 여권 미리보기">
-            ${assetImg('deco.emblem_stamp', 'passport-emblem', '', true)}
-            <img class="passport-hero" id="passport-hero" src="${assetUrl(AVATARS[0].assetId)}" data-asset-id="${AVATARS[0].assetId}" alt="" aria-hidden="true">
-            ${assetImg('prop.passport', 'passport-cover', '남색 세계 여행 여권')}
-            <div class="stamp-collection passport-stamps">
-              ${[...CONTINENT_IDS, 'dialogue' as const].map((id) => {
-                const earned = save.stamps.includes(id);
-                return `<div class="passport-stamp-cell"><div class="stamp-collection__slot ${earned ? 'is-earned' : ''}" role="img" aria-label="${STAMP_LABELS[id]} ${earned ? '도장 획득' : '도장 빈자리'}">${earned && hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="">` : ''}</div><span class="stamp-name" aria-hidden="true">${STAMP_LABELS[id]}</span></div>`;
-              }).join('')}
+
+          <button type="button" class="passport-peek" data-act="preview" aria-expanded="false" aria-controls="passport-preview">
+            <img src="${assetUrl('prop.passport')}" data-asset-id="prop.passport" alt=""><span>내 여권 보기</span>
+          </button>
+          <button type="button" class="passport-preview-scrim" data-act="close-preview" aria-label="여권 미리보기 닫기" hidden></button>
+          <aside class="passport-preview" id="passport-preview" aria-label="내 여행 여권 미리보기" hidden>
+            <div class="passport-preview-heading">
+              <div class="passport-heading-copy">
+                <span class="passport-maker-kicker">내가 만드는 여권</span>
+                <h2 class="passport-preview__title" id="passport-card-title">나의 여행 여권</h2>
+              </div>
+              <button type="button" class="btn passport-preview-close" data-act="close-preview" aria-label="닫기">×</button>
             </div>
-            <p class="passport-label passport-learn-title">여행에서 얻는 배움 카드</p>
-            <div class="passport-learn" aria-label="미션별 배움 카드 목록">
-              ${[...CONTINENT_IDS, 'dialogue' as const].map((id) => learnRowHtml(id)).join('')}
+            <div class="passport-book">
+              <img class="passport-book-art" src="${assetUrl('prop.passport_builder')}" data-asset-id="prop.passport_builder" alt="" aria-hidden="true">
+              <div class="passport-book-slot passport-explorer-slot">
+                <img class="passport-hero" id="passport-hero" src="${assetUrl(initialAvatar.assetId)}" data-asset-id="${initialAvatar.assetId}" alt="">
+              </div>
+              <p class="passport-book-label passport-avatar-label"><span>탐험가</span><strong id="passport-avatar-name">${initialAvatar.name}</strong></p>
+              <div class="passport-book-slot passport-plane-slot">
+                <img class="passport-plane-preview" id="passport-plane-preview" src="${assetUrl(initialPlane.assetId)}" data-asset-id="${initialPlane.assetId}" alt="">
+              </div>
+              <p class="passport-book-label passport-plane-label"><span>비행기</span><strong id="passport-plane-name">${initialPlane.name}</strong></p>
+              <span class="passport-owner-mark" id="passport-owner-mark">이름을 쓰면 나만의 서명이 생겨요</span>
             </div>
+            <p class="passport-selected-label" id="passport-selected-label"></p>
           </aside>
         </div>`;
       page.appendChild(body);
-
-      const dock = document.createElement('div');
-      dock.className = 'bottom-bar mission-dock passport-dock';
-      dock.innerHTML = `<p class="passport-privacy">별명과 선택은 이 기기에만 저장돼요.</p><button class="btn btn-primary btn-big" data-act="save">${profile ? '저장하기' : '출발하기'}</button>`;
-      page.appendChild(dock);
       root.appendChild(page);
 
       const input = page.querySelector<HTMLInputElement>('#nickname');
-      if (input) input.value = profile?.nickname ?? '';
+      if (input) input.value = typeof draft?.nickname === 'string' ? draft.nickname.slice(0, maxLen) : profile?.nickname ?? '';
       const msg = page.querySelector<HTMLElement>('#nick-msg');
+      const actionButton = page.querySelector<HTMLButtonElement>('[data-act="advance"]');
+      const previousButton = page.querySelector<HTMLButtonElement>('[data-act="previous"]');
+      const stepStatus = page.querySelector<HTMLElement>('#passport-step-status');
+      const previewButton = page.querySelector<HTMLButtonElement>('[data-act="preview"]');
+      const preview = page.querySelector<HTMLElement>('#passport-preview');
+      const previewScrim = page.querySelector<HTMLButtonElement>('.passport-preview-scrim');
 
-      const bindRadioButtons = (selector: string, getValue: (el: HTMLElement) => string, setValue: (value: string) => void, initial: string) => {
+      const bindRadioButtons = (
+        selector: string,
+        getValue: (el: HTMLElement) => string,
+        setValue: (value: string) => void,
+        initial: string,
+        onChosen?: (value: string, button: HTMLButtonElement) => void
+      ) => {
         const buttons = Array.from(page.querySelectorAll<HTMLButtonElement>(selector));
         const mark = (value: string) => buttons.forEach((button) => {
           const selected = getValue(button) === value;
@@ -279,6 +683,7 @@ export function createPage(): Page {
           mark(value);
           void audio.playSfx('tap');
           popBounce(button);
+          onChosen?.(value, button);
         };
         buttons.forEach((button, index) => {
           button.addEventListener('click', () => choose(button));
@@ -294,97 +699,289 @@ export function createPage(): Page {
         });
         mark(initial);
       };
-      // 고른 탐험가를 오른쪽에 크게 비춰 준다(표현 전용)
+      // 고른 탐험 방식과 여행 장비를 오른쪽 여권에 즉시 연결한다.
       const hero = page.querySelector<HTMLImageElement>('#passport-hero');
+      const planePreview = page.querySelector<HTMLImageElement>('#passport-plane-preview');
+      const selectedLabel = page.querySelector<HTMLElement>('#passport-selected-label');
+      const cardTitle = page.querySelector<HTMLElement>('#passport-card-title');
+      const avatarName = page.querySelector<HTMLElement>('#passport-avatar-name');
+      const planeName = page.querySelector<HTMLElement>('#passport-plane-name');
+      const ownerMark = page.querySelector<HTMLElement>('#passport-owner-mark');
+      const coverName = page.querySelector<HTMLElement>('#passport-cover-name');
+      const nicknameCount = page.querySelector<HTMLElement>('#nickname-count');
+      const avatarStageImage = page.querySelector<HTMLImageElement>('#passport-avatar-stage-img');
+      const avatarStageRole = page.querySelector<HTMLElement>('#passport-avatar-stage-role');
+      const avatarStageName = page.querySelector<HTMLElement>('#passport-avatar-stage-name');
+      const avatarStageLine = page.querySelector<HTMLElement>('#passport-avatar-stage-line');
+      const planeStageImage = page.querySelector<HTMLImageElement>('#passport-plane-stage-img');
+      const planeStageName = page.querySelector<HTMLElement>('#passport-plane-stage-name');
+      const planeStageLine = page.querySelector<HTMLElement>('#passport-plane-stage-line');
+      const updateSelectionLabel = () => {
+        const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
+        const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
+        const nickname = input?.value.trim() ?? '';
+        if (cardTitle) cardTitle.textContent = nickname ? `${nickname}의 여행 여권` : '나의 여행 여권';
+        if (coverName) coverName.textContent = nickname ? `${nickname}의 여행 여권` : '나의 여행 여권';
+        if (nicknameCount) nicknameCount.textContent = `${input?.value.length ?? 0} / ${maxLen}`;
+        if (avatarName) avatarName.textContent = avatar.name;
+        if (planeName) planeName.textContent = plane.name;
+        if (ownerMark) ownerMark.textContent = nickname ? `${nickname}가 직접 만든 여권` : '이름을 쓰면 나만의 서명이 생겨요';
+        if (hero) hero.alt = `${avatar.role} ${avatar.name} 모습`;
+        if (planePreview) planePreview.alt = `${plane.name} 비행기`;
+        if (avatarStageRole) avatarStageRole.textContent = avatar.role;
+        if (avatarStageName) avatarStageName.textContent = avatar.name;
+        if (avatarStageLine) avatarStageLine.textContent = avatar.sampleLine;
+        if (avatarStageImage) avatarStageImage.alt = `${avatar.name}, ${avatar.role}`;
+        if (planeStageName) planeStageName.textContent = plane.name;
+        if (planeStageLine) planeStageLine.textContent = plane.label;
+        if (planeStageImage) planeStageImage.alt = `${plane.name} 비행기`;
+        if (selectedLabel) {
+          selectedLabel.textContent = `${withJosa(avatar.name, '과', '와')} ${withJosa(plane.name, '이', '가')} 함께 여행해요`;
+        }
+      };
       const showHero = (value: string) => {
         const picked = AVATARS.find((item) => item.saveId === value) ?? AVATARS[0];
         if (hero && hasAsset(picked.assetId)) {
           hero.src = assetUrl(picked.assetId);
           hero.dataset.assetId = picked.assetId;
         }
+        if (avatarStageImage && hasAsset(picked.assetId)) {
+          avatarStageImage.src = assetUrl(picked.assetId);
+          avatarStageImage.dataset.assetId = picked.assetId;
+        }
+        updateSelectionLabel();
       };
-      bindRadioButtons('.passport-avatar', (el) => el.dataset.avatar ?? 'a1', (value) => { avatarId = value; showHero(value); }, avatarId);
-      bindRadioButtons('.passport-plane', (el) => el.dataset.plane ?? 'plane1', (value) => { airplaneId = value; }, airplaneId);
+      const showPlane = (value: string) => {
+        const picked = PLANES.find((item) => item.saveId === value) ?? PLANES[0];
+        if (planePreview && hasAsset(picked.assetId)) {
+          planePreview.src = assetUrl(picked.assetId);
+          planePreview.dataset.assetId = picked.assetId;
+        }
+        if (planeStageImage && hasAsset(picked.assetId)) {
+          planeStageImage.src = assetUrl(picked.assetId);
+          planeStageImage.dataset.assetId = picked.assetId;
+        }
+        updateSelectionLabel();
+      };
+      bindRadioButtons(
+        '.passport-avatar',
+        (el) => el.dataset.avatar ?? 'a1',
+        (value) => { avatarId = value; showHero(value); persistDraft(); },
+        avatarId,
+        (_value, button) => button.scrollIntoView({ block: 'nearest', inline: 'center' })
+      );
+      bindRadioButtons('.passport-plane', (el) => el.dataset.plane ?? 'plane1', (value) => { airplaneId = value; showPlane(value); persistDraft(); }, airplaneId);
       showHero(avatarId);
+      showPlane(airplaneId);
 
       const validate = (): string | null => {
-        const value = input?.value.trim() ?? '';
-        if (value.length < 1) return '별명을 한 글자 이상 적어 주세요.';
-        if (value.length > maxLen) return `별명은 ${maxLen}자까지예요.`;
-        if (banned.some((word) => word && value.includes(word))) return '다른 친구도 편안한 별명을 골라 주세요.';
-        return null;
+        return validatePassportNickname(input?.value ?? '', maxLen, banned);
       };
 
-      const saveButton = dock.querySelector<HTMLButtonElement>('[data-act="save"]');
-      saveButton?.addEventListener('click', () => {
+      const finishPassport = () => {
         const error = validate();
         if (error) {
           if (msg) { msg.hidden = false; msg.innerHTML = `<span aria-hidden="true">×</span><span>${error}</span>`; }
+          setStep(1);
           input?.focus();
           return;
         }
         if (msg) msg.hidden = true;
-        const inquiryQuestionId = page.querySelector<HTMLInputElement>('input[name="inquiry"]:checked')?.value ?? 'q1';
         saveRepo.update((state) => {
           state.profile = {
             nickname: input?.value.trim() ?? '',
             createdAt: state.profile?.createdAt ?? new Date().toISOString(),
             avatarId,
-            airplaneId,
-            inquiryQuestionId
+            airplaneId
           };
         });
-        saveButton.disabled = true;
-        const stamp = page.querySelector<HTMLElement>('.passport-hero') ?? saveButton;
+        try { sessionStorage.removeItem(PASSPORT_DRAFT_KEY); } catch { /* ignore */ }
+        if (actionButton) actionButton.disabled = true;
+        const stamp = page.querySelector<HTMLElement>('.passport-hero') ?? actionButton;
+        if (!stamp) return;
         burstConfetti(stamp, 8);
         void audio.playSfx('stamp');
-        showToast('여권이 준비됐어요. 세계 지도로 떠나요!', 'success');
+        const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
+        const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
+        showToast(`${withJosa(avatar.name, '과', '와')} ${plane.name}, 여행 준비 완료!`, 'success');
         const transition = playJourneyTransition({ kind: 'stamp', label: '여권 준비 완료!', assetId: 'prop.stamp' });
         void transition.finished.then(() => { if (!disposed) navigate('#/map'); });
+      };
+
+      const panels = Array.from(page.querySelectorAll<HTMLElement>('[data-passport-step]'));
+      const stepButtons = Array.from(page.querySelectorAll<HTMLButtonElement>('[data-step-jump]'));
+      const advanceLabels = [
+        '다음 · 탐험가 만나기',
+        '다음 · 비행기 고르기',
+        '여권 완성하고 출발하기'
+      ];
+      const statusLabels = ['1 / 3', '2 / 3', '3 / 3'];
+      let maxReached = profile ? 3 : Math.max(1, Math.min(3, Number(draft?.maxReached) || 1));
+      let currentStep = Math.min(maxReached, Math.max(1, Math.min(3, Number(draft?.step) || 1)));
+      let transitionLocked = false;
+      let composingNickname = false;
+
+      function persistDraft() {
+        try {
+          const nextDraft: PassportDraft = {
+            nickname: input?.value ?? '',
+            avatarId,
+            airplaneId,
+            step: currentStep,
+            maxReached
+          };
+          sessionStorage.setItem(PASSPORT_DRAFT_KEY, JSON.stringify(nextDraft));
+        } catch {
+          // 저장 공간이 막혀도 현재 화면의 선택은 계속 동작한다.
+        }
+      }
+
+      const showNicknameError = (error: string) => {
+        if (msg) { msg.hidden = false; msg.innerHTML = `<span aria-hidden="true">×</span><span>${error}</span>`; }
+        input?.focus();
+      };
+
+      const setStep = (step: number) => {
+        currentStep = Math.max(1, Math.min(maxReached, step));
+        page.classList.remove('passport-step-1', 'passport-step-2', 'passport-step-3');
+        page.classList.add(`passport-step-${currentStep}`);
+        panels.forEach((panel) => { panel.hidden = Number(panel.dataset.passportStep) !== currentStep; });
+        stepButtons.forEach((button) => {
+          const buttonStep = Number(button.dataset.stepJump);
+          button.disabled = buttonStep > maxReached;
+          button.classList.toggle('is-done', buttonStep < currentStep);
+          if (buttonStep === currentStep) button.setAttribute('aria-current', 'step');
+          else button.removeAttribute('aria-current');
+        });
+        if (actionButton) actionButton.textContent = advanceLabels[currentStep - 1] ?? advanceLabels[2]!;
+        if (previousButton) previousButton.hidden = currentStep === 1;
+        if (stepStatus) stepStatus.textContent = statusLabels[currentStep - 1] ?? statusLabels[0]!;
+        page.querySelector<HTMLElement>(currentStep === 2 ? '.passport-avatar[aria-checked="true"]' : currentStep === 3 ? '.passport-plane[aria-checked="true"]' : '#nickname')
+          ?.scrollIntoView({ block: 'nearest', inline: 'center' });
+        persistDraft();
+      };
+
+      const unlockStepChange = () => {
+        requestAnimationFrame(() => requestAnimationFrame(() => { transitionLocked = false; }));
+      };
+
+      const openPreview = (open: boolean) => {
+        if (!preview || !previewButton) return;
+        preview.hidden = !open;
+        if (previewScrim) previewScrim.hidden = !open;
+        previewButton.setAttribute('aria-expanded', String(open));
+        if (open) preview.querySelector<HTMLButtonElement>('[data-act="close-preview"]')?.focus();
+        else previewButton.focus();
+      };
+      previewButton?.addEventListener('click', () => openPreview(preview?.hidden ?? true));
+      page.querySelectorAll<HTMLElement>('[data-act="close-preview"]').forEach((button) => button.addEventListener('click', () => openPreview(false)));
+
+      const selectRelative = (kind: 'avatar' | 'plane', offset: number) => {
+        const buttons = Array.from(page.querySelectorAll<HTMLButtonElement>(`.passport-${kind}`));
+        if (!buttons.length) return;
+        const selectedIndex = Math.max(0, buttons.findIndex((button) => button.getAttribute('aria-checked') === 'true'));
+        const next = buttons[(selectedIndex + offset + buttons.length) % buttons.length];
+        next?.click();
+      };
+      page.querySelectorAll<HTMLButtonElement>('[data-select-prev]').forEach((button) => button.addEventListener('click', () => selectRelative(button.dataset.selectPrev === 'plane' ? 'plane' : 'avatar', -1)));
+      page.querySelectorAll<HTMLButtonElement>('[data-select-next]').forEach((button) => button.addEventListener('click', () => selectRelative(button.dataset.selectNext === 'plane' ? 'plane' : 'avatar', 1)));
+
+      page.querySelectorAll<HTMLElement>('[data-swipe-kind]').forEach((surface) => {
+        let startX: number | null = null;
+        surface.addEventListener('pointerdown', (event) => {
+          if (event.pointerType === 'mouse' || (event.target as HTMLElement).closest('button')) return;
+          startX = event.clientX;
+        });
+        surface.addEventListener('pointerup', (event) => {
+          if (startX === null) return;
+          const delta = event.clientX - startX;
+          startX = null;
+          if (Math.abs(delta) < 48) return;
+          selectRelative(surface.dataset.swipeKind === 'plane' ? 'plane' : 'avatar', delta > 0 ? -1 : 1);
+        });
+        surface.addEventListener('pointercancel', () => { startX = null; });
       });
 
-      guide = createGuide({ assetId: hasAsset('plane.explorer') ? 'plane.explorer' : 'plane.main' });
-      page.appendChild(guide.el);
-      guide.say(profile ? '바꿀 내용을 고르고 여권을 저장해요!' : '별명부터 적으면 금방 출발할 수 있어요!', {
-        cue: profile ? saveButton : input
+      input?.addEventListener('compositionstart', () => { composingNickname = true; });
+      input?.addEventListener('compositionend', () => {
+        composingNickname = false;
+        updateSelectionLabel();
+        persistDraft();
       });
+      input?.addEventListener('input', () => {
+        updateSelectionLabel();
+        if (msg && !validate()) msg.hidden = true;
+        persistDraft();
+      });
+      input?.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' || composingNickname || event.isComposing) return;
+        event.preventDefault();
+        actionButton?.click();
+      });
+
+      stepButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const step = Number(button.dataset.stepJump);
+          if (transitionLocked || step > maxReached || step === currentStep) return;
+          transitionLocked = true;
+          void audio.playSfx('tap');
+          setStep(step);
+          unlockStepChange();
+        });
+      });
+      previousButton?.addEventListener('click', () => {
+        if (transitionLocked || currentStep <= 1) return;
+        transitionLocked = true;
+        void audio.playSfx('tap');
+        setStep(currentStep - 1);
+        unlockStepChange();
+      });
+      actionButton?.addEventListener('click', () => {
+        if (transitionLocked) return;
+        if (currentStep === 1) {
+          const error = validate();
+          if (error) { showNicknameError(error); return; }
+          if (msg) msg.hidden = true;
+        }
+        transitionLocked = true;
+        if (currentStep < 3) {
+          maxReached = Math.max(maxReached, currentStep + 1);
+          void audio.playSfx('tap');
+          setStep(currentStep + 1);
+          unlockStepChange();
+          return;
+        }
+        finishPassport();
+      });
+      page.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && preview && !preview.hidden) openPreview(false);
+      });
+
+      updateSelectionLabel();
+      setStep(currentStep);
     },
 
     unmount() {
       disposed = true;
       cancelJourneyTransition();
-      guide?.dispose();
-      guide = null;
     }
   };
 }
 
-/** 그림 크게 + 한 줄 라벨. 전체 설명은 aria-label로만 전달한다. */
-function choiceHtml(kind: 'avatar' | 'plane', saveId: string, assetId: string, label: string, short: string): string {
-  return `<button type="button" class="passport-choice card-visual passport-${kind}" data-${kind}="${saveId}" data-asset-src="${assetId}" role="radio" aria-checked="false" aria-label="${label}">
+/** 그림과 이름만 또렷하게 보여 주고, 성격 소개는 선택 시 말풍선으로 전달한다. */
+function choiceHtml(kind: 'avatar' | 'plane', saveId: string, assetId: string, label: string, name: string): string {
+  const button = `<button type="button" class="passport-choice card-visual passport-${kind}" data-${kind}="${saveId}" data-asset-src="${assetId}" role="radio" aria-checked="false" aria-label="${label}">
     ${hasAsset(assetId) ? `<img src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="" aria-hidden="true">` : ''}
-    <span class="label">${short}</span>
+    ${kind === 'plane' ? `<span class="label"><span class="choice-name">${name}</span></span>` : ''}
   </button>`;
+  return kind === 'avatar'
+    ? `<div class="passport-choice-item">${button}<span class="passport-choice-name" aria-hidden="true">${name}</span></div>`
+    : button;
 }
 
-/** 배움 카드 한 줄 — 획득 시 친구 얼굴·이름·발견, 미획득 시 기다리는 친구 안내 */
-function learnRowHtml(id: MissionId): string {
-  const card = readLearnCard(id);
-  const title = LEARN_TITLES[id] ?? id;
-  if (!card.earned) {
-    return `<div class="learn-card-row is-empty"><div class="learn-card-main"><span class="learn-card-title">${title}</span><span class="learn-card-line">만날 친구가 기다려요</span></div></div>`;
-  }
-  const img = card.friendImageId && hasAsset(card.friendImageId)
-    ? `<img src="${assetUrl(card.friendImageId)}" data-asset-id="${card.friendImageId}" alt="" aria-hidden="true">`
-    : '';
-  return `<div class="learn-card-row">${img}<div class="learn-card-main"><span class="learn-card-title">${escapeText(card.friendName)} · ${title}</span><span class="learn-card-line">${escapeText(card.line)}</span></div></div>`;
-}
-
-function escapeText(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c);
-}
-
-function assetImg(assetId: string, className: string, alt: string, decorative = false): string {
-  if (!hasAsset(assetId)) return '';
-  return `<img${className ? ` class="${className}"` : ''} src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="${alt}"${decorative ? ' aria-hidden="true"' : ''}>`;
+/** 한글 이름의 마지막 글자 받침에 맞는 조사를 붙인다. */
+function withJosa(word: string, consonantJosa: string, vowelJosa: string): string {
+  const last = word.charCodeAt(word.length - 1);
+  const hasFinalConsonant = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0;
+  return `${word}${hasFinalConsonant ? consonantJosa : vowelJosa}`;
 }

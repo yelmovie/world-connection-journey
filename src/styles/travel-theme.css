@@ -1,0 +1,656 @@
+/*
+ * 공통 여행 테마
+ * 기존 대륙별 일러스트와 투명 에셋을 주인공으로 두고,
+ * UI는 여권 · 탑승권 · 여행 노트 한 가지 시각 언어로 묶는다.
+ */
+:root {
+  --c-violet: #5f46c7;
+  --c-sky: #1679bf;
+  --c-turquoise: #0f9fa4;
+  --c-coral: #dc625f;
+  --c-gold: #f2c14e;
+  --c-navy: #17324d;
+  --c-cream: #fff8e7;
+  --c-success: #18845d;
+  --c-warning: #a96806;
+  --c-danger: #c74646;
+  --c-ink: #102438;
+  --c-ink-soft: #425d73;
+  --c-paper: #fffdf8;
+  --c-line: rgba(23, 50, 77, 0.18);
+
+  --glass-panel: rgba(255, 252, 241, 0.68);
+  --glass-panel-soft: rgba(255, 252, 241, 0.58);
+  --glass-panel-strong: rgba(255, 252, 241, 0.82);
+  --glass-modal: rgba(255, 253, 247, 0.86);
+  --glass-backdrop: rgba(8, 29, 48, 0.44);
+
+  --radius-s: 12px;
+  --radius-m: 18px;
+  --radius-l: 26px;
+  --shadow-card: 0 8px 24px rgba(13, 39, 63, 0.14);
+  --shadow-pop: 0 22px 54px rgba(8, 31, 52, 0.26);
+  --edge: 0 3px 0;
+  --z-controls: var(--z-panel);
+}
+
+/* 배경을 가리지 않는 공통 프레임 */
+#scene-root .page {
+  --region-accent: var(--c-gold);
+  background-color: #247aa5;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+#scene-root .asia-mission { --region-accent: #dd6b63; }
+#scene-root .europe-mission { --region-accent: #5f70c8; }
+#scene-root .africa-mission { --region-accent: #d99035; }
+#scene-root .am-scene { --region-accent: #2a82bd; }
+#scene-root .oc-scene { --region-accent: #159c9a; }
+#scene-root .dialogue-scene { --region-accent: #6b55c9; }
+#scene-root .completion-page { --region-accent: #e5ab2f; }
+
+#scene-root .page > .page-body {
+  scrollbar-color: rgba(23, 50, 77, 0.38) transparent;
+  scrollbar-width: thin;
+}
+
+#scene-root .page > .page-body::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+#scene-root .page > .page-body::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(23, 50, 77, 0.32);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+#scene-root .loading-screen,
+#scene-root .error-fallback {
+  color: #fff;
+  background:
+    linear-gradient(rgba(9, 37, 61, 0.28), rgba(9, 37, 61, 0.68)),
+    url('/assets/bg_title.webp') center / cover no-repeat;
+  text-shadow: 0 2px 10px rgba(3, 22, 39, 0.48);
+}
+
+#scene-root .loading-screen > span:last-child,
+#scene-root .error-fallback > :where(h1, p, div) {
+  padding: 8px 18px;
+  border-radius: 18px;
+  background: rgba(12, 45, 70, 0.52);
+  box-shadow: 0 12px 28px rgba(5, 26, 45, 0.2);
+  backdrop-filter: blur(9px);
+}
+
+#scene-root .loading-spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: var(--c-gold);
+}
+
+#scene-root .error-fallback .btn {
+  min-height: var(--touch-min);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 15px;
+}
+
+/* 상단은 어두운 유리 한 겹으로 통일한다. */
+#scene-root .page .top-bar {
+  position: relative;
+  z-index: calc(var(--z-panel) + 2);
+  background: linear-gradient(180deg, rgba(9, 36, 59, 0.74), rgba(9, 36, 59, 0.34) 76%, transparent);
+  border-bottom: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#scene-root .title-page .top-bar {
+  background: linear-gradient(180deg, rgba(9, 36, 59, 0.34), transparent);
+  border-bottom-color: transparent;
+  backdrop-filter: none;
+}
+
+/* 미션 리본을 '탑승권' 모양으로 단순화한다. */
+#scene-root .page .quest-ribbon,
+#scene-root .page .ribbon-title {
+  position: relative;
+  isolation: isolate;
+  min-height: 54px;
+  padding: 7px clamp(22px, 3vw, 42px);
+  color: #fff;
+  background: rgba(16, 48, 75, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(7, 31, 52, 0.2), inset 5px 0 var(--region-accent), inset 0 1px rgba(255, 255, 255, 0.22);
+  backdrop-filter: none;
+}
+
+#scene-root .page .quest-ribbon::before,
+#scene-root .page .ribbon-title::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 8px auto 8px 12px;
+  width: 2px;
+  height: auto;
+  border: 0;
+  border-left: 2px dashed rgba(242, 193, 78, 0.86);
+  background: none;
+  transform: none;
+}
+
+#scene-root .page .quest-ribbon::after,
+#scene-root .page .ribbon-title::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 8px 12px 8px auto;
+  width: 2px;
+  height: auto;
+  border: 0;
+  border-right: 2px dashed rgba(242, 193, 78, 0.86);
+  background: none;
+  transform: none;
+}
+
+#scene-root .page .quest-ribbon .ribbon-main,
+#scene-root .page .ribbon-title .ribbon-main {
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+#scene-root .page .quest-ribbon .ribbon-sub,
+#scene-root .page .ribbon-title .ribbon-sub {
+  color: #fff1bd;
+}
+
+/* 공통 버튼: 금색 주행동, 유리 보조행동, 청록 완료행동 */
+#scene-root .page .btn,
+#overlay-root .btn,
+.prologue-overlay .btn {
+  min-height: var(--touch-min);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 15px;
+  color: var(--c-navy);
+  background: #fffdf8;
+  box-shadow: 0 3px 0 rgba(15, 45, 69, 0.22), 0 8px 20px rgba(9, 34, 56, 0.14);
+  text-shadow: none;
+  backdrop-filter: none;
+}
+
+#scene-root .page .btn:hover,
+#overlay-root .btn:hover,
+.prologue-overlay .btn:hover {
+  filter: brightness(1.02) saturate(1.04);
+  transform: translateY(-1px);
+}
+
+#scene-root .page .btn:active,
+#overlay-root .btn:active,
+.prologue-overlay .btn:active {
+  transform: translateY(2px) scale(0.985);
+  box-shadow: 0 1px 0 rgba(15, 45, 69, 0.18), 0 4px 12px rgba(9, 34, 56, 0.14);
+}
+
+#scene-root .page .btn-primary,
+#overlay-root .btn-primary,
+.prologue-overlay .btn-primary {
+  color: #493400;
+  background: #f2c14e;
+  border-color: #ffe59b;
+  box-shadow: 0 4px 0 #b7831e, 0 10px 22px rgba(60, 40, 5, 0.2);
+}
+
+#scene-root .page .btn-success,
+#overlay-root .btn-success {
+  color: #fff;
+  background: #18845d;
+  border-color: #7ed4b3;
+  box-shadow: 0 4px 0 #0f5e41, 0 10px 22px rgba(5, 61, 40, 0.18);
+}
+
+#scene-root .page .btn-ghost,
+#overlay-root .btn-ghost,
+.prologue-overlay .btn-ghost {
+  color: var(--c-navy);
+  background: #fffdf8;
+}
+
+#scene-root .page .btn[aria-pressed="true"],
+#scene-root .page .btn[aria-checked="true"] {
+  color: #493400;
+  background: #f2c14e;
+  border-color: #ffe59b;
+  box-shadow: 0 0 0 3px rgba(242, 193, 78, 0.28), 0 4px 0 #b7831e;
+}
+
+/* 리듬 미션의 음색 버튼은 학습 단서라 고유 색을 유지한다. */
+#scene-root .africa-mission .btn.try-low {
+  color: #fff;
+  background: #5f46c7;
+  border-color: #b9adf1;
+}
+
+#scene-root .africa-mission .btn.try-high,
+#scene-root .africa-mission .btn.follow-rhythm {
+  color: #493400;
+  background: #f2c14e;
+  border-color: #ffe59b;
+}
+
+#scene-root .africa-mission .btn.listen-rhythm {
+  color: #fff;
+  background: #1679bf;
+  border-color: #8dc6e8;
+}
+
+#scene-root .page .btn:disabled,
+#overlay-root .btn:disabled {
+  opacity: 0.62;
+  filter: grayscale(0.55);
+  transform: none;
+  box-shadow: 0 2px 0 rgba(15, 45, 69, 0.16);
+}
+
+/* 대륙별 인라인 CSS보다 높은 명시도로 모든 큰 표면을 같은 유리 재질로 묶는다. */
+#scene-root .page .scene-board,
+#scene-root .page .panel,
+#scene-root .page .panel-board,
+#scene-root .page .mission-brief,
+#scene-root .page .asia-board,
+#scene-root .page .europe-board,
+#scene-root .page .africa-board,
+#scene-root .page .am-shell,
+#scene-root .page .oc-shell,
+#scene-root .page .dl-shell {
+  color: var(--c-ink);
+  background: #f8f6ef;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-top: 3px solid var(--region-accent);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-card), inset 0 1px rgba(255, 255, 255, 0.56);
+  backdrop-filter: none;
+}
+
+#scene-root .page .card,
+#scene-root .page .passport-choice,
+#scene-root .page .evidence-zone,
+#scene-root .page .q-bubble,
+#scene-root .page .gauge-card,
+#scene-root .page .comparison-plan,
+#scene-root .page .plan-stop,
+#scene-root .page .learn-discovery,
+#scene-root .page .learn-card-row {
+  background-color: #fffdf8;
+  border-color: rgba(23, 50, 77, 0.16);
+  box-shadow: 0 5px 16px rgba(11, 37, 59, 0.11);
+  backdrop-filter: none;
+}
+
+#scene-root .page .chip,
+#overlay-root .chip {
+  color: var(--c-navy);
+  background: #fffdf8;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 5px 14px rgba(10, 35, 58, 0.12);
+  backdrop-filter: none;
+}
+
+/* 읽기용 보조 문구는 어느 화면에서도 18px 아래로 내려가지 않는다. */
+#scene-root .page :where(small, .choice-meta, .passport-maker-kicker, .map-brief__topic, .culture-note, .instrument-photo-badge, .mission-brief__steps),
+#overlay-root .modal :where(small, .learn-eyebrow, .learn-region, .learn-hint) {
+  font-size: var(--fs-small);
+}
+
+#scene-root .page .map-home::after,
+#scene-root .page .oc-response-option::before {
+  font-size: var(--fs-small);
+}
+
+#scene-root .map-page :where(.map-brief__status, .map-brief__flow strong, .map-brief__locked, .map-teacher-mode),
+#scene-root .map-page .map-brief__flow .mission-brief__steps,
+#scene-root .passport-page .passport-book-label span,
+#scene-root .africa-mission :where(.instrument-focus figcaption span, .instrument-how, .instrument-actions .btn, .instrument-source, .rhythm-coach-copy span:last-child, .seq-label) {
+  font-size: var(--fs-small);
+}
+
+/* 페이지별로 달랐던 하단 띠를 같은 여행 도크로 통일한다. */
+#scene-root .page > .bottom-bar,
+#scene-root .page .mission-dock {
+  background: linear-gradient(0deg, rgba(8, 31, 52, 0.78), rgba(8, 31, 52, 0.34) 72%, transparent);
+  border-top: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#scene-root .title-page > .bottom-bar {
+  background: linear-gradient(0deg, rgba(8, 31, 52, 0.38), transparent 72%);
+  border-top-color: transparent;
+  backdrop-filter: none;
+}
+
+/* 캐릭터 안내는 여행 노트 메모처럼 보이게 한다. */
+#scene-root .page > .guide-wrap .guide-bubble,
+#scene-root .page .guide-bubble {
+  color: var(--c-ink);
+  background: rgba(255, 253, 247, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-left: 5px solid var(--region-accent);
+  border-radius: 18px;
+  box-shadow: 0 14px 32px rgba(9, 34, 56, 0.18);
+  backdrop-filter: blur(11px) saturate(1.05);
+}
+
+#scene-root .page > .guide-wrap .guide-bubble::after {
+  border-right-color: rgba(255, 253, 247, 0.92);
+}
+
+#scene-root .page > .guide-right .guide-bubble::after {
+  border-left-color: rgba(255, 253, 247, 0.92);
+  border-right-color: transparent;
+}
+
+#scene-root .page .guide-speaker {
+  color: #4a389b;
+  letter-spacing: 0.02em;
+}
+
+/* 여권 티켓과 진행 상태도 같은 재질로 정리한다. */
+#scene-root .page .journey-ticket {
+  color: var(--c-navy);
+  background: rgba(255, 249, 232, 0.88);
+  border: 2px dashed rgba(177, 128, 29, 0.72);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(10, 35, 58, 0.14);
+  backdrop-filter: blur(8px);
+}
+
+#scene-root .page .progress-track {
+  background: rgba(18, 55, 80, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+#scene-root .page .progress-fill {
+  background: #0f9fa4;
+}
+
+/* 지도는 정보 패널만 유리로 두고 원화 자체는 끝까지 노출한다. */
+#scene-root .map-page .map-world {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#scene-root .map-page .map-brief {
+  background: rgba(255, 252, 241, 0.72);
+}
+
+/* 팝업 전수 공통: 화면 뒤 장면을 알아볼 수 있는 여권 페이지형 모달 */
+#overlay-root .modal-backdrop {
+  background: rgba(7, 27, 46, 0.58);
+  backdrop-filter: none;
+}
+
+#overlay-root .modal {
+  width: min(760px, calc(100vw - 28px));
+  max-height: min(90dvh, 840px);
+  color: var(--c-ink);
+  background: #fffdf7;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-top: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+  box-shadow: 0 30px 84px rgba(4, 22, 39, 0.36), inset 0 1px rgba(255, 255, 255, 0.72);
+  backdrop-filter: none;
+}
+
+#overlay-root .modal-title {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 68px 10px 24px;
+  color: var(--c-navy);
+  border-bottom: 1px dashed rgba(23, 50, 77, 0.2);
+  background: #fff9e7;
+}
+
+#overlay-root .modal-title::before {
+  content: none;
+}
+
+#overlay-root .modal-close {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 14px;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: var(--c-navy);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(23, 50, 77, 0.14);
+  border-radius: 50%;
+  box-shadow: 0 5px 14px rgba(10, 35, 58, 0.12);
+}
+
+#overlay-root .modal-close:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+#overlay-root .modal-close svg {
+  width: 22px;
+  height: 22px;
+}
+
+#overlay-root .modal-body {
+  padding: 18px clamp(20px, 3vw, 34px);
+  line-height: 1.58;
+}
+
+#overlay-root .modal-body > :where(p, ul, ol) {
+  max-width: 46em;
+}
+
+#overlay-root .modal-body .card,
+#overlay-root .modal-body details {
+  color: var(--c-ink);
+  background: #fffdf8;
+  border: 1px solid rgba(23, 50, 77, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 5px 16px rgba(11, 37, 59, 0.09);
+  backdrop-filter: none;
+}
+
+#overlay-root .modal-body details {
+  overflow: clip;
+  padding: 0;
+}
+
+#overlay-root .modal-body details > summary {
+  min-height: 54px;
+  padding: 10px 16px;
+  color: var(--c-navy);
+  background: rgba(238, 247, 246, 0.7);
+  border-radius: 15px;
+  font-weight: 900;
+}
+
+#overlay-root .modal-body details[open] > summary {
+  border-bottom: 1px dashed rgba(23, 50, 77, 0.18);
+  border-radius: 15px 15px 0 0;
+}
+
+#overlay-root .modal-body details > :not(summary) {
+  margin-inline: 16px;
+}
+
+/* author display 규칙이 details의 기본 접힘 동작을 덮지 않도록 보장한다. */
+#overlay-root .modal-body details:not([open]) > :not(summary) {
+  display: none !important;
+}
+
+#overlay-root .modal-actions {
+  gap: 12px;
+  padding: 12px clamp(20px, 3vw, 34px) 18px;
+  background: #f5faf7;
+  border-top: 1px dashed rgba(23, 50, 77, 0.2);
+}
+
+#overlay-root .modal-actions .btn {
+  min-height: 54px;
+}
+
+#overlay-root .modal:not(:has(.modal-title)) {
+  border-top: 5px solid var(--c-gold);
+}
+
+#overlay-root .modal:has(.learn-intro),
+#overlay-root .modal:has(.learn-wrap) {
+  width: min(720px, calc(100vw - 28px));
+  background: #fffdf7;
+}
+
+/* 미션 시작 팝업의 버튼은 별도 흰 상자 없이 본문 위에 자연스럽게 놓는다. */
+#overlay-root .modal:has(.learn-intro) .modal-actions {
+  width: 100%;
+  max-width: none;
+  padding-top: 6px;
+  background: transparent;
+  border-top: 0;
+}
+
+#overlay-root .modal:has(.mission-result-hero) {
+  width: min(820px, calc(100vw - 28px));
+}
+
+/* 캐릭터 대화 팝업은 인물을 크게 유지하되 같은 팝업 프레임을 쓴다. */
+#overlay-root .modal:has(.character-dialogue) {
+  width: min(1040px, 95vw);
+  background:
+    linear-gradient(90deg, rgba(95, 70, 199, 0.14) 0 8px, transparent 8px),
+    linear-gradient(145deg, rgba(255, 253, 247, 0.91), rgba(239, 247, 249, 0.84));
+  border-top-color: rgba(255, 255, 255, 0.9);
+}
+
+#overlay-root .character-dialogue__portrait {
+  background: radial-gradient(circle at 50% 40%, rgba(221, 247, 255, 0.95), rgba(79, 157, 189, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 32px rgba(10, 35, 58, 0.16);
+}
+
+#overlay-root .character-dialogue__bubble {
+  background: rgba(255, 253, 248, 0.84);
+  border: 2px solid rgba(95, 70, 199, 0.56);
+  box-shadow: 0 12px 28px rgba(55, 39, 120, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+/* 설정 팝업 */
+.settings-stack { display: grid; gap: 12px; width: 100%; }
+.settings-full { width: 100%; }
+.settings-row {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  color: var(--c-navy);
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid rgba(23, 50, 77, 0.14);
+  border-radius: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.settings-range { width: min(210px, 44vw); min-height: 44px; accent-color: var(--c-sky); }
+.settings-toggle { width: 30px; height: 30px; accent-color: var(--c-sky); }
+.settings-list { margin: 8px 16px 14px; padding-left: 1.25em; display: grid; gap: 8px; }
+.settings-copy { margin: 8px 16px 14px; }
+.settings-label { color: var(--c-navy); font-weight: 900; }
+.settings-help { margin: 0; color: var(--c-ink-soft); }
+.settings-section { margin-top: 10px; border: 1px solid rgba(23, 50, 77, 0.16); border-radius: 14px; }
+.settings-form { margin: 12px 16px 16px; display: grid; gap: 8px; }
+.settings-field-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-input {
+  flex: 1 1 210px;
+  min-height: 52px;
+  padding: 0 14px;
+  color: var(--c-ink);
+  background: rgba(255, 255, 255, 0.86);
+  border: 2px solid rgba(23, 50, 77, 0.18);
+  border-radius: 14px;
+}
+.settings-error { color: var(--c-danger); font-weight: 800; }
+.settings-state { margin: 10px 16px 0; }
+.settings-actions { margin: 12px 16px 16px; display: grid; gap: 8px; }
+.settings-copyright { margin: 12px 16px 14px; font-weight: 800; }
+
+/* 결과 팝업 */
+.mission-result-hero {
+  display: grid;
+  grid-template-columns: clamp(104px, 12vw, 154px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 12px;
+  overflow: visible;
+}
+.mission-result-stamp { width: 100%; aspect-ratio: 1; object-fit: contain; }
+.mission-result-stamp.stamp { height: auto; min-height: 104px; padding: 10px; }
+.mission-result-heading { display: grid; gap: 6px; text-align: left; }
+.mission-result-heading strong { color: var(--c-navy); font: 400 var(--fs-title)/1.12 var(--font-head); }
+.mission-result-heading p { color: var(--c-ink-soft); }
+.mission-result-guide {
+  display: grid;
+  grid-template-columns: clamp(92px, 10vw, 132px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 14px;
+}
+.mission-result-guide img { width: 100%; height: clamp(96px, 10vw, 132px); object-fit: contain; }
+.mission-result-guide strong { display: block; margin-bottom: 4px; color: var(--c-navy); }
+.mission-result-details { margin-top: 14px; }
+.mission-result-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); margin-top: 8px; }
+.mission-result-table td { padding: 6px 10px 6px 0; }
+.mission-result-table td:last-child { text-align: right; font-weight: 800; }
+.feedback__icon { font-size: 1.4em; line-height: 1; }
+
+/* 토스트도 같은 여행 HUD로 */
+#overlay-root .toast {
+  color: #fff;
+  background: rgba(12, 45, 70, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(5, 26, 45, 0.28);
+  backdrop-filter: none;
+}
+#overlay-root .toast.success { color: #fff; background: rgba(24, 132, 93, 0.94); }
+#overlay-root .toast.warn { color: #fff; background: rgba(169, 104, 6, 0.94); }
+
+@media (max-width: 760px) {
+  #overlay-root .modal-title { min-height: 64px; padding: 10px 62px 10px 18px; }
+  #overlay-root .modal-title::before { width: 36px; height: 36px; flex-basis: 36px; background-size: 29px 29px; }
+  .mission-result-hero,
+  .mission-result-guide { grid-template-columns: 84px minmax(0, 1fr); gap: 12px; }
+}
+
+@media (max-height: 620px) {
+  #overlay-root .modal-title { min-height: 58px; padding-block: 8px; }
+  #overlay-root .modal-body { padding-block: 12px; }
+  #overlay-root .modal-actions { padding-block: 9px 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #scene-root .page .btn,
+  #overlay-root .btn,
+  #overlay-root .modal,
+  #overlay-root .toast { transition: none; animation: none; }
+}

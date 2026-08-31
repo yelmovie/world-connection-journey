@@ -1,0 +1,747 @@
+{
+  "schemaVersion": 1,
+  "missionId": "earth_council",
+  "needsReview": true,
+  "reviewNote": "환경 사례는 일반적 경향 수준으로만 서술했다. 지역별 수치·최신 상태는 사회과·환경교육 검수자가 출처와 함께 확인해야 한다. 친구 이름은 모두 가상 인물이다.",
+  "factCheck": {
+    "status": "공식 자료 대조 완료",
+    "verifiedAt": "2026-08-31",
+    "scope": "빙하·폭염·물 부족·해양 플라스틱·산호 백화·건기와 서식지 변화의 일반 경향",
+    "peopleNote": "친구와 마을의 세부 행동은 실제 특정 인물의 증언이 아니라 검증된 환경 경향을 이해하기 위한 학습용 가상 사례다.",
+    "mediaNote": "환경 신호 이미지는 실제 보도 사진이나 시계열 관측 사진이 아닌 학습용 재현 이미지다.",
+    "sources": [
+      { "title": "IPCC AR6", "url": "https://www.ipcc.ch/report/ar6/" },
+      { "title": "세계기상기구 WMO", "url": "https://wmo.int/" },
+      { "title": "유엔환경계획 플라스틱 오염", "url": "https://www.unep.org/plastic-pollution" },
+      { "title": "NOAA Coral Reef Watch", "url": "https://coralreefwatch.noaa.gov/" }
+    ]
+  },
+  "standards": [
+    {
+      "code": "[6사12-02]",
+      "alignmentLevel": "직접 연계",
+      "activityEvidence": [
+        "여섯 친구가 보낸 현장 사진에서 환경 변화의 신호를 직접 관찰한다.",
+        "바다·공기·기후·생태계·자원 렌즈로 서로 다른 지역의 신호가 이어져 있음을 지도에서 확인한다.",
+        "하나의 환경문제를 골라 여러 친구의 서로 다른 관점을 듣고, 개인·지역사회·정부와 기업·국제협력 수준의 해결안을 조합해 비교한다."
+      ],
+      "assessmentEvidence": [
+        "선택한 해결안 조합의 장단점을 질적 지표로 비교하고 다른 조합을 다시 실험한다.",
+        "여러 관점을 반영한 공동약속을 문장 틀로 완성하고 자기 실천 한 가지를 구체적으로 쓴다."
+      ],
+      "scopeNote": "지구촌 환경문제의 원인·영향·해결 방안 탐색을 여섯 지역 사례로 연습한다. 한 친구의 사례가 그 나라 전체를 대표하지 않으며, 특정 국가를 원인 제공자로 표현하지 않는다."
+    },
+    {
+      "code": "[6사10-02]",
+      "alignmentLevel": "부분 연계",
+      "activityEvidence": [
+        "달라지는 기후가 산촌·해안·건조 지역의 생활에 서로 다른 모습으로 나타남을 사진과 친구 이야기로 살펴본다."
+      ],
+      "assessmentEvidence": [
+        "기후 렌즈로 이어진 지역들의 생활 변화 이유를 선택해 설명한다."
+      ],
+      "scopeNote": "기후와 생활의 관계를 사례 중심으로 다루며 세계 기후 구분 전체를 학습하지는 않는다."
+    }
+  ],
+  "learningObjectives": [
+    "여섯 지역의 현장 사진에서 환경 변화의 신호를 관찰하고, 지역마다 나타나는 모습이 다를 수 있음을 설명한다.",
+    "바다·공기·기후·생태계·자원이 국경을 넘어 이어져 있어 한 지역의 문제와 선택이 다른 지역에 영향을 줄 수 있음을 지도에서 확인한다.",
+    "하나의 환경문제에 대해 서로 다른 관점을 듣고, 개인·지역사회·정부와 기업·국제협력이 함께하는 해결안을 조합해 장단점을 비교한다.",
+    "여러 관점을 반영한 공동약속을 만들고 자신이 먼저 시작할 실천을 구체적으로 정한다."
+  ],
+  "titles": {
+    "mission": "하나의 지구, 여섯 개의 신호",
+    "council": "세계 친구 지구회의",
+    "councilSub": "국경을 넘어 이어지는 환경문제",
+    "arrival": "여행이 끝난 뒤, 여섯 친구에게 새로운 사진이 도착했어요.",
+    "panelTitle": "친구들의 마지막 사진",
+    "panelDesc": "사진 속에서 친구들이 걱정하는 변화를 찾아보세요.",
+    "panelButton": "환경 신호 확인하기",
+    "scopeNote": "이 장면은 이 친구가 사는 지역에서 관찰한 여러 모습 중 하나예요.",
+    "connectionNote": "지도의 흐름은 배우기 쉽게 그린 개념 그림이에요. 실제 바다와 바람의 움직임을 그대로 계산한 것은 아니에요.",
+    "connectionFeedback": "사는 곳은 달라도 바다와 공기, 기후와 생태계는 서로 이어져 있어요.",
+    "simulationNote": "이 결과는 해결 방법의 장단점을 비교하기 위한 학습용 모형이에요.",
+    "coreExpression": "서로 다른 지역이 연결되어 함께 겪는 환경문제"
+  },
+  "friends": [
+    {
+      "id": "greet_nepal",
+      "name": "아니타",
+      "country": "네팔",
+      "continent": "아시아",
+      "imageId": "greeting.nepal",
+      "mapX": 0.395,
+      "mapY": 0.455
+    },
+    {
+      "id": "greet_japan",
+      "name": "켄지",
+      "country": "일본",
+      "continent": "아시아",
+      "imageId": "greeting.japan",
+      "mapX": 0.545,
+      "mapY": 0.41
+    },
+    {
+      "id": "greet_morocco",
+      "name": "유스라",
+      "country": "모로코",
+      "continent": "아프리카",
+      "imageId": "greeting.morocco",
+      "mapX": 0.235,
+      "mapY": 0.43
+    },
+    {
+      "id": "greet_tanzania",
+      "name": "아마라",
+      "country": "탄자니아",
+      "continent": "아프리카",
+      "imageId": "greeting.tanzania",
+      "mapX": 0.32,
+      "mapY": 0.6
+    },
+    {
+      "id": "greet_australia",
+      "name": "밀라",
+      "country": "호주",
+      "continent": "오세아니아",
+      "imageId": "greeting.australia",
+      "mapX": 0.575,
+      "mapY": 0.74
+    },
+    {
+      "id": "greet_colombia",
+      "name": "마테오",
+      "country": "콜롬비아",
+      "continent": "남아메리카",
+      "imageId": "greeting.colombia",
+      "mapX": 0.8,
+      "mapY": 0.575
+    }
+  ],
+  "lenses": [
+    {
+      "id": "ocean",
+      "name": "바다",
+      "hint": "해류를 따라 물과 쓰레기, 따뜻한 바닷물이 먼 곳까지 이어져요."
+    },
+    {
+      "id": "air",
+      "name": "공기",
+      "hint": "바람은 국경을 지키지 않아요. 더운 공기와 연기는 멀리 이동해요."
+    },
+    {
+      "id": "climate",
+      "name": "기후",
+      "hint": "지구 전체의 기온이 오르면 산·바다·건조한 땅에서 서로 다른 변화가 나타나요."
+    },
+    {
+      "id": "ecosystem",
+      "name": "생태계",
+      "hint": "물고기와 새, 동물은 여러 나라를 오가며 살아요. 한 곳의 변화가 이동 경로를 바꿔요."
+    },
+    {
+      "id": "resource",
+      "name": "자원과 소비",
+      "hint": "우리가 쓰는 물건과 음식은 여러 나라를 거쳐 오고, 쓰고 난 것도 여러 나라로 가요."
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig_nepal_glacier",
+      "friendId": "greet_nepal",
+      "countryId": "nepal",
+      "issueId": "climate",
+      "titleKo": "달라진 계곡물",
+      "observationPromptKo": "산 위 빙하와 계곡의 물길을 눌러 봐요.",
+      "narrationKo": "히말라야의 많은 빙하는 장기적으로 줄어들고 있어. 눈과 얼음이 녹는 시기가 달라지면 계곡물의 계절별 흐름도 달라질 수 있어.",
+      "reactionKo": "이 학습용 마을 사례에서는 물의 양을 관찰해 밭에 물 대는 시기를 다시 살펴봐.",
+      "imageAssetId": "asia.nepal.3",
+      "hotspots": [
+        {
+          "id": "glacier",
+          "x": 0.5,
+          "y": 0.3,
+          "label": "산 위의 빙하"
+        },
+        {
+          "id": "stream",
+          "x": 0.62,
+          "y": 0.76,
+          "label": "계곡의 물길"
+        }
+      ],
+      "connectionTypes": [
+        "climate",
+        "resource"
+      ],
+      "scopeNoteKo": "히말라야 산촌 한 곳에서 관찰한 모습이에요. 네팔의 다른 지역은 다른 모습일 수 있어요.",
+      "sourceTitle": "IPCC 제6차 평가보고서 — 산악 빙하의 축소 경향(일반 서술)",
+      "sourceUrl": "https://www.ipcc.ch/report/ar6/wg1/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    },
+    {
+      "id": "sig_japan_heat",
+      "friendId": "greet_japan",
+      "countryId": "japan",
+      "issueId": "climate",
+      "titleKo": "더 뜨거워진 여름 바닷가",
+      "observationPromptKo": "해안의 사람들이 더위를 피하는 모습과 바다를 눌러 봐요.",
+      "narrationKo": "기온과 바닷물 온도가 높아지는 경향 속에서 폭염과 해양 열파의 위험도 커질 수 있어.",
+      "reactionKo": "이 학습용 해안 마을 사례에서는 더운 시간의 활동을 줄이고 그늘·물·휴식 공간을 확인해.",
+      "imageAssetId": "asia.japan.3",
+      "hotspots": [
+        {
+          "id": "shade",
+          "x": 0.25,
+          "y": 0.72,
+          "label": "더위를 피하는 사람들"
+        },
+        {
+          "id": "sea",
+          "x": 0.8,
+          "y": 0.52,
+          "label": "따뜻해진 바다"
+        }
+      ],
+      "connectionTypes": [
+        "climate",
+        "ocean"
+      ],
+      "scopeNoteKo": "일본 해안 마을 한 곳의 여름 모습이에요. 지역과 해마다 다를 수 있어요.",
+      "sourceTitle": "세계기상기구(WMO) — 해수 온도와 폭염 경향(일반 서술)",
+      "sourceUrl": "https://wmo.int/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    },
+    {
+      "id": "sig_morocco_water",
+      "friendId": "greet_morocco",
+      "countryId": "morocco",
+      "issueId": "climate",
+      "titleKo": "비를 기다리는 밭",
+      "observationPromptKo": "마른 땅과 물을 모아 두는 곳을 눌러 봐요.",
+      "narrationKo": "건조 지역에서는 비가 적고 가뭄이 이어질 때 농업과 생활에 쓸 물이 부족해질 수 있어.",
+      "reactionKo": "이 학습용 농촌 사례에서는 빗물 저장과 물 사용 순서를 함께 검토해.",
+      "imageAssetId": "env.signal.morocco",
+      "hotspots": [
+        {
+          "id": "soil",
+          "x": 0.3,
+          "y": 0.76,
+          "label": "마른 땅"
+        },
+        {
+          "id": "tank",
+          "x": 0.78,
+          "y": 0.56,
+          "label": "빗물 모으는 통"
+        }
+      ],
+      "connectionTypes": [
+        "climate",
+        "resource"
+      ],
+      "scopeNoteKo": "모로코 남부 농촌 한 곳의 모습이에요. 바닷가 도시나 산악 지역은 다른 모습일 수 있어요.",
+      "sourceTitle": "유엔환경계획(UNEP) — 건조 지역의 물 부족 경향(일반 서술)",
+      "sourceUrl": "https://www.unep.org/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    },
+    {
+      "id": "sig_colombia_plastic",
+      "friendId": "greet_colombia",
+      "countryId": "colombia",
+      "issueId": "ocean",
+      "titleKo": "파도가 데려온 쓰레기",
+      "observationPromptKo": "모래사장에 밀려온 것과 먼 바다를 눌러 봐요.",
+      "narrationKo": "바다로 들어간 플라스틱은 바람과 해류를 따라 멀리 이동해 다른 지역의 해안에 닿을 수 있어.",
+      "reactionKo": "이 학습용 해변 사례에서는 치우는 활동과 함께 쓰레기가 바다로 들어가기 전 줄이는 방법도 찾아봐.",
+      "imageAssetId": "env.signal.colombia",
+      "hotspots": [
+        {
+          "id": "debris",
+          "x": 0.3,
+          "y": 0.82,
+          "label": "밀려온 플라스틱"
+        },
+        {
+          "id": "horizon",
+          "x": 0.8,
+          "y": 0.29,
+          "label": "먼 바다"
+        }
+      ],
+      "connectionTypes": [
+        "ocean",
+        "resource"
+      ],
+      "scopeNoteKo": "콜롬비아 카리브해 해변 한 곳의 모습이에요. 태평양 쪽 해안이나 내륙 도시는 다른 모습일 수 있어요.",
+      "sourceTitle": "유엔환경계획(UNEP) — 해양 플라스틱의 국경 이동(일반 서술)",
+      "sourceUrl": "https://www.unep.org/plastic-pollution",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    },
+    {
+      "id": "sig_australia_reef",
+      "friendId": "greet_australia",
+      "countryId": "australia",
+      "issueId": "ocean",
+      "titleKo": "하얗게 변한 산호",
+      "observationPromptKo": "물속의 산호와 바다거북을 눌러 봐요.",
+      "narrationKo": "바닷물 온도가 비정상적으로 높아지면 산호가 공생 조류를 잃어 하얗게 보이는 백화가 일어날 수 있어.",
+      "reactionKo": "이 학습용 해안 사례에서는 산호 상태를 여러 번 기록하고 장기 관측 자료와 비교해.",
+      "imageAssetId": "env.signal.australia",
+      "hotspots": [
+        {
+          "id": "coral",
+          "x": 0.52,
+          "y": 0.78,
+          "label": "하얗게 변한 산호"
+        },
+        {
+          "id": "turtle",
+          "x": 0.76,
+          "y": 0.3,
+          "label": "바다거북"
+        }
+      ],
+      "connectionTypes": [
+        "ocean",
+        "climate",
+        "ecosystem"
+      ],
+      "scopeNoteKo": "호주 북동쪽 산호 해안 한 곳의 모습이에요. 호주의 사막·도시·남쪽 바다는 다른 모습일 수 있어요.",
+      "sourceTitle": "미국 해양대기청(NOAA) Coral Reef Watch — 산호 백화의 원리(일반 서술)",
+      "sourceUrl": "https://coralreefwatch.noaa.gov/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    },
+    {
+      "id": "sig_tanzania_habitat",
+      "friendId": "greet_tanzania",
+      "countryId": "tanzania",
+      "issueId": "ecosystem",
+      "titleKo": "물웅덩이가 작아진 초원",
+      "observationPromptKo": "작아진 물웅덩이와 멀리 이동하는 동물을 눌러 봐요.",
+      "narrationKo": "건기가 길거나 강수량이 적은 때에는 초원의 물웅덩이가 줄고 야생동물의 물 찾기와 이동이 달라질 수 있어.",
+      "reactionKo": "이 학습용 초원 사례에서는 물과 동물의 이동을 여러 계절에 걸쳐 기록해 비교해.",
+      "imageAssetId": "env.signal.tanzania",
+      "hotspots": [
+        {
+          "id": "pond",
+          "x": 0.33,
+          "y": 0.72,
+          "label": "작아진 물웅덩이"
+        },
+        {
+          "id": "herd",
+          "x": 0.78,
+          "y": 0.47,
+          "label": "이동하는 동물"
+        }
+      ],
+      "connectionTypes": [
+        "ecosystem",
+        "climate"
+      ],
+      "scopeNoteKo": "탄자니아 북부 초원 한 곳의 모습이에요. 해안 도시와 산악 지역은 다른 모습일 수 있어요.",
+      "sourceTitle": "세계자연기금(WWF) — 건기 장기화와 야생동물 이동(일반 서술)",
+      "sourceUrl": "https://www.worldwildlife.org/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true
+    }
+  ],
+  "issues": [
+    {
+      "id": "ocean",
+      "title": "바다와 플라스틱 쓰레기",
+      "question": "바다로 흘러간 쓰레기는 어디까지 이동할까?",
+      "heroSignalId": "sig_colombia_plastic",
+      "connectionLine": "해류"
+    },
+    {
+      "id": "climate",
+      "title": "달라지는 기후와 사람들의 생활",
+      "question": "달라진 기후는 지역마다 생활에 어떤 영향을 줄까?",
+      "heroSignalId": "sig_nepal_glacier",
+      "connectionLine": "지구 전체의 기온 변화"
+    },
+    {
+      "id": "ecosystem",
+      "title": "숲과 생물의 서식지 변화",
+      "question": "서식지가 줄어들면 사람과 생물에게 어떤 변화가 생길까?",
+      "heroSignalId": "sig_tanzania_habitat",
+      "connectionLine": "동물과 물이 오가는 길"
+    }
+  ],
+  "connectionReasons": {
+    "ocean": [
+      {
+        "id": "r_ocean_current",
+        "text": "해류가 물과 쓰레기, 따뜻한 물을 먼 해안까지 옮겨요.",
+        "fits": true
+      },
+      {
+        "id": "r_ocean_wall",
+        "text": "나라마다 바다에 벽이 있어서 서로 이어지지 않아요.",
+        "fits": false
+      },
+      {
+        "id": "r_ocean_same",
+        "text": "모든 바닷가가 똑같은 문제를 똑같이 겪어요.",
+        "fits": false
+      }
+    ],
+    "air": [
+      {
+        "id": "r_air_wind",
+        "text": "바람이 더운 공기와 연기를 국경 너머로 옮겨요.",
+        "fits": true
+      },
+      {
+        "id": "r_air_stop",
+        "text": "공기는 나라 경계에서 멈춰요.",
+        "fits": false
+      },
+      {
+        "id": "r_air_one",
+        "text": "한 나라의 공기만 더워지고 있어요.",
+        "fits": false
+      }
+    ],
+    "climate": [
+      {
+        "id": "r_climate_global",
+        "text": "지구 전체 기온이 오르면 산·바다·건조한 땅에서 다른 모습으로 나타나요.",
+        "fits": true
+      },
+      {
+        "id": "r_climate_local",
+        "text": "기후 변화는 한 나라 안에서만 일어나요.",
+        "fits": false
+      },
+      {
+        "id": "r_climate_same",
+        "text": "모든 지역이 똑같은 변화를 겪어요.",
+        "fits": false
+      }
+    ],
+    "ecosystem": [
+      {
+        "id": "r_eco_move",
+        "text": "동물과 물고기는 여러 나라를 오가며 살아서 한 곳의 변화가 이동 길을 바꿔요.",
+        "fits": true
+      },
+      {
+        "id": "r_eco_fixed",
+        "text": "동물은 한 나라 안에서만 살아요.",
+        "fits": false
+      },
+      {
+        "id": "r_eco_none",
+        "text": "생태계 변화는 사람 생활과 관계없어요.",
+        "fits": false
+      }
+    ],
+    "resource": [
+      {
+        "id": "r_res_chain",
+        "text": "우리가 쓰는 물건은 여러 나라를 거쳐 오고, 버린 것도 여러 나라로 가요.",
+        "fits": true
+      },
+      {
+        "id": "r_res_local",
+        "text": "물건은 만든 나라에서만 쓰고 버려져요.",
+        "fits": false
+      },
+      {
+        "id": "r_res_blame",
+        "text": "쓰레기 문제는 한 나라의 책임이에요.",
+        "fits": false
+      }
+    ]
+  },
+  "perspectives": [
+    {
+      "id": "p_effect",
+      "key": "effect",
+      "label": "환경 개선 효과",
+      "line": "빨리 효과가 나는 방법부터 하고 싶어. 산호와 바다가 더 망가지기 전에.",
+      "worry": "시간이 지나면 되돌리기 어려운 변화가 걱정돼."
+    },
+    {
+      "id": "p_cost",
+      "key": "cost",
+      "label": "생활의 불편과 비용",
+      "line": "규칙을 갑자기 바꾸면 생활이 힘들어지는 사람이 있어. 천천히, 도와주면서 바꾸면 좋겠어.",
+      "worry": "일회용품을 못 쓰게 하면 장사하는 이웃이 힘들까 봐 걱정돼."
+    },
+    {
+      "id": "p_access",
+      "key": "access",
+      "label": "모두의 참여 가능성",
+      "line": "어린이도, 할머니도, 휠체어를 타는 친구도 함께할 수 있는 방법이면 좋겠어.",
+      "worry": "참여하기 어려운 사람이 빠지면 결국 몇 사람만 하게 돼."
+    },
+    {
+      "id": "p_institution",
+      "key": "institution",
+      "label": "정부와 기업의 책임",
+      "line": "쓰레기를 줄이는 건 개인만의 일이 아니야. 물건을 만드는 회사와 규칙을 정하는 정부도 함께해야 해.",
+      "worry": "개인만 열심히 하고 큰 곳은 그대로면 문제가 계속될까 봐 걱정돼."
+    },
+    {
+      "id": "p_cooperation",
+      "key": "cooperation",
+      "label": "여러 나라의 협력",
+      "line": "바다와 공기는 이어져 있으니까 한 나라만 잘해도 부족해. 나라들이 약속을 함께 지켜야 해.",
+      "worry": "서로 남 탓만 하다가 아무도 시작하지 않을까 봐 걱정돼."
+    },
+    {
+      "id": "p_local",
+      "key": "local",
+      "label": "지역에 맞는 방법",
+      "line": "우리 마을에 맞는 방법이 다른 마을에는 안 맞을 수도 있어. 지역 사정을 먼저 들어야 해.",
+      "worry": "멀리서 정한 규칙이 우리 지역 사정과 맞지 않을까 봐 걱정돼."
+    }
+  ],
+  "roundtable": {
+    "ocean": [
+      {
+        "friendId": "greet_australia",
+        "perspectiveId": "p_effect"
+      },
+      {
+        "friendId": "greet_colombia",
+        "perspectiveId": "p_institution"
+      },
+      {
+        "friendId": "greet_japan",
+        "perspectiveId": "p_cost"
+      },
+      {
+        "friendId": "greet_tanzania",
+        "perspectiveId": "p_cooperation"
+      }
+    ],
+    "climate": [
+      {
+        "friendId": "greet_nepal",
+        "perspectiveId": "p_local"
+      },
+      {
+        "friendId": "greet_morocco",
+        "perspectiveId": "p_access"
+      },
+      {
+        "friendId": "greet_japan",
+        "perspectiveId": "p_effect"
+      },
+      {
+        "friendId": "greet_australia",
+        "perspectiveId": "p_cooperation"
+      }
+    ],
+    "ecosystem": [
+      {
+        "friendId": "greet_tanzania",
+        "perspectiveId": "p_local"
+      },
+      {
+        "friendId": "greet_australia",
+        "perspectiveId": "p_effect"
+      },
+      {
+        "friendId": "greet_colombia",
+        "perspectiveId": "p_institution"
+      },
+      {
+        "friendId": "greet_nepal",
+        "perspectiveId": "p_access"
+      }
+    ]
+  },
+  "actionTiers": [
+    {
+      "id": "self",
+      "name": "나와 우리 생활"
+    },
+    {
+      "id": "community",
+      "name": "학교와 지역사회"
+    },
+    {
+      "id": "institution",
+      "name": "정부·기업·국제협력"
+    }
+  ],
+  "actions": [
+    {
+      "id": "a_reuse",
+      "tier": "self",
+      "icon": "bottle",
+      "name": "다회용 물병·가방 쓰기",
+      "detail": "일회용 플라스틱 대신 다시 쓰는 물건을 챙겨요.",
+      "effect": 1,
+      "feasibility": 3,
+      "participation": 3,
+      "cooperation": 0,
+      "issues": [
+        "ocean",
+        "climate"
+      ]
+    },
+    {
+      "id": "a_energy",
+      "tier": "self",
+      "icon": "plug",
+      "name": "안 쓰는 전기 끄기",
+      "detail": "빈 방의 불과 전자제품을 끄고 계단을 이용해요.",
+      "effect": 1,
+      "feasibility": 3,
+      "participation": 3,
+      "cooperation": 0,
+      "issues": [
+        "climate"
+      ]
+    },
+    {
+      "id": "a_observe",
+      "tier": "self",
+      "icon": "eye",
+      "name": "동네 생물·물가 기록하기",
+      "detail": "동네 하천과 나무, 새를 사진으로 기록해 변화를 살펴요.",
+      "effect": 1,
+      "feasibility": 2,
+      "participation": 2,
+      "cooperation": 0,
+      "issues": [
+        "ecosystem",
+        "climate"
+      ]
+    },
+    {
+      "id": "a_cleanup",
+      "tier": "community",
+      "icon": "hands",
+      "name": "함께 치우고 분리배출 표지 만들기",
+      "detail": "그림 표지로 누구나 알아보게 분리배출을 안내해요.",
+      "effect": 2,
+      "feasibility": 2,
+      "participation": 3,
+      "cooperation": 1,
+      "issues": [
+        "ocean"
+      ]
+    },
+    {
+      "id": "a_shade",
+      "tier": "community",
+      "icon": "tree",
+      "name": "학교·마을에 나무와 그늘 만들기",
+      "detail": "더위를 식히고 새와 곤충이 살 곳도 늘려요.",
+      "effect": 2,
+      "feasibility": 2,
+      "participation": 2,
+      "cooperation": 1,
+      "issues": [
+        "climate",
+        "ecosystem"
+      ]
+    },
+    {
+      "id": "a_habitat",
+      "tier": "community",
+      "icon": "leaf",
+      "name": "동네 물가·숲 지킴이 모임",
+      "detail": "물웅덩이와 작은 숲을 함께 돌보고 기록을 나눠요.",
+      "effect": 2,
+      "feasibility": 2,
+      "participation": 2,
+      "cooperation": 1,
+      "issues": [
+        "ecosystem"
+      ]
+    },
+    {
+      "id": "a_rule",
+      "tier": "institution",
+      "icon": "scroll",
+      "name": "일회용품 줄이는 규칙 만들기",
+      "detail": "정부와 회사가 포장을 줄이고 다시 쓰는 방식을 정해요.",
+      "effect": 3,
+      "feasibility": 1,
+      "participation": 2,
+      "cooperation": 2,
+      "issues": [
+        "ocean",
+        "climate"
+      ]
+    },
+    {
+      "id": "a_treaty",
+      "tier": "institution",
+      "icon": "globe",
+      "name": "여러 나라가 함께 약속하기",
+      "detail": "바다·기후·생물을 지키는 국제 약속을 정하고 지켜요.",
+      "effect": 3,
+      "feasibility": 1,
+      "participation": 1,
+      "cooperation": 3,
+      "issues": [
+        "ocean",
+        "climate",
+        "ecosystem"
+      ]
+    },
+    {
+      "id": "a_protect",
+      "tier": "institution",
+      "icon": "shield",
+      "name": "보호구역 정하고 함께 관리하기",
+      "detail": "산호 해안·초원·숲을 보호구역으로 정하고 주민과 함께 관리해요.",
+      "effect": 3,
+      "feasibility": 2,
+      "participation": 2,
+      "cooperation": 2,
+      "issues": [
+        "ecosystem",
+        "ocean"
+      ]
+    }
+  ],
+  "simulationFeedback": {
+    "lowParticipation": "효과는 크지만 여러 사람이 참여하기 어려울 수 있어요.",
+    "onlySelf": "개인의 실천과 사회의 제도 변화가 함께 필요해요.",
+    "lowCooperation": "한 나라만의 노력으로 해결하기 어려운 부분이 있어요.",
+    "offIssue": "지역의 상황과 문제에 맞게 방법을 조정해 보세요.",
+    "lowFeasibility": "환경 개선과 사람들의 생활을 함께 생각해 보세요.",
+    "balanced": "세 수준이 함께 움직이면 효과와 참여가 모두 살아나요.",
+    "highCooperation": "여러 나라가 함께 약속하면 바다와 공기처럼 이어진 문제에 힘이 커져요.",
+    "highParticipation": "어린이부터 어른까지 많은 사람이 함께할 수 있는 조합이에요."
+  },
+  "pledge": {
+    "frame": [
+      "우리가 함께 해결하고 싶은 문제는 {issue}입니다.",
+      "이 문제는 {connection}을 통해 여러 지역과 연결되어 있습니다.",
+      "나와 우리 생활에서는 {self}을 실천할 수 있습니다.",
+      "학교와 지역사회에서는 {community}을 함께할 수 있습니다.",
+      "정부·기업·여러 나라는 {institution}을 위해 협력해야 합니다.",
+      "내가 먼저 시작할 일은 {personal}입니다."
+    ],
+    "helperQuestions": [
+      "언제 할 것인가?",
+      "어디에서 할 것인가?",
+      "누구와 함께할 것인가?",
+      "어떤 변화가 나타나는지 어떻게 확인할 것인가?"
+    ],
+    "vagueWords": [
+      "환경을 보호",
+      "환경 보호",
+      "잘 하겠",
+      "열심히"
+    ]
+  }
+}

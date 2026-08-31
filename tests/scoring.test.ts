@@ -16,9 +16,9 @@ describe('점수 계산 (결정론)', () => {
     expect(r.passed).toBe(true);
   });
 
-  it('속도 보너스는 5로 캡', () => {
+  it('배움 성장 보너스는 5로 캡', () => {
     const r = computeScore({ evidence: 0.5, perspective: 0.5, communication: 0.5, revision: 0.5 }, W, 99);
-    expect(r.byDimension.speedBonus).toBe(5);
+    expect(r.byDimension.growthBonus).toBe(5);
   });
 
   it('비율 범위 밖 값(NaN, 음수, 2.0)은 0~1로 클램프', () => {

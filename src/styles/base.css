@@ -1,5 +1,6 @@
 /* 기본 레이아웃 — 1920/1366/1024, 태블릿 16:9 대응 */
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; padding: 0; height: 100%; }
 
 @font-face {
@@ -126,13 +127,13 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
 
 /* =========================================================
    장면 레이아웃 계약 (겹침 원천 차단 + 정보 최소화)
-   모든 페이지는 4행 그리드다: 헤더 / 본문 / 가이드 / 액션바
-   - 가이드 말풍선은 더 이상 떠 있는 오버레이가 아니라 "자기 행"을 갖는다 → 카드·버튼을 가릴 수 없다
+   모든 페이지는 4행 그리드다: 헤더 / 본문 / 캐릭터 가이드 레인 / 액션바
+   - 가이드 레인은 고정 높이이고 캐릭터는 하단 버튼 기준선까지 내려 세운다
    - 본문만 스크롤한다. 헤더·가이드·액션바는 항상 보인다
    ========================================================= */
 .page {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) var(--guide-lane-h) auto;
   grid-template-columns: 100%;
   overflow: hidden;
 }
@@ -149,38 +150,70 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
 /* 리본 제목이 헤더 위로 잘리지 않게 */
 .ribbon-title { margin-top: 0 !important; }
 
-/* ---- 가이드 스트립: 마스코트 + 타이핑 말풍선 (화면 폭 전체, 겹침 불가) ---- */
+/* ---- 캐릭터 가이드: 캐릭터를 누르면 머리 위 말풍선이 열리고, 끝나면 사라진다 ---- */
 .page > .guide-wrap {
-  position: static;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--sp-3);
-  max-width: none;
-  width: 100%;
-  padding: 6px clamp(12px, 2.5vw, 32px);
-  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(15,28,45,0.28) 100%);
+  position: relative;
+  display:block;
+  justify-self: start;
+  gap:var(--sp-2);
+  width:min(820px,86vw);height:var(--guide-lane-h);
+  padding:0 var(--scene-safe);
+  background: none;
+  z-index:calc(var(--z-panel) + 1);
+  overflow:visible;
 }
 .page > .guide-wrap .guide-mascot {
-  width: clamp(52px, 5.2vw, 76px);
-  flex: 0 0 auto;
-  order: 0;
+  width: 100%;
+  height:var(--guide-size);
+  object-fit: contain;
+  object-position:center bottom;
+}
+.page > .guide-wrap .guide-mascot-button {
+  position:absolute;left:var(--scene-safe);bottom:calc(var(--dock-baseline) - var(--bottom-bar-h));
+  width:var(--guide-size);height:var(--guide-size);
+  translate:none;
+  /* 캐릭터 그림은 가이드 레인 위로 솟아 보이지만, 버튼 상자까지 그대로 두면
+     본문 왼쪽 아래(카드·칩·버튼) 위를 투명하게 덮어 탭을 삼킨다.
+     그림은 그대로 두고 누를 수 있는 영역만 레인 안쪽으로 제한한다. */
+  pointer-events:none;
+}
+.page > .guide-wrap .guide-mascot-button::before {
+  content:'';position:absolute;left:0;right:0;bottom:0;
+  height:min(100%, var(--guide-lane-h));
+  border-radius:46% 46% 42% 42%;
+  pointer-events:auto;
 }
 .page > .guide-wrap .guide-bubble {
-  order: 1;
-  flex: 1 1 auto;
-  min-height: 44px;
+  position:absolute;left:calc(var(--scene-safe) + var(--guide-size) + var(--sp-2));bottom:0;
+  width:min(440px,calc(86vw - var(--guide-size) - var(--scene-safe)));translate:none;
+  min-height: var(--touch-min);
   font-size: var(--fs-body);
   border-radius: var(--radius-l);
 }
-/* 스트립에서는 꼬리를 왼쪽으로 (마스코트 방향) */
-.page > .guide-wrap .guide-bubble::after {
-  left: -10px; bottom: auto; top: 50%; transform: translateY(-50%);
-  border: 10px solid transparent; border-right-color: var(--c-paper); border-left: 0;
+.page > .guide-wrap.has-actions .guide-bubble {
+  width:min(580px,calc(92vw - var(--guide-size) - var(--scene-safe)));
+  max-width:min(580px,calc(92vw - var(--guide-size) - var(--scene-safe)));
 }
-/* 접힘 상태에서도 자리를 유지해 레이아웃이 튀지 않게 */
-.page > .guide-wrap.is-idle .guide-bubble { opacity: 0.55; }
-.page > .guide-wrap.is-idle .guide-mascot { opacity: 0.85; width: clamp(52px, 5.2vw, 76px); }
+.page > .guide-right { justify-self:end; }
+.page > .guide-right .guide-mascot-button { left:auto;right:var(--scene-safe); }
+.page > .guide-right .guide-bubble { left:auto;right:calc(var(--scene-safe) + var(--guide-size) + var(--sp-2)); }
+.page:not(:has(> .bottom-bar)) > .guide-wrap .guide-mascot-button { bottom:var(--dock-baseline); }
+.page > .guide-wrap .guide-bubble::after { left:-10px;right:auto;bottom:28px;border:10px solid transparent;border-right-color:rgba(255,255,255,.92);border-left:0;filter:drop-shadow(-2px 0 0 var(--c-line)); }
+.page > .guide-right .guide-bubble::after { left:auto;right:-10px;border-right:0;border-left:10px solid rgba(255,255,255,.92); }
+
+/* 커진 캐릭터와 하단 버튼이 같은 발판선에 서도록 왼쪽 도크 공간을 확보한다. */
+.page:has(> .guide-wrap) > .bottom-bar { padding-left:max(calc(var(--guide-size) + var(--scene-safe)),var(--scene-safe)); }
+.page:has(> .guide-right) > .bottom-bar {
+  padding-left:var(--scene-safe);
+  padding-right:max(calc(var(--guide-size) + var(--scene-safe)),var(--scene-safe));
+}
+
+@media (max-height: 620px) {
+  .page > .guide-wrap { padding-block:0; }
+  .page > .guide-wrap .guide-mascot-button { width:var(--guide-size);height:var(--guide-size); }
+  .page > .guide-wrap .guide-mascot { height:var(--guide-size); }
+  .page > .guide-wrap .guide-bubble { max-width: min(36ch, 76vw); padding-block: var(--sp-2); }
+}
 
 /* ---- 정보 최소화 유틸 ---- */
 /* 화면 설명문은 2줄까지만 노출하고 나머지는 말풍선/모달로 */

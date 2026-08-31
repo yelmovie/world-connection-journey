@@ -1,10 +1,14 @@
 import { assetUrl, hasAsset } from '../core/assets';
 import { saveRepo } from '../core/SaveRepository';
-import type { MissionId } from '../types';
+import { MISSION_IDS, type MissionId } from '../types';
+import { airplaneChoice, selectedAirplanePortraitAssetId } from './airplaneFleet';
+import { avatarChoice } from './avatarRoster';
 
 export interface MissionReturnCue {
   missionId: MissionId;
   missionTitle: string;
+  /** 'photos' — 문화 탐험이 끝나 친구들의 마지막 사진이 도착하는 전환 연출 */
+  kind?: 'stamp' | 'photos';
 }
 
 export interface JourneyTransitionHandle {
@@ -14,6 +18,16 @@ export interface JourneyTransitionHandle {
 
 let pendingReturn: MissionReturnCue | null = null;
 let activeCancel: (() => void) | null = null;
+
+/** 여권의 여섯 도장 슬롯과 지도 노드가 같은 상징을 사용하게 하는 단일 매핑. */
+export const PASSPORT_STAMP_ASSETS: Record<MissionId, string> = {
+  asia: 'deco.landmark_taj',
+  europe: 'deco.landmark_eiffel',
+  africa: 'deco.landmark_pyramid',
+  americas: 'deco.landmark_liberty',
+  oceania: 'deco.landmark_sydney',
+  dialogue: 'deco.portal_globe'
+};
 
 export function queueMissionReturn(cue: MissionReturnCue): void {
   pendingReturn = cue;
@@ -40,19 +54,57 @@ export function playJourneyTransition(opts: {
   kind: 'flight' | 'stamp';
   label: string;
   assetId?: string;
+  companionAssetId?: string;
 }): JourneyTransitionHandle {
   cancelJourneyTransition();
 
   const reduced = reducedMotion();
-  const duration = reduced ? 120 : opts.kind === 'flight' ? 650 : 460;
+  const duration = reduced ? 120 : opts.kind === 'flight' ? 650 : 1450;
   const assetId = opts.assetId
-    ?? (opts.kind === 'flight' && hasAsset('plane.explorer') ? 'plane.explorer' : opts.kind === 'flight' ? 'plane.main' : 'prop.stamp');
+    ?? (opts.kind === 'flight' ? selectedAirplanePortraitAssetId(saveRepo.get().profile?.airplaneId) : 'prop.stamp');
+  const companionAssetId = opts.companionAssetId !== assetId
+    ? opts.companionAssetId
+    : undefined;
+  const save = saveRepo.get();
+  const avatar = avatarChoice(save.profile?.avatarId);
+  const plane = airplaneChoice(save.profile?.airplaneId);
+  const passportOwner = save.profile?.nickname.trim() || avatar.name;
+  const newestMissionId = companionAssetId
+    ? MISSION_IDS.find((missionId) => PASSPORT_STAMP_ASSETS[missionId] === companionAssetId)
+    : undefined;
+  const stampSlots = MISSION_IDS.map((missionId, index) => {
+    const earned = save.stamps.includes(missionId);
+    const stampAssetId = missionId === newestMissionId && companionAssetId
+      ? companionAssetId
+      : PASSPORT_STAMP_ASSETS[missionId];
+    return `<span class="journey-transition__stamp-slot${earned ? ' is-earned' : ''}${missionId === newestMissionId ? ' is-new' : ''}" data-stamp-slot="${index + 1}">
+      ${earned && hasAsset(stampAssetId) ? `<img src="${assetUrl(stampAssetId)}" data-asset-id="${stampAssetId}" alt="">` : ''}
+    </span>`;
+  }).join('');
+  const passportAssetId = hasAsset('prop.passport_builder') ? 'prop.passport_builder' : 'prop.passport';
+  const issueSeal = save.stamps.length === 0 && hasAsset('deco.emblem_stamp')
+    ? `<img class="journey-transition__issue-seal" src="${assetUrl('deco.emblem_stamp')}" data-asset-id="deco.emblem_stamp" alt="">`
+    : '';
   const overlay = document.createElement('div');
   overlay.className = `journey-transition journey-transition--${opts.kind}`;
+  overlay.style.setProperty('--journey-duration', `${duration}ms`);
   overlay.setAttribute('role', 'status');
   overlay.setAttribute('aria-live', 'polite');
   overlay.innerHTML = `
-    ${hasAsset(assetId) ? `<img class="journey-transition__plane" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">` : ''}
+    ${opts.kind === 'flight'
+      ? `<div class="journey-transition__fleet" aria-hidden="true">
+          ${hasAsset(assetId) ? `<img class="journey-transition__plane" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">` : ''}
+          ${companionAssetId && hasAsset(companionAssetId) ? `<img class="journey-transition__wingmate" src="${assetUrl(companionAssetId)}" data-asset-id="${companionAssetId}" alt="">` : ''}
+        </div>`
+      : `<div class="journey-transition__passport-stage" aria-hidden="true">
+          <strong class="journey-transition__passport-owner">${escapeHtml(passportOwner)}의 여행 여권</strong>
+          ${hasAsset(passportAssetId) ? `<img class="journey-transition__passport" src="${assetUrl(passportAssetId)}" data-asset-id="${passportAssetId}" alt="">` : ''}
+          ${hasAsset(avatar.assetId) ? `<img class="journey-transition__passport-avatar" src="${assetUrl(avatar.assetId)}" data-asset-id="${avatar.assetId}" alt="">` : ''}
+          ${hasAsset(plane.assetId) ? `<img class="journey-transition__passport-plane" src="${assetUrl(plane.assetId)}" data-asset-id="${plane.assetId}" alt="">` : ''}
+          <div class="journey-transition__stamp-grid">${stampSlots}</div>
+          ${issueSeal}
+          ${hasAsset(assetId) ? `<img class="journey-transition__stamp-tool" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">` : ''}
+        </div>`}
     <p class="journey-transition__label">${escapeHtml(opts.label)}</p>`;
   (document.getElementById('overlay-root') ?? document.body).appendChild(overlay);
 

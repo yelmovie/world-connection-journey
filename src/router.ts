@@ -40,7 +40,10 @@ class Router {
   private currentPage: Page | null = null;
   private isTransitioning = false;
   private lastNavAt = 0;
-  private root = document.getElementById('scene-root') as HTMLElement;
+
+  private get root(): HTMLElement {
+    return (document.getElementById('scene-root') ?? document.body) as HTMLElement;
+  }
 
   start(): void {
     window.addEventListener('hashchange', () => void this.sync());
@@ -103,17 +106,24 @@ class Router {
       this.root.innerHTML = `
         <div class="error-fallback">
           <h1>화면을 불러오지 못했어요</h1>
-          <p>네트워크 상태를 확인하고 다시 시도해 주세요.</p>
+          <p>화면을 준비하는 중 문제가 생겼어요. 다시 시도하거나 지도 선택 화면으로 돌아가 주세요.</p>
           <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-primary" data-act="retry">다시 시도</button>
+            <button class="btn btn-ghost" data-act="map">지도 선택</button>
             <button class="btn btn-ghost" data-act="home">처음으로</button>
           </div>
         </div>`;
-      // 다시 시도: 현재 해시(라우트)를 유지한 채 새로고침 → 같은 라우트를 재시도한다.
-      this.root.querySelector('[data-act="retry"]')?.addEventListener('click', () => location.reload());
+      this.root.querySelector('[data-act="retry"]')?.addEventListener('click', () => {
+        this.isTransitioning = false;
+        void this.sync();
+      });
       this.root.querySelector('[data-act="home"]')?.addEventListener('click', () => {
+        this.isTransitioning = false;
         location.hash = '#/';
-        location.reload();
+      });
+      this.root.querySelector('[data-act="map"]')?.addEventListener('click', () => {
+        this.isTransitioning = false;
+        location.hash = '#/map';
       });
     } finally {
       this.root.removeAttribute('aria-busy');

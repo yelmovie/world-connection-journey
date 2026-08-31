@@ -20,15 +20,22 @@
   --c-paper: #ffffff;
   --c-line: rgba(25, 50, 77, 0.14);
 
+  /* 배경 일러스트가 주인공으로 남는 공통 유리 패널 */
+  --glass-panel: rgba(255, 252, 240, 0.84);
+  --glass-panel-soft: rgba(255, 252, 240, 0.78);
+  --glass-panel-strong: rgba(255, 252, 240, 0.9);
+  --glass-modal: rgba(255, 253, 247, 0.9);
+  --glass-backdrop: rgba(8, 24, 43, 0.38);
+
   --font-head: 'Jua', 'Pretendard', system-ui, sans-serif;
   --font-body: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 
-  /* 타이포 스케일 — 전자칠판 기준(1280×720)에서 본문 20px·버튼 20px·중간제목 26px 이상 */
-  --fs-body: clamp(18px, 1.6vw, 24px);
-  --fs-small: clamp(16px, 1.25vw, 19px);
-  --fs-btn: clamp(18px, 1.6vw, 24px);
-  --fs-title: clamp(24px, 2.6vw, 40px);
-  --fs-hero: clamp(30px, 3.6vw, 54px);
+  /* 태블릿 하한을 지키고 1920px 전자칠판에서는 뒷자리까지 읽히도록 상한을 높인다. */
+  --fs-body: clamp(20px, 1.45vw, 28px);
+  --fs-small: clamp(18px, 1.12vw, 22px);
+  --fs-btn: clamp(20px, 1.4vw, 27px);
+  --fs-title: clamp(28px, 2.35vw, 46px);
+  --fs-hero: clamp(36px, 3.2vw, 62px);
 
   --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
@@ -44,9 +51,15 @@
   --touch-min: 48px;
   --hotspot-min: 56px;
 
-  --top-bar-h: 72px;
-  --bottom-bar-h: 84px;
+  --top-bar-h: 84px;
+  --bottom-bar-h: 88px;
   --content-max: 1600px;
+
+  /* 좌측 하단 안내 캐릭터와 하단 액션의 공통 기준선 */
+  --guide-size: clamp(248px, 22vw, 376px);
+  --guide-lane-h: 156px;
+  --dock-baseline: 12px;
+  --guide-bubble-shift: 34px;
 
   /* 공통 6구역 장면 계약 */
   --scene-safe: 20px;
@@ -79,11 +92,23 @@
     --scene-gap: 8px;
     --map-progress-w: 176px;
     --map-brief-w: 224px;
+    --guide-size: clamp(188px, 22vw, 264px);
+    --guide-lane-h: 116px;
+    --dock-baseline: 8px;
+    --guide-bubble-shift: 24px;
     /* 좁은 화면에서도 본문 18px·버튼 18px 하한은 지킨다 (교실 태블릿 가독성) */
     --fs-body: clamp(18px, 1.8vw, 20px);
-    --fs-small: 16px;
+    --fs-small: 18px;
     --fs-btn: clamp(18px, 1.8vw, 20px);
     --fs-title: clamp(24px, 2.4vw, 30px);
+  }
+}
+
+@media (min-width: 1600px) and (min-height: 850px) {
+  :root {
+    --top-bar-h: 96px;
+    --bottom-bar-h: 104px;
+    --scene-safe: 28px;
   }
 }
 

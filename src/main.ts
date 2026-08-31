@@ -1,6 +1,7 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
+import './styles/travel-theme.css';
 import './styles/print.css';
 
 import { router } from './router';
@@ -79,4 +80,17 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('[SW] 등록 실패', err));
   });
+}
+
+// 예전에 같은 localhost 주소에서 미리보기 빌드를 열었다면 그 서비스워커가
+// 개발 서버의 최신 파일보다 오래된 캐시를 돌려줄 수 있다. 개발 중에는 이 앱의
+// 현재 origin에 남아 있는 등록만 해제해 HMR 결과를 그대로 확인한다.
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  void navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      if (new URL(registration.scope).origin === window.location.origin) {
+        void registration.unregister();
+      }
+    }
+  }).catch((err) => console.warn('[SW] 개발용 등록 해제 실패', err));
 }

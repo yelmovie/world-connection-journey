@@ -1,260 +1,277 @@
 {
   "schemaVersion": 1,
-  "missionId": "asia_daily_life_evidence",
+  "missionId": "asia_connected_regions",
   "needsReview": true,
-  "reviewNote": "사실 정보 교사 검수 필요",
+  "reviewNote": "기존 생성 이미지와 새 생성 장면은 교사·지역문화 자문 검토 전까지 한 지역의 관찰 사례로만 사용합니다.",
+  "factCheck": {
+    "status": "공식 자료 대조 완료",
+    "verifiedAt": "2026-08-31",
+    "scope": "대륙 권역, 국가·도시의 상대 위치, 지형·생활·살아 있는 문화 사례",
+    "peopleNote": "등장인물의 말은 학습용 가상 사례이며 한 국가나 공동체 전체를 대표하지 않는다.",
+    "mediaNote": "생성 장면은 관찰 연습을 위한 학습용 재현 이미지이며 실제 현장 사진이나 지리적 축척 지도가 아니다.",
+    "sources": [
+      { "title": "UN Statistics M49 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
+      { "title": "UNESCO 중국 대운하", "url": "https://whc.unesco.org/en/list/1443/" },
+      { "title": "UNESCO 남부 베트남 던까따이뜨", "url": "https://ich.unesco.org/en/RL/art-of-n-ca-tai-t-music-and-song-in-southern-viet-nam-00733" },
+      { "title": "일본 통계국 Statistical Handbook of Japan", "url": "https://www.stat.go.jp/english/data/handbook/pdf/2024all.pdf" },
+      { "title": "IPCC AR6 지역 사실자료", "url": "https://www.ipcc.ch/report/ar6/wg2/about/factsheets/" }
+    ]
+  },
   "standards": [
     {
-      "code": "[6사10-01]",
+      "code": "[6사01-02] 연계",
       "alignmentLevel": "부분 연계",
       "activityEvidence": [
-        "카트만두의 한 가족이 보낸 하루 자료를 시간 순서로 구성한다.",
-        "한 사람의 사례를 지역 전체의 모습으로 일반화하지 않고 여러 가능성을 구분한다."
+        "아시아 5개 권역에서 자연환경과 오늘날의 생활 장면을 관찰하고 두 지역을 비교합니다.",
+        "국경을 넘는 환경 신호와 여러 주체의 관점을 연결해 공동 제안을 만듭니다."
       ],
       "assessmentEvidence": [
-        "자료에서 확인한 사실, 가능한 추론, 추가 확인이 필요한 내용을 분류한다.",
-        "당사자에게 확인할 존중하는 질문을 만든다."
+        "사진에서 확인한 근거와 더 알아봐야 할 점을 구분합니다.",
+        "개인·지역사회·정부·기업·국제협력의 행동을 함께 반영합니다."
       ],
-      "scopeNote": "세계 여러 지역의 다양한 삶을 이해하는 요소만 부분적으로 연습한다. 지형 경관과 생활의 관계를 직접 비교하는 활동은 없으므로 이 미션만으로 성취기준 전체 달성을 판단하지 않는다."
+      "scopeNote": "국가 암기나 문화 일반화가 아니라 한 지역 사례를 근거로 비교하고 질문하는 활동입니다."
     }
   ],
   "learningObjectives": [
-    "하루 기록의 시간 단서를 근거로 생활 자료를 순서화하는 연습을 한다.",
-    "관찰한 사실과 가능한 추론, 추가 확인이 필요한 정보를 구분하는 연습을 한다.",
-    "한 사람의 사례를 국가나 대륙 전체로 일반화하지 않고 당사자에게 존중하는 방식으로 질문하는 연습을 한다."
+    "아시아가 넓고 다양한 대륙이며 자연환경과 생활 모습이 서로 관계있음을 관찰합니다.",
+    "같은 나라와 권역 안에도 여러 모습이 있음을 알고 한 장면을 전체로 일반화하지 않습니다.",
+    "여러 지역을 잇는 환경문제에 개인·지역사회·정부·기업·국제협력이 함께 필요함을 설명합니다."
   ],
   "intro": {
-    "title": "아시아: 하루를 읽는 탐험",
-    "subtitle": "카트만두에 사는 미나의 하루",
-    "guide": "네팔 카트만두에 사는 초등학생 미나네 가족의 하루 기록을 함께 살펴볼 거예요. 잊지 마세요. 이건 '미나네 가족의 하루'이지 '네팔 전체의 하루'가 아니에요. 같은 도시 안에서도 가정마다 하루의 모습은 서로 달라요. 자료를 읽고, 확인한 사실과 내 추측을 구분하고, 미나에게 물어볼 질문을 만들어 볼까요?"
+    "title": "아시아: 서로 다른 삶, 이어진 지구",
+    "subtitle": "아시아 여러 지역의 자연과 생활문화를 살펴보고, 함께 해결할 문제를 찾아보세요.",
+    "guide": "궁금한 지역을 눌러 자연과 생활의 모습을 살펴봐. 화면의 생성 장면은 실제 현장 사진이 아니라, 출처로 확인한 특징을 비교하기 위한 학습용 재현 이미지야."
   },
-  "round1_timeline": {
-    "guide": "미나의 하루 기록 조각 여섯 개를 시간 순서에 맞게 놓아 볼까요? 각 조각에 담긴 시간 단서를 잘 읽어 보세요.",
-    "slots": [
-      "이른 아침",
-      "아침",
-      "한낮",
-      "오후",
-      "저녁",
-      "밤"
-    ],
-    "items": [
-      {
-        "id": "fetch_water",
-        "label": "물 받아 두기",
-        "timeHint": "해가 막 뜰 무렵",
-        "correctSlot": 0,
-        "desc": "미나네 동네에서는 물이 나오는 시간이 정해져 있어서, 아침 일찍 물을 받아 두는 집이 많아요. 미나도 이 일을 맡고 있어요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "morning_meal",
-        "label": "가족과 아침 식사",
-        "timeHint": "학교 가기 전",
-        "correctSlot": 1,
-        "desc": "미나네 가족은 학교 가기 전에 밥과 콩 수프를 함께 먹는 날이 많아요. 메뉴는 날마다 조금씩 달라요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "school_lesson",
-        "label": "학교 수업",
-        "timeHint": "해가 높이 떠 있을 때",
-        "correctSlot": 2,
-        "desc": "미나가 다니는 학교에서는 네팔어 수업과 영어 수업이 함께 있는 경우가 많아요. 미나는 과학 시간을 기다린대요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "play_friends",
-        "label": "친구들과 골목 놀이",
-        "timeHint": "수업이 끝난 뒤",
-        "correctSlot": 3,
-        "desc": "수업이 끝나면 미나는 친구들과 골목이나 마당에서 놀기도 해요. 공놀이를 하는 날도, 그냥 수다를 떠는 날도 있어요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "help_sibling",
-        "label": "동생 숙제 봐 주기",
-        "timeHint": "해가 질 무렵",
-        "correctSlot": 4,
-        "desc": "저녁이 되면 미나는 동생의 숙제를 봐 주는 날이 많아요. 부모님이 가게 일을 마치고 돌아오시는 시간이기도 해요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "family_talk",
-        "label": "가족과 이야기 나누기",
-        "timeHint": "잠들기 전",
-        "correctSlot": 5,
-        "desc": "잠들기 전, 미나네 가족은 오늘 있었던 일을 이야기하며 하루를 마무리하곤 해요.",
-        "factConfidence": "general"
-      }
-    ],
-    "feedback": {
-      "perfect": "여섯 조각을 모두 시간 단서에 맞게 연결했어요! 단서를 근거로 순서를 찾아낸 거예요.",
-      "partial": "몇 조각은 제자리를 찾았어요. 아직 자리가 어색한 조각은 시간 단서를 다시 읽어 볼까요? '해가 질 무렵'과 '잠들기 전'처럼 비슷해 보이는 단서를 비교해 보면 힌트가 보여요.",
-      "retry": "아직 순서가 완성되지 않았어요. 각 조각의 시간 단서에 형광펜을 긋는다고 생각하고, '학교 가기 전'인지 '수업이 끝난 뒤'인지부터 나눠 보세요. 다시 한번 도전해 볼까요?"
+  "requirements": {
+    "minRegions": 4,
+    "minExamples": 6,
+    "minDiscoveries": 4,
+    "minSignals": 3
+  },
+  "regions": [
+    {
+      "id": "east",
+      "nameKo": "동아시아",
+      "silhouette": "산맥과 큰 도시",
+      "mapPosition": { "xPercent": 78, "yPercent": 37 },
+      "countryExampleIds": ["korea_seoul", "china_beijing", "japan_tokyo", "mongolia_ulaanbaatar"],
+      "visualSceneIds": ["korea_nature", "china_daily", "japan_culture", "mongolia_nature"],
+      "environmentalSignalIds": ["signal_mongolia_dry_steppe", "signal_japan_heat"]
+    },
+    {
+      "id": "southeast",
+      "nameKo": "동남아시아",
+      "silhouette": "큰 강과 섬",
+      "mapPosition": { "xPercent": 69, "yPercent": 70 },
+      "countryExampleIds": ["vietnam_mekong"],
+      "visualSceneIds": ["vietnam_nature", "vietnam_daily", "vietnam_culture"],
+      "environmentalSignalIds": ["signal_vietnam_saltwater"]
+    },
+    {
+      "id": "south",
+      "nameKo": "남아시아",
+      "silhouette": "히말라야와 평야",
+      "mapPosition": { "xPercent": 50, "yPercent": 60 },
+      "countryExampleIds": ["nepal_kathmandu"],
+      "visualSceneIds": ["nepal_nature", "nepal_daily", "nepal_culture"],
+      "environmentalSignalIds": ["signal_nepal_glacier"]
+    },
+    {
+      "id": "central",
+      "nameKo": "중앙아시아",
+      "silhouette": "초원과 높은 산",
+      "mapPosition": { "xPercent": 43, "yPercent": 35 },
+      "countryExampleIds": ["kazakhstan_almaty"],
+      "visualSceneIds": ["kazakhstan_nature", "kazakhstan_daily", "kazakhstan_culture"],
+      "environmentalSignalIds": ["signal_kazakhstan_glacier"]
+    },
+    {
+      "id": "west",
+      "nameKo": "서아시아",
+      "silhouette": "건조 지대와 도시",
+      "mapPosition": { "xPercent": 22, "yPercent": 43 },
+      "countryExampleIds": ["jordan_amman"],
+      "visualSceneIds": ["jordan_nature", "jordan_daily", "jordan_culture"],
+      "environmentalSignalIds": ["signal_jordan_water"]
     }
-  },
-  "round2_classification": {
-    "guide": "미나의 하루 자료를 읽고 만든 문장들이에요. 각 문장이 '자료에서 확인'한 사실인지, '가능한 해석'인지, '더 확인 필요'한 것인지 나눠 볼까요? 자료에 직접 나오지 않는 내용을 단정하면 오해가 생길 수 있어요.",
-    "categories": [
-      {
-        "id": "fact",
-        "label": "자료에서 확인"
-      },
-      {
-        "id": "inference",
-        "label": "가능한 해석"
-      },
-      {
-        "id": "needs_check",
-        "label": "더 확인 필요"
-      }
-    ],
-    "statements": [
-      {
-        "id": "s_fact_water",
-        "text": "미나는 아침 일찍 물을 받아 두는 일을 맡고 있어요.",
-        "answer": "fact",
-        "why": "하루 기록에 미나가 이 일을 맡고 있다고 직접 나와 있어요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "s_fact_language",
-        "text": "미나네 학교에는 네팔어 수업과 영어 수업이 함께 있어요.",
-        "answer": "fact",
-        "why": "학교 수업 조각에서 직접 확인할 수 있는 내용이에요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "s_fact_evening",
-        "text": "미나네 가족은 잠들기 전에 이야기를 나누며 하루를 마무리하곤 해요.",
-        "answer": "fact",
-        "why": "밤 시간대 조각에 그대로 나와 있는 내용이에요.",
-        "factConfidence": "general"
-      },
-      {
-        "id": "s_inf_sibling",
-        "text": "미나는 동생을 잘 챙기는 편인 것 같아요.",
-        "answer": "inference",
-        "why": "동생 숙제를 봐 준다는 자료에서 이렇게 해석할 수는 있지만, 미나의 마음까지 자료에 직접 나온 건 아니에요. '~인 것 같아요'라고 말하는 게 정확해요."
-      },
-      {
-        "id": "s_inf_morning_busy",
-        "text": "미나네 아침 시간은 꽤 바쁘게 흘러가는 것 같아요.",
-        "answer": "inference",
-        "why": "물 받기와 아침 식사, 등교가 이어지는 걸 보면 가능한 해석이에요. 하지만 미나가 바쁘다고 느끼는지는 자료에 없어요."
-      },
-      {
-        "id": "s_inf_science",
-        "text": "미나는 과학에 흥미가 있는 것 같아요.",
-        "answer": "inference",
-        "why": "과학 시간을 기다린다는 말에서 해석할 수 있어요. 다만 '제일 좋아하는 과목'이라고 단정하려면 더 물어봐야 해요."
-      },
-      {
-        "id": "s_chk_all_nepal",
-        "text": "네팔 어린이들은 모두 아침에 물을 받아 와요.",
-        "answer": "needs_check",
-        "why": "이 자료는 미나네 가족 한 사례일 뿐이에요. 한 사람의 하루를 보고 나라 전체를 '모두 ~한다'라고 말하면 위험한 일반화가 돼요.",
-        "factConfidence": "needs_check"
-      },
-      {
-        "id": "s_chk_weekend",
-        "text": "미나는 주말에도 평일과 똑같은 하루를 보내요.",
-        "answer": "needs_check",
-        "why": "자료에는 평일 하루만 담겨 있어요. 주말이 어떤지는 미나에게 직접 물어봐야 알 수 있어요."
-      },
-      {
-        "id": "s_chk_favorite",
-        "text": "미나가 제일 좋아하는 과목은 과학이에요.",
-        "answer": "needs_check",
-        "why": "과학 시간을 기다린다는 것과 '제일 좋아한다'는 것은 달라요. 확인하려면 본인에게 물어보는 게 가장 정확해요."
-      }
-    ],
-    "designNote": "오개념(자료 하나로 문화 전체 단정)을 직접 겪고 수정하도록 설계: '모두/항상' 진술을 사실로 분류하면 '자료에서 직접 확인했나요?' 피드백과 함께 해당 문장만 재분류하게 한다."
-  },
-  "round3_question": {
-    "guide": "이제 미나에게 직접 물어볼 질문을 만들어 볼까요? 좋은 질문은 단정하지 않고, 상대가 편하게 대답할 수 있게 열어 두는 질문이에요. 조각을 골라 질문을 조립해 보세요.",
-    "fragments": {
-      "openers": [
-        "혹시 괜찮다면,",
-        "궁금한 게 있는데,",
-        "네 이야기 잘 읽었어.",
-        "내가 잘 몰라서 그러는데,"
-      ],
-      "topics": [
-        "아침에 물을 받아 두는 일",
-        "학교에서 배우는 과목",
-        "친구들과 하는 놀이",
-        "가족과 보내는 저녁 시간",
-        "주말에 보내는 하루"
-      ],
-      "closers": [
-        "은(는) 너에게 어떤 시간이야?",
-        "에 대해 더 이야기해 줄 수 있어?",
-        "은(는) 우리 반이랑 뭐가 같고 뭐가 다를까?",
-        "중에 네가 제일 좋아하는 건 뭐야?"
-      ]
+  ],
+  "countryExamples": [
+    {
+      "id": "korea_seoul",
+      "regionId": "east",
+      "countryNameKo": "대한민국",
+      "placeNameKo": "서울",
+      "scopeNoteKo": "이 장면은 서울에서 볼 수 있는 여러 모습 중 하나예요. 대한민국의 다른 지역은 다른 자연과 생활 모습을 지녀요.",
+      "sourceTitle": "UNESCO 동아시아 살아 있는 유산 교육",
+      "sourceUrl": "https://www.unesco.org/en/articles/bringing-living-heritage-classroom-east-asia",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["korea_nature", "korea_daily", "korea_culture", "korea_landmark"]
     },
-    "goodCombos": [
-      {
-        "opener": "혹시 괜찮다면,",
-        "topic": "아침에 물을 받아 두는 일",
-        "closer": "은(는) 너에게 어떤 시간이야?",
-        "why": "단정하거나 평가하지 않고, 그 일이 미나에게 어떤 의미인지 본인의 말로 들을 수 있는 질문이에요."
-      },
-      {
-        "opener": "궁금한 게 있는데,",
-        "topic": "주말에 보내는 하루",
-        "closer": "에 대해 더 이야기해 줄 수 있어?",
-        "why": "자료에 없던 부분을 추측으로 채우지 않고, 직접 물어서 확인하려는 태도가 담긴 질문이에요."
-      },
-      {
-        "opener": "네 이야기 잘 읽었어.",
-        "topic": "친구들과 하는 놀이",
-        "closer": "은(는) 우리 반이랑 뭐가 같고 뭐가 다를까?",
-        "why": "상대의 이야기를 먼저 존중하고, 차이만이 아니라 공통점도 함께 찾아보자고 여는 질문이에요."
-      },
-      {
-        "opener": "내가 잘 몰라서 그러는데,",
-        "topic": "학교에서 배우는 과목",
-        "closer": "중에 네가 제일 좋아하는 건 뭐야?",
-        "why": "모르는 것을 솔직하게 인정하고, 단정 대신 본인의 선택을 물어보는 질문이에요."
-      }
-    ],
-    "badPatterns": [
-      {
-        "pattern": "\"네팔 사람들은 다 그렇게 살지?\"처럼 한 사람에게 나라 전체를 대표하게 하는 질문",
-        "why": "미나는 네팔의 대표가 아니라 한 명의 친구예요. 한 사람의 대답을 나라 전체의 사실처럼 받아들이면 새로운 고정관념이 생겨요."
-      },
-      {
-        "pattern": "\"매일 물을 길어야 하다니 불편하겠다, 힘들지 않아?\"처럼 내 기준으로 먼저 평가해 버리는 질문",
-        "why": "내 생활을 기준으로 상대의 하루를 '불편한 것'으로 정해 버리면, 상대는 자기 이야기를 편하게 하기 어려워요. 평가 대신 어떤 의미인지 먼저 물어보는 게 좋아요."
-      }
-    ],
-    "feedback": {
-      "good": "상대를 단정하지 않는 열린 질문을 완성했어요! 이렇게 물으면 미나도 자기 이야기를 편하게 들려줄 수 있을 거예요.",
-      "retry": "이 조합은 상대를 조금 곤란하게 만들 수 있어요. 질문에 '다', '모두', '원래' 같은 단정이 숨어 있지 않은지, 내 기준으로 먼저 평가하고 있지 않은지 살펴보고 다시 조립해 볼까요?"
+    {
+      "id": "china_beijing",
+      "regionId": "east",
+      "countryNameKo": "중국",
+      "placeNameKo": "베이징",
+      "scopeNoteKo": "이 장면은 베이징의 여러 도시 생활 모습 중 하나예요. 중국의 모든 도시와 농촌을 대표하지 않아요.",
+      "sourceTitle": "UNESCO 중국 대운하",
+      "sourceUrl": "https://whc.unesco.org/en/list/1443/",
+      "lastVerifiedAt": "2026-08-31",
+      "needsReview": false,
+      "sceneIds": ["china_nature", "china_daily", "china_culture", "china_landmark"]
+    },
+    {
+      "id": "japan_tokyo",
+      "regionId": "east",
+      "countryNameKo": "일본",
+      "placeNameKo": "도쿄와 세토나이카이 해안",
+      "scopeNoteKo": "도시 이동과 해안 생활을 서로 다른 장소에서 살핀 사례예요. 일본 전체의 생활을 한 모습으로 묶지 않아요.",
+      "sourceTitle": "UNESCO 동아시아 살아 있는 유산 교육",
+      "sourceUrl": "https://www.unesco.org/en/articles/bringing-living-heritage-classroom-east-asia",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["japan_nature", "japan_daily", "japan_culture", "japan_landmark"]
+    },
+    {
+      "id": "mongolia_ulaanbaatar",
+      "regionId": "east",
+      "countryNameKo": "몽골",
+      "placeNameKo": "울란바토르 주변",
+      "scopeNoteKo": "초원과 울란바토르 주변의 한 사례예요. 몽골의 모든 가족이 같은 집과 이동 방식을 쓰는 것은 아니에요.",
+      "sourceTitle": "UNESCO 동아시아 공유 유산 교육",
+      "sourceUrl": "https://www.unesco.org/en/articles/unescos-initiative-brings-east-asias-living-heritage-classrooms-peace-and-sustainable-futures",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["mongolia_nature", "mongolia_daily", "mongolia_culture", "mongolia_landmark"]
+    },
+    {
+      "id": "vietnam_mekong",
+      "regionId": "southeast",
+      "countryNameKo": "베트남",
+      "placeNameKo": "메콩강 삼각주 껀터",
+      "scopeNoteKo": "메콩강 삼각주 한 지역의 사례예요. 베트남의 산지와 대도시 등은 서로 다른 모습을 지녀요.",
+      "sourceTitle": "세계은행 메콩강 삼각주 기후 회복력 사례",
+      "sourceUrl": "https://www.worldbank.org/en/news/feature/2025/12/10/from-coastal-risks-to-resilience-sharing-lessons-from-viet-nam-s-mekong-delta",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["vietnam_nature", "vietnam_daily", "vietnam_culture", "vietnam_landmark"]
+    },
+    {
+      "id": "nepal_kathmandu",
+      "regionId": "south",
+      "countryNameKo": "네팔",
+      "placeNameKo": "카트만두 계곡과 산지",
+      "scopeNoteKo": "카트만두 계곡과 산지에서 볼 수 있는 여러 모습 중 일부예요. 네팔의 평야와 다른 공동체는 다른 생활 모습을 지녀요.",
+      "sourceTitle": "UNESCO 네팔 학교의 살아 있는 유산 교육 사례",
+      "sourceUrl": "https://www.unesco.org/en/articles/living-heritage-schools-pilot-implementation-nepal-brings-new-beginning-innovative-teaching-and",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["nepal_nature", "nepal_daily", "nepal_culture", "nepal_landmark"]
+    },
+    {
+      "id": "kazakhstan_almaty",
+      "regionId": "central",
+      "countryNameKo": "카자흐스탄",
+      "placeNameKo": "알마티와 주변 산지",
+      "scopeNoteKo": "알마티와 주변 산지에서 볼 수 있는 여러 모습 중 일부예요. 넓은 카자흐스탄의 모든 지역을 대표하지 않아요.",
+      "sourceTitle": "UNESCO 카자흐 전통 돔브라 쿠이 예술",
+      "sourceUrl": "https://ich.unesco.org/en/RL/kazakh-traditional-art-of-dombra-kuy-00996",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["kazakhstan_nature", "kazakhstan_daily", "kazakhstan_culture", "kazakhstan_landmark"]
+    },
+    {
+      "id": "jordan_amman",
+      "regionId": "west",
+      "countryNameKo": "요르단",
+      "placeNameKo": "와디럼·암만·페트라",
+      "scopeNoteKo": "요르단 남부의 와디럼과 페트라, 수도 암만의 서로 다른 장면을 살핀 사례예요. 요르단의 모든 생활을 한 모습으로 설명하지 않아요.",
+      "sourceTitle": "요르단 관광청 역사·문화 안내",
+      "sourceUrl": "https://international.visitjordan.com/whattodo/history-culture/",
+      "lastVerifiedAt": "2026-08-30",
+      "needsReview": true,
+      "sceneIds": ["jordan_nature", "jordan_daily", "jordan_culture", "jordan_landmark"]
     }
-  },
-  "learn": {
-    "friend": {
-      "name": "미나",
-      "imageId": "asia.child1",
-      "region": "네팔 카트만두"
-    },
-    "goal": "네팔 친구 미나의 하루로 다른 나라의 생활을 이해해요",
-    "prediction": {
-      "question": "미나의 하루는 나와 비슷할까요?",
-      "options": [
-        "나랑 많이 비슷할 거야",
-        "많이 다를 거야",
-        "반반일 것 같아"
-      ]
-    },
-    "discoveries": [
-      "미나도 학교에 가고 친구와 놀아요 — 우리와 비슷한 하루예요.",
-      "아침에 물을 받아 두는 등 동네 사정에 따라 다른 부분도 있어요.",
-      "한 사람의 하루만 보고 나라 전체를 판단할 수는 없어요."
-    ]
+  ],
+  "scenes": [
+    { "id": "korea_nature", "exampleId": "korea_seoul", "category": "nature", "titleKo": "도시를 지나는 물길", "imageAssetId": "asia.korea.3", "summaryKo": "도시 한가운데 물길과 산책 공간이 이어져 있어.", "detailKo": "큰 도시는 건물뿐 아니라 물길과 그늘, 쉬는 공간을 함께 만들어 생활해.", "discoveryKo": "도시에서도 물과 녹지가 생활 공간이 돼.", "hotspots": [{ "id": "water", "x": 0.48, "y": 0.68, "labelKo": "도시 물길" }, { "id": "people", "x": 0.72, "y": 0.52, "labelKo": "함께 쓰는 산책 공간" }] },
+    { "id": "korea_daily", "exampleId": "korea_seoul", "category": "daily", "titleKo": "동네 시장의 오늘", "imageAssetId": "asia.korea.2", "summaryKo": "사람들이 장을 보고 안부를 나누는 시장이 보여.", "detailKo": "시장은 물건을 사는 곳이면서 이웃이 만나 정보를 나누는 생활 공간이기도 해.", "discoveryKo": "시장은 거래와 만남이 함께 일어나는 공간이야.", "hotspots": [{ "id": "stall", "x": 0.34, "y": 0.55, "labelKo": "계절 먹거리" }, { "id": "neighbors", "x": 0.68, "y": 0.44, "labelKo": "이웃의 만남" }] },
+    { "id": "korea_culture", "exampleId": "korea_seoul", "category": "culture", "titleKo": "옛집과 새 도시가 만나는 길", "imageAssetId": "asia.korea.1", "summaryKo": "기와집 너머로 오늘날의 건물이 함께 보여.", "detailKo": "도시 안에서는 오래된 건축과 새로운 생활 공간을 함께 보존하고 사용하기도 해.", "discoveryKo": "오래된 공간도 오늘의 생활 속에서 이어질 수 있어.", "hotspots": [{ "id": "old", "x": 0.36, "y": 0.56, "labelKo": "오래된 기와집" }, { "id": "new", "x": 0.75, "y": 0.24, "labelKo": "새로운 도시 건물" }] },
+    { "id": "china_nature", "exampleId": "china_beijing", "category": "nature", "titleKo": "대운하와 큰 도시", "imageAssetId": "asia.china.3", "summaryKo": "베이징에서 남쪽 저장성까지 이어지는 대운하의 물길을 살펴봐.", "detailKo": "대운하는 여러 자연 하천 유역을 잇도록 만든 인공 수로 체계야. 오랫동안 사람과 물자의 이동에 쓰였고 일부 구간은 오늘날에도 이어져.", "discoveryKo": "도시의 물길에는 자연 하천뿐 아니라 사람이 만든 운하도 있어.", "hotspots": [{ "id": "canal", "x": 0.43, "y": 0.65, "labelKo": "도시를 지나는 운하" }, { "id": "city", "x": 0.74, "y": 0.3, "labelKo": "운하 주변 도시 공간" }] },
+    { "id": "china_daily", "exampleId": "china_beijing", "category": "daily", "titleKo": "후퉁 골목의 이동", "imageAssetId": "asia.china.1", "summaryKo": "좁은 골목에서 걷기와 자전거 이동이 보여.", "detailKo": "오래된 골목도 사람들이 살고 이동하는 오늘날의 동네 공간으로 이어져.", "discoveryKo": "길의 넓이와 건물 모습이 이동 방법에 영향을 줘.", "hotspots": [{ "id": "bike", "x": 0.54, "y": 0.63, "labelKo": "자전거" }, { "id": "courtyard", "x": 0.25, "y": 0.42, "labelKo": "골목집 입구" }] },
+    { "id": "china_culture", "exampleId": "china_beijing", "category": "culture", "titleKo": "시장에 모인 여러 맛", "imageAssetId": "asia.china.2", "summaryKo": "시장에 여러 재료와 조리법이 함께 보여.", "detailKo": "한 나라 안에서도 지역과 가족에 따라 먹는 재료와 조리법이 다양해.", "discoveryKo": "한 시장 안에서도 서로 다른 생활문화가 만날 수 있어.", "hotspots": [{ "id": "ingredients", "x": 0.46, "y": 0.5, "labelKo": "여러 재료" }, { "id": "steam", "x": 0.72, "y": 0.34, "labelKo": "따뜻하게 조리한 음식" }] },
+    { "id": "japan_nature", "exampleId": "japan_tokyo", "category": "nature", "titleKo": "바다 가까운 마을의 그늘", "imageAssetId": "asia.japan.3", "summaryKo": "해안가 집과 길에 햇빛을 가리는 천막이 보여.", "detailKo": "바다와 햇빛, 바람을 살피며 쉬고 이동할 공간을 조절해.", "discoveryKo": "해안의 날씨는 집과 길을 쓰는 방법에 연결돼.", "hotspots": [{ "id": "sea", "x": 0.73, "y": 0.46, "labelKo": "가까운 바다" }, { "id": "shade", "x": 0.38, "y": 0.42, "labelKo": "햇빛 가림막" }] },
+    { "id": "japan_daily", "exampleId": "japan_tokyo", "category": "daily", "titleKo": "기차역의 이동", "imageAssetId": "asia.japan.2", "summaryKo": "많은 사람이 같은 기차를 기다리고 있어.", "detailKo": "큰 도시에서는 정해진 시간과 안내를 함께 지키며 대중교통을 이용해.", "discoveryKo": "대중교통은 많은 사람의 이동을 연결해.", "hotspots": [{ "id": "train", "x": 0.38, "y": 0.42, "labelKo": "도시 기차" }, { "id": "line", "x": 0.72, "y": 0.68, "labelKo": "기다리는 위치" }] },
+    { "id": "japan_culture", "exampleId": "japan_tokyo", "category": "culture", "titleKo": "등을 함께 만드는 시간", "imageAssetId": "asia.japan.1", "summaryKo": "동네 사람들이 종이등을 만들고 손질하고 있어.", "detailKo": "축제에 쓰는 물건은 완성품뿐 아니라 함께 만들고 배우는 과정도 문화가 돼.", "discoveryKo": "문화는 사람들이 함께 만들고 전하는 과정이야.", "hotspots": [{ "id": "hands", "x": 0.53, "y": 0.62, "labelKo": "함께 만드는 손" }, { "id": "lantern", "x": 0.28, "y": 0.35, "labelKo": "종이등" }] },
+    { "id": "mongolia_nature", "exampleId": "mongolia_ulaanbaatar", "category": "nature", "titleKo": "넓은 초원과 큰 하늘", "imageAssetId": "asia.mongolia.1", "summaryKo": "넓은 초원에 이동할 수 있는 집과 가축이 보여.", "detailKo": "초원의 풀과 물을 살피며 생활 공간과 이동 시기를 정하는 사례가 있어.", "discoveryKo": "초원의 자연 변화가 이동과 생활에 이어져.", "hotspots": [{ "id": "grass", "x": 0.7, "y": 0.67, "labelKo": "초원의 풀" }, { "id": "ger", "x": 0.42, "y": 0.46, "labelKo": "게르" }] },
+    { "id": "mongolia_daily", "exampleId": "mongolia_ulaanbaatar", "category": "daily", "titleKo": "도시와 게르가 이어진 동네", "imageAssetId": "asia.mongolia.2", "summaryKo": "게르와 아파트, 도로가 한 도시 안에 함께 보여.", "detailKo": "울란바토르 주변에는 여러 형태의 집과 이동 방법이 함께 존재해.", "discoveryKo": "한 도시 안에도 서로 다른 주거 모습이 있어.", "hotspots": [{ "id": "ger", "x": 0.34, "y": 0.66, "labelKo": "게르 주거" }, { "id": "apartments", "x": 0.7, "y": 0.3, "labelKo": "도시 건물" }] },
+    { "id": "mongolia_culture", "exampleId": "mongolia_ulaanbaatar", "category": "culture", "titleKo": "물과 초원을 함께 살피기", "imageAssetId": "asia.mongolia.3", "summaryKo": "사람들이 우물의 물과 주변 땅을 함께 확인하고 있어.", "detailKo": "지역 지식은 자연을 관찰하고 다음 생활 방법을 정하는 데에도 이어져.", "discoveryKo": "자연을 살피는 지식도 세대와 이웃 사이에 전해져.", "hotspots": [{ "id": "well", "x": 0.53, "y": 0.62, "labelKo": "함께 확인하는 우물" }, { "id": "ground", "x": 0.76, "y": 0.55, "labelKo": "마른 땅" }] },
+    { "id": "vietnam_nature", "exampleId": "vietnam_mekong", "category": "nature", "titleKo": "강이 여러 갈래로 흐르는 삼각주", "imageAssetId": "asia.vietnam.1", "summaryKo": "넓고 낮은 땅 사이로 강과 운하가 이어져 있어.", "detailKo": "메콩강 삼각주에서는 물길과 계절 변화가 이동과 농업, 마을 생활에 연결돼.", "discoveryKo": "큰 강의 여러 물길이 사람과 마을을 이어 줘.", "hotspots": [{ "id": "canal", "x": 0.54, "y": 0.56, "labelKo": "갈라지는 물길" }, { "id": "trees", "x": 0.22, "y": 0.55, "labelKo": "물가의 나무" }] },
+    { "id": "vietnam_daily", "exampleId": "vietnam_mekong", "category": "daily", "titleKo": "물길 위에서 만나는 아침 시장", "imageAssetId": "asia.vietnam.2", "summaryKo": "작은 배들이 채소와 과일을 싣고 물길에서 만나.", "detailKo": "껀터 주변의 수상 시장은 메콩강 삼각주의 물길을 이동과 거래에 활용해 온 생활 사례야. 오늘날에는 육상 시장과 도로 교통도 함께 이용해.", "discoveryKo": "강은 이동하는 길이면서 물건과 사람이 만나는 생활 공간이야.", "hotspots": [{ "id": "produce", "x": 0.42, "y": 0.65, "labelKo": "배에 실은 농산물" }, { "id": "boats", "x": 0.72, "y": 0.48, "labelKo": "물길에서 만나는 배" }] },
+    { "id": "vietnam_culture", "exampleId": "vietnam_mekong", "category": "culture", "titleKo": "강가 가족의 함께 차리는 식사", "imageAssetId": "asia.vietnam.3", "summaryKo": "여러 세대가 허브와 국수, 생선과 과일을 함께 준비해.", "detailKo": "메콩강 삼각주의 먹거리는 강과 과수원, 시장에서 얻은 재료와 이어져 있어. 모든 가족의 식탁이 같지는 않지만, 함께 준비하고 나누는 과정도 생활 문화를 보여 줘.", "discoveryKo": "먹거리를 살펴보면 자연환경과 시장, 가족의 생활이 어떻게 이어지는지 알 수 있어.", "hotspots": [{ "id": "ingredients", "x": 0.58, "y": 0.72, "labelKo": "강과 밭에서 온 재료" }, { "id": "family", "x": 0.5, "y": 0.48, "labelKo": "함께 준비하는 가족" }] },
+    { "id": "nepal_nature", "exampleId": "nepal_kathmandu", "category": "nature", "titleKo": "산과 계단식 밭", "imageAssetId": "asia.nepal.2", "summaryKo": "가파른 산비탈에 길과 밭이 층층이 이어져 있어.", "detailKo": "산지의 높낮이는 길과 농사 공간을 만드는 방법에 영향을 줘.", "discoveryKo": "산지의 모양에 맞춰 길과 밭을 만들기도 해.", "hotspots": [{ "id": "terrace", "x": 0.6, "y": 0.62, "labelKo": "계단식 밭" }, { "id": "trail", "x": 0.33, "y": 0.55, "labelKo": "산길" }] },
+    { "id": "nepal_daily", "exampleId": "nepal_kathmandu", "category": "daily", "titleKo": "카트만두의 공동 공간", "imageAssetId": "asia.nepal.1", "summaryKo": "광장에서 사람들이 쉬고 이동하며 이웃을 만나.", "detailKo": "오래된 건물 주변도 오늘날 사람들이 함께 쓰는 생활 공간으로 이어져.", "discoveryKo": "공동 공간은 이동과 만남, 생활을 연결해.", "hotspots": [{ "id": "square", "x": 0.55, "y": 0.66, "labelKo": "함께 쓰는 광장" }, { "id": "neighbors", "x": 0.72, "y": 0.48, "labelKo": "이웃의 만남" }] },
+    { "id": "nepal_culture", "exampleId": "nepal_kathmandu", "category": "culture", "titleKo": "학교와 마을이 함께 지키는 유산", "imageAssetId": "asia.nepal.1", "summaryKo": "지역의 이야기와 기술을 학교 수업과 연결하는 사례가 있어.", "detailKo": "UNESCO 네팔 학교 사례처럼 지역 구성원이 수업에 참여해 살아 있는 유산을 함께 배울 수 있어.", "discoveryKo": "문화는 학교와 마을이 함께 배우며 이어 갈 수 있어.", "hotspots": [{ "id": "people", "x": 0.44, "y": 0.52, "labelKo": "여러 세대의 만남" }, { "id": "place", "x": 0.72, "y": 0.3, "labelKo": "지역의 오래된 공간" }] },
+    { "id": "kazakhstan_nature", "exampleId": "kazakhstan_almaty", "category": "nature", "titleKo": "사르아르카의 넓은 초원", "imageAssetId": "asia.kazakhstan.1", "summaryKo": "낮은 바위 언덕과 풀이 이어지는 넓은 반건조 초원이 보여.", "detailKo": "카자흐스탄 중부의 사르아르카에는 초원과 호수, 낮은 산지가 넓게 펼쳐져 있어. 계절과 강수량에 따라 풀의 모습도 달라져.", "discoveryKo": "넓은 초원은 비어 있는 땅이 아니라 다양한 생물이 살아가는 환경이야.", "hotspots": [{ "id": "grassland", "x": 0.55, "y": 0.65, "labelKo": "넓게 이어진 초원" }, { "id": "saiga", "x": 0.38, "y": 0.6, "labelKo": "멀리 보이는 사이가영양" }] },
+    { "id": "kazakhstan_daily", "exampleId": "kazakhstan_almaty", "category": "daily", "titleKo": "산 가까운 알마티의 공원", "imageAssetId": "asia.kazakhstan.2", "summaryKo": "가족이 공원에서 자전거를 타고 차와 빵을 나눠.", "detailKo": "알마티에서는 톈산산맥의 높은 봉우리를 도시 가까이에서 볼 수 있어. 공원과 자전거 길 같은 오늘날의 생활 공간도 산지 풍경과 함께 이어져.", "discoveryKo": "한 나라 안에서도 넓은 초원과 산 가까운 대도시의 생활 모습은 서로 달라.", "hotspots": [{ "id": "mountains", "x": 0.5, "y": 0.22, "labelKo": "도시 뒤의 톈산산맥" }, { "id": "park", "x": 0.52, "y": 0.68, "labelKo": "가족이 함께 쓰는 공원" }] },
+    { "id": "kazakhstan_culture", "exampleId": "kazakhstan_almaty", "category": "culture", "titleKo": "돔브라 쿠이를 배우는 시간", "imageAssetId": "asia.kazakhstan.3", "summaryKo": "어린 연주자와 선생님이 두 줄 악기의 곡을 함께 익혀.", "detailKo": "돔브라 쿠이는 이야기와 연주를 통해 지식과 감정을 세대 사이에 전하는 문화야.", "discoveryKo": "음악은 이야기와 기술을 다음 세대로 이어 줘.", "hotspots": [{ "id": "dombra", "x": 0.46, "y": 0.55, "labelKo": "두 줄 돔브라" }, { "id": "teacher", "x": 0.7, "y": 0.44, "labelKo": "배우고 가르치는 모습" }] },
+    { "id": "jordan_nature", "exampleId": "jordan_amman", "category": "nature", "titleKo": "와디럼의 바위산과 넓은 골짜기", "imageAssetId": "asia.jordan.1", "summaryKo": "붉은 사암 절벽과 모래 골짜기, 드문드문 자라는 식물이 보여.", "detailKo": "요르단 남부의 와디럼은 바람과 오랜 침식이 만든 사암 절벽과 골짜기가 넓게 이어지는 건조 지역이야.", "discoveryKo": "건조 지역도 모래만 있는 곳이 아니라 바위산과 골짜기, 식물이 함께 있는 환경이야.", "hotspots": [{ "id": "cliffs", "x": 0.63, "y": 0.42, "labelKo": "바람과 침식이 만든 절벽" }, { "id": "shrubs", "x": 0.25, "y": 0.67, "labelKo": "건조한 땅의 식물" }] },
+    { "id": "jordan_daily", "exampleId": "jordan_amman", "category": "daily", "titleKo": "언덕을 오르내리는 암만의 하루", "imageAssetId": "asia.jordan.2", "summaryKo": "밝은 석회암 건물과 계단, 시내버스가 언덕을 따라 이어져.", "detailKo": "암만은 여러 언덕에 펼쳐진 도시야. 사람들은 가파른 계단과 도로, 버스 같은 이동 수단을 이용해 학교와 일터를 오가.", "discoveryKo": "도시의 높낮이는 집과 길, 대중교통을 이용하는 방법에 연결돼.", "hotspots": [{ "id": "bus", "x": 0.78, "y": 0.68, "labelKo": "언덕길을 잇는 시내버스" }, { "id": "steps", "x": 0.18, "y": 0.62, "labelKo": "언덕을 오르는 계단" }] },
+    { "id": "jordan_culture", "exampleId": "jordan_amman", "category": "culture", "titleKo": "페트라에서 배우는 나바테아의 물 관리", "imageAssetId": "asia.jordan.3", "summaryKo": "학생들이 바위를 깎아 만든 건축과 물길을 함께 관찰해.", "detailKo": "페트라는 나바테아인이 바위를 깎아 건물과 무덤을 만들고, 수로와 저수 시설로 물을 관리한 유적 도시야. 오늘날에는 보존과 학습이 함께 이루어져.", "discoveryKo": "오래된 유산은 건축 모양뿐 아니라 환경에 적응한 지식도 보여 줘.", "hotspots": [{ "id": "facade", "x": 0.68, "y": 0.32, "labelKo": "바위를 깎아 만든 건축" }, { "id": "waterway", "x": 0.62, "y": 0.72, "labelKo": "물을 옮기던 수로" }] },
+    { "id": "korea_landmark", "exampleId": "korea_seoul", "category": "landmark", "titleKo": "서울 창덕궁 인정전", "imageAssetId": "asia.korea.landmark", "summaryKo": "궁궐의 중심 건물과 넓은 돌마당을 살펴봐.", "detailKo": "창덕궁은 조선 시대에 세워진 궁궐로, 자연 지형과 어울리는 배치가 특징이야. 인정전은 국가의 중요한 의식을 열던 중심 건물이야.", "discoveryKo": "창덕궁에서는 건물뿐 아니라 마당과 주변 지형이 이어진 배치도 함께 볼 수 있어.", "hotspots": [{ "id": "hall", "x": 0.58, "y": 0.42, "labelKo": "인정전의 겹지붕" }, { "id": "court", "x": 0.5, "y": 0.75, "labelKo": "의식이 열리던 돌마당" }], "sourceTitle": "UNESCO 창덕궁", "sourceUrl": "https://whc.unesco.org/en/list/816" },
+    { "id": "china_landmark", "exampleId": "china_beijing", "category": "landmark", "titleKo": "베이징 천단", "imageAssetId": "asia.china.landmark", "summaryKo": "푸른 삼층 지붕과 둥근 건물의 모양을 관찰해.", "detailKo": "천단은 명·청 시대 황제가 풍년을 기원하는 의식을 치르던 제단과 건축물의 복합 공간이야. 둥근 기년전과 대칭적인 배치가 잘 알려져 있어.", "discoveryKo": "건물의 모양과 공간 배치에는 당시 사람들이 중요하게 여긴 질서가 담겨 있어.", "hotspots": [{ "id": "roof", "x": 0.51, "y": 0.33, "labelKo": "푸른색 삼층 지붕" }, { "id": "terrace", "x": 0.5, "y": 0.71, "labelKo": "흰 대리석 단" }], "sourceTitle": "UNESCO 천단", "sourceUrl": "https://whc.unesco.org/en/list/881" },
+    { "id": "japan_landmark", "exampleId": "japan_tokyo", "category": "landmark", "titleKo": "도쿄 스카이트리", "imageAssetId": "asia.japan.landmark", "summaryKo": "도시와 강 위로 솟은 방송 탑을 살펴봐.", "detailKo": "도쿄 스카이트리는 높이 634m의 방송·전망 시설이야. 스미다강 주변의 오늘날 도쿄 도시 경관 속에서 볼 수 있어.", "discoveryKo": "오늘날의 랜드마크도 도시의 통신, 이동, 관광 같은 기능과 연결돼.", "hotspots": [{ "id": "decks", "x": 0.5, "y": 0.31, "labelKo": "전망대" }, { "id": "river", "x": 0.76, "y": 0.75, "labelKo": "스미다강 주변" }], "sourceTitle": "도쿄 스카이트리 공식 안내", "sourceUrl": "https://www.tokyo-skytree.jp/enjoy/discover/" },
+    { "id": "mongolia_landmark", "exampleId": "mongolia_ulaanbaatar", "category": "landmark", "titleKo": "울란바토르 간단사원", "imageAssetId": "asia.mongolia.landmark", "summaryKo": "도심 가까이 이어지는 불교 사원 공간을 살펴봐.", "detailKo": "간단테그친렌 사원은 울란바토르의 대표적인 불교 사원 단지야. 미그지드 잔라이시그 사원과 기도 바퀴, 예배 공간이 오늘날에도 이어져.", "discoveryKo": "도시 안의 종교 유산은 오래된 건축이면서 오늘도 사용되는 생활 공간이야.", "hotspots": [{ "id": "temple", "x": 0.61, "y": 0.4, "labelKo": "미그지드 잔라이시그 사원" }, { "id": "wheels", "x": 0.2, "y": 0.68, "labelKo": "기도 바퀴" }], "sourceTitle": "울란바토르 관광 안내", "sourceUrl": "https://tourism.ub.gov.mn/wp-content/uploads/English01.pdf" },
+    { "id": "vietnam_landmark", "exampleId": "vietnam_mekong", "category": "landmark", "titleKo": "껀터 닌끼에우 보행교", "imageAssetId": "asia.vietnam.landmark", "summaryKo": "강변 산책길과 굽은 보행교가 이어지는 모습을 봐.", "detailKo": "닌끼에우 보행교는 껀터의 까이케 운하를 가로질러 닌끼에우 부두 주변 강변 공간을 잇는 다리야. 도시의 산책과 야간 경관을 함께 이루어.", "discoveryKo": "강은 배의 이동뿐 아니라 다리와 산책길을 통해 도시 생활도 이어 줘.", "hotspots": [{ "id": "bridge", "x": 0.55, "y": 0.48, "labelKo": "굽은 보행교" }, { "id": "riverfront", "x": 0.2, "y": 0.72, "labelKo": "강변 산책 공간" }], "sourceTitle": "껀터시 대표 건축물 안내", "sourceUrl": "https://media.cantho.gov.vn/wps/portal/home/en/detail/tourist-attractions/historic-sites/the%2Bmost%2Bcharacteristic%2Barchitectural%2Bworks%2Bin%2Bcan%2Btho" },
+    { "id": "nepal_landmark", "exampleId": "nepal_kathmandu", "category": "landmark", "titleKo": "카트만두 더르바르 광장", "imageAssetId": "asia.nepal.landmark", "summaryKo": "붉은 벽돌 광장과 층층 지붕의 건축을 관찰해.", "detailKo": "카트만두 더르바르 광장의 하누만 도카 궁전 구역은 카트만두 계곡 세계유산을 이루는 기념물 구역 가운데 하나야. 궁전과 사원, 광장이 함께 이어져 있어.", "discoveryKo": "광장은 유산을 보는 곳이면서 사람들이 오가고 만나는 도시 공간이기도 해.", "hotspots": [{ "id": "pagoda", "x": 0.5, "y": 0.37, "labelKo": "층층이 이어진 지붕" }, { "id": "square", "x": 0.57, "y": 0.73, "labelKo": "사람들이 오가는 광장" }], "sourceTitle": "UNESCO 카트만두 계곡", "sourceUrl": "https://whc.unesco.org/en/list/121/" },
+    { "id": "kazakhstan_landmark", "exampleId": "kazakhstan_almaty", "category": "landmark", "titleKo": "알마티 승천 대성당", "imageAssetId": "asia.kazakhstan.landmark", "summaryKo": "판필로프 공원의 목조 성당과 산을 함께 살펴봐.", "detailKo": "승천 대성당은 알마티 판필로프 공원에 있는 목조 정교회 성당이야. 밝은 외벽과 여러 돔, 높은 종탑이 특징이야.", "discoveryKo": "알마티의 대표 건축은 공원과 도시, 가까운 산지 경관 속에 함께 놓여 있어.", "hotspots": [{ "id": "domes", "x": 0.52, "y": 0.34, "labelKo": "여러 색의 돔" }, { "id": "park", "x": 0.22, "y": 0.73, "labelKo": "판필로프 공원" }], "sourceTitle": "카자흐스탄 공식 관광 안내", "sourceUrl": "https://oq.gov.kz/en/abai/voznesenskiy-kafedraldy-sobory" },
+    { "id": "jordan_landmark", "exampleId": "jordan_amman", "category": "landmark", "titleKo": "페트라 알카즈네", "imageAssetId": "asia.jordan.landmark", "summaryKo": "좁은 시크 협곡 끝에 나타나는 바위 건축을 관찰해.", "detailKo": "알카즈네는 페트라의 사암 절벽을 깎아 만든 대표적인 정면 건축이야. 페트라는 나바테아인의 무덤과 신전, 수로가 남은 유적 도시야.", "discoveryKo": "바위를 깎은 건축과 물 관리 시설을 함께 보면 건조 환경에 적응한 도시 지식을 알 수 있어.", "hotspots": [{ "id": "facade", "x": 0.68, "y": 0.48, "labelKo": "바위를 깎은 알카즈네 정면" }, { "id": "siq", "x": 0.18, "y": 0.48, "labelKo": "좁은 시크 협곡" }], "sourceTitle": "UNESCO 페트라", "sourceUrl": "https://whc.unesco.org/en/list/326" }
+  ],
+  "comparisonLenses": [
+    { "id": "space", "labelKo": "생활하는 공간" },
+    { "id": "movement", "labelKo": "배우고 이동하는 방법" },
+    { "id": "community", "labelKo": "가족과 공동체" },
+    { "id": "adaptation", "labelKo": "자연환경에 적응하는 모습" },
+    { "id": "expression", "labelKo": "문화와 표현" },
+    { "id": "concern", "labelKo": "환경에 대한 고민" }
+  ],
+  "signals": [
+    { "id": "signal_mongolia_dry_steppe", "regionId": "east", "titleKo": "초원의 물이 줄어든 신호", "beforeAssetId": "asia.mongolia.1", "afterAssetId": "asia.mongolia.3", "beforeLabelKo": "풀이 자란 때", "afterLabelKo": "건조한 때의 관찰", "promptKo": "풀과 우물 주변이 어떻게 달라 보이는지 막대를 움직여 봐.", "connectionTypes": ["climate", "water", "ecosystem"], "sourceTitle": "UNESCO 아시아·태평양 자연환경과 생활 다양성", "sourceUrl": "https://www.unesco.org/en/links/asia-pacific", "needsReview": true },
+    { "id": "signal_japan_heat", "regionId": "east", "titleKo": "더운 날 그늘이 필요한 신호", "beforeAssetId": "asia.japan.1", "afterAssetId": "asia.japan.3", "beforeLabelKo": "실내 공동 작업", "afterLabelKo": "해안의 그늘 대응", "promptKo": "같은 더위에도 공간에 따라 대응이 어떻게 다른지 살펴봐.", "connectionTypes": ["climate", "city"], "sourceTitle": "ESCAP 아시아·태평양 기후·환경 공동 대응", "sourceUrl": "https://www.unescap.org/news/asia-pacific-ministers-adopt-new-roadmap-tackle-climate-change-biodiversity-loss-and-pollution", "needsReview": true },
+    { "id": "signal_vietnam_saltwater", "regionId": "southeast", "titleKo": "삼각주 물길의 염분 변화 신호", "beforeAssetId": "asia.vietnam.1", "afterAssetId": "asia.vietnam.2", "beforeLabelKo": "강과 운하", "afterLabelKo": "생활과 이동의 대응", "promptKo": "물길의 변화가 이동과 농업, 마을 생활에 어떻게 이어질지 생각해 봐.", "connectionTypes": ["water", "climate", "ocean"], "sourceTitle": "세계은행 메콩강 삼각주의 기후 적응", "sourceUrl": "https://blogs.worldbank.org/en/eastasiapacific/how-vietnams-mekong-delta-adapting-changing-climate", "needsReview": true },
+    { "id": "signal_nepal_glacier", "regionId": "south", "titleKo": "산의 얼음과 계곡물 변화 신호", "beforeAssetId": "asia.nepal.2", "afterAssetId": "asia.nepal.3", "beforeLabelKo": "산지의 생활 공간", "afterLabelKo": "빙하와 계곡물 관찰", "promptKo": "산 위 얼음과 아래쪽 물길이 어떻게 연결될지 살펴봐.", "connectionTypes": ["climate", "water"], "sourceTitle": "IPCC AR6 아시아 지역 사실자료", "sourceUrl": "https://www.ipcc.ch/report/ar6/wg2/about/factsheets/", "needsReview": true },
+    { "id": "signal_kazakhstan_glacier", "regionId": "central", "titleKo": "넓은 초원과 산 가까운 도시", "beforeAssetId": "asia.kazakhstan.1", "afterAssetId": "asia.kazakhstan.2", "beforeLabelKo": "사르아르카의 초원", "afterLabelKo": "톈산산맥 가까운 알마티", "promptKo": "한 나라 안에서도 자연환경과 생활 모습이 어떻게 달라지는지 비교해 봐.", "connectionTypes": ["ecosystem", "city"], "sourceTitle": "UNESCO 아시아·태평양 생태계 다양성", "sourceUrl": "https://www.unesco.org/en/links/asia-pacific", "needsReview": true },
+    { "id": "signal_jordan_water", "regionId": "west", "titleKo": "건조한 땅에서 이어 온 물 관리", "beforeAssetId": "asia.jordan.1", "afterAssetId": "asia.jordan.3", "beforeLabelKo": "와디럼의 건조 지형", "afterLabelKo": "페트라의 수로와 저수 지식", "promptKo": "비가 적은 환경에서 오래전 사람들은 물을 어떻게 모으고 옮겼을지 살펴봐.", "connectionTypes": ["water", "climate", "heritage"], "sourceTitle": "요르단 관광청 역사·문화 안내", "sourceUrl": "https://international.visitjordan.com/whattodo/history-culture/", "needsReview": false }
+  ],
+  "issues": [
+    { "id": "connected_water", "titleKo": "서로 이어진 물의 이용과 부족", "questionKo": "물이 부족한 지역에서는 생활과 자연을 함께 지키기 위해 무엇이 필요할까?", "signalIds": ["signal_mongolia_dry_steppe", "signal_vietnam_saltwater", "signal_nepal_glacier", "signal_kazakhstan_glacier", "signal_jordan_water"], "connectionKo": "강·빙하·비와 사람들이 쓰는 물" },
+    { "id": "changing_climate", "titleKo": "달라지는 기후와 생활", "questionKo": "달라지는 기후는 지역마다 생활에 어떤 영향을 줄까?", "signalIds": ["signal_mongolia_dry_steppe", "signal_japan_heat", "signal_vietnam_saltwater", "signal_nepal_glacier", "signal_jordan_water"], "connectionKo": "지구 전체의 기온과 물의 순환" },
+    { "id": "shared_habitats", "titleKo": "숲·초원·물가의 생물과 사람", "questionKo": "생물이 살 곳과 사람의 생활을 함께 지키려면 누구의 협력이 필요할까?", "signalIds": ["signal_mongolia_dry_steppe", "signal_vietnam_saltwater", "signal_nepal_glacier"], "connectionKo": "이동하는 물과 생물의 서식지" }
+  ],
+  "perspectives": [
+    { "id": "perspective_mina", "nameKo": "미나", "regionId": "south", "assetId": "asia.mina", "labelKo": "지역의 자연환경", "lineKo": "산의 물은 아래 마을까지 이어져. 지역마다 물길과 필요한 방법이 다르니까 먼저 사정을 들어야 해.", "worryKo": "멀리서 정한 한 가지 방법이 우리 지역에는 맞지 않을까 봐 걱정돼." },
+    { "id": "perspective_lin", "nameKo": "린", "regionId": "east", "assetId": "asia.child2", "labelKo": "정부와 기업의 책임", "lineKo": "어린이만 아끼는 것으로는 부족해. 물건을 만드는 회사와 규칙을 정하는 정부도 함께 바꿔야 해.", "worryKo": "개인만 노력하고 큰 곳은 그대로일까 봐 걱정돼." },
+    { "id": "perspective_dao", "nameKo": "다오", "regionId": "southeast", "assetId": "asia.child3", "labelKo": "생활과 지역의 참여", "lineKo": "강 가까이 사는 사람은 물의 변화를 매일 봐. 주민이 기록하고 결정에 참여해야 오래 이어질 수 있어.", "worryKo": "생활하는 사람의 목소리가 계획에서 빠질까 봐 걱정돼." },
+    { "id": "perspective_jisu", "nameKo": "지수", "regionId": "east", "assetId": "asia.child1", "labelKo": "어린이와 다양한 사람의 참여", "lineKo": "그림 안내와 쉬운 참여 방법이 있으면 어린이와 어른이 함께할 수 있어. 누구도 빠지지 않게 하자.", "worryKo": "방법이 너무 어렵거나 비싸서 참여하지 못하는 사람이 생길까 봐 걱정돼." }
+  ],
+  "actionTiers": [
+    { "id": "self", "nameKo": "나와 우리 생활" },
+    { "id": "community", "nameKo": "학교와 지역사회" },
+    { "id": "institution", "nameKo": "정부·기업·여러 나라의 협력" }
+  ],
+  "actions": [
+    { "id": "action_save_water", "tier": "self", "nameKo": "필요한 만큼 물 쓰기", "detailKo": "물을 쓰는 습관을 살피고 낭비되는 물을 줄여.", "effect": 1, "feasibility": 3, "participation": 3, "cooperation": 0, "durability": 2, "issues": ["connected_water", "changing_climate"] },
+    { "id": "action_reuse", "tier": "self", "nameKo": "다시 쓰는 물건 고르기", "detailKo": "한 번 쓰고 버리는 물건을 줄이고 오래 쓰는 것을 골라.", "effect": 1, "feasibility": 3, "participation": 3, "cooperation": 0, "durability": 2, "issues": ["changing_climate", "shared_habitats"] },
+    { "id": "action_observe", "tier": "self", "nameKo": "우리 동네 변화 기록하기", "detailKo": "물가와 나무, 더운 날의 변화를 사진과 글로 남겨.", "effect": 1, "feasibility": 2, "participation": 2, "cooperation": 1, "durability": 2, "issues": ["connected_water", "changing_climate", "shared_habitats"] },
+    { "id": "action_school_map", "tier": "community", "nameKo": "학교 물·그늘 지도 만들기", "detailKo": "물이 새는 곳과 쉬어 갈 그늘을 찾아 함께 고쳐.", "effect": 2, "feasibility": 2, "participation": 3, "cooperation": 1, "durability": 2, "issues": ["connected_water", "changing_climate"] },
+    { "id": "action_local_voice", "tier": "community", "nameKo": "주민 목소리 함께 듣기", "detailKo": "어린이와 어른, 여러 일을 하는 사람의 경험을 계획에 담아.", "effect": 1, "feasibility": 2, "participation": 3, "cooperation": 2, "durability": 2, "issues": ["connected_water", "changing_climate", "shared_habitats"] },
+    { "id": "action_habitat", "tier": "community", "nameKo": "물가·숲 지킴이 모임", "detailKo": "작은 숲과 물가를 함께 돌보고 변화를 나눠.", "effect": 2, "feasibility": 2, "participation": 2, "cooperation": 1, "durability": 3, "issues": ["shared_habitats", "connected_water"] },
+    { "id": "action_company_rule", "tier": "institution", "nameKo": "기업의 물·자원 책임 높이기", "detailKo": "만드는 과정에서 물과 자원을 덜 쓰고 결과를 공개하게 해.", "effect": 3, "feasibility": 1, "participation": 2, "cooperation": 2, "durability": 3, "issues": ["connected_water", "changing_climate"] },
+    { "id": "action_region_plan", "tier": "institution", "nameKo": "지역에 맞는 기후 계획", "detailKo": "산지·삼각주·건조 도시처럼 다른 조건에 맞춰 계획을 조정해.", "effect": 3, "feasibility": 2, "participation": 2, "cooperation": 2, "durability": 3, "issues": ["connected_water", "changing_climate", "shared_habitats"] },
+    { "id": "action_cross_border", "tier": "institution", "nameKo": "여러 나라가 자료와 약속 나누기", "detailKo": "이어진 강과 공기, 생물의 변화를 함께 기록하고 약속을 지켜.", "effect": 3, "feasibility": 1, "participation": 1, "cooperation": 3, "durability": 3, "issues": ["connected_water", "changing_climate", "shared_habitats"] }
+  ],
+  "proposal": {
+    "helperQuestions": ["우리 생활에서 언제 시작할까?", "누구와 함께할까?", "변화를 어떻게 확인할까?"],
+    "modelNoteKo": "이 결과는 해결 방법의 장단점을 비교하기 위한 학습용 모형이에요."
   }
 }

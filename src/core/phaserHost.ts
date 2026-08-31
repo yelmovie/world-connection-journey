@@ -8,6 +8,11 @@ export interface PhaserHost {
   destroy(): void;
 }
 
+interface PhaserHostOptions {
+  /** FIT은 전체 장면을 보이고, ENVELOP은 여백 없이 부모를 채운다. */
+  scaleMode?: 'fit' | 'envelop';
+}
+
 /**
  * 페이지당 1개의 Phaser 인스턴스를 생성/파괴한다.
  * phaser 청크는 실제 사용 페이지에서만 동적 로드된다.
@@ -15,7 +20,8 @@ export interface PhaserHost {
  */
 export async function createPhaserHost(
   parent: HTMLElement,
-  sceneFactory: (P: typeof PhaserNS) => PhaserNS.Scene
+  sceneFactory: (P: typeof PhaserNS) => PhaserNS.Scene,
+  options: PhaserHostOptions = {}
 ): Promise<PhaserHost> {
   const Phaser = (await import('phaser')).default;
   const scene = sceneFactory(Phaser);
@@ -27,7 +33,7 @@ export async function createPhaserHost(
     // destroy 후 visibility 핸들러로 닫힌 컨텍스트를 resume하는 오류를 차단한다.
     audio: { noAudio: true },
     scale: {
-      mode: Phaser.Scale.FIT,
+      mode: options.scaleMode === 'envelop' ? Phaser.Scale.ENVELOP : Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
       width: GAME_W,
       height: GAME_H

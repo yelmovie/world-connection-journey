@@ -2,16 +2,19 @@ import type { Page } from '../router';
 import { assetUrl, hasAsset } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
+import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { createGuide, type GuideController } from '../ui/guide';
-import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
+import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
 import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
 import { showToast } from '../ui/toast';
+import { selectedAvatarSpeaker } from '../ui/avatarRoster';
+import { airplaneChoice } from '../ui/airplaneFleet';
 
 interface TimelineItem {
   id: string;
@@ -59,29 +62,30 @@ const CAT_STYLE: Record<string, { color: string; fg: string; mark: string }> = {
 
 /* 표현 전용 스타일 — 로직과 무관한 페이지 내 연출 부품 */
 const PAGE_CSS = `
+.asia-mission {
+  --mission-body:clamp(18px,1.45vw,22px);
+  --mission-small:clamp(18px,1.2vw,20px);
+  --mission-title:clamp(27px,2.3vw,36px);
+}
 .asia-mission .top-bar { background: linear-gradient(180deg,rgba(31,43,74,.78),rgba(31,43,74,0)); }
 /* 기준 해상도(1024x576+)에서는 한 화면에 들어가지만, 더 낮은 창에서는 잘리는 대신 스크롤한다 */
-.asia-mission .page-body { padding: var(--sp-3) clamp(12px,2.5vw,32px); overflow-y: auto; }
+.asia-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px) clamp(54px,7vh,60px);overflow-y:auto; }
 /* 배경 일러스트가 주인공 — 패널은 하나, 반투명. 오른쪽은 배경 위에 선 캐릭터 열 */
 .asia-mission .mission-scene {
   flex: 1; min-height: 0; width: 100%; display: grid;
-  grid-template-columns: minmax(0,1fr) clamp(132px,14vw,240px);
+  grid-template-columns: minmax(0,1fr) clamp(180px,18vw,270px);
   gap: var(--sp-4); align-items: stretch;
 }
 .asia-mission .scene-board {
-  min-width: 0; min-height: 0; overflow: hidden; position: relative;
+  min-width: 0; min-height: 0; overflow: auto; position: relative;
   display: flex; flex-direction: column; gap: var(--sp-3);
-  padding: var(--sp-4); border-radius: var(--radius-l);
-  background: rgba(255,252,240,.9); backdrop-filter: blur(6px);
+  padding:var(--sp-3);border-radius:var(--radius-l);
+  background: var(--glass-panel); backdrop-filter: blur(9px) saturate(1.05);
   border: 2px solid rgba(216,189,125,.85); box-shadow: var(--shadow-card);
 }
 .asia-mission .scene-cast {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-  gap: var(--sp-2); min-width: 0; overflow: hidden;
-}
-.asia-mission .cast-hero {
-  width: clamp(120px,14vw,240px); max-height: 54%; object-fit: contain;
-  filter: drop-shadow(0 10px 18px rgba(8,18,33,.5));
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap:var(--sp-2);min-width:0;min-height:0;overflow:visible;
 }
 .asia-mission .cast-props { display: flex; gap: var(--sp-2); justify-content: center; flex-wrap: wrap; }
 .asia-mission .cast-props img {
@@ -89,46 +93,52 @@ const PAGE_CSS = `
   filter: drop-shadow(0 5px 10px rgba(8,18,33,.45));
 }
 .asia-mission .cast-note {
-  font-size: var(--fs-small); line-height: 1.35; color: #fff; text-align: center;
+  font-size: var(--mission-small); line-height: 1.4; color: #fff; text-align: center;
   text-shadow: 0 2px 6px rgba(10,22,40,.95);
 }
 .asia-mission .board-title { display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2); }
-.asia-mission .board-title h2 { color: var(--c-navy); font-size: var(--fs-title); }
-.asia-mission .record-grid,
-.asia-mission .timeline-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:0; }
-.asia-mission .record-grid { flex:1;align-content:stretch; }
+.asia-mission .board-title h2 { color: var(--c-navy); font-size: var(--mission-title); }
+.asia-mission .record-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:0;flex:1;align-content:stretch; }
 .asia-mission .record-card {
-  min-height:72px;padding:var(--sp-2);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:4px;text-align:center;font-size:var(--fs-small);
+  position:relative;min-height:72px;padding:var(--sp-2);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;text-align:center;font-size:var(--mission-small);
 }
-.asia-mission .record-card strong { color:var(--c-navy);font-family:var(--font-head);font-size:var(--fs-body); }
+.asia-mission .record-card.is-seen::after {
+  content:'✓';position:absolute;top:7px;right:8px;width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;background:var(--c-success);color:#fff;font-weight:900;
+}
+.asia-mission .record-visual { position:relative;width:64px;height:58px;display:grid;place-items:center; }
+.asia-mission .record-visual img { width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(25,50,77,.2)); }
+.asia-mission .record-visual .time-badge { position:absolute;right:-8px;bottom:-2px;width:22px;height:22px; }
+.asia-mission .record-card strong { color:var(--c-navy);font-family:var(--font-head);font-size:var(--mission-body); }
 .asia-mission .record-detail {
   padding:var(--sp-3);border-left:5px solid var(--c-turquoise);
   background:rgba(238,250,247,.94);border-radius:var(--radius-s);
 }
-.asia-mission .record-detail p { font-size:var(--fs-small);line-height:1.4; }
-.asia-mission .timeline-grid { flex:1; }
-.asia-mission .timeline-grid .drop-zone { flex:1;min-height:56px;padding:3px; }
-.asia-mission .timeline-grid .card { padding:var(--sp-2);font-size:var(--fs-small);line-height:1.25; }
-.asia-mission .timeline-label { display:flex;align-items:center;gap:5px;font-size:var(--fs-small);font-weight:700;color:var(--c-navy); }
-.asia-mission .timeline-tray { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:0;padding:4px; }
-.asia-mission .timeline-tray .card { padding:var(--sp-2);font-size:var(--fs-small);min-height:48px; }
+.asia-mission .record-detail p { font-size:var(--mission-body);line-height:1.5; }
+.asia-mission .record-detail .btn { min-height:52px;margin-left:auto;font-size:var(--mission-small); }
 .asia-mission .evidence-layout { display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:var(--sp-2);min-height:0;flex:1; }
 .asia-mission .evidence-zones { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:0; }
-.asia-mission .evidence-zone { padding:var(--sp-2);min-height:84px;display:flex;flex-direction:column;gap:4px;background:rgba(255,254,248,.92); }
-.asia-mission .evidence-zone .card { padding:var(--sp-2);font-size:var(--fs-small);line-height:1.25; }
+.asia-mission .evidence-zone { padding:var(--sp-2);min-height:96px;display:flex;flex-direction:column;gap:6px;background:rgba(255,254,248,.92); }
+.asia-mission .evidence-zone .card { padding:var(--sp-2);font-size:var(--mission-small);line-height:1.35; }
 .asia-mission .evidence-tray { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:62px;padding:5px; }
-.asia-mission .evidence-tray .card { padding:var(--sp-2);font-size:var(--fs-small);line-height:1.3; }
+.asia-mission .evidence-tray .card { padding:var(--sp-2);font-size:var(--mission-small);line-height:1.4; }
 .asia-mission .batch-nav { display:flex;align-items:center;justify-content:center;gap:var(--sp-2); }
 .asia-mission .batch-nav .btn { min-height:48px;padding:6px 14px; }
 .asia-mission .question-scene { display:grid;grid-template-rows:auto minmax(0,1fr);gap:var(--sp-2);min-height:0;flex:1; }
-.asia-mission .q-bubble { padding:var(--sp-3);text-align:center;background:rgba(255,253,244,.95);border:2px solid #d8bd7d;border-radius:var(--radius-m); }
-.asia-mission .fragment-cols { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-2);min-height:0; }
-.asia-mission .fragment-col { display:flex;flex-direction:column;gap:5px;min-height:0;overflow-y:auto;padding:2px; }
-.asia-mission .fragment-col .card { min-height:48px;padding:var(--sp-2);font-size:var(--fs-small);line-height:1.25;text-align:left; }
+.asia-mission .q-bubble { padding:var(--sp-3);text-align:center;background:rgba(255,253,244,.95);border:2px solid #d8bd7d;border-radius:var(--radius-m);font-size:var(--mission-body); }
+.asia-mission .fragment-cols { display:grid;grid-template-columns:minmax(0,1fr);gap:var(--sp-2);min-height:0;width:min(100%,760px);margin:0 auto; }
+.asia-mission .fragment-col { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2);min-height:0;overflow-y:auto;padding:2px; }
+.asia-mission .fragment-col[hidden] { display:none; }
+.asia-mission .fragment-col > .chip { grid-column:1 / -1; }
+.asia-mission .fragment-col .card { min-height:56px;padding:var(--sp-3);font-size:var(--mission-body);line-height:1.35;text-align:left; }
 .asia-mission .mission-dock { background:linear-gradient(0deg,rgba(15,30,50,.8),rgba(15,30,50,.28)); }
 .asia-mission .mission-dock .chip { max-width:60%; }
-.asia-mission .compact-feedback .feedback { padding:var(--sp-2) var(--sp-3);font-size:var(--fs-small); }
+.asia-mission .compact-feedback .feedback { padding:var(--sp-3);font-size:var(--mission-body);line-height:1.45; }
+.asia-mission .mission-status,.asia-mission .btn { font-size:var(--mission-small); }
+.asia-modal-body { --mission-body:clamp(18px,1.45vw,22px);--mission-small:clamp(18px,1.2vw,20px);font-size:var(--mission-body);line-height:1.6;max-width:760px; }
+.asia-modal-body details { padding:var(--sp-3);border:2px solid var(--c-line);border-radius:var(--radius-m);background:#fffdf7; }
+.asia-modal-body summary { min-height:52px;display:flex;align-items:center;font-family:var(--font-head);font-size:var(--mission-body);cursor:pointer; }
 .time-badge { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #fff; box-shadow: var(--shadow-card); flex-shrink: 0; }
 .tb-0 { background: linear-gradient(#2b3f6b, #f2a65a); }
 .tb-1 { background: linear-gradient(#8fd0f5, #fdf3c9); }
@@ -139,19 +149,49 @@ const PAGE_CSS = `
 .cat-badge { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-head); color: var(--c-navy); }
 .cat-mark { width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; border: 2px solid #fff; box-shadow: var(--shadow-card); }
 .asia-mission .q-bubble { position: relative; }
+.modal-backdrop .modal:has(.asia-flight-intro) { width:min(880px,94vw);max-height:min(94dvh,760px); }
+.modal:has(.asia-flight-intro) .modal-body { padding:clamp(12px,2vw,24px);overflow-y:auto; }
+.asia-flight-intro { display:grid;gap:var(--sp-3);text-align:center; }
+.asia-flight-stage {
+  position:relative;width:100%;aspect-ratio:16/6;overflow:hidden;border-radius:var(--radius-l);
+  background:#dff4ff;box-shadow:var(--shadow-pop);isolation:isolate;
+}
+.asia-flight-stage video { width:100%;height:100%;object-fit:cover;display:block; }
+.asia-flight-stage > img:first-child { width:100%;height:100%;object-fit:cover;display:block; }
+.asia-flight-plane {
+  position:absolute;z-index:3;right:8%;top:12%;width:clamp(80px,12vw,170px);height:auto;object-fit:contain;
+  filter:drop-shadow(0 10px 14px rgba(7,35,62,.36));animation:asiaPlaneCruise 2.4s ease-in-out infinite;
+}
+@keyframes asiaPlaneCruise { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-10px) rotate(2deg)} }
+.asia-flight-stage::after { content:none; }
+.asia-flight-copy { position:absolute;z-index:2;left:clamp(14px,3vw,34px);top:clamp(14px,3vw,34px);width:min(43%,420px);text-align:left;color:#fff;text-shadow:0 2px 8px rgba(6,25,44,.85); }
+.asia-flight-copy h3 { font-family:var(--font-head);font-size:clamp(25px,2.5vw,38px);line-height:1.15;margin-bottom:8px; }
+.asia-flight-copy p { font-size:clamp(17px,1.4vw,22px);line-height:1.45;font-weight:750; }
+.asia-country-list { display:flex;justify-content:center;gap:8px;flex-wrap:wrap; }
+.asia-country-list .chip { background:#edf8ff;box-shadow:none;border:1px solid rgba(20,85,156,.18); }
+.asia-flight-actions { display:flex;justify-content:center;gap:10px;flex-wrap:wrap; }
+.asia-flight-quiz { display:grid;gap:10px;padding:0; }
+.asia-route-line { margin:0;color:var(--c-ink-soft);font-size:max(17px,var(--fs-small));font-weight:800; }
+.asia-flight-quiz h3 { font-family:var(--font-head);font-size:clamp(24px,2.3vw,36px);color:var(--c-navy); }
+.asia-flight-answers { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
+.asia-flight-answers .btn { min-height:64px;font-size:var(--mission-body); }
+.asia-flight-feedback { min-height:1.6em;color:var(--c-ink-soft);font-weight:800; }
 @media (max-width: 900px) {
-  .asia-mission .mission-scene { grid-template-columns:minmax(0,1fr) 132px;gap:var(--sp-3); }
+  .asia-mission .mission-scene { grid-template-columns:minmax(0,1fr) 180px;gap:var(--sp-3); }
   .asia-mission .scene-board { padding:var(--sp-3); }
+  .asia-flight-copy { width:55%; }
+  .asia-flight-answers { grid-template-columns:1fr; }
 }
 @media (max-height: 620px) {
-  .asia-mission .cast-hero { max-height: 42%; }
+  .asia-mission .mission-scene { flex:none;min-height:500px; }
+  .asia-mission .scene-board { overflow:visible; }
   .asia-mission .cast-props img { width:40px;height:40px; }
   /* 낮은 화면에서는 조각 목록이 스크롤 없이 들어오도록 미리보기를 줄인다 */
   .asia-mission .q-bubble { padding:var(--sp-2); }
   .asia-mission .q-bubble .q-caption { display:none; }
-  .asia-mission #q-preview { font-size:var(--fs-body)!important; }
+  .asia-mission #q-preview { font-size:var(--mission-body)!important; }
   .asia-mission .fragment-col { gap:4px; }
-  .asia-mission .fragment-col .card { min-height:44px;padding:6px; }
+  .asia-mission .fragment-col .card { min-height:52px;padding:8px; }
   .asia-mission .record-card { min-height:64px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -161,9 +201,9 @@ const PAGE_CSS = `
 
 /* round2 는 콘텐츠 JSON 에 feedback 블록이 없어 페이지에서 문구를 보완한다. */
 const R2_MSG = {
-  perfect: '아홉 문장을 모두 알맞게 나눴어요! 자료에 나온 사실과 내 해석을 구분할 줄 알게 된 거예요.',
-  partial: '문장 몇 개는 알맞게 나눴어요. 결과 리뷰를 읽고, 남은 문장을 다시 나눠 볼까요?',
-  retry: '아직 헷갈리는 문장이 많아요. 결과 리뷰의 설명을 읽고, 자료에 직접 나온 말인지부터 확인해 볼까요?'
+  perfect: '아홉 문장을 모두 알맞게 나눴어요! 기록에 있는 것과 내 생각을 구분할 줄 알게 된 거예요.',
+  partial: '문장 몇 개는 알맞게 나눴어요. 근거 설명을 읽고, 남은 문장을 다시 나눠 볼까요?',
+  retry: '아직 헷갈리는 문장이 많아요. 근거 설명을 읽고, 기록에 직접 나온 말인지부터 확인해 볼까요?'
 } as const;
 
 function el(html: string): HTMLElement {
@@ -172,7 +212,12 @@ function el(html: string): HTMLElement {
   return t.content.firstElementChild as HTMLElement;
 }
 
-export function createPage(): Page {
+function shortSentence(text: string, max = 44): string {
+  const first = text.match(/^.*?[.!?。！？](?:\s|$)/)?.[0]?.trim() ?? text.trim();
+  return first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
+}
+
+function createLegacyPage(): Page {
   let ctrl: PickPlaceController | null = null;
   let disposed = false;
   let guide: GuideController | null = null;
@@ -181,7 +226,12 @@ export function createPage(): Page {
     async mount(root: HTMLElement) {
       const c = await loadContent<AsiaContent>('asia');
       if (disposed) return;
-      const learn = getLearn(c); // 배움 루프(친구 소개→예상→배움 확인) — null이면 기존 흐름 그대로
+      const playerSpeaker = selectedAvatarSpeaker(saveRepo.get().profile);
+      const sourceLearn = getLearn(c);
+      // 특정 민족 복식을 나라 전체의 대표처럼 쓰지 않는 중립적인 여행 친구 이미지.
+      const learn = sourceLearn
+        ? { ...sourceLearn, friend: { ...sourceLearn.friend, imageId: 'asia.mina' } }
+        : null;
       audio.playBgm('asia');
 
       // ---- 미션 진행 상태 ----
@@ -197,7 +247,6 @@ export function createPage(): Page {
       let busy = false;
       let finished = false;
       const observed = new Set<string>();
-      let observationDone = false;
 
       const persistAsiaCheckpoint = (checkpointId: 'observe' | 'round2' | 'round3'): void => {
         saveRepo.setCheckpoint('asia', checkpointId, {
@@ -241,12 +290,10 @@ export function createPage(): Page {
       if (saved.checkpointId === 'observe' && Array.isArray(d.observed)) {
         const validIds = new Set(c.round1_timeline.items.map((item) => item.id));
         d.observed.filter((id): id is string => typeof id === 'string' && validIds.has(id)).forEach((id) => observed.add(id));
-        observationDone = observed.size === c.round1_timeline.items.length;
         showToast('저장된 관찰 지점부터 이어서 해요.', 'info');
       }
       if (saved.checkpointId === 'round2' || saved.checkpointId === 'round3') {
         round = saved.checkpointId === 'round3' ? 3 : 2;
-        observationDone = true;
         showToast('저장된 지점부터 이어서 해요.', 'info');
       }
 
@@ -281,9 +328,13 @@ export function createPage(): Page {
       root.appendChild(page);
 
       // ---- 마스코트 가이드 (말풍선 안내 + 탭 큐) ----
-      const gd = createGuide();
+      // 캐릭터는 화면에 한 명만 — 안내 캐릭터를 오른쪽에 세운다(장면 속 중복 캐스트 제거).
+      const gd = createGuide({ assetId: playerSpeaker.assetId, speakerName: playerSpeaker.name, side: 'right' });
       guide = gd;
       page.appendChild(gd.el);
+      const mascotButton = gd.el.querySelector<HTMLButtonElement>('.guide-mascot-button');
+      let characterHelp: (() => void) | null = null;
+      mascotButton?.addEventListener('click', () => characterHelp?.());
       let lastSaid = '';
       // 친구 소개 모달이 떠 있는 동안에는 말풍선 타이핑을 미뤄 뒀다가, 모달을 닫으면 시작한다.
       let introGate = learn !== null;
@@ -295,26 +346,70 @@ export function createPage(): Page {
         }
         if (text !== lastSaid) {
           lastSaid = text;
-          gd.say(text, { cue });
+          gd.say(text, { cue, speaker: playerSpeaker });
         } else {
           gd.setCue(cue); // 같은 문구면 타이핑 재시작 없이 큐만 이동
         }
+      };
+
+      const releaseIntro = (): void => {
+        introGate = false;
+        if (pendingSay) {
+          const p = pendingSay;
+          pendingSay = null;
+          say(p.text, p.cue);
+        }
+      };
+
+      const openAsiaFlightQuiz = (): void => {
+        const plane = airplaneChoice(saveRepo.get().profile?.airplaneId);
+        const quiz = el(`<div class="asia-flight-intro asia-flight-quiz">
+          <div class="asia-flight-stage">
+            <img src="${assetUrl('asia.flight_overview')}" data-asset-id="asia.flight_overview" alt="아시아 여러 나라를 둘러보고 네팔로 향하는 비행 항로">
+            ${hasAsset(plane.flightAssetId) ? `<img class="asia-flight-plane" src="${assetUrl(plane.flightAssetId)}" data-asset-id="${plane.flightAssetId}" alt="${plane.name} 비행기">` : ''}
+          </div>
+          <p class="asia-route-line">대한민국 · 중국 · 일본 · 인도 · 태국 · 네팔</p>
+          <h3>오늘 자세히 볼 나라는?</h3>
+          <div class="asia-flight-answers"></div>
+          <p class="asia-flight-feedback" role="status" aria-live="polite"></p>
+        </div>`);
+        const answers = quiz.querySelector('.asia-flight-answers') as HTMLElement;
+        const feedback = quiz.querySelector('.asia-flight-feedback') as HTMLElement;
+        let closeQuiz = (): void => undefined;
+        ['일본', '네팔', '태국'].forEach((country) => {
+          const button = el(`<button type="button" class="btn btn-ghost">${country}</button>`) as HTMLButtonElement;
+          button.addEventListener('click', () => {
+            if (country !== '네팔') {
+              feedback.textContent = '비행기가 히말라야산맥 가까이 착륙한 장면을 다시 떠올려 봐.';
+              button.disabled = true;
+              return;
+            }
+            feedback.textContent = '맞아! 오늘의 목적지는 네팔이야.';
+            burstConfetti(button);
+            window.setTimeout(() => {
+              closeQuiz();
+              releaseIntro();
+              say('미나의 기록은 한 가족의 하루야. 네팔 모두라고 단정하지 말자.', null);
+            }, 500);
+          });
+          answers.appendChild(button);
+        });
+        closeQuiz = openModal({ id: 'asia-flight-quiz', title: '아시아 항로', bodyEl: quiz, dismissible: false });
       };
 
       const castImg = (id: string, cls: string): string =>
         hasAsset(id) ? `<img class="${cls}" src="${assetUrl(id)}" alt="" aria-hidden="true" data-asset-id="${id}">` : '';
 
       /**
-       * 장면 = 반투명 보드 1개 + 배경 위에 선 캐릭터 열.
-       * heroId 는 크게(캐릭터), propIds 는 소품·랜드마크로 화면 에셋을 3종 이상 유지한다.
+       * 장면 = 반투명 보드 1개 + 오른쪽 소품 열.
+       * 캐릭터는 오른쪽 가이드 한 명뿐이고, propIds 소품으로 화면 에셋을 3종 이상 유지한다.
        */
-      const makeScene = (goal: string, heroId: string, propIds: string[], note: string): HTMLElement => {
+      const makeScene = (goal: string, propIds: string[], note: string): HTMLElement => {
         body.replaceChildren();
         setRibbon(goal);
         const scene = el(`<section class="mission-scene" aria-label="아시아 여행 기록 게임 장면">
           <main class="scene-board"></main>
           <aside class="scene-cast" aria-hidden="true">
-            ${castImg(heroId, 'cast-hero bob')}
             <div class="cast-props">${propIds.map((id) => castImg(id, '')).join('')}</div>
             <p class="cast-note">${note}</p>
           </aside>
@@ -324,6 +419,7 @@ export function createPage(): Page {
       };
 
       const startRound = () => {
+        characterHelp = null;
         updateSteps(bar, 3, round - 1, round - 1);
         ctrl?.dispose();
         ctrl = null;
@@ -337,240 +433,119 @@ export function createPage(): Page {
         finished = true;
         const ratios = {
           evidence: 0.3 + 0.7 * (r2First ?? 0), // 근거 = 2라운드(증거 분류) 첫 정답률 + 완주 기본점
-          perspective: 0.3 + 0.7 * (r1First ?? 0), // 관점 = 1라운드(하루 읽기) 첫 정답률 + 완주 기본점
+          perspective: 0.3 + 0.7 * Math.min(1, observed.size / c.round1_timeline.items.length), // 관점 = 하루 기록을 얼마나 살펴봤는가
           communication, // 소통 = 3라운드 질문 품질
           revision: imperfect === 0 ? 1 : improved / imperfect // 수정 = 재도전 시 실제로 나아졌는가
         };
-        const result = computeScore(ratios, WEIGHTS, 5 - imperfect);
+        const result = computeScore(ratios, WEIGHTS, Math.round(5 * ratios.revision));
         // 점수 모달 전에 배움 확인(처음 생각 vs 발견) — learn 없으면 기존 흐름 그대로
         const done = (): void => {
-          const learnRec = saveRepo.get().missions.asia.data.learn;
+          const learnRec = readLearnRecord('asia');
+          writeMissionArtifact({
+            schemaVersion: 1,
+            missionId: 'asia',
+            title: '미나의 하루 비교 기록',
+            purpose: '생활 기록을 근거로 문화권이 달라도 하루의 비슷함과 차이를 구분해요.',
+            initialHypothesis: learnRec.initialHypothesis ?? '여행 전에 남긴 첫 생각이 없어요.',
+            evidenceIds: [...observed],
+            evidenceLabel: learnRec.cardLine ?? `하루 생활 기록 ${observed.size}개를 직접 살펴봤어요.`,
+            voiceId: 'mina',
+            voiceName: learnRec.friendName ?? '미나',
+            voiceLine: learnRec.cardLine ?? '생활 모습은 하나의 기준으로 단정할 수 없어요.',
+            firstDecision: `첫 분류 정확도 ${Math.round((r2First ?? 0) * 100)}%에서 시작했어요.`,
+            observedConsequence: `생활 기록을 살펴보고 질문의 소통 점수 ${Math.round(communication * 100)}%를 만들었어요.`,
+            revisedDecision: learnRec.revisedThought ?? '보이는 차이만 말하지 않고 생활 기록을 근거로 다시 설명해요.',
+            rationale: imperfect === 0
+              ? '첫 시도에서도 근거를 잘 연결했어요.'
+              : `${imperfect}번의 부족한 선택 뒤 ${improved}번 더 나은 선택으로 고쳤어요.`,
+            transferPrompt: '우리 반 친구의 하루도 먼저 묻고 기록한 뒤 비슷함과 차이를 설명한다면 무엇이 달라질까요?',
+            earnedAt: new Date().toISOString()
+          });
           completeMissionFlow('asia', '아시아', result);
-          // completeMission이 data를 비우므로 배움 카드 기록을 되살린다(여권·수료증에서 읽음)
-          if (learnRec) saveRepo.update((s) => { s.missions.asia.data.learn = learnRec; });
         };
         if (learn) showLearningWrap('asia', learn, done);
         else done();
       };
 
-      // ================= 1라운드: 타임라인 =================
+      // ================= 1라운드: 하루 기록 살펴보기 =================
       function renderRound1(): void {
         const r1 = c.round1_timeline;
-        if (!observationDone) {
-          updateSteps(bar, 3, 0, 0);
-          const board = makeScene(
-            '기록 카드 6장을 눌러 하루를 살펴봐요',
-            'asia.child1',
-            ['prop.journal', 'deco.landmark_taj'],
-            '옷차림은 일지를 꾸미는 그림이에요. 옷으로 나라를 맞히지 않아요.'
-          );
-          const observationGrid = el(`<div class="record-grid" role="list" aria-label="미나네 가족의 하루 기록"></div>`);
-          const detail = el(`<div class="record-detail" role="status" aria-live="polite"></div>`);
-          board.append(observationGrid, detail);
-          let activeRecordId = r1.items.find((item) => !observed.has(item.id))?.id ?? r1.items[0]?.id ?? '';
-
-          bottom.replaceChildren();
-          const observationStatus = el(
-            `<span class="chip mission-status" role="status" aria-live="polite">생활 기록 ${observed.size}/${r1.items.length}</span>`
-          );
-          const timelineBtn = el(`<button class="btn btn-primary btn-big" disabled>순서 맞추기</button>`) as HTMLButtonElement;
-          bottom.append(observationStatus, timelineBtn);
-
-          const paintObservation = () => {
-            observationStatus.textContent = `기록 ${observed.size}/${r1.items.length}`;
-            timelineBtn.disabled = observed.size < r1.items.length;
-            observationGrid.replaceChildren();
-            let firstTodo: HTMLElement | null = null;
-            for (const item of r1.items) {
-              const seen = observed.has(item.id);
-              const active = activeRecordId === item.id;
-              const card = el(`<button class="card card-pick record-card" role="listitem" aria-pressed="${active}">
-                <span class="time-badge tb-${item.correctSlot}" aria-hidden="true"></span>
-                <strong>${item.label}</strong>
-                <span class="text-oneline" style="color:var(--c-ink-soft)">${seen ? '✓ 확인함' : '○ 눌러 보기'}</span>
-              </button>`);
-              card.addEventListener('click', () => {
-                if (finished) return;
-                const wasSeen = observed.has(item.id);
-                activeRecordId = item.id;
-                observed.add(item.id);
-                persistAsiaCheckpoint('observe');
-                void audio.playSfx(wasSeen ? 'tap' : 'pickup');
-                paintObservation();
-                const activeCard = observationGrid.querySelector<HTMLElement>(`[data-record-id="${item.id}"]`);
-                if (!wasSeen && activeCard) popBounce(activeCard);
-              });
-              card.dataset.recordId = item.id;
-              observationGrid.appendChild(card);
-              if (!seen && !firstTodo) firstTodo = card;
-            }
-            const activeItem = r1.items.find((item) => item.id === activeRecordId) ?? r1.items[0];
-            detail.innerHTML = activeItem
-              ? `<div class="row-between" style="gap:8px"><strong>${activeItem.label}</strong><span class="chip">${activeItem.timeHint}</span></div>
-                 <p>${activeItem.desc}</p>
-                 <p style="color:var(--c-ink-soft)">한 가족의 사례이며, 나라 전체의 하루로 일반화하지 않아요.</p>`
-              : '<p>기록 카드를 골라 단서를 확인해요.</p>';
-            if (observed.size >= r1.items.length) say('다 봤어요! 순서 맞추기를 눌러요!', timelineBtn);
-            else say('카드를 눌러 하루 자료를 살펴봐요!', firstTodo);
-          };
-
-          timelineBtn.addEventListener('click', () => {
-            if (busy || observationDone || observed.size < r1.items.length) return; // 원샷: 연타로 인한 이중 렌더 방지
-            busy = true;
-            try {
-              observationDone = true;
-              persistAsiaCheckpoint('observe');
-              renderRound1();
-            } finally {
-              busy = false;
-            }
-          });
-
-          paintObservation();
-          return;
-        }
-
-        const slots: Array<string | null> = new Array<string | null>(r1.slots.length).fill(null);
-        const locked = new Set<string>();
-        let lastCorrect: number | null = r1LastCorrect;
-        let solvedRound = false;
-        const itemById = new Map(r1.items.map((i) => [i.id, i]));
-
+        updateSteps(bar, 3, 0, 0);
         const board = makeScene(
-          '기록 카드를 시간 순서대로 놓아요',
-          'asia.child2',
-          ['prop.scrapbook', 'asia.costume1', 'asia.costume2'],
-          '옷과 장신구는 정답 단서가 아니라 일지를 꾸미는 그림이에요.'
+          '기록 카드 6장을 눌러 하루를 살펴봐요',
+          ['prop.journal', 'deco.map_kit'],
+          '여행 기록을 한 장씩 열어 봐요.'
         );
-        const slotsWrap = el(`<div class="timeline-grid"></div>`);
-        const tray = el(`<div class="drop-zone timeline-tray" aria-label="카드 보관함"></div>`);
-        const fb = el(`<div class="compact-feedback"></div>`);
-        board.append(slotsWrap, tray, fb);
+        const observationGrid = el(`<div class="record-grid" role="list" aria-label="미나네 가족의 하루 기록"></div>`);
+        const detail = el(`<div class="record-detail" role="status" aria-live="polite"></div>`);
+        board.append(observationGrid, detail);
+        let activeRecordId = '';
 
         bottom.replaceChildren();
-        const status = el(`<span class="chip mission-status">기록 6장 · 시간순</span>`);
-        const btns = el(`<div style="display:flex;gap:var(--sp-3)"></div>`);
-        const checkBtn = el(`<button class="btn btn-primary btn-big" disabled>확인</button>`) as HTMLButtonElement;
-        const nextBtn = el(`<button class="btn btn-success btn-big" style="display:none">다음</button>`) as HTMLButtonElement;
-        btns.append(checkBtn, nextBtn);
-        bottom.append(status, btns);
+        const observationStatus = el(
+          `<span class="chip mission-status" role="status" aria-live="polite">생활 기록 살펴보기</span>`
+        );
+        const nextRoundBtn = el(`<button class="btn btn-primary btn-big" disabled>다음</button>`) as HTMLButtonElement;
+        bottom.append(observationStatus, nextRoundBtn);
 
-        const cardOf = (it: TimelineItem, isLocked: boolean): HTMLElement =>
-          el(`<div class="card" data-item-id="${it.id}" style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;${
-            isLocked ? 'border-color:var(--c-success);cursor:default;' : ''
-          }">
-            <strong style="font-size:var(--fs-small)">${isLocked ? '✓ ' : ''}${it.label}</strong>
-            <span style="font-size:var(--fs-small);color:var(--c-ink-soft)">${it.timeHint}</span>
-          </div>`);
-
-        const onPlace = (itemId: string, zoneId: string) => {
-          if (solvedRound || locked.has(itemId)) return;
-          const i = Number(zoneId.slice('slot-'.length));
-          if (!Number.isInteger(i) || i < 0 || i >= slots.length) return;
-          const occupant = slots[i];
-          if (occupant && locked.has(occupant)) return;
-          const cur = slots.indexOf(itemId);
-          if (cur === i) {
-            slots[i] = null; // 놓인 카드를 다시 탭 → 트레이로 돌아감
+        const paintObservation = () => {
+          observationStatus.textContent = observed.size >= r1.items.length ? '모두 살펴봤어!' : '기록을 눌러 살펴봐';
+          nextRoundBtn.disabled = observed.size < r1.items.length;
+          observationGrid.replaceChildren();
+          let firstTodo: HTMLElement | null = null;
+          for (const item of r1.items) {
+            const seen = observed.has(item.id);
+            const active = activeRecordId === item.id;
+            const card = el(`<button class="card card-pick record-card ${seen ? 'is-seen' : ''}" role="listitem" aria-pressed="${active}">
+              <span class="record-visual" aria-hidden="true">
+                <img src="${assetUrl('prop.journal')}" alt="" data-asset-id="prop.journal">
+                <span class="time-badge tb-${item.correctSlot}"></span>
+              </span>
+              <strong>${item.label}</strong>
+              <span class="text-oneline" style="color:var(--c-ink-soft)">${item.timeHint}</span>
+            </button>`);
+            card.addEventListener('click', () => {
+              if (finished) return;
+              const wasSeen = observed.has(item.id);
+              activeRecordId = item.id;
+              observed.add(item.id);
+              persistAsiaCheckpoint('observe');
+              void audio.playSfx(wasSeen ? 'tap' : 'pickup');
+              paintObservation();
+              const activeCard = observationGrid.querySelector<HTMLElement>(`[data-record-id="${item.id}"]`);
+              if (!wasSeen && activeCard) popBounce(activeCard);
+            });
+            card.dataset.recordId = item.id;
+            observationGrid.appendChild(card);
+            if (!seen && !firstTodo) firstTodo = card;
+          }
+          const activeItem = r1.items.find((item) => item.id === activeRecordId);
+          detail.replaceChildren();
+          if (activeItem) {
+            // 팝업 없이 카드 내용을 바로 보여 준다.
+            detail.appendChild(el(`<div class="row-between" style="gap:8px"><strong>${activeItem.label}</strong><span class="chip">${activeItem.timeHint}</span></div>`));
+            detail.appendChild(el(`<p>${activeItem.desc}</p>`));
           } else {
-            if (cur >= 0) slots[cur] = null;
-            slots[i] = itemId; // 자리에 있던 카드는 트레이로 밀려남
+            detail.appendChild(el('<p>기록 한 장을 골라 봐요.</p>'));
           }
-          const placedNow = slots[i] === itemId;
-          paint();
-          if (placedNow) {
-            // 배치 성공 순간의 팝 바운스 — 새로 그려진 카드를 찾아 튕긴다
-            const placedEl = slotsWrap.querySelector<HTMLElement>(`[data-item-id="${itemId}"]`);
-            if (placedEl) popBounce(placedEl);
-          }
+          if (observed.size >= r1.items.length) say('다 봤어요! 다음을 눌러요!', nextRoundBtn);
+          else if (activeItem) say(shortSentence(activeItem.desc, 40), firstTodo);
+          else say('카드를 눌러 하루 자료를 살펴봐요!', firstTodo);
         };
 
-        const paint = () => {
-          slotsWrap.replaceChildren();
-          const zoneEls: HTMLElement[] = [];
-          const itemEls: HTMLElement[] = [];
-          r1.slots.forEach((slotLabel, i) => {
-            const wrap = el(`<div style="display:flex;flex-direction:column;gap:3px;min-width:0"></div>`);
-            wrap.appendChild(el(`<span class="timeline-label"><span class="time-badge tb-${i}" aria-hidden="true"></span>${slotLabel}</span>`));
-            const zone = el(
-              `<div class="drop-zone" data-zone-id="slot-${i}" style="display:flex" aria-label="${slotLabel} 자리"></div>`
-            );
-            const itemId = slots[i];
-            if (itemId) {
-              const it = itemById.get(itemId);
-              if (it) {
-                const isLocked = locked.has(itemId);
-                const cardEl = cardOf(it, isLocked);
-                zone.appendChild(cardEl);
-                zone.classList.add('is-filled');
-                if (!isLocked && !solvedRound) itemEls.push(cardEl);
-              }
-            }
-            wrap.appendChild(zone);
-            slotsWrap.appendChild(wrap);
-            zoneEls.push(zone);
-          });
-          tray.replaceChildren();
-          for (const it of r1.items) {
-            if (slots.includes(it.id)) continue;
-            const cardEl = cardOf(it, false);
-            tray.appendChild(cardEl);
-            itemEls.push(cardEl);
-          }
-          if (!ctrl) ctrl = enablePickPlace({ items: itemEls, zones: zoneEls, canPlace: (id) => !locked.has(id), onPlace });
-          else ctrl.refresh(itemEls, zoneEls);
-          checkBtn.disabled = solvedRound || slots.some((s) => s === null);
-          status.textContent = `놓은 카드 ${slots.filter(Boolean).length}/${r1.items.length}`;
-          if (solvedRound) say('완벽해요! 다음을 눌러요!', nextBtn);
-          else if (!checkBtn.disabled) say('다 놓았으면 확인을 눌러요!', checkBtn);
-          else say('카드를 시간 순서대로 놓아 봐요!', tray.querySelector<HTMLElement>('.card'));
-        };
-
-        checkBtn.addEventListener('click', () => {
-          if (busy || solvedRound || checkBtn.disabled) return;
+        nextRoundBtn.addEventListener('click', () => {
+          if (busy || round !== 1 || observed.size < r1.items.length) return; // 원샷: 연타로 인한 이중 렌더 방지
           busy = true;
-          checkBtn.disabled = true;
           try {
-            let correct = 0;
-            for (const it of r1.items) if (slots[it.correctSlot] === it.id) correct++;
-            const total = r1.items.length;
-            if (r1First === null) r1First = correct / total;
-            if (lastCorrect !== null && correct > lastCorrect) improved++;
-            lastCorrect = correct;
-            r1LastCorrect = correct;
-            if (correct === total) {
-              solvedRound = true;
-              for (const it of r1.items) locked.add(it.id);
-              burstConfetti(checkBtn); // 숨기기 전에 위치 기준으로 터뜨린다
-              showFeedback(fb, 'success', r1.feedback.perfect, 'asia');
-              checkBtn.style.display = 'none';
-              nextBtn.style.display = '';
-            } else {
-              imperfect++;
-              // 맞은 카드만 제자리에 잠그고, 틀린 카드만 트레이로 되돌린다(전체 리셋 없음)
-              for (const it of r1.items) if (slots[it.correctSlot] === it.id) locked.add(it.id);
-              for (let i = 0; i < slots.length; i++) {
-                const id = slots[i];
-                if (id && !locked.has(id)) slots[i] = null;
-              }
-              const kind = correct >= total / 2 ? 'partial' : 'retry';
-              showFeedback(fb, kind, kind === 'partial' ? r1.feedback.partial : r1.feedback.retry, 'asia');
-            }
-            persistAsiaCheckpoint('observe');
-            paint();
+            round = 2;
+            persistAsiaCheckpoint('round2');
+            startRound();
           } finally {
             busy = false;
           }
         });
 
-        nextBtn.addEventListener('click', () => {
-          if (busy || round !== 1) return;
-          round = 2;
-          persistAsiaCheckpoint('round2');
-          startRound();
-        });
-
-        paint();
+        paintObservation();
       }
 
       // ================= 2라운드: 증거 분류 =================
@@ -585,12 +560,11 @@ export function createPage(): Page {
         let batchIndex = 0;
 
         const board = makeScene(
-          '문장을 사실·해석·더 확인할 것으로 나눠요',
-          'asia.child3',
-          ['deco.necklace', 'deco.norigae', 'prop.journal'],
-          '장신구 그림은 장식이에요. 사실 여부는 문장 근거로 판단해요.'
+          '미나의 하루 문장을 세 가지로 나눠 봐요',
+          ['prop.journal', 'prop.book3d', 'icon.listening'],
+          '기록에 직접 나온 말인지 먼저 확인해요.'
         );
-        board.appendChild(el(`<div class="board-title"><h2>증거 렌즈</h2><span class="chip" data-batch-status></span></div>`));
+        board.appendChild(el(`<div class="board-title"><h2>미나의 하루 정리</h2><span class="chip" data-batch-status></span></div>`));
         const batchStatus = board.querySelector('[data-batch-status]') as HTMLElement;
         const batchNav = el(`<div class="batch-nav" aria-label="증거 카드 묶음 이동"></div>`);
         const catWrap = el(`<div class="evidence-zones"></div>`);
@@ -602,7 +576,7 @@ export function createPage(): Page {
         board.appendChild(fb);
 
         bottom.replaceChildren();
-        const status = el(`<span class="chip mission-status">증거 ${placed.size}/${r2.statements.length}</span>`);
+        const status = el(`<span class="chip mission-status">증거 배치하기</span>`);
         const btns = el(`<div style="display:flex;gap:var(--sp-3)"></div>`);
         const reviewBtn = el(`<button class="btn btn-ghost" style="display:none">근거</button>`) as HTMLButtonElement;
         const checkBtn = el(`<button class="btn btn-primary btn-big" disabled>확인</button>`) as HTMLButtonElement;
@@ -626,12 +600,12 @@ export function createPage(): Page {
 
         const paint = () => {
           const currentStatements = r2.statements.slice(batchIndex * batchSize, batchIndex * batchSize + batchSize);
-          batchStatus.textContent = `${batchIndex + 1}/${batchCount} 묶음`;
-          status.textContent = `증거 ${placed.size}/${r2.statements.length}`;
+          batchStatus.textContent = `묶음 ${batchIndex + 1}`;
+          status.textContent = placed.size >= r2.statements.length ? '모두 배치했어!' : '증거 배치하기';
           batchNav.replaceChildren();
           const prevBatch = el(`<button class="btn btn-ghost" ${batchIndex === 0 ? 'disabled' : ''} aria-label="이전 세 장">◀ 이전</button>`) as HTMLButtonElement;
           const currentPlaced = currentStatements.filter((st) => placed.has(st.id)).length;
-          const navState = el(`<span class="chip">${currentPlaced}/${currentStatements.length} 배치</span>`);
+          const navState = el(`<span class="chip">${currentPlaced >= currentStatements.length ? '모두 배치!' : '카드를 배치해 봐'}</span>`);
           const nextBatch = el(`<button class="btn btn-ghost" ${batchIndex >= batchCount - 1 ? 'disabled' : ''} aria-label="다음 세 장">다음 ▶</button>`) as HTMLButtonElement;
           prevBatch.addEventListener('click', () => {
             if (batchIndex <= 0) return;
@@ -686,19 +660,16 @@ export function createPage(): Page {
 
         // 분류 근거는 화면에 쌓지 않고 '근거' 버튼 → 모달로 (화면 텍스트 최소화)
         const openReview = () => {
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            ${r2.statements
+          const reviewItems = r2.statements.filter((st) => !locked.has(st.id)).slice(0, batchSize);
+          const bodyEl = el(`<div class="asia-modal-body" style="display:flex;flex-direction:column;gap:var(--sp-3)">
+            ${reviewItems.length ? reviewItems
               .map((st) => {
-                const ok = locked.has(st.id);
-                return `<div style="border-left:5px solid ${ok ? 'var(--c-success)' : 'var(--c-warning)'};padding:var(--sp-2) var(--sp-3);background:${
-                  ok ? '#e8f7f0' : '#fdf3e0'
-                };border-radius:var(--radius-s)">
-                  <strong>${ok ? '✓ 맞음' : '◐ 다시 생각'}</strong>
-                  <p style="margin:2px 0 0">${st.text}</p>
-                  <p style="font-size:var(--fs-small);color:var(--c-ink-soft);margin:2px 0 0">${st.why}</p>
-                </div>`;
+                return `<details>
+                  <summary>다시 볼 문장 · ${st.text}</summary>
+                  <p style="color:var(--c-ink-soft);margin-top:var(--sp-2)">${st.why}</p>
+                </details>`;
               })
-              .join('')}
+              .join('') : '<div class="feedback success"><span aria-hidden="true">✓</span><span>모든 문장을 알맞게 분류했어요.</span></div>'}
           </div>`);
           openModal({
             id: 'asia-review',
@@ -768,15 +739,14 @@ export function createPage(): Page {
 
         const board = makeScene(
           '조각 세 개를 이어 존중하는 질문을 만들어요',
-          'asia.child1',
-          ['asia.child3', 'deco.norigae', 'deco.landmark_taj'],
-          '한 친구가 대륙 전체를 대표하지 않아요.'
+          ['prop.journal', 'icon.heart_speech', 'icon.listening'],
+          '한 사람의 이야기를 열린 질문으로 들어 봐요.'
         );
         board.appendChild(el(`<div class="board-title"><h2>존중 질문 조립대</h2><span class="chip">첫마디 + 주제 + 물음</span></div>`));
         const questionScene = el(`<div class="question-scene"></div>`);
         const preview = el(`<div class="q-bubble" role="status" aria-live="polite">
-          <p class="q-caption" style="font-size:var(--fs-small);color:var(--c-ink-soft);margin-bottom:3px">미나에게 건넬 질문</p>
-          <p id="q-preview" style="font-family:var(--font-head);font-size:var(--fs-title);color:var(--c-navy);min-height:1.4em"></p>
+          <p class="q-caption" style="font-size:var(--mission-small);color:var(--c-ink-soft);margin-bottom:3px">미나에게 건넬 질문</p>
+          <p id="q-preview" style="font-family:var(--font-head);font-size:var(--mission-title);color:var(--c-navy);min-height:1.4em"></p>
         </div>`);
         questionScene.appendChild(preview);
         const previewText = preview.querySelector('#q-preview') as HTMLElement;
@@ -786,35 +756,12 @@ export function createPage(): Page {
         board.appendChild(questionScene);
         const fb = el(`<div class="compact-feedback"></div>`);
         board.appendChild(fb);
-        // 다듬기 힌트는 화면에 펼쳐 두지 않고 '힌트' 버튼 → 모달로
-        const openHints = () => {
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            ${r3.badPatterns
-              .map(
-                (b) => `<div style="border-left:5px solid var(--c-coral);padding:var(--sp-2) var(--sp-3);background:#fdeeee;border-radius:var(--radius-s)">
-                  <p style="font-weight:700">${b.pattern}</p>
-                  <p style="font-size:var(--fs-small);color:var(--c-ink-soft);margin-top:2px">${b.why}</p>
-                </div>`
-              )
-              .join('')}
-          </div>`);
-          openModal({
-            id: 'asia-hint',
-            title: '질문을 다듬는 힌트',
-            bodyEl,
-            actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
-          });
-        };
-
         bottom.replaceChildren();
         const status = el(`<span class="chip mission-status">조각 3개 연결</span>`);
         const btns = el(`<div style="display:flex;gap:var(--sp-3)"></div>`);
-        const hintBtn = el(`<button class="btn btn-ghost" style="display:none">힌트</button>`) as HTMLButtonElement;
         const submitBtn = el(`<button class="btn btn-primary btn-big" disabled>완성</button>`) as HTMLButtonElement;
-        const partialBtn = el(`<button class="btn btn-ghost" style="display:none">이대로</button>`) as HTMLButtonElement;
         const finishBtn = el(`<button class="btn btn-success btn-big" style="display:none">미션 완료</button>`) as HTMLButtonElement;
-        hintBtn.addEventListener('click', openHints);
-        btns.append(hintBtn, partialBtn, submitBtn, finishBtn);
+        btns.append(submitBtn, finishBtn);
         bottom.append(status, btns);
 
         const groups: Array<{ key: 'opener' | 'topic' | 'closer'; label: string; list: string[] }> = [
@@ -824,37 +771,61 @@ export function createPage(): Page {
         ];
 
         let firstFragment: HTMLElement | null = null;
+        const colByKey = new Map<'opener' | 'topic' | 'closer', HTMLElement>();
+        const firstByKey = new Map<'opener' | 'topic' | 'closer', HTMLElement>();
+
+        const syncFragmentUi = () => {
+          const topicCol = colByKey.get('topic');
+          const closerCol = colByKey.get('closer');
+          if (topicCol) topicCol.hidden = !sel.opener;
+          if (closerCol) closerCol.hidden = !sel.opener || !sel.topic;
+          cols.querySelectorAll<HTMLElement>('[data-fragment-key]').forEach((fragment) => {
+            const key = fragment.dataset.fragmentKey as 'opener' | 'topic' | 'closer';
+            const on = sel[key] === fragment.dataset.fragmentValue;
+            fragment.classList.toggle('is-selected', on);
+            fragment.setAttribute('aria-pressed', String(on));
+          });
+        };
 
         const updatePreview = () => {
+          syncFragmentUi();
           previewText.textContent =
             sel.opener || sel.topic || sel.closer
               ? `${sel.opener ?? '…'} ${sel.topic ?? '…'}${sel.closer ?? '…'}`
               : '아래에서 조각을 하나씩 골라 보세요.';
           submitBtn.disabled = !(sel.opener && sel.topic && sel.closer) || finishBtn.style.display !== 'none';
+          const picked = Number(!!sel.opener) + Number(!!sel.topic) + Number(!!sel.closer);
+          status.textContent = picked >= 3 ? '질문 완성!' : '질문 조각을 골라 봐';
           if (finishBtn.style.display !== 'none') say('멋진 질문이에요! 미션 완료를 눌러요!', finishBtn);
           else if (!submitBtn.disabled && lastSubmissionKey === null) say('질문이 되면 완성을 눌러요!', submitBtn);
           else if (lastSubmissionKey !== null) say('조각을 바꿔 질문을 다듬어 봐요!', firstFragment);
-          else say('조각을 골라 존중하는 질문을 만들어요!', firstFragment);
+          else if (!sel.opener) say('먼저 부드러운 첫마디를 골라요.', firstByKey.get('opener') ?? firstFragment);
+          else if (!sel.topic) say('이제 궁금한 주제를 골라요.', firstByKey.get('topic') ?? firstFragment);
+          else if (!sel.closer) say('마지막 물음말을 골라요.', firstByKey.get('closer') ?? firstFragment);
         };
 
         for (const g of groups) {
-          const col = el(`<div class="fragment-col"></div>`);
+          const col = el(`<div class="fragment-col" aria-label="${g.label} 조각"></div>`);
+          colByKey.set(g.key, col);
           col.appendChild(el(`<span class="chip" style="align-self:center">${g.label}</span>`));
           for (const text of g.list) {
             const b = el(
               `<button class="card card-pick" aria-pressed="false" style="text-align:left;font:inherit">${text}</button>`
             ) as HTMLButtonElement;
             if (!firstFragment) firstFragment = b;
+            if (!firstByKey.has(g.key)) firstByKey.set(g.key, b);
+            b.dataset.fragmentKey = g.key;
+            b.dataset.fragmentValue = text;
             b.addEventListener('click', () => {
               if (finishBtn.style.display !== 'none') return; // 완성 후 변경 금지
               void audio.playSfx('tap');
               sel[g.key] = sel[g.key] === text ? null : text;
+              if (g.key === 'opener' && !sel.opener) {
+                sel.topic = null;
+                sel.closer = null;
+              }
+              if (g.key === 'topic' && !sel.topic) sel.closer = null;
               lastSubmissionKey = null;
-              col.querySelectorAll<HTMLElement>('.card-pick').forEach((e2) => {
-                const on = e2 === b && sel[g.key] === text;
-                e2.classList.toggle('is-selected', on);
-                e2.setAttribute('aria-pressed', String(on));
-              });
               updatePreview();
             });
             col.appendChild(b);
@@ -874,28 +845,21 @@ export function createPage(): Page {
           busy = true;
           submitBtn.disabled = true;
           try {
-            const good = r3.goodCombos.find((g) => g.opener === sel.opener && g.topic === sel.topic && g.closer === sel.closer);
-            if (good) {
-              if (hadPartial) improved++; // 수정해서 더 좋은 질문 완성 → revision 반영
-              quality = 1;
-              showFeedback(fb, 'success', `${r3.feedback.good} ${good.why}`, 'asia');
-              hintBtn.style.display = 'none';
-              submitBtn.style.display = 'none';
-              partialBtn.style.display = 'none';
-              finishBtn.style.display = '';
-              popBounce(preview);
-              burstConfetti(finishBtn);
-            } else {
-              // 조각 자체는 존중 표현이라 badPatterns 미포함 → 부분 인정 + 다듬을 기회
-              if (!hadPartial) {
-                hadPartial = true;
-                imperfect++;
-              }
-              quality = Math.max(quality, 0.75);
-              showFeedback(fb, 'partial', r3.feedback.retry, 'asia');
-              hintBtn.style.display = '';
-              partialBtn.style.display = '';
-            }
+            // 화면에 놓인 모든 조각은 상대를 단정하지 않는 열린 표현이다.
+            // 특정 문장 조합을 숨은 정답으로 두지 않고, 아이가 만든 질문 자체를 인정한다.
+            if (hadPartial) improved++;
+            quality = 1;
+            showFeedback(
+              fb,
+              'success',
+              `${r3.feedback.good} 허락을 구하고, 미나가 자기 경험을 직접 말할 수 있게 열어 둔 질문이에요.`,
+              'asia'
+            );
+            characterHelp = null;
+            submitBtn.style.display = 'none';
+            finishBtn.style.display = '';
+            popBounce(preview);
+            burstConfetti(finishBtn);
             r3HadPartial = hadPartial;
             r3Quality = quality;
             persistAsiaCheckpoint('round3');
@@ -905,32 +869,32 @@ export function createPage(): Page {
           }
         });
 
-        partialBtn.addEventListener('click', () => finish(quality));
         finishBtn.addEventListener('click', () => finish(quality));
 
         if (quality >= 1) {
           submitBtn.style.display = 'none';
-          partialBtn.style.display = 'none';
           finishBtn.style.display = '';
         } else if (hadPartial) {
-          hintBtn.style.display = '';
-          partialBtn.style.display = '';
+          characterHelp = () => {
+            const hint = r3.badPatterns[0]?.why ?? '한 사람의 삶을 단정하지 않는 열린 물음을 골라 봐요.';
+            gd.say(shortSentence(`힌트: ${hint}`, 50), {
+              cue: firstFragment,
+              speaker: playerSpeaker
+            });
+          };
         }
         updatePreview();
       }
 
       startRound();
-      // 화면을 다 그린 뒤 친구 소개 + 예상하기. 닫으면 미뤄 둔 첫 말풍선이 시작된다.
+      const continueAfterQuestion = (): void => {
+        if (!saved.checkpointId) openAsiaFlightQuiz();
+        else releaseIntro();
+      };
+      // 시작 예상 → 비행 항로에서 목적지 확인 → 기록 조사 순서.
       if (learn) {
-        showFriendIntro('asia', learn, () => {
-          introGate = false;
-          if (pendingSay) {
-            const p = pendingSay;
-            pendingSay = null;
-            say(p.text, p.cue);
-          }
-        });
-      }
+        showFriendIntro('asia', learn, continueAfterQuestion);
+      } else continueAfterQuestion();
     },
 
     unmount() {
@@ -942,3 +906,5 @@ export function createPage(): Page {
     }
   };
 }
+
+export { createAsiaPage as createPage } from './connectedRegionMission';

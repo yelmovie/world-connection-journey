@@ -2,30 +2,24 @@ import { assetUrl, hasAsset } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import { openModal } from './modal';
-import { popBounce } from './fx';
 import type { MissionId } from '../types';
 
-/**
- * 배움 프레임 — 모든 미션을 같은 3막 학습 루프로 감싼다.
- *   ① 친구 만나기(누구를 만나 무엇을 배우는지) → ② 먼저 예상하기(첫 생각 기록)
- *   → 기존 미션 활동 → ③ 배움 확인(처음 생각 vs 발견) + 배움 카드 저장
- * 점수·체크포인트 로직과 무관하다(성찰 기록 전용). 저장은 missions[id].data.learn 사용
- * — 스키마 변경 없이 기존 data 필드에 담아 마이그레이션이 필요 없다.
- */
 export interface MissionLearn {
   friend: { name: string; region: string; imageId?: string };
   goal: string;
+  introMode?: 'prediction' | 'question-only' | 'friend-only';
   prediction: { question: string; options: string[] };
   discoveries: string[];
 }
 
-interface LearnRecord {
-  prediction?: string;
+export interface LearnRecord {
+  initialHypothesis?: string;
+  initialRecordedAt?: string;
   confirmedAt?: string;
-  /* 여권·수료증이 콘텐츠 파일을 다시 읽지 않도록 확정 시점에 함께 저장 */
   cardLine?: string;
   friendName?: string;
   friendImageId?: string;
+  revisedThought?: string;
 }
 
 export function getLearn(content: unknown): MissionLearn | null {
@@ -41,14 +35,14 @@ function readRecord(missionId: MissionId): LearnRecord {
 }
 
 function writeRecord(missionId: MissionId, patch: LearnRecord): void {
-  saveRepo.update((s) => {
-    const data = s.missions[missionId].data;
+  saveRepo.update((save) => {
+    const data = save.missions[missionId].data;
     data.learn = { ...(data.learn as object | undefined), ...patch };
   });
 }
 
-export function savedPrediction(missionId: MissionId): string | null {
-  return readRecord(missionId).prediction ?? null;
+export function readLearnRecord(missionId: MissionId): LearnRecord {
+  return { ...readRecord(missionId) };
 }
 
 function friendImg(learn: MissionLearn, size: string): string {
@@ -59,89 +53,90 @@ function friendImg(learn: MissionLearn, size: string): string {
 }
 
 /**
- * ① 친구 만나기 + ② 먼저 예상하기.
- * 이미 예상을 기록했다면(이어하기) 짧은 인사만 보여 준다.
+ * 미션 전에 학생의 첫 생각을 남긴다. 정답을 맞히는 퀴즈가 아니라,
+ * 미션 뒤 발견과 비교하기 위한 예측 기록이다.
  */
 export function showFriendIntro(missionId: MissionId, learn: MissionLearn, onBegin: () => void): void {
-  const prior = savedPrediction(missionId);
+  const mode = learn.introMode ?? 'prediction';
+  const asksQuestion = mode !== 'friend-only' && Boolean(learn.prediction?.question);
+
   const body = document.createElement('div');
   body.className = 'learn-intro';
-
-  if (prior) {
-    body.innerHTML = `
-      <div class="learn-hero">${friendImg(learn, 'clamp(120px,16vw,200px)')}
-        <div><p class="learn-name">${learn.friend.name}</p><p class="learn-region">${learn.friend.region}</p></div>
-      </div>
-      <p class="learn-goal">${learn.goal}</p>
-      <p class="learn-prior">내 첫 생각: “${prior}” — 조사하면서 확인해 봐요!</p>`;
-    openModal({
-      id: `learn-intro-${missionId}`,
-      bodyEl: body,
-      dismissible: false,
-      actions: [{ label: '이어서 조사하기', kind: 'primary', autofocus: true, onClick: (close) => { close(); onBegin(); } }]
-    });
-    return;
-  }
-
   body.innerHTML = `
-    <div class="learn-hero">${friendImg(learn, 'clamp(140px,18vw,230px)')}
+    <div class="learn-hero">${friendImg(learn, 'clamp(110px,13vw,170px)')}
       <div>
-        <p class="learn-eyebrow">오늘 만날 친구</p>
+        <p class="learn-eyebrow">${mode === 'question-only' ? '먼저 생각해 보기' : '오늘 만날 친구'}</p>
         <p class="learn-name">${learn.friend.name}</p>
         <p class="learn-region">${learn.friend.region}</p>
       </div>
     </div>
-    <p class="learn-goal">${learn.goal}</p>
-    <p class="learn-question">${learn.prediction.question}</p>
-    <div class="learn-options">
-      ${learn.prediction.options.map((o) => `<button type="button" class="btn btn-ghost learn-option">${o}</button>`).join('')}
-    </div>
-    <p class="learn-hint">정답은 없어요. 지금 생각을 골라 두고, 조사 후에 다시 봐요!</p>`;
+    ${mode === 'friend-only' ? `<p class="learn-goal">${learn.goal}</p>` : ''}
+    ${asksQuestion ? `
+      <section class="learn-prediction" aria-labelledby="learn-question-${missionId}">
+        <h3 class="learn-question" id="learn-question-${missionId}">${learn.prediction.question}</h3>
+      </section>` : ''}`;
 
-  const close = openModal({ id: `learn-intro-${missionId}`, bodyEl: body, dismissible: false, actions: [] });
-  body.querySelectorAll<HTMLElement>('.learn-option').forEach((btn) =>
-    btn.addEventListener('click', () => {
-      void audio.playSfx('tap');
-      writeRecord(missionId, { prediction: btn.textContent?.trim() ?? '' });
-      popBounce(btn);
-      window.setTimeout(() => {
+  openModal({
+    id: `learn-intro-${missionId}`,
+    bodyEl: body,
+    dismissible: false,
+    actions: [{
+      label: asksQuestion ? '생각해 봤어' : '만나러 가기',
+      kind: 'primary',
+      onClick: (close) => {
         close();
         onBegin();
-      }, 260);
-    })
-  );
+      }
+    }]
+  });
 }
 
-/** ③ 배움 확인 — 미션 성공 직후, 점수 모달 전에 호출한다. */
+/** 미션 결과 뒤에 처음 예상과 발견을 비교하고, 가장 중요한 발견을 직접 고른다. */
 export function showLearningWrap(missionId: MissionId, learn: MissionLearn, onDone: () => void): void {
-  const prior = savedPrediction(missionId);
+  const record = readRecord(missionId);
+  let selectedDiscovery = record.revisedThought && learn.discoveries.includes(record.revisedThought)
+    ? record.revisedThought
+    : '';
+  let activeIndex = 0;
+  const viewed = new Set<number>();
+  if (learn.discoveries.length > 0) viewed.add(0);
+
   const body = document.createElement('div');
   body.className = 'learn-wrap';
   body.innerHTML = `
-    <div class="learn-hero learn-hero--small">${friendImg(learn, 'clamp(88px,10vw,140px)')}
+    <div class="learn-hero learn-hero--small">${friendImg(learn, 'clamp(82px,9vw,126px)')}
       <div><p class="learn-name">${learn.friend.name}</p><p class="learn-region">${learn.friend.region}</p></div>
     </div>
-    ${prior ? `<p class="learn-prior">처음 생각: “${prior}”</p>` : ''}
-    <p class="learn-question">조사해 보니, 이걸 알게 됐어요!</p>
-    <ul class="learn-discoveries">
-      ${learn.discoveries.map((d) => `<li class="learn-discovery" hidden>${d}</li>`).join('')}
-    </ul>`;
+    ${record.initialHypothesis ? `<p class="learn-first-thought"><strong>처음 예상</strong><span>${record.initialHypothesis}</span></p>` : ''}
+    <h3 class="learn-question">세 발견을 비교해 봐</h3>
+    <div class="learn-discovery-view" role="group" aria-label="미션에서 확인한 발견">
+      <button type="button" class="learn-discovery-nav" data-discovery-prev aria-label="이전 발견">‹</button>
+      <button type="button" class="learn-discovery" role="radio" aria-checked="false" data-discovery-current></button>
+      <button type="button" class="learn-discovery-nav" data-discovery-next aria-label="다음 발견">›</button>
+    </div>
+    <div class="learn-discovery-meta">
+      <span data-discovery-count></span>
+      <span data-discovery-status role="status" aria-live="polite"></span>
+    </div>
+    <p class="learn-hint">가장 중요한 발견을 카드로 골라.</p>`;
 
+  let ready = learn.discoveries.length === 0;
   openModal({
     id: `learn-wrap-${missionId}`,
-    title: '배움 카드',
+    title: '생각이 어떻게 달라졌을까?',
     bodyEl: body,
     dismissible: false,
     actions: [{
       label: '배움 카드 받기',
       kind: 'primary',
-      autofocus: true,
       onClick: (close) => {
+        if (!ready) return;
         writeRecord(missionId, {
           confirmedAt: new Date().toISOString(),
-          cardLine: learn.discoveries[0] ?? learn.goal,
+          cardLine: selectedDiscovery || learn.goal,
           friendName: learn.friend.name,
-          friendImageId: learn.friend.imageId
+          friendImageId: learn.friend.imageId,
+          revisedThought: selectedDiscovery || learn.goal
         });
         void audio.playSfx('stamp');
         close();
@@ -150,24 +145,59 @@ export function showLearningWrap(missionId: MissionId, learn: MissionLearn, onDo
     }]
   });
 
-  // 발견을 하나씩 드러낸다 — 읽을 흐름을 만들고 글 덩어리로 안 보이게
-  const items = [...body.querySelectorAll<HTMLElement>('.learn-discovery')];
-  items.forEach((li, i) => {
-    window.setTimeout(() => {
-      li.hidden = false;
-      popBounce(li);
-      void audio.playSfx('partial');
-    }, 250 + i * 650);
+  const card = body.querySelector<HTMLButtonElement>('[data-discovery-current]')!;
+  const prev = body.querySelector<HTMLButtonElement>('[data-discovery-prev]')!;
+  const next = body.querySelector<HTMLButtonElement>('[data-discovery-next]')!;
+  const count = body.querySelector<HTMLElement>('[data-discovery-count]')!;
+  const status = body.querySelector<HTMLElement>('[data-discovery-status]')!;
+  const actionButton = body.closest('.modal')?.querySelector<HTMLButtonElement>('.modal-actions .btn-primary') ?? null;
+
+  const paint = (): void => {
+    const discovery = learn.discoveries[activeIndex] ?? learn.goal;
+    const allViewed = viewed.size >= learn.discoveries.length;
+    card.textContent = discovery;
+    card.classList.toggle('is-selected', discovery === selectedDiscovery);
+    card.setAttribute('aria-checked', String(discovery === selectedDiscovery));
+    card.disabled = learn.discoveries.length === 0;
+    prev.disabled = activeIndex <= 0;
+    next.disabled = activeIndex >= learn.discoveries.length - 1;
+    count.textContent = learn.discoveries.length > 0 ? `${activeIndex + 1} / ${learn.discoveries.length}` : '';
+    status.textContent = allViewed ? '모두 확인했어' : '화살표로 하나씩 확인해 봐';
+    ready = learn.discoveries.length === 0 || (allViewed && Boolean(selectedDiscovery));
+    if (actionButton) {
+      actionButton.disabled = !ready;
+      actionButton.textContent = ready ? '배움 카드 받기' : allViewed ? '중요한 발견을 골라' : '세 발견을 먼저 확인해';
+    }
+  };
+
+  const move = (delta: number): void => {
+    const nextIndex = Math.max(0, Math.min(learn.discoveries.length - 1, activeIndex + delta));
+    if (nextIndex === activeIndex) return;
+    activeIndex = nextIndex;
+    viewed.add(activeIndex);
+    paint();
+    card.focus();
+    void audio.playSfx('tap');
+  };
+  prev.addEventListener('click', () => move(-1));
+  next.addEventListener('click', () => move(1));
+  card.addEventListener('click', () => {
+    selectedDiscovery = learn.discoveries[activeIndex] ?? '';
+    paint();
+    void audio.playSfx('tap');
   });
+  paint();
 }
 
-/** 여권·수료증에서 쓰는 배움 카드 요약 — 저장만 읽으므로 콘텐츠 로드가 필요 없다 */
-export function readLearnCard(missionId: MissionId): { earned: boolean; line: string; friendName: string; friendImageId?: string } {
-  const rec = readRecord(missionId);
+/** 여권의 배움 카드 요약은 저장값만 읽으므로 콘텐츠 재로딩이 필요 없다. */
+export function readLearnCard(missionId: MissionId): { earned: boolean; line: string; friendName: string; friendImageId?: string; initialHypothesis: string; revisedThought: string } {
+  const record = readRecord(missionId);
   return {
-    earned: !!rec.confirmedAt,
-    line: rec.cardLine ?? '',
-    friendName: rec.friendName ?? '',
-    friendImageId: rec.friendImageId
+    earned: Boolean(record.confirmedAt),
+    line: record.cardLine ?? '',
+    friendName: record.friendName ?? '',
+    friendImageId: record.friendImageId,
+    initialHypothesis: record.initialHypothesis ?? '',
+    revisedThought: record.revisedThought ?? record.cardLine ?? ''
   };
 }

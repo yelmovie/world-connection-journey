@@ -1,1198 +1,857 @@
 import type { Page } from '../router';
-import { assetUrl, hasAsset } from '../core/assets';
+import { navigate } from '../router';
+import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
+import {
+  europeExplorationStatus,
+  guardEuropeScreen,
+  hasStudentQuestion,
+  hasStudentReason,
+  normalizeEuropeProgress,
+  type EuropeRequirements
+} from '../core/europeMission';
+import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
+import type { EuropeMissionProgress, EuropeMissionScreen } from '../types';
 import { buildTopBar, updateSteps } from '../ui/chrome';
-import { completeMissionFlow, showFeedback } from '../ui/feedback';
-import { burstConfetti, popBounce } from '../ui/fx';
+import { completeMissionFlow } from '../ui/feedback';
+import { burstConfetti } from '../ui/fx';
+import { openCharacterDialogue } from '../ui/characterDialogue';
 import { createGuide, type GuideController } from '../ui/guide';
-import { getLearn, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
-import { openModal, type ModalOptions } from '../ui/modal';
+import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
+import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
-interface EuropeSource {
+type VisualCategory = 'environment' | 'daily' | 'heritage';
+
+interface EuropeVisual {
   id: string;
-  type: string;
   title: string;
-  body: string;
-  clues: string[];
+  category: VisualCategory;
+  imageId: string;
+  caption: string;
+  lookFor: string;
+  sourceTitle: string;
+  sourceUrl: string;
+  license: string;
+  verifiedAt: string;
+  needsReview: boolean;
 }
-/** tags: 목표·목적 판정용 판단 태그 — europe.json nodeTagLegend 참고 (stairs/accessible/resident/preserve) */
-interface EuropeNode {
+
+interface EuropeCountry {
   id: string;
   name: string;
-  desc: string;
-  x: number;
-  y: number;
-  visitMinutes: number;
-  tags: string[];
+  map: { x: number; y: number };
+  accent: string;
+  hook: string;
+  visuals: EuropeVisual[];
 }
-interface EuropeEdge {
-  from: string;
-  to: string;
-  minutes: number;
-  mode: string;
+
+interface EuropeTraveler {
+  name: string;
+  bridge: string;
+  concern: string;
+  assetId?: string;
 }
+
+const EUROPE_TRAVELERS: Record<string, EuropeTraveler> = {
+  france: {
+    name: '카미유',
+    bridge: '나도 강가를 걷고 시장에서 이웃을 만나는 시간을 좋아해. 그런데 요즘 여름에는 그 시간이 달라질 때가 있어.',
+    concern: '더운 날이 오래 이어져서 강가와 도시에서 그늘과 물을 찾는 사람이 많아졌어.'
+  },
+  germany: {
+    name: '리나',
+    bridge: '강과 전차, 자전거 길이 이어진 도시 생활이 참 편리해. 그런데 어른들이 예전과 날씨가 다르다고 자주 말해.',
+    concern: '갑자기 큰비가 오거나 아주 더운 날이 늘어서 강 주변과 도시의 하루가 바뀌는 게 걱정돼.'
+  },
+  poland: {
+    name: '조피아',
+    bridge: '숲길과 광장은 계절마다 모습이 달라서 산책할 때마다 새로워. 그런데 요즘 계절의 느낌이 예전 같지 않아.',
+    concern: '겨울은 덜 춥고 여름 더위는 길어져서 숲과 강이 달라질까 봐 걱정돼.'
+  },
+  czechia: {
+    name: '아담',
+    bridge: '오래된 다리와 트램을 지금도 함께 쓰는 게 우리 도시의 재미야. 그런데 도시를 지키는 방법도 달라지고 있어.',
+    concern: '도시가 더 뜨거워지고 비가 한꺼번에 올 때 광장과 집을 안전하게 지킬 수 있을지 걱정돼.'
+  },
+  italy: {
+    name: '루카',
+    bridge: '광장에서 만나고, 지역에서 난 재료로 음식을 만드는 시간이 좋아. 그런데 더운 날이 길어지면 생활도 달라져.',
+    concern: '심한 더위와 비가 오지 않는 날이 이어져서 물과 농사, 도시의 하루가 힘들어질까 걱정돼.'
+  },
+  spain: {
+    name: '소피아',
+    bridge: '바닷가 산책길과 시장은 가족과 이웃이 자주 만나는 곳이야. 그런데 요즘은 한낮에 밖에 있기 힘든 날이 많아졌어.',
+    concern: '더위가 오래 이어지고 물이 부족해져서 바닷가와 시장의 일상이 달라질까 걱정돼.',
+    assetId: 'europe.traveler.spain'
+  },
+  greece: {
+    name: '엘레니',
+    bridge: '섬의 항구와 오래된 언덕은 오늘의 생활과 옛이야기가 만나는 곳이야. 그런데 바다와 산의 모습이 조금씩 달라지고 있어.',
+    concern: '바닷물이 더 따뜻해지고 산불 위험이 커져서 섬과 항구를 지키기 어려워질까 걱정돼.'
+  }
+};
+
+const CULTURE_STORIES: Record<string, string> = {
+  france_seine: '센강 양쪽에는 걷는 길과 자전거 길, 다리가 이어져 있어. 파리 사람들은 강가를 이동하고 쉬는 생활 공간으로 함께 써.',
+  france_market: '프랑스의 지역 시장에서는 제철 채소와 빵, 치즈를 고르고 상인과 이야기를 나눠. 지역마다 자주 먹는 재료와 시장 모습도 달라.',
+  france_louvre: '루브르에서는 오래된 궁전 건물과 현대적인 유리 피라미드를 한자리에서 볼 수 있어. 옛 공간에 오늘의 미술관이 이어진 모습이야.',
+  germany_rhine: '라인강은 여러 도시와 마을을 이어 주는 큰 물길이야. 강가의 산책길과 포도밭, 배가 지역 생활과 함께 이어져 있어.',
+  germany_berlin_tram: '베를린에서는 전차와 자전거, 걷는 사람이 길을 나누어 써. 여러 이동 방법을 연결해 도시를 오가는 생활을 볼 수 있어.',
+  germany_castle: '독일 여러 지역의 성은 산과 숲, 마을의 역사와 이어져 있어. 지금은 옛이야기를 배우고 건축을 살펴보는 문화 공간으로도 쓰여.',
+  poland_tatras: '타트라산맥에서는 정해진 길을 따라 걷고 산장을 이용하는 문화가 이어져. 산의 자연을 즐기면서 안전 규칙도 함께 지켜.',
+  poland_vistula: '비스와강은 바르샤바를 지나는 큰 강이야. 시민들은 강변에서 걷거나 자전거를 타고 공연과 쉼을 즐겨.',
+  poland_krakow: '크라쿠프 중앙 광장에서는 오래된 건물과 시장, 거리 공연을 함께 만날 수 있어. 광장은 사람들이 모이고 이야기를 나누는 중심 공간이야.',
+  czechia_charles_bridge: '프라하의 카를교는 강 양쪽의 오래된 도시를 이어 줘. 사람들은 다리를 건너며 조각과 거리 음악, 도시 풍경을 함께 살펴봐.',
+  czechia_tram: '프라하의 트램은 오래된 거리와 오늘의 동네를 이어 주는 생활 교통이야. 주민과 여행자가 같은 길을 함께 이용해.',
+  czechia_old_town: '프라하 구시가 광장에는 시대가 다른 건물과 시계탑이 모여 있어. 광장에서 시장과 축제가 열리며 오늘의 생활도 이어져.',
+  italy_dolomites: '돌로미티 지역에서는 산길을 걷고 작은 마을과 산장을 오가는 생활을 만날 수 있어. 지역의 언어와 음식도 마을마다 조금씩 달라.',
+  italy_bologna: '볼로냐의 회랑은 건물 앞을 길게 덮어 주는 지붕 있는 길이야. 비나 햇빛을 피하며 걷고 광장에서 이웃을 만나.',
+  italy_colosseum: '콜로세움은 고대 로마 시대의 큰 원형 경기장이야. 지금은 남은 건축을 보며 당시 도시와 사람들의 생활을 배우는 장소가 되었어.',
+  spain_barcelona: '바르셀로나 바닷가에는 산책길과 자전거 길, 모래사장이 나란히 이어져 있어. 사람들은 바다를 보며 걷고 운동하고 함께 쉬어.',
+  spain_madrid_market: '마드리드의 시장에서는 과일과 채소, 치즈 같은 재료를 고르고 상인과 이야기를 나눠. 시장은 장을 보는 곳이면서 이웃이 만나는 생활 공간이야.',
+  spain_sagrada: '사그라다 파밀리아는 건축가 안토니 가우디의 생각에서 시작된 성당이야. 2026년에 가장 높은 예수 그리스도 탑의 외관이 완성됐지만, 영광의 파사드와 탑 내부를 포함한 성당 전체 공사는 아직 이어지고 있어.',
+  greece_island_harbor: '그리스의 여러 섬에서는 항구가 사람과 물건을 이어 주는 마을의 문 역할을 해. 흰 집과 좁은 길, 작은 배가 섬 생활과 연결돼 있어.',
+  greece_thessaloniki: '테살로니키 바닷길은 사람들이 걷고 자전거를 타며 만나는 긴 공공 공간이야. 항구 도시의 오늘 생활을 가까이 볼 수 있어.',
+  greece_acropolis: '아크로폴리스는 아테네 높은 언덕에 남은 고대 건축 유적이야. 기둥과 터를 살펴보며 오래전 사람들의 생각과 도시 역사를 배워.'
+};
+
+interface EuropePrompt { id: string; label: string; prompt: string }
+interface EuropeStarter { id: string; label: string; text: string }
+
 interface EuropeContent {
   intro: { title: string; subtitle: string; guide: string };
-  city: { name: string; note: string };
-  sources: EuropeSource[];
-  nodes: EuropeNode[];
-  edges: EuropeEdge[];
-  goals: Array<{ id: string; label: string; check: string }>;
-  constraints: { maxMinutes: number; mustVisitCount: number };
-  exampleRoutes: Array<{ nodeIds: string[]; strengths: string; tradeoffs: string }>;
-  feedback: { overTime: string; goalMissed: string; good: string };
+  requirements: EuropeRequirements;
+  countries: EuropeCountry[];
+  reasonPrompts: EuropePrompt[];
+  questionStarters: EuropeStarter[];
+  postcard: { title: string; finishLabel: string };
+  feedback: { reflection: string };
 }
 
-const WEIGHTS = { evidence: 30, perspective: 25, communication: 25, revision: 15 };
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const VB_W = 960;
-const VB_H = 540;
-
-const TYPE_LABEL: Record<string, string> = {
-  official: '공식 안내',
-  resident: '주민 목소리',
-  access: '접근성 정보',
-  preserve: '보존 규칙'
+const STEP_INDEX: Record<EuropeMissionScreen, number> = {
+  map: 0,
+  window: 1,
+  gallery: 2,
+  reason: 3,
+  question: 4,
+  postcard: 5
 };
 
-const SOURCE_LENS: Record<string, { side: 'heritage' | 'today'; label: string }> = {
-  official: { side: 'heritage', label: '역사·방문 안내' },
-  preserve: { side: 'heritage', label: '문화유산 보존' },
-  resident: { side: 'today', label: '주민의 오늘' },
-  access: { side: 'today', label: '오늘의 이동 접근' }
+const CATEGORY_LABEL: Record<VisualCategory, string> = {
+  environment: '환경',
+  daily: '오늘의 생활',
+  heritage: '문화 공간'
 };
 
-type PurposeId = 'balanced' | 'access' | 'heritage' | 'community';
-
-const PURPOSES: ReadonlyArray<{ id: PurposeId; label: string; help: string }> = [
-  { id: 'balanced', label: '균형 탐방', help: '접근성·주민 생활·보존 목표를 모두 챙겨요.' },
-  { id: 'access', label: '함께 이동', help: '계단이 있는 다리를 피하고 이동이 편한 지점을 두 곳 이상 골라요.' },
-  { id: 'heritage', label: '흔적 보기', help: '보존 규칙이 있는 역사 지점을 두 곳 이상 연결해요.' },
-  { id: 'community', label: '생활 만나기', help: '주민 생활·교류 지점을 두 곳 이상 연결해요.' }
-];
+const ICON = {
+  bag: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.8"/></svg>',
+  left: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
+  right: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg>',
+  info: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
+};
 
 const PAGE_CSS = `
-.europe-mission .top-bar { background:linear-gradient(180deg,rgba(31,43,74,.8),rgba(31,43,74,0)); }
-/* 기준 해상도(1024x576+)에서는 한 화면에 들어가지만, 더 낮은 창에서는 잘리는 대신 스크롤한다 */
-.europe-mission .page-body { padding:var(--sp-3) clamp(12px,2.5vw,32px);overflow-y:auto; }
-/* 배경이 주인공 — 큰 패널은 최대 2개(보드 + 조작 레일), 캐릭터는 배경 위에 크게 선다 */
-.europe-mission .mission-scene { flex:1;min-height:0;display:grid;gap:var(--sp-4);align-items:stretch; }
-.europe-mission .scene-read { grid-template-columns:minmax(0,1fr) clamp(132px,14vw,240px); }
-.europe-mission .scene-route { grid-template-columns:clamp(120px,11vw,190px) minmax(0,1fr) clamp(200px,19vw,280px); }
-.europe-mission .scene-board,
-.europe-mission .control-rail {
-  min-width:0;min-height:0;position:relative;overflow:hidden;
-  padding:var(--sp-4);border-radius:var(--radius-l);
-  background:rgba(255,252,240,.9);backdrop-filter:blur(6px);
-  border:2px solid rgba(212,191,138,.9);box-shadow:var(--shadow-card);
-  display:flex;flex-direction:column;gap:var(--sp-3);
+.europe-mission {
+  --eu-copy:clamp(18px,1.3vw,22px);
+  --eu-small:clamp(16px,1.05vw,19px);
+  --eu-title:clamp(25px,2.15vw,35px);
+  background-position:center;background-size:cover;
+  --guide-size:clamp(180px,13vw,240px);
 }
-.europe-mission .control-rail { overflow-y:auto;gap:var(--sp-2);color:var(--c-navy); }
-.europe-mission .scene-cast {
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  gap:var(--sp-2);min-width:0;overflow:hidden;
+.europe-mission::before { content:"";position:absolute;inset:0;background:rgba(15,38,63,.2);pointer-events:none; }
+.europe-mission .top-bar { background:rgba(18,41,70,.94);backdrop-filter:none; }
+.europe-mission .page-body {
+  width:min(100%,1560px);margin-inline:auto;padding:clamp(7px,1.4vh,14px) clamp(10px,2vw,30px) 8px;
+  display:flex;min-height:0;overflow-y:auto;overflow-x:hidden;
 }
-.europe-mission .cast-hero { width:clamp(120px,14vw,240px);max-height:54%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(8,18,33,.5)); }
-.europe-mission .cast-props { display:flex;gap:var(--sp-2);justify-content:center;flex-wrap:wrap; }
-.europe-mission .cast-props img { width:clamp(40px,4.6vw,72px);height:clamp(40px,4.6vw,72px);object-fit:contain;filter:drop-shadow(0 5px 10px rgba(8,18,33,.45)); }
-.europe-mission .cast-note { font-size:var(--fs-small);line-height:1.35;color:#fff;text-align:center;text-shadow:0 2px 6px rgba(10,22,40,.95); }
-.europe-mission .board-title { display:flex;justify-content:space-between;align-items:center;gap:var(--sp-2); }
-.europe-mission .board-title h2 { color:var(--c-navy);font-size:var(--fs-title); }
-.europe-mission .source-row { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-2); }
-.europe-mission .source-row .card { min-height:56px;padding:var(--sp-2);font-size:var(--fs-small);text-align:left; }
-.europe-mission .source-viewer {
-  flex:1;min-height:0;overflow:auto;padding:var(--sp-3);border-radius:var(--radius-m);
-  background:rgba(255,253,244,.92);border:2px solid #d8c798;
+.europe-mission .eu-screen { flex:1;min-height:0;display:flex;flex-direction:column;gap:10px; }
+.europe-mission .eu-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;text-shadow:0 2px 8px rgba(7,24,42,.8); }
+.europe-mission .eu-heading h2 { margin:0;font:900 var(--eu-title)/1.08 var(--font-head);text-wrap:balance; }
+.europe-mission .eu-heading p { margin:3px 0 0;font-size:var(--eu-small);font-weight:750;line-height:1.3; }
+.europe-mission .eu-heading .chip { color:var(--c-ink);text-shadow:none;white-space:nowrap; }
+.europe-mission .eu-board {
+  min-width:0;min-height:0;border:2px solid rgba(255,255,255,.92);border-radius:24px;
+  background:#f7f2df;box-shadow:0 14px 34px rgba(8,25,45,.34);color:var(--c-ink);overflow:hidden;
 }
-.europe-mission .source-viewer p,.europe-mission .source-viewer li { font-size:var(--fs-small);line-height:1.45; }
-.europe-mission .source-lens { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2); }
-.europe-mission .source-lens .card { padding:var(--sp-3);font-size:var(--fs-small);text-align:left; }
-.europe-mission .compare-result { flex:1;min-height:0;overflow:auto; }
-.europe-mission .city-map { width:100%;height:100%;min-height:0;display:block;border-radius:var(--radius-m);background:#9ed4d0; }
-.europe-mission .map-surface { flex:1;min-height:0;display:flex;position:relative; }
-.europe-mission .map-caption { position:absolute;left:8px;bottom:8px;padding:5px 12px;border-radius:999px;background:rgba(15,30,50,.84);color:#fff;font-size:var(--fs-small);pointer-events:none; }
-.europe-mission .purpose-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-2); }
-.europe-mission .purpose-grid .card { min-height:48px;padding:var(--sp-2);font-size:var(--fs-small);line-height:1.2;text-align:center; }
-.europe-mission .gauge-card { padding:var(--sp-2);border-radius:var(--radius-s);background:rgba(255,255,255,.86);font-size:var(--fs-small);font-weight:700; }
-.europe-mission .goal-list { display:flex;flex-direction:column;gap:2px;font-size:var(--fs-small);line-height:1.35; }
-.europe-mission .mission-dock { background:linear-gradient(0deg,rgba(15,30,50,.82),rgba(15,30,50,.28)); }
-.europe-mission .mission-dock .chip { max-width:60%; }
-.europe-mission .compact-feedback .feedback { padding:var(--sp-2) var(--sp-3);font-size:var(--fs-small); }
-.europe-mission .route-tools { padding:var(--sp-2);font-size:var(--fs-small); }
-.europe-mission .route-tools summary { min-height:44px;display:flex;align-items:center;font-weight:700; }
-@media (max-width:900px) {
-  .europe-mission .scene-route { grid-template-columns:120px minmax(0,1fr) 200px;gap:var(--sp-3); }
-  .europe-mission .scene-board,.europe-mission .control-rail { padding:var(--sp-3); }
+.europe-mission .eu-map-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
+.europe-mission .eu-map {
+  position:relative;min-height:390px;background:
+    linear-gradient(rgba(16,48,72,.12),rgba(16,48,72,.18)),
+    url('${assetUrl('europe.map.illustrated')}') center/cover no-repeat;
 }
-@media (max-height:620px) {
-  .europe-mission .cast-hero { max-height:42%; }
-  .europe-mission .cast-props img { width:40px;height:40px; }
-  /* 낮은 화면에서도 레일이 스크롤 없이 들어오게 */
-  .europe-mission .control-rail { padding:var(--sp-3);gap:6px; }
-  .europe-mission .goal-list { line-height:1.25; }
+.europe-mission .eu-map::after { content:"";position:absolute;inset:16px;border:2px solid rgba(255,255,255,.58);border-radius:18px;pointer-events:none; }
+.europe-mission .eu-country {
+  position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);z-index:2;
+  min-width:94px;min-height:54px;padding:8px 11px;border:3px solid #fff;border-radius:18px;
+  background:var(--accent);color:#fff;box-shadow:0 6px 15px rgba(8,24,42,.42);
+  font:900 var(--eu-small)/1.05 var(--font-head);cursor:pointer;
 }
-@media (prefers-reduced-motion:reduce) { .europe-mission * { scroll-behavior:auto!important; } }
+.europe-mission .eu-country::after { content:"";position:absolute;left:50%;bottom:-10px;translate:-50% 0;border:7px solid transparent;border-top-color:#fff;border-bottom:0; }
+.europe-mission .eu-country:hover,.europe-mission .eu-country:focus-visible { scale:1.06; }
+.europe-mission .eu-country.is-ready { box-shadow:0 0 0 5px #f3c758,0 7px 16px rgba(8,24,42,.44); }
+.europe-mission .eu-country small { display:block;margin-top:4px;font:800 14px/1 var(--font-body); }
+.europe-mission .eu-bag { padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto; }
+.europe-mission .eu-bag-title { display:flex;align-items:center;gap:9px;font:900 var(--eu-copy)/1.15 var(--font-head); }
+.europe-mission svg { width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round; }
+.europe-mission .eu-progress-list { display:grid;gap:7px; }
+.europe-mission .eu-progress-row { display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:40px;font-size:var(--eu-small);font-weight:800; }
+.europe-mission .eu-progress-row .mark { width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#dfe8ed;color:#527080; }
+.europe-mission .eu-progress-row.is-done .mark { background:#dff2df;color:#277147; }
+.europe-mission .eu-progress-row svg { width:18px;height:18px; }
+.europe-mission .eu-bag-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:auto; }
+.europe-mission .eu-bag-thumb { aspect-ratio:1;border:2px solid #fff;border-radius:12px;overflow:hidden;background:#dce7e9;box-shadow:0 3px 8px rgba(25,50,77,.18); }
+.europe-mission .eu-bag-thumb img { width:100%;height:100%;object-fit:cover; }
+.europe-mission .eu-empty { padding:13px;border:2px dashed #aab7bd;border-radius:14px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35;text-align:center; }
+.europe-mission .eu-window-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,24vw,360px);border-radius:26px; }
+.europe-mission .eu-stage { position:relative;min-height:390px;background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
+.europe-mission .eu-stage > img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }
+.europe-mission .eu-stage > img.is-object { object-fit:contain;padding:5%;background:linear-gradient(145deg,#d8f0f1,#b5d5df); }
+.europe-mission .eu-stage-shade { position:absolute;inset:auto 0 0;padding:60px 20px 17px;background:linear-gradient(transparent,rgba(7,24,42,.84));color:#fff; }
+.europe-mission .eu-stage-shade h2 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }
+.europe-mission .eu-nav {
+  position:absolute;top:50%;translate:0 -50%;width:56px;height:72px;border:2px solid #fff;border-radius:16px;
+  display:grid;place-items:center;background:rgba(16,43,68,.82);color:#fff;cursor:pointer;
+}
+.europe-mission .eu-nav[data-dir="prev"] { left:12px; }.europe-mission .eu-nav[data-dir="next"] { right:12px; }
+.europe-mission .eu-window-panel { padding:15px;display:flex;flex-direction:column;gap:10px;overflow:auto;background:#f7f2df;border-radius:0 22px 22px 0; }
+.europe-mission .eu-label { align-self:flex-start;padding:5px 11px;border-radius:999px;background:#e0e9f1;font-size:var(--eu-small);font-weight:900; }
+.europe-mission .eu-window-panel h3 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }
+.europe-mission .eu-window-panel p { margin:0;font-size:var(--eu-copy);font-weight:750;line-height:1.42; }
+.europe-mission .eu-look { padding:11px 13px;border-left:6px solid #efbd45;border-radius:10px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35; }
+.europe-mission .eu-look strong { display:block;color:#725600;font-weight:900; }
+.europe-mission .eu-thumbs { display:grid;grid-template-columns:repeat(3,1fr);gap:7px; }
+.europe-mission .eu-thumb { min-height:68px;padding:0;border:3px solid transparent;border-radius:13px;overflow:hidden;background:#cddde2;cursor:pointer; }
+.europe-mission .eu-thumb[aria-pressed="true"] { border-color:#5c43c3; }
+.europe-mission .eu-thumb.is-recorded { box-shadow:0 0 0 3px #2f8a65; }
+.europe-mission .eu-thumb img { width:100%;height:68px;object-fit:cover;display:block; }.europe-mission .eu-thumb img.is-object { object-fit:contain;padding:6px; }
+.europe-mission .eu-traveler-slot { margin-top:auto;padding:12px;border:2px solid #e4c064;border-radius:18px;background:#fff9e7;box-shadow:0 6px 15px rgba(43,55,74,.13); }
+.europe-mission .eu-traveler-slot .btn { width:100%;min-height:54px;border-radius:14px;font-size:var(--eu-small); }
+.europe-mission .eu-art-note { font-size:15px!important;color:#52657e; }
+.europe-mission .eu-gallery { flex:1;min-height:390px;padding:14px;display:flex;flex-direction:column;gap:10px; }
+.europe-mission .eu-gallery-tabs { display:flex;gap:7px;flex-wrap:wrap; }
+.europe-mission .eu-gallery-tab { min-height:48px;padding:8px 15px;border:2px solid #b8c7cf;border-radius:999px;background:#fff;font:850 var(--eu-small)/1 var(--font-body);cursor:pointer; }
+.europe-mission .eu-gallery-tab[aria-pressed="true"] { background:#4e3db3;color:#fff;border-color:#4e3db3; }
+.europe-mission .eu-gallery-grid { flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-content:start; }
+.europe-mission .eu-gallery-card { min-width:0;padding:0;border:4px solid transparent;border-radius:18px;background:#fff;overflow:hidden;text-align:left;box-shadow:0 5px 13px rgba(25,50,77,.18);cursor:pointer; }
+.europe-mission .eu-gallery-card[aria-pressed="true"] { border-color:#efb92f;box-shadow:0 0 0 3px rgba(239,185,47,.28); }
+.europe-mission .eu-gallery-card img { width:100%;height:clamp(128px,20vh,210px);object-fit:cover;display:block;background:#dbe7e8; }
+.europe-mission .eu-gallery-card img.is-object { object-fit:contain;padding:12px; }
+.europe-mission .eu-card-copy { padding:9px 12px 12px;display:grid;gap:4px; }
+.europe-mission .eu-card-copy strong { font:900 var(--eu-copy)/1.15 var(--font-head); }.europe-mission .eu-card-copy span { font-size:var(--eu-small);font-weight:750;line-height:1.3; }
+.europe-mission .eu-form-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr); }
+.europe-mission .eu-evidence { position:relative;min-height:390px;background:#dce8e8;overflow:hidden; }
+.europe-mission .eu-evidence img { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }.europe-mission .eu-evidence img.is-object { object-fit:contain;padding:8%; }
+.europe-mission .eu-evidence-caption { position:absolute;inset:auto 0 0;padding:52px 18px 16px;background:linear-gradient(transparent,rgba(7,24,42,.88));color:#fff; }
+.europe-mission .eu-evidence-caption strong { font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-evidence-caption span { display:block;margin-top:4px;font-size:var(--eu-small);font-weight:800; }
+.europe-mission .eu-write { padding:clamp(15px,2vw,26px);display:flex;flex-direction:column;gap:12px;overflow:auto; }
+.europe-mission .eu-write h2 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-write > p { margin:0;font-size:var(--eu-copy);font-weight:750;line-height:1.4; }
+.europe-mission .eu-prompt-row { display:flex;gap:8px;flex-wrap:wrap; }
+.europe-mission .eu-prompt { min-height:50px;padding:9px 15px;border:2px solid #aebfc8;border-radius:15px;background:#fff;font:850 var(--eu-small)/1.1 var(--font-body);cursor:pointer; }
+.europe-mission .eu-prompt[aria-pressed="true"] { border-color:#5c43c3;background:#ebe8ff;color:#362898; }
+.europe-mission .eu-prompt-question { min-height:54px;padding:12px 15px;border-radius:14px;background:#e8f1f4;font-size:var(--eu-copy);font-weight:900;line-height:1.3; }
+.europe-mission textarea { width:100%;min-height:120px;padding:14px 16px;resize:vertical;border:3px solid #a9bac5;border-radius:16px;background:#fff;font:800 var(--eu-copy)/1.5 var(--font-body);color:var(--c-ink); }
+.europe-mission textarea:focus { border-color:#5c43c3;outline:4px solid rgba(92,67,195,.2); }
+.europe-mission .eu-count { align-self:flex-end;color:#52657e;font-size:var(--eu-small);font-weight:800; }
+.europe-mission .eu-question-preview { padding:14px 16px;border:3px solid #efbd45;border-radius:16px;background:#fffaf0;font-size:var(--eu-copy);font-weight:900;line-height:1.45; }
+.europe-mission .eu-question-preview span { color:#5c43c3; }
+.europe-mission .eu-postcard-wrap { flex:1;min-height:390px;display:grid;place-items:center;padding:12px; }
+.europe-mission .eu-postcard { width:min(100%,980px);min-height:370px;display:grid;grid-template-columns:1fr 1fr;border:10px solid #fff;border-radius:28px;background:#fff8df;box-shadow:0 14px 30px rgba(21,41,62,.25);overflow:hidden; }
+.europe-mission .eu-postcard-photo { position:relative;min-height:360px;background:#d7e7e8; }.europe-mission .eu-postcard-photo img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }.europe-mission .eu-postcard-photo img.is-object { object-fit:contain;padding:8%; }
+.europe-mission .eu-postcard-copy { padding:clamp(18px,2.5vw,32px);display:flex;flex-direction:column;gap:12px;background:radial-gradient(circle at 90% 10%,#d9eff0 0 13%,transparent 14%),#fff8df; }
+.europe-mission .eu-postcard-copy h2 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-postcard-copy h3 { margin:0;font:900 clamp(30px,3.5vw,52px)/1 var(--font-head);color:#3e329d; }
+.europe-mission .eu-postcard-line { padding:11px 0;border-bottom:2px solid #d8c98e;font-size:var(--eu-copy);font-weight:800;line-height:1.42; }.europe-mission .eu-postcard-line strong { display:block;color:#6c5a20;font-size:var(--eu-small); }
+.europe-mission .eu-sign { margin-top:auto;text-align:right;font-size:var(--eu-copy);font-weight:900; }
+.europe-mission > .bottom-bar { background:#173752;border-top:2px solid rgba(255,255,255,.8);backdrop-filter:none; }
+.europe-mission .bottom-bar .eu-status { color:#fff;font-size:var(--eu-small);font-weight:850;line-height:1.25; }
+.europe-mission .bottom-bar .eu-actions { display:flex;gap:9px;margin-left:auto; }
+.europe-mission .bottom-bar .btn { min-height:50px;font-size:var(--eu-small); }
+.europe-mission .guide-wrap .guide-bubble { background:#fffdf4;backdrop-filter:none; }
+.europe-mission .guide-wrap .guide-mascot { filter:drop-shadow(0 8px 13px rgba(6,24,42,.42)); }
+.europe-mission > .guide-wrap .guide-mascot-button { left:max(8px,env(safe-area-inset-left)); }
+.eu-culture-detail { display:grid;grid-template-columns:minmax(210px,.82fr) minmax(260px,1.18fr);gap:18px;align-items:stretch;max-width:820px; }
+.eu-culture-detail img { width:100%;height:100%;min-height:260px;max-height:430px;object-fit:cover;border-radius:18px;background:#dbe7e8; }
+.eu-culture-detail img.is-object { object-fit:contain;padding:18px; }
+.eu-culture-detail__copy { display:flex;flex-direction:column;gap:10px;justify-content:center; }
+.eu-culture-detail__copy p { margin:0;font-size:max(18px,var(--fs-body));font-weight:750;line-height:1.5;word-break:keep-all; }
+.eu-culture-detail__category { align-self:flex-start;padding:5px 11px;border-radius:999px;background:#e5edff;color:#3f3297;font-weight:900; }
+#overlay-root .modal:has(.eu-culture-detail) { width:min(700px,calc(100vw - 80px));border-radius:28px;overflow:hidden; }
+#overlay-root .modal:has(.eu-culture-detail) .modal-title { border-radius:28px 28px 0 0; }
+#overlay-root .modal:has(.eu-culture-detail) .modal-body { border-radius:0 0 28px 28px;background:#fffdf7; }
+@media (max-width:1050px) {
+  .europe-mission .eu-map-layout { grid-template-columns:minmax(0,1fr) 235px; }
+  .europe-mission .eu-country { min-width:82px;padding-inline:8px; }
+  .europe-mission .eu-window-layout { grid-template-columns:minmax(0,1fr) 285px; }
+}
+@media (max-width:900px) and (min-width:781px) {
+  .eu-culture-detail { grid-template-columns:1fr; }
+  .eu-culture-detail img { min-height:220px;max-height:34dvh; }
+  #overlay-root .modal:has(.eu-culture-detail) { width:min(620px,calc(100vw - 80px)); }
+}
+@media (max-width:780px) {
+  .europe-mission .page-body { overflow-y:auto; }
+  .europe-mission .eu-screen { min-width:0; }
+  .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout { grid-template-columns:1fr; }
+  .europe-mission .eu-map { min-height:440px; }
+  .europe-mission .eu-window-panel { overflow:visible; }
+  .europe-mission .eu-stage,.europe-mission .eu-evidence { min-height:320px; }
+  .europe-mission .eu-postcard { grid-template-columns:1fr; }
+  .europe-mission .eu-postcard-photo { min-height:300px; }
+  .europe-mission > .guide-wrap { display:none; }
+  .europe-mission .eu-gallery-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .eu-culture-detail { grid-template-columns:1fr; }
+  .eu-culture-detail img { min-height:220px;max-height:34dvh; }
+  #overlay-root .modal:has(.eu-culture-detail) { width:min(700px,calc(100vw - 28px));overflow:hidden; }
+}
+@media (max-width:520px) {
+  .europe-mission .eu-country { min-width:58px;min-height:48px;padding:5px 6px;border-width:2px;border-radius:13px;font-size:13px; }
+  .europe-mission .eu-country small { margin-top:2px;font-size:12px; }
+  .europe-mission .eu-gallery-grid { grid-template-columns:1fr; }
+}
+@media (max-height:650px) {
+  .europe-mission .page-body { padding-block:5px; }
+  .europe-mission .eu-heading p { display:none; }
+  .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:390px; }
+  .europe-mission .eu-gallery { min-height:390px; }
+  .europe-mission .eu-window-panel { padding:11px;gap:7px; }
+  .europe-mission textarea { min-height:96px; }
+}
+@media (prefers-reduced-motion:reduce) { .europe-mission * { transition:none!important;scroll-behavior:auto!important; } }
 `;
 
-function isPurposeId(value: unknown): value is PurposeId {
-  return typeof value === 'string' && PURPOSES.some((purpose) => purpose.id === value);
+function element<T extends HTMLElement = HTMLElement>(html: string): T {
+  const template = document.createElement('template');
+  template.innerHTML = html.trim();
+  return template.content.firstElementChild as T;
 }
 
-function purposeLabel(id: PurposeId): string {
-  return PURPOSES.find((purpose) => purpose.id === id)?.label ?? id;
+function esc(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
 }
 
-/** 판단 태그별 노드 집합 — 콘텐츠 JSON의 nodes[].tags에서 만든다. */
-interface NodeTagSets {
-  stairs: Set<string>;
-  accessible: Set<string>;
-  resident: Set<string>;
-  preserve: Set<string>;
+function imageClass(visual: EuropeVisual): string {
+  return visual.imageId.startsWith('europe.heritage') ? 'is-object' : '';
 }
 
-function buildTagSets(nodes: EuropeNode[]): NodeTagSets {
-  const byTag = (tag: string) => new Set(nodes.filter((n) => Array.isArray(n.tags) && n.tags.includes(tag)).map((n) => n.id));
-  return { stairs: byTag('stairs'), accessible: byTag('accessible'), resident: byTag('resident'), preserve: byTag('preserve') };
-}
-
-interface RouteSnap {
-  nodes: string[];
-  minutes: number;
-  distanceIndex: number;
-  purpose: PurposeId;
-  met: Record<string, boolean>;
-  metCount: number;
-}
-
-function el(html: string): HTMLElement {
-  const t = document.createElement('template');
-  t.innerHTML = html.trim();
-  return t.content.firstElementChild as HTMLElement;
-}
-
-function imageHtml(id: string, alt = '', className = ''): string {
-  if (!hasAsset(id)) return '';
-  return `<img src="${assetUrl(id)}" alt="${alt}" ${alt ? '' : 'aria-hidden="true"'} data-asset-id="${id}" class="${className}">`;
-}
-
-function stickerImages(ids: readonly string[]): string {
-  return ids.filter((id) => hasAsset(id)).map((id) => imageHtml(id)).join('');
-}
-
-function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>): SVGElementTagNameMap[K] {
-  const e = document.createElementNS(SVG_NS, tag);
-  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-  return e;
-}
-
-function edgeKey(a: string, b: string): string {
-  return a < b ? `${a}|${b}` : `${b}|${a}`;
-}
-
-function goalsMetFor(route: string[], tags: NodeTagSets): Record<string, boolean> {
-  return {
-    goal_access: route.some((id) => tags.accessible.has(id)),
-    goal_resident: route.some((id) => tags.resident.has(id)),
-    goal_preserve: route.some((id) => tags.preserve.has(id))
-  };
-}
-
-function purposeMetFor(route: string[], purpose: PurposeId, met: Record<string, boolean>, tags: NodeTagSets): boolean {
-  if (purpose === 'balanced') return Object.values(met).every(Boolean);
-  if (purpose === 'access') {
-    return route.every((id) => !tags.stairs.has(id)) && route.filter((id) => tags.accessible.has(id)).length >= 2;
-  }
-  if (purpose === 'heritage') return route.filter((id) => tags.preserve.has(id)).length >= 2;
-  return route.filter((id) => tags.resident.has(id)).length >= 2;
+function fullQuestion(starter: EuropeStarter | undefined, draft: string): string {
+  const end = draft.trim().replace(/[?？]+$/u, '');
+  return starter && end ? `${starter.text} ${end}?` : '';
 }
 
 export function createPage(): Page {
   let disposed = false;
-  let activeModalClose: (() => void) | null = null;
   let guide: GuideController | null = null;
-
-  /** 이 페이지가 연 모달만 추적해 화면 전환 때 남지 않게 한다. */
-  const openOwnedModal = (options: ModalOptions): void => {
-    if (activeModalClose) return;
-    const actions = options.actions?.map((action) => ({
-      ...action,
-      onClick: (rawClose: () => void) => {
-        const close = () => {
-          rawClose();
-          activeModalClose = null;
-        };
-        action.onClick(close);
-      }
-    }));
-    const rawClose = openModal({ ...options, actions, dismissible: false });
-    activeModalClose = () => {
-      rawClose();
-      activeModalClose = null;
-    };
-  };
+  let saveTimer: number | null = null;
 
   return {
     async mount(root: HTMLElement) {
-      const c = await loadContent<EuropeContent>('europe');
+      const content = await loadContent<EuropeContent>('europe');
       if (disposed) return;
-      const learn = getLearn(c); // 배움 루프(친구 소개→예상→배움 확인) — null이면 기존 흐름 그대로
       audio.playBgm('europe');
 
-      const nodeById = new Map(c.nodes.map((n) => [n.id, n]));
-      const tagSets = buildTagSets(c.nodes);
-      const edgeMin = new Map<string, number>();
-      for (const e of c.edges) edgeMin.set(edgeKey(e.from, e.to), e.minutes);
+      const countryById = new Map(content.countries.map((country) => [country.id, country]));
+      const visualById = new Map(content.countries.flatMap((country) => country.visuals.map((visual) => [visual.id, visual] as const)));
+      const countryByVisual = new Map(content.countries.flatMap((country) => country.visuals.map((visual) => [visual.id, country] as const)));
+      const shapes = content.countries.map((country) => ({ id: country.id, visualIds: country.visuals.map((visual) => visual.id) }));
+      let state = normalizeEuropeProgress(saveRepo.get().missions.europe.data, shapes);
+      let finished = saveRepo.get().missions.europe.status === 'completed';
+      let galleryFilterId: string | null = state.selectedCountryId;
+      const playerSpeaker = selectedAvatarSpeaker(saveRepo.get().profile);
 
-      const routeMinutes = (route: string[]): number => {
-        let t = 0;
-        route.forEach((id, i) => {
-          t += nodeById.get(id)?.visitMinutes ?? 0;
-          const prev = route[i - 1];
-          if (i > 0 && prev) t += edgeMin.get(edgeKey(prev, id)) ?? 0;
-        });
-        return t;
-      };
+      void preloadImages([
+        'europe.map.illustrated',
+        ...Object.values(EUROPE_TRAVELERS).flatMap((traveler) => traveler.assetId ? [traveler.assetId] : []),
+        ...new Set(content.countries.flatMap((country) => country.visuals.map((visual) => visual.imageId)))
+      ]);
 
-      /** 실제 km가 아닌 SVG 좌표 기반 비교용 거리 지수다. */
-      const routeDistanceIndex = (route: string[]): number => {
-        let distance = 0;
-        route.forEach((id, i) => {
-          const current = nodeById.get(id);
-          const previousId = route[i - 1];
-          const previous = previousId ? nodeById.get(previousId) : undefined;
-          if (current && previous) distance += Math.hypot((current.x - previous.x) * VB_W, (current.y - previous.y) * VB_H);
-        });
-        return Math.round(distance / 10);
-      };
-
-      const snapFor = (nodes: string[], purpose: PurposeId): RouteSnap => {
-        const met = goalsMetFor(nodes, tagSets);
-        return {
-          nodes,
-          minutes: routeMinutes(nodes),
-          distanceIndex: routeDistanceIndex(nodes),
-          purpose,
-          met,
-          metCount: Object.values(met).filter(Boolean).length
-        };
-      };
-
-      // setCheckpoint는 data를 통째로 교체하므로 배움 기록(예상)을 항상 함께 실어 보존한다.
-      const setCp = (checkpointId: string, data: Record<string, unknown>): void => {
-        saveRepo.setCheckpoint('europe', checkpointId, { ...data, learn: saveRepo.get().missions.europe.data.learn });
-      };
-
-      // ---- 미션 진행 상태 ----
-      let stage: 1 | 2 = 1;
-      let secondMode = false;
-      const readSet = new Set<string>();
-      const comparedSourceIds = new Set<string>();
-      let comparisonDone = false;
-      let route: string[] = [];
-      let purpose: PurposeId | null = null;
-      let firstSnap: RouteSnap | null = null;
-      let failedAttempts = 0; // 시간 초과·목표 미달 재도전 횟수
-      let busy = false;
-      let finished = false;
-
-      // ---- 체크포인트 복원 ----
-      const saved = saveRepo.get().missions.europe;
-      const d = saved.data as Partial<{
-        read: string[];
-        comparedSourceIds: string[];
-        comparisonDone: boolean;
-        route: string[];
-        purpose: string | null;
-        firstRoute: string[];
-        firstPurpose: string;
-        failedAttempts: number;
-      }>;
-      const knownSourceIds = new Set(c.sources.map((source) => source.id));
-      if (saved.checkpointId === 'sources' || saved.checkpointId === 'route' || saved.checkpointId === 'second_route') {
-        if (typeof d.failedAttempts === 'number') failedAttempts = Math.max(0, Math.trunc(d.failedAttempts));
-        (Array.isArray(d.read) ? d.read : []).filter((id): id is string => typeof id === 'string' && knownSourceIds.has(id)).forEach((id) => readSet.add(id));
-        if (Array.isArray(d.comparedSourceIds)) {
-          d.comparedSourceIds
-            .filter((id): id is string => typeof id === 'string' && knownSourceIds.has(id))
-            .slice(0, 2)
-            .forEach((id) => comparedSourceIds.add(id));
-        }
-        comparisonDone = d.comparisonDone === true && comparedSourceIds.size === 2;
-        if (saved.checkpointId === 'sources') showToast('저장된 자료 읽기 지점부터 이어서 해요.', 'info');
-      }
-      if (saved.checkpointId === 'route' || saved.checkpointId === 'second_route') {
-        stage = 2;
-        c.sources.forEach((source) => readSet.add(source.id));
-        comparisonDone = true; // 이전 구현의 경로 체크포인트도 안전하게 이어 간다.
-        if (saved.checkpointId === 'second_route' && Array.isArray(d.firstRoute)) {
-          const nodes = d.firstRoute.filter((id): id is string => typeof id === 'string' && nodeById.has(id));
-          if (nodes.length > 0) {
-            const firstPurpose = isPurposeId(d.firstPurpose) ? d.firstPurpose : 'balanced';
-            firstSnap = snapFor(nodes, firstPurpose);
-            secondMode = true;
-          }
-        }
-        const savedPurpose = isPurposeId(d.purpose) ? d.purpose : null;
-        if (!secondMode || savedPurpose !== firstSnap?.purpose) purpose = savedPurpose;
-        if (Array.isArray(d.route)) {
-          const candidate = d.route;
-          const validRoute =
-            candidate.every((id): id is string => typeof id === 'string' && nodeById.has(id)) &&
-            new Set(candidate).size === candidate.length &&
-            candidate.every((id, index) => index === 0 || edgeMin.has(edgeKey(candidate[index - 1] as string, id)));
-          if (validRoute) route = [...candidate];
-        }
-        showToast('저장된 지점부터 이어서 해요.', 'info');
-      }
-
-      // ---- 페이지 뼈대 ----
       const page = document.createElement('div');
       page.className = 'page europe-mission';
       page.dataset.assetId = 'bg.europe';
-      // 배경 일러스트가 주인공이라 어둡게 덮지 않는다(가독성 최소한만).
-      page.style.backgroundImage = `linear-gradient(rgba(15,30,50,0.34), rgba(15,30,50,0.44)), url('${assetUrl('bg.europe')}')`;
+      page.style.backgroundImage = `url('${assetUrl('bg.europe')}')`;
       const style = document.createElement('style');
       style.textContent = PAGE_CSS;
       page.appendChild(style);
-      const stepNow = stage === 1 ? 0 : secondMode ? 2 : 1;
       const bar = buildTopBar({
-        title: c.intro.title,
-        subtitle: c.intro.subtitle,
+        title: content.intro.title,
+        subtitle: content.intro.subtitle,
         backTo: '#/map',
-        steps: { total: 3, done: stepNow, now: stepNow }
+        steps: { total: 6, done: STEP_INDEX[state.screen], now: STEP_INDEX[state.screen] }
       });
-      page.appendChild(bar);
-      // 제목은 상단바 리본 한 곳에만. 단계 목표는 그 리본의 부제로 바꿔 쓴다.
-      const ribbonSub = bar.querySelector('.ribbon-sub') as HTMLElement;
-      // 부제 = 학습 목표 고정. 단계별 조작 안내는 말풍선이, 진행은 상단 진행 점이 맡는다.
-      const setRibbon = (text: string): void => { ribbonSub.textContent = learn?.goal ?? text; };
       const body = document.createElement('div');
       body.className = 'page-body';
-      page.appendChild(body);
       const bottom = document.createElement('div');
-      bottom.className = 'bottom-bar mission-dock';
-      page.appendChild(bottom);
+      bottom.className = 'bottom-bar';
+      page.append(bar, body);
+      const gd = createGuide({ side: 'left', assetId: 'europe.guide', speakerName: '레나' });
+      guide = gd;
+      page.append(gd.el, bottom);
       root.appendChild(page);
 
-      // ---- 마스코트 가이드 (말풍선 안내 + 탭 큐) ----
-      // 2단계에서 왼쪽이 지도라서 가이드는 오른쪽에 세운다.
-      const gd = createGuide({ side: 'right' });
-      guide = gd;
-      page.appendChild(gd.el);
-      let lastSaid = '';
-      // 친구 소개 모달이 떠 있는 동안에는 말풍선 타이핑을 미뤄 뒀다가, 모달을 닫으면 시작한다.
-      let introGate = learn !== null;
-      let pendingSay: { text: string; cue: HTMLElement | null } | null = null;
-      // 2단계 복원 시 자동으로 여는 목적 고르기 모달도 소개가 끝날 때까지 미룬다(모달은 동시 1개).
-      let pendingAutoModal: (() => void) | null = null;
-      const say = (text: string, cue: HTMLElement | null): void => {
-        if (introGate) {
-          pendingSay = { text, cue };
+      const persist = (): void => {
+        state.updatedAt = new Date().toISOString();
+        saveRepo.setCheckpoint('europe', state.screen, { europeProgress: state });
+      };
+      const schedulePersist = (): void => {
+        if (saveTimer !== null) window.clearTimeout(saveTimer);
+        saveTimer = window.setTimeout(() => {
+          saveTimer = null;
+          persist();
+        }, 120);
+      };
+
+      const say = (message: string, cue?: HTMLElement | null): void => {
+        gd.say(message, { cue, autoStart: true, persist: false });
+      };
+
+      const setScreen = (screen: EuropeMissionScreen): void => {
+        state.screen = screen;
+        persist();
+        render();
+      };
+
+      const statusNow = () => europeExplorationStatus(state, shapes, content.requirements);
+
+      const setBottom = (status: string, actions: HTMLElement[]): void => {
+        bottom.replaceChildren();
+        const statusEl = element(`<span class="eu-status" role="status" aria-live="polite">${esc(status)}</span>`);
+        const actionWrap = element('<div class="eu-actions"></div>');
+        actionWrap.append(...actions);
+        bottom.append(statusEl, actionWrap);
+      };
+
+      const button = (label: string, kind: 'primary' | 'ghost' = 'primary'): HTMLButtonElement => {
+        return element(`<button type="button" class="btn btn-${kind}">${label}</button>`);
+      };
+
+      const cultureExplanation = (visual: EuropeVisual): string => CULTURE_STORIES[visual.id] ?? visual.caption;
+
+      const recordConcern = (country: EuropeCountry, visual: EuropeVisual): void => {
+        const alreadyRecorded = country.visuals.some((item) => state.savedVisualIds.includes(item.id));
+        if (!alreadyRecorded) state.savedVisualIds.push(visual.id);
+        state.activeCountryId = country.id;
+        state.activeVisualId = visual.id;
+        if (!state.viewedVisualIds.includes(visual.id)) state.viewedVisualIds.push(visual.id);
+        persist();
+        render();
+      };
+
+      const openTravelerDialogue = (country: EuropeCountry, visual: EuropeVisual): void => {
+        const traveler = EUROPE_TRAVELERS[country.id] ?? {
+          name: '여행 친구',
+          bridge: '이 장면은 우리 동네의 생활과 이어져 있어. 그런데 요즘 조금 달라진 점도 보여.',
+          concern: '예전과 달라지는 날씨가 사람과 자연에 주는 영향이 걱정돼.'
+        };
+        openCharacterDialogue({
+          id: `europe-traveler-${country.id}-${visual.id}`,
+          title: `${country.name} 여행가와 이야기하기`,
+          name: traveler.name,
+          meta: `${country.name} 생활 사례를 들려주는 학습용 가상 친구`,
+          assetId: traveler.assetId,
+          partner: { name: playerSpeaker.name, meta: '나의 탐험가', assetId: playerSpeaker.assetId },
+          lines: [
+            { role: 'partner', label: '궁금한 장면', text: `${visual.title}에서 네가 좋아하는 모습은 뭐야?` },
+            { role: 'character', label: '우리 동네 이야기', text: cultureExplanation(visual) },
+            { role: 'character', label: '요즘 달라진 점', text: traveler.bridge },
+            { role: 'character', label: '친구의 걱정', text: traveler.concern },
+            { role: 'partner', label: '기억할 이야기', text: '그랬구나. 다른 나라 친구들의 이야기도 잘 듣고, 나중에 함께 방법을 생각해 볼게.' }
+          ],
+          onComplete: () => recordConcern(country, visual)
+        });
+      };
+
+      const showCultureDetail = (country: EuropeCountry, visual: EuropeVisual): void => {
+        const detail = element(`<div class="eu-culture-detail">
+          <img class="${imageClass(visual)}" src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}" data-asset-id="${visual.imageId}">
+          <div class="eu-culture-detail__copy">
+            <span class="eu-culture-detail__category">${CATEGORY_LABEL[visual.category]}</span>
+            <p><strong>${esc(visual.title)}</strong></p>
+            <p>${esc(cultureExplanation(visual))}</p>
+          </div>
+        </div>`);
+        openModal({
+          id: `europe-culture-${visual.id}`,
+          title: `${country.name} 문화 더 알아보기`,
+          bodyEl: detail
+        });
+      };
+
+      const renderMap = (): void => {
+        const progress = statusNow();
+        const viewedCount = (country: EuropeCountry) => country.visuals.filter((visual) => state.viewedVisualIds.includes(visual.id)).length;
+        const mapButtons = content.countries.map((country) => {
+          const count = viewedCount(country);
+          const ready = state.visitedCountryIds.includes(country.id) && count >= content.requirements.minVisualsPerVisitedCountry;
+          return `<button type="button" class="eu-country ${ready ? 'is-ready' : ''}" data-country="${country.id}" style="--x:${country.map.x}%;--y:${country.map.y}%;--accent:${country.accent}" aria-label="${esc(country.name)} 문화 창 열기">
+            ${esc(country.name)}<small>${ready ? '✓' : ''}</small>
+          </button>`;
+        }).join('');
+        const savedThumbs = state.savedVisualIds.slice(-6).map((id) => {
+          const visual = visualById.get(id);
+          return visual ? `<span class="eu-bag-thumb"><img src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}" data-asset-id="${visual.imageId}"></span>` : '';
+        }).join('');
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>나라를 골라 창 열기</h2></div>
+          <div class="eu-map-layout">
+            <div class="eu-board eu-map" aria-label="유럽 나라 탐색 지도">${mapButtons}</div>
+            <aside class="eu-board eu-bag" aria-label="문화 탐험 진행">
+              <div class="eu-bag-title">${ICON.eye}<span>문화 탐험 기록</span></div>
+              <div class="eu-progress-list">
+                <div class="eu-progress-row ${progress.readyCountryCount >= content.requirements.minCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>나라 살펴보기</span></div>
+                <div class="eu-progress-row ${progress.savedVisualCount >= content.requirements.minSavedVisuals ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>여행가 만나기</span></div>
+                <div class="eu-progress-row ${progress.savedCountryCount >= content.requirements.minSavedCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>친구 이야기 듣기</span></div>
+              </div>
+              ${savedThumbs ? `<div class="eu-bag-grid">${savedThumbs}</div>` : '<div class="eu-empty">사진을 살펴본 뒤 여행가와 이야기해 봐</div>'}
+            </aside>
+          </div>
+        </section>`);
+        body.replaceChildren(screen);
+        screen.querySelectorAll<HTMLButtonElement>('[data-country]').forEach((countryButton) => {
+          countryButton.addEventListener('click', () => {
+            const country = countryById.get(countryButton.dataset.country ?? '');
+            if (!country) return;
+            const firstUnseen = country.visuals.find((visual) => !state.viewedVisualIds.includes(visual.id)) ?? country.visuals[0];
+            if (!firstUnseen) return;
+            state.activeCountryId = country.id;
+            state.activeVisualId = firstUnseen.id;
+            if (!state.visitedCountryIds.includes(country.id)) state.visitedCountryIds.push(country.id);
+            if (!state.viewedVisualIds.includes(firstUnseen.id)) state.viewedVisualIds.push(firstUnseen.id);
+            void audio.playSfx('tap');
+            setScreen('window');
+          });
+        });
+        const next = button('친구들의 이야기 정리하기');
+        next.disabled = !progress.complete;
+        next.addEventListener('click', () => setScreen('gallery'));
+        const hint = progress.incompleteVisitedCountryIds.length
+          ? `${progress.incompleteVisitedCountryIds.map((id) => countryById.get(id)?.name ?? id).join('·')}에서 한 장 더 살펴봐.`
+          : progress.complete ? '이야기를 모아 보니 친구들의 걱정이 모두 환경과 이어져 있었어. 스테이지 6으로 가져갈 이야기를 정리해 보자.' : '일곱 나라에서 사진을 살펴보고 여행가와 자연스럽게 이야기해 봐.';
+        setBottom(hint, [next]);
+        say(content.intro.guide, screen.querySelector<HTMLElement>('[data-country]'));
+      };
+
+      const renderWindow = (): void => {
+        const country = countryById.get(state.activeCountryId ?? '');
+        const initialVisual = visualById.get(state.activeVisualId ?? '');
+        if (!country || !initialVisual || !country.visuals.some((item) => item.id === initialVisual.id)) {
+          state.screen = 'map';
+          persist();
+          renderMap();
           return;
         }
-        if (text !== lastSaid) {
-          lastSaid = text;
-          gd.say(text, { cue });
-        } else {
-          gd.setCue(cue); // 같은 문구면 타이핑 재시작 없이 큐만 이동
-        }
-      };
-
-      const finish = (bestGoals: number, didSecond: boolean) => {
-        if (finished) return;
-        finished = true;
-        const ratios = {
-          evidence: 0.4 * (readSet.size / c.sources.length) + 0.6 * (bestGoals / c.goals.length), // 자료 읽기 + 단서를 경로에 반영
-          perspective: bestGoals / c.goals.length, // 접근성·주민·보존 관점 충족
-          communication: bestGoals >= c.goals.length ? 1 : 0.85, // 목표 3개 = 우수, 2개 = 성공
-          revision: didSecond ? 1 : 0.35 // 다른 전략으로 한 번 더 설계했는가
-        };
-        const result = computeScore(ratios, WEIGHTS, 5 - failedAttempts);
-        // 점수 모달 전에 배움 확인(처음 생각 vs 발견) — learn 없으면 기존 흐름 그대로
-        const done = (): void => {
-          const learnRec = saveRepo.get().missions.europe.data.learn;
-          completeMissionFlow('europe', '유럽', result);
-          // completeMission이 data를 비우므로 배움 카드 기록을 되살린다(여권·수료증에서 읽음)
-          if (learnRec) saveRepo.update((s) => { s.missions.europe.data.learn = learnRec; });
-        };
-        if (learn) showLearningWrap('europe', learn, done);
-        else done();
-      };
-
-      // ================= 1단계: 자료 읽기·관점 비교 =================
-      function renderStage1(): void {
-        updateSteps(bar, 3, 0, 0);
-        body.replaceChildren();
-        let activeSourceId = c.sources.find((source) => !readSet.has(source.id))?.id ?? c.sources[0]?.id ?? '';
-        // 읽기 → 비교 두 국면을 한 보드에서 갈아 끼운다(한 화면에 쌓지 않는다).
-        const scene = el(`<section class="mission-scene scene-read" aria-label="벨라리바 자료 조사 장면">
-          <main class="scene-board">
-            <div class="board-title"><h2 data-phase-title>자료 서랍</h2><span class="chip">체코 프라하</span></div>
-            <div class="source-row" data-source-grid></div>
-            <article class="source-viewer" data-source-viewer role="status" aria-live="polite"></article>
-            <div class="source-lens" data-compare-buttons role="group" aria-label="비교할 자료 두 개 선택" hidden></div>
-            <div class="compare-result" data-compare-result role="status" aria-live="polite" hidden></div>
-          </main>
-          <aside class="scene-cast" aria-hidden="true">
-            ${imageHtml('europe.guide', '', 'cast-hero bob')}
-            <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'europe.heritage', 'deco.accordion'])}</div>
-            <p class="cast-note">프라하는 체코의 수도예요. 그림은 도시 분위기를 담은 장식이에요.</p>
-          </aside>
-        </section>`);
-        body.appendChild(scene);
-        const grid = scene.querySelector('[data-source-grid]') as HTMLElement;
-        const sourceViewer = scene.querySelector('[data-source-viewer]') as HTMLElement;
-        const phaseTitle = scene.querySelector('[data-phase-title]') as HTMLElement;
-        const compareButtons = scene.querySelector('[data-compare-buttons]') as HTMLElement;
-        const compareResult = scene.querySelector('[data-compare-result]') as HTMLElement;
-        const compareSelection = [...comparedSourceIds].slice(0, 2);
-
-        bottom.replaceChildren();
-        const status = el(
-          `<span class="chip mission-status" role="status" aria-live="polite">자료 ${readSet.size}/${c.sources.length} · 관점 비교 ${comparisonDone ? '✓' : '○'}</span>`
-        );
-        const startBtn = el(`<button class="btn btn-primary btn-big">경로 설계</button>`) as HTMLButtonElement;
-        bottom.append(status, startBtn);
-
-        const persistSources = () => {
-          setCp('sources', {
-            read: [...readSet],
-            comparedSourceIds: [...comparedSourceIds],
-            comparisonDone,
-            failedAttempts
-          });
-        };
-
-        const selectedSources = (): EuropeSource[] =>
-          compareSelection.map((id) => c.sources.find((source) => source.id === id)).filter((source): source is EuropeSource => Boolean(source));
-
-        const validComparison = (): boolean => {
-          const selected = selectedSources();
-          const first = selected[0];
-          const second = selected[1];
-          if (!first || !second) return false;
-          return SOURCE_LENS[first.type]?.side !== SOURCE_LENS[second.type]?.side;
-        };
-
-        const paintComparison = () => {
-          const allRead = readSet.size === c.sources.length;
-          compareButtons.replaceChildren();
-          for (const source of c.sources) {
-            const selected = compareSelection.includes(source.id);
-            const lens = SOURCE_LENS[source.type];
-            const button = el(`<button class="card card-pick" aria-pressed="${selected}" ${allRead ? '' : 'disabled'} style="font:inherit">
-              <strong>${selected ? '✓ ' : ''}${source.title}</strong><br>
-              <span style="color:var(--c-ink-soft)">${lens?.label ?? TYPE_LABEL[source.type] ?? source.type}</span>
-            </button>`) as HTMLButtonElement;
-            button.addEventListener('click', () => {
-              const existing = compareSelection.indexOf(source.id);
-              if (existing >= 0) compareSelection.splice(existing, 1);
-              else {
-                if (compareSelection.length === 2) compareSelection.shift();
-                compareSelection.push(source.id);
-              }
-              if (validComparison()) {
-                comparedSourceIds.clear();
-                compareSelection.forEach((id) => comparedSourceIds.add(id));
-                comparisonDone = true;
-                persistSources();
-                void audio.playSfx('success');
-              }
-              paint();
-              if (validComparison()) {
-                popBounce(compareResult);
-                burstConfetti(button);
-              }
-            });
-            compareButtons.appendChild(button);
-          }
-
-          if (!allRead) return;
-          const selected = selectedSources();
-          if (selected.length < 2) {
-            compareResult.innerHTML = '<div class="feedback partial"><span aria-hidden="true">◐</span><span>서로 다른 관점의 자료 두 장을 골라 보세요.</span></div>';
-            return;
-          }
-          if (!validComparison()) {
-            compareResult.innerHTML = '<div class="feedback retry"><span aria-hidden="true">↻</span><span>비슷한 쪽의 자료를 골랐어요. 역사·보존 자료와 오늘의 생활·이동 자료를 하나씩 비교해 보세요.</span></div>';
-            return;
-          }
-          const [first, second] = selected;
-          if (!first || !second) return;
-          compareResult.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-3)">
-            ${[first, second]
-              .map(
-                (source) => `<div class="card" style="padding:var(--sp-3)">
-                  <p class="chip" style="margin-bottom:6px">${SOURCE_LENS[source.type]?.label ?? TYPE_LABEL[source.type] ?? source.type}</p>
-                  <strong>${source.title}</strong>
-                  <ul style="padding-left:20px;font-size:var(--fs-small);line-height:1.5">${source.clues.map((clue) => `<li>${clue}</li>`).join('')}</ul>
-                </div>`
-              )
-              .join('')}
+        let visual: EuropeVisual = initialVisual;
+        const currentIndex = country.visuals.findIndex((item) => item.id === visual.id);
+        const saved = country.visuals.some((item) => state.savedVisualIds.includes(item.id));
+        const traveler = EUROPE_TRAVELERS[country.id];
+        const travelerName = traveler?.name ?? '여행 친구';
+        const meetLabel = saved ? `${travelerName}와 다시 이야기하기` : `${travelerName}와 이야기하기`;
+        const thumbnails = country.visuals.map((item) => `<button type="button" class="eu-thumb ${state.savedVisualIds.includes(item.id) ? 'is-recorded' : ''}" data-visual="${item.id}" aria-label="${esc(item.title)} 문화 설명과 여행가 이야기 열기" aria-pressed="${item.id === visual?.id}"><img class="${imageClass(item)}" src="${assetUrl(item.imageId)}" alt="" data-asset-id="${item.imageId}"></button>`).join('');
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>${esc(country.name)} 문화 창</h2></div>
+          <div class="eu-board eu-window-layout">
+            <div class="eu-stage">
+              <img class="${imageClass(visual)}" src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}: ${esc(visual.caption)}" data-asset-id="${visual.imageId}">
+              <button type="button" class="eu-nav" data-dir="prev" aria-label="이전 장면">${ICON.left}</button>
+              <button type="button" class="eu-nav" data-dir="next" aria-label="다음 장면">${ICON.right}</button>
+              <div class="eu-stage-shade"><h2>${esc(visual.title)}</h2></div>
+            </div>
+            <aside class="eu-window-panel">
+              <span class="eu-label">${CATEGORY_LABEL[visual.category]}</span>
+              <p>${esc(visual.caption)}</p>
+              <div class="eu-look"><strong>찾아봐</strong>${esc(visual.lookFor)}</div>
+              <div class="eu-thumbs" role="group" aria-label="${esc(country.name)} 장면 3개">${thumbnails}</div>
+              <div class="eu-traveler-slot">
+                <button type="button" class="btn btn-primary" data-meet-traveler>${esc(meetLabel)}</button>
+              </div>
+            </aside>
           </div>
-          <div class="feedback success" style="margin-top:var(--sp-3)"><span aria-hidden="true">✓</span><span>같은 도시도 자료의 관점에 따라 보이는 문제가 달라요.</span></div>`;
-        };
-
-        const paint = () => {
-          const allRead = readSet.size === c.sources.length;
-          status.textContent = `자료 ${readSet.size}/${c.sources.length} · 비교 ${comparisonDone ? '✓' : '○'}`;
-          startBtn.disabled = !allRead || !comparisonDone;
-          // 국면 전환: 다 읽기 전에는 자료 서랍, 다 읽으면 관점 비교만 보인다.
-          phaseTitle.textContent = allRead ? '관점 비교' : '자료 서랍';
-          grid.hidden = allRead;
-          sourceViewer.hidden = allRead;
-          compareButtons.hidden = !allRead;
-          compareResult.hidden = !allRead;
-          grid.replaceChildren();
-          let firstUnread: HTMLElement | null = null;
-          for (const s of c.sources) {
-            const read = readSet.has(s.id);
-            const card = el(`<button class="card card-pick" aria-pressed="${activeSourceId === s.id}">
-              <strong>${read ? '✓ ' : ''}${TYPE_LABEL[s.type] ?? s.type}</strong><br><span>${s.title}</span>
-            </button>`);
-            card.addEventListener('click', () => {
-              const wasRead = readSet.has(s.id);
-              activeSourceId = s.id;
-              readSet.add(s.id);
-              persistSources();
-              void audio.playSfx(wasRead ? 'tap' : 'pickup');
-              paint();
-              const activeCard = grid.querySelector<HTMLElement>(`[data-source-id="${s.id}"]`);
-              if (!wasRead && activeCard) popBounce(activeCard);
-            });
-            card.dataset.sourceId = s.id;
-            grid.appendChild(card);
-            if (!read && !firstUnread) firstUnread = card;
-          }
-          const activeSource = c.sources.find((source) => source.id === activeSourceId) ?? c.sources[0];
-          sourceViewer.innerHTML = activeSource
-            ? `<div class="row-between" style="gap:8px"><strong>${activeSource.title}</strong><span class="chip">${TYPE_LABEL[activeSource.type] ?? activeSource.type}</span></div>
-               <p style="margin-top:5px">${activeSource.body}</p>
-               <p style="margin-top:5px;font-weight:700">핵심 단서 · ${activeSource.clues.join(' · ')}</p>`
-            : '<p>위의 자료를 골라 단서를 살펴봐요.</p>';
-          paintComparison();
-          setRibbon(allRead ? '관점이 다른 자료 두 장을 골라 비교해요' : '자료 네 장을 눌러 단서를 읽어요');
-          if (readSet.size < c.sources.length) say('자료 네 장을 모두 읽어야 출발!', firstUnread);
-          else if (!comparisonDone) say('관점이 다른 자료 두 장을 골라 비교해요!', compareButtons.querySelector<HTMLElement>('button'));
-          else say('비교 완료! 경로 설계를 시작해요!', startBtn);
-        };
-
-        startBtn.addEventListener('click', () => {
-          if (busy || stage !== 1 || readSet.size < c.sources.length || !comparisonDone) return;
-          busy = true;
-          try {
-            stage = 2;
-            setCp('route', {
-              read: [...readSet],
-              comparedSourceIds: [...comparedSourceIds],
-              comparisonDone,
-              route: [],
-              purpose: null,
-              failedAttempts
-            });
-            renderStage2();
-          } finally {
-            busy = false;
-          }
-        });
-
-        paint();
-      }
-
-      function openSource(s: EuropeSource, onRead: () => void): void {
-        const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-          <p style="line-height:1.6">${s.body}</p>
-          <div>
-            <p style="font-weight:700;margin-bottom:6px">단서 메모</p>
-            <ul style="padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:var(--fs-small);line-height:1.5">
-              ${s.clues.map((cl) => `<li>${cl}</li>`).join('')}
-            </ul>
-          </div>
-        </div>`);
-        openOwnedModal({
-          id: `src-${s.id}`,
-          title: s.title,
-          bodyEl,
-          actions: [
-            {
-              label: '다 읽었어요',
-              kind: 'primary',
-              autofocus: true,
-              onClick: (close) => {
-                readSet.add(s.id);
-                setCp('sources', {
-                  read: [...readSet],
-                  comparedSourceIds: [...comparedSourceIds],
-                  comparisonDone,
-                  failedAttempts
-                });
-                close();
-                onRead();
-              }
-            }
-          ]
-        });
-      }
-
-      // ================= 2단계: 경로 설계 (+3단계 제출·비교) =================
-      function renderStage2(): void {
-        updateSteps(bar, 3, secondMode ? 2 : 1, secondMode ? 2 : 1);
-        body.replaceChildren();
-        setRibbon(secondMode ? '다른 목적으로 두 번째 노선을 설계해요' : '목적을 고르고 세 지점을 이어요');
-
-        let lastSubmittedSignature: string | null = null;
-        const routeSignature = (): string => `${secondMode ? 'second' : 'first'}\u0000${purpose ?? ''}\u0000${route.join('\u0000')}`;
-        const writeRouteCheckpoint = () => {
-          setCp(secondMode ? 'second_route' : 'route', {
-            read: [...readSet],
-            comparedSourceIds: [...comparedSourceIds],
-            comparisonDone,
-            route: [...route],
-            purpose,
-            failedAttempts,
-            ...(firstSnap ? { firstRoute: firstSnap.nodes, firstPurpose: firstSnap.purpose } : {})
-          });
-        };
-        const persistRoute = () => {
-          lastSubmittedSignature = null;
-          writeRouteCheckpoint();
-        };
-
-        const scene = el(`<section class="mission-scene scene-route" aria-label="벨라리바 경로 설계 장면">
-          <aside class="scene-cast" aria-hidden="true">
-            ${imageHtml('europe.guide', '', 'cast-hero bob')}
-            <div class="cast-props">${stickerImages(['deco.landmark_eiffel', 'deco.tulip'])}</div>
-            <p class="cast-note">체코 프라하</p>
-          </aside>
-          <main class="scene-board map-wrap">
-            <div class="board-title"><h2>${c.city.name} 노선판</h2><span class="chip">도보 ━ · 트램 ┅</span></div>
-            <div class="map-surface"></div>
-          </main>
-          <aside class="control-rail" aria-label="경로 목표와 게이지"></aside>
         </section>`);
-        body.appendChild(scene);
-        const mapWrap = scene.querySelector('.map-wrap') as HTMLElement;
-        const mapSurface = scene.querySelector('.map-surface') as HTMLElement;
-        const aside = scene.querySelector('.control-rail') as HTMLElement;
-
-        // ---- SVG 지도 ----
-        const svg = svgEl('svg', {
-          viewBox: `0 0 ${VB_W} ${VB_H}`,
-          role: 'group',
-          'aria-label': `${c.city.name} 탐방 지도. 지점은 Enter 또는 Space로 연결할 수 있고, 아래에 같은 기능의 글자 버튼도 있어요.`
-        });
-        svg.classList.add('city-map');
-        svg.appendChild(svgEl('rect', { x: '0', y: '0', width: String(VB_W), height: String(VB_H), rx: '26', fill: '#91cdbf' }));
-        svg.appendChild(svgEl('path', { d: 'M -20 430 C 180 350, 310 470, 500 390 S 790 300, 990 360', fill: 'none', stroke: '#57a9cf', 'stroke-width': '92', opacity: '.95' }));
-        svg.appendChild(svgEl('path', { d: 'M -20 430 C 180 350, 310 470, 500 390 S 790 300, 990 360', fill: 'none', stroke: 'rgba(255,255,255,.45)', 'stroke-width': '7', 'stroke-dasharray': '18 18' }));
-        const buildingData: Array<[number, number, number, number, string]> = [
-          [90, 70, 115, 78, '#e9c88e'], [690, 72, 120, 88, '#e6a97f'], [740, 405, 124, 72, '#e9d4aa'],
-          [85, 330, 100, 72, '#d6b178'], [405, 72, 104, 66, '#e8bf94'], [570, 235, 92, 62, '#d9a783']
-        ];
-        buildingData.forEach(([x, y, w, h, fill]) => {
-          svg.appendChild(svgEl('rect', { x: String(x), y: String(y), width: String(w), height: String(h), rx: '12', fill: String(fill), stroke: '#795f4c', 'stroke-width': '4' }));
-          svg.appendChild(svgEl('path', { d: `M ${x - 8} ${y + 8} L ${x + w / 2} ${y - 28} L ${x + w + 8} ${y + 8} Z`, fill: '#a55446', stroke: '#795f4c', 'stroke-width': '4' }));
-        });
-        const treeSpots: Array<[number, number]> = [[220,110],[850,210],[610,470],[330,465],[895,455]];
-        treeSpots.forEach(([x, y]) => {
-          svg.appendChild(svgEl('circle', { cx:String(x),cy:String(y),r:'22',fill:'#4d9360',stroke:'#fff','stroke-width':'4' }));
-          svg.appendChild(svgEl('rect', { x:String(x-4),y:String(y+18),width:'8',height:'20',fill:'#76543c' }));
-        });
-        // 이동 가능한 길 + 소요 시간
-        for (const e of c.edges) {
-          const a = nodeById.get(e.from);
-          const b = nodeById.get(e.to);
-          if (!a || !b) continue;
-          const line = svgEl('line', {
-            x1: String(a.x * VB_W), y1: String(a.y * VB_H),
-            x2: String(b.x * VB_W), y2: String(b.y * VB_H),
-            stroke: 'rgba(255,255,255,0.4)', 'stroke-width': '4',
-            'stroke-dasharray': e.mode === 'tram' ? '12 8' : 'none'
-          });
-          svg.appendChild(line);
-          const label = svgEl('text', {
-            x: String(((a.x + b.x) / 2) * VB_W),
-            y: String(((a.y + b.y) / 2) * VB_H - 8),
-            'text-anchor': 'middle', 'font-size': '17', fill: 'rgba(255,255,255,0.85)'
-          });
-          label.textContent = `${e.minutes}분${e.mode === 'tram' ? '·트램' : ''}`;
-          svg.appendChild(label);
-        }
-        const routeLine = svgEl('polyline', {
-          points: '', fill: 'none', stroke: '#F2C14E', 'stroke-width': '8',
-          'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: '0.9'
-        });
-        svg.appendChild(routeLine);
-
-        const nodeRefs = new Map<string, { group: SVGGElement; circle: SVGCircleElement; center: SVGTextElement }>();
-        for (const n of c.nodes) {
-          const cx = n.x * VB_W;
-          const cy = n.y * VB_H;
-          const g = svgEl('g', {
-            role: 'button',
-            tabindex: '0',
-            'aria-pressed': 'false',
-            'aria-label': `${n.name}, 머무는 시간 ${n.visitMinutes}분. ${n.desc}. Enter 또는 Space로 경로에 추가`
-          });
-          g.style.cursor = 'pointer';
-          const circle = svgEl('circle', { cx: String(cx), cy: String(cy), r: '36', fill: '#FFFDF4', stroke: '#19324D', 'stroke-width': '4' });
-          const center = svgEl('text', {
-            x: String(cx), y: String(cy + 7), 'text-anchor': 'middle',
-            'font-size': '18', 'font-weight': '700', fill: '#19324D', 'pointer-events': 'none'
-          });
-          center.textContent = `${n.visitMinutes}분`;
-          const name = svgEl('text', {
-            x: String(cx), y: String(cy + 62), 'text-anchor': 'middle',
-            'font-size': '21', 'font-weight': '700', fill: '#fff',
-            stroke: 'rgba(15,30,50,0.75)', 'stroke-width': '4', 'paint-order': 'stroke', 'pointer-events': 'none'
-          });
-          name.textContent = n.name;
-          g.append(circle, center, name);
-          const tap = () => tapNode(n.id);
-          g.addEventListener('click', tap);
-          g.addEventListener('keydown', (ev) => {
-            if (ev.key === 'Enter' || ev.key === ' ') {
-              ev.preventDefault();
-              tap();
-            }
-          });
-          svg.appendChild(g);
-          nodeRefs.set(n.id, { group: g, circle, center });
-        }
-        mapSurface.appendChild(svg);
-        mapSurface.appendChild(el(`<span class="map-caption">핀을 순서대로 눌러 노선을 이어요</span>`));
-
-        // ---- 사이드 패널 ----
-        const fb = el(`<div></div>`);
-        // 탐방 목적은 한 번 고르는 결정이라 레일에 4장을 늘어놓지 않고 모달에서 고른다.
-        const purposePanel = el(`<div class="gauge-card row-between">
-          <span data-purpose-now>목적 없음</span>
-          <button class="btn btn-ghost" data-purpose-open style="min-height:44px;padding:6px 14px">고르기</button>
-        </div>`);
-        const purposeNow = purposePanel.querySelector('[data-purpose-now]') as HTMLElement;
-        const openPurposePicker = (): void => {
-          const grid = el(`<div class="purpose-grid" role="group" aria-label="탐방 목적 선택"></div>`);
-          for (const option of PURPOSES) {
-            const unavailable = secondMode && firstSnap?.purpose === option.id;
-            const button = el(`<button class="card card-pick" aria-pressed="${purpose === option.id}" ${unavailable ? 'disabled' : ''} style="font:inherit;text-align:left">
-              <strong>${option.label}</strong>
-              <p style="font-size:var(--fs-small);color:var(--c-ink-soft);margin-top:4px">${unavailable ? '첫 경로에서 고른 목적이에요.' : option.help}</p>
-            </button>`) as HTMLButtonElement;
-            button.addEventListener('click', () => {
-              if (finished || unavailable) return;
-              purpose = option.id;
-              fb.replaceChildren();
-              void audio.playSfx('tap');
-              persistRoute();
-              activeModalClose?.();
-              updateView();
-            });
-            grid.appendChild(button);
-          }
-          const bodyEl = el(`<div></div>`);
-          bodyEl.appendChild(grid);
-          openOwnedModal({
-            id: 'eu-purpose',
-            title: secondMode ? '두 번째 탐방 목적' : '이번 탐방 목적',
-            bodyEl,
-            actions: [{ label: '닫기', kind: 'ghost', onClick: (close) => close() }]
-          });
-        };
-        (purposePanel.querySelector('[data-purpose-open]') as HTMLButtonElement).addEventListener('click', openPurposePicker);
-        // 거리 지수는 결과 모달의 비교표에서만 보여 준다(화면 정보 최소화).
-        const gauge = el(`<div class="gauge-card">
-          <div class="row-between"><span>시간</span><span id="eu-time"></span></div>
-          <div class="progress-track" style="margin-top:6px"><div class="progress-fill" id="eu-fill" role="progressbar" aria-label="사용한 탐방 시간" aria-valuemin="0" aria-valuemax="${c.constraints.maxMinutes}" aria-valuenow="0" style="width:0%"></div></div>
-          <span id="eu-distance" class="visually-hidden"></span>
-        </div>`);
-        const timeText = gauge.querySelector('#eu-time') as HTMLElement;
-        const gaugeFill = gauge.querySelector('#eu-fill') as HTMLElement;
-        const distanceText = gauge.querySelector('#eu-distance') as HTMLElement;
-
-        const checks = el(`<div class="goal-list" role="status" aria-live="polite"></div>`);
-        const visitRow = el(`<div></div>`);
-        const timeRow = el(`<div></div>`);
-        const purposeRow = el(`<div></div>`);
-        checks.append(visitRow, timeRow, purposeRow);
-        const goalMarks = new Map<string, HTMLElement>();
-        for (const g of c.goals) {
-          const rowEl = el(`<div>
-            <span style="font-weight:700"><span data-mark>◐</span> ${g.label}</span>
-            <span class="visually-hidden">${g.check}</span>
-          </div>`);
-          goalMarks.set(g.id, rowEl.querySelector('[data-mark]') as HTMLElement);
-          checks.appendChild(rowEl);
-        }
-        const routeText = el(`<p class="text-oneline" style="font-size:var(--fs-small);line-height:1.4"></p>`);
-        const nodeButtons = el(
-          `<div role="group" aria-label="지도 지점 대체 선택" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px"></div>`
-        );
-        const nodeButtonRefs = new Map<string, HTMLButtonElement>();
-        for (const node of c.nodes) {
-          const button = el(`<button class="card card-pick" aria-pressed="false" style="text-align:left;font:inherit;font-size:var(--fs-small);padding:var(--sp-2);min-height:var(--touch-min)">
-            <strong>${node.name}</strong><br><span style="color:var(--c-ink-soft)">머무름 ${node.visitMinutes}분</span>
-          </button>`) as HTMLButtonElement;
-          button.addEventListener('click', () => tapNode(node.id));
-          nodeButtons.appendChild(button);
-          nodeButtonRefs.set(node.id, button);
-        }
-        // 지점 글자 버튼 · 길 목록 · 자료 단서는 레일에 쌓지 않고 '자료' 버튼 → 모달 한 곳으로 모은다.
-        const toolsBtn = el(`<button class="btn btn-ghost" style="align-self:stretch">자료</button>`);
-        toolsBtn.addEventListener('click', () => {
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-4)">
-            <section>
-              <h3 style="margin-bottom:var(--sp-2)">지점 고르기</h3>
-              <div data-node-slot></div>
-            </section>
-            <section>
-              <h3 style="margin-bottom:var(--sp-2)">길과 이동 시간</h3>
-              <ul style="padding-left:20px;font-size:var(--fs-small);line-height:1.6">
-                ${c.edges
-                  .map((edge) => {
-                    const from = nodeById.get(edge.from)?.name ?? edge.from;
-                    const to = nodeById.get(edge.to)?.name ?? edge.to;
-                    return `<li>${from} ↔ ${to}: ${edge.minutes}분${edge.mode === 'tram' ? ' (트램)' : ' (도보)'}</li>`;
-                  })
-                  .join('')}
-              </ul>
-            </section>
-            <section>
-              <h3 style="margin-bottom:var(--sp-2)">단서 메모</h3>
-              ${c.sources
-                .map(
-                  (s) => `<div class="card" style="padding:var(--sp-3);margin-bottom:var(--sp-2)">
-                    <strong>${s.title}</strong>
-                    <ul style="padding-left:18px;font-size:var(--fs-small);line-height:1.5;margin-top:4px">${s.clues.map((cl) => `<li>${cl}</li>`).join('')}</ul>
-                  </div>`
-                )
-                .join('')}
-            </section>
-          </div>`);
-          (bodyEl.querySelector('[data-node-slot]') as HTMLElement).appendChild(nodeButtons);
-          openOwnedModal({
-            id: 'eu-tools',
-            title: '지점 · 길 · 단서',
-            bodyEl,
-            actions: [{ label: '닫기', kind: 'primary', autofocus: true, onClick: (close) => close() }]
-          });
-        });
-        aside.append(purposePanel, gauge, checks, fb, routeText, toolsBtn);
-
-        // ---- 하단 바 ----
-        bottom.replaceChildren();
-        const status = el(
-          `<span class="chip mission-status">${secondMode ? '다른 목적으로 두 번째 경로' : `${c.constraints.maxMinutes}분 안에 ${c.constraints.mustVisitCount}곳 이상`}</span>`
-        );
-        const btns = el(`<div style="display:flex;gap:var(--sp-3)"></div>`);
-        const resetBtn = el(`<button class="btn btn-ghost">처음부터</button>`) as HTMLButtonElement;
-        const submitBtn = el(`<button class="btn btn-primary btn-big" disabled>경로 제출</button>`) as HTMLButtonElement;
-        btns.append(resetBtn, submitBtn);
-        bottom.append(status, btns);
-
-        const updateView = () => {
-          purposeNow.textContent = purpose ? `목적 · ${purposeLabel(purpose)}` : '목적 없음';
-          for (const n of c.nodes) {
-            const ref = nodeRefs.get(n.id);
-            if (!ref) continue;
-            const idx = route.indexOf(n.id);
-            ref.circle.setAttribute('fill', idx >= 0 ? '#F2C14E' : '#FFFDF4');
-            ref.circle.setAttribute('stroke', idx >= 0 ? '#C69A2E' : '#19324D');
-            ref.center.textContent = idx >= 0 ? String(idx + 1) : `${n.visitMinutes}분`;
-            ref.center.setAttribute('font-size', idx >= 0 ? '30' : '18');
-            ref.group.setAttribute('aria-pressed', String(idx >= 0));
-            ref.group.setAttribute(
-              'aria-label',
-              `${n.name}, 머무는 시간 ${n.visitMinutes}분. ${n.desc}. ${idx >= 0 ? `경로 ${idx + 1}번째, 다시 누르면 취소` : '경로에 추가'}`
-            );
-            const nodeButton = nodeButtonRefs.get(n.id);
-            if (nodeButton) {
-              nodeButton.classList.toggle('is-selected', idx >= 0);
-              nodeButton.setAttribute('aria-pressed', String(idx >= 0));
-              nodeButton.innerHTML = `<strong>${idx >= 0 ? `✓ ${idx + 1}. ` : ''}${n.name}</strong><br><span style="color:var(--c-ink-soft)">머무름 ${n.visitMinutes}분</span>`;
-            }
-          }
-          routeLine.setAttribute(
-            'points',
-            route
-              .map((id) => {
-                const n = nodeById.get(id);
-                return n ? `${n.x * VB_W},${n.y * VB_H}` : '';
-              })
-              .filter(Boolean)
-              .join(' ')
-          );
-          const total = routeMinutes(route);
-          const distance = routeDistanceIndex(route);
-          const over = total > c.constraints.maxMinutes;
-          timeText.textContent = `${total}분 / ${c.constraints.maxMinutes}분`;
-          distanceText.textContent = `${distance}`;
-          timeText.style.color = over ? 'var(--c-coral)' : '';
-          gaugeFill.style.width = `${Math.min(100, (total / c.constraints.maxMinutes) * 100)}%`;
-          gaugeFill.style.background = over ? 'var(--c-coral)' : '';
-          gaugeFill.setAttribute('aria-valuenow', String(Math.min(total, c.constraints.maxMinutes)));
-          gaugeFill.setAttribute('aria-valuetext', `${total}분 사용, 제한 ${c.constraints.maxMinutes}분`);
-          const enough = route.length >= c.constraints.mustVisitCount;
-          visitRow.textContent = `${enough ? '✓' : '◐'} 지점 ${route.length}/${c.constraints.mustVisitCount}`;
-          visitRow.style.color = enough ? '#17573d' : '#6b4a00';
-          timeRow.textContent = `${over ? '◐' : '✓'} ${c.constraints.maxMinutes}분 이내`;
-          timeRow.style.color = over ? '#6b4a00' : '#17573d';
-          const met = goalsMetFor(route, tagSets);
-          const purposeOkay = purpose ? purposeMetFor(route, purpose, met, tagSets) : false;
-          purposeRow.textContent = purpose ? `${purposeOkay ? '✓' : '◐'} 목적 조건` : '○ 목적 먼저';
-          purposeRow.style.color = purposeOkay ? '#17573d' : '#6b4a00';
-          for (const g of c.goals) {
-            const mark = goalMarks.get(g.id);
-            if (!mark) continue;
-            const ok = met[g.id] === true;
-            mark.textContent = ok ? '✓' : '◐';
-            mark.style.color = ok ? '#17573d' : '#6b4a00';
-          }
-          routeText.textContent = route.length
-            ? `${route.map((id) => nodeById.get(id)?.name ?? '').join(' → ')}`
-            : '지도의 동그라미를 눌러 보세요.';
-          // 마지막 지점 설명은 핀의 aria-label 과 '지점 버튼' 목록에 이미 있어 화면에서는 뺀다.
-          status.textContent = `${route.length}/${c.constraints.mustVisitCount}곳 · ${c.constraints.maxMinutes}분 안`;
-          submitBtn.disabled =
-            !purpose || route.length < c.constraints.mustVisitCount || lastSubmittedSignature === routeSignature();
-          if (!purpose) {
-            say(secondMode ? '다른 목적으로 한 번 더 가 볼까요?' : '이번 탐방 목적을 먼저 골라요!', purposePanel.querySelector<HTMLElement>('[data-purpose-open]'));
-          } else if (!submitBtn.disabled) {
-            say('경로가 다 되면 제출을 눌러요!', submitBtn);
-          } else {
-            say('지도의 동그라미를 눌러 길을 이어요!', mapWrap);
-          }
-        };
-
-        function tapNode(id: string): void {
-          if (finished) return;
-          if (!purpose) {
-            showToast('먼저 탐방 목적을 골라 주세요.', 'warn');
-            return;
-          }
-          const last = route[route.length - 1];
-          if (last === id) {
-            route.pop(); // 마지막 지점 취소
-            void audio.playSfx('pickup');
-          } else if (route.includes(id)) {
-            showToast('이미 지나간 곳이에요. 마지막 지점부터 취소할 수 있어요.', 'warn');
-            return;
-          } else if (route.length > 0 && last && !edgeMin.has(edgeKey(last, id))) {
-            showToast('두 곳을 잇는 길이 없어요. 이어진 곳을 골라 보세요.', 'warn');
-            return;
-          } else {
-            route.push(id);
-            void audio.playSfx('drop');
-          }
-          persistRoute();
-          updateView();
-          const nodeFx = nodeRefs.get(id)?.group as unknown as HTMLElement | undefined;
-          if (nodeFx && route.includes(id)) popBounce(nodeFx);
-        }
-
-        resetBtn.addEventListener('click', () => {
-          if (finished) return;
+        body.replaceChildren(screen);
+        const showAt = (index: number): void => {
+          const nextVisual = country.visuals[(index + country.visuals.length) % country.visuals.length];
+          if (!nextVisual) return;
+          state.activeVisualId = nextVisual.id;
+          if (!state.viewedVisualIds.includes(nextVisual.id)) state.viewedVisualIds.push(nextVisual.id);
+          persist();
           void audio.playSfx('tap');
-          route = [];
-          fb.replaceChildren();
-          persistRoute();
-          updateView();
-        });
-
-        const goalTable = (snap: RouteSnap): string => `
-          <p style="font-weight:700;margin-bottom:4px">${snap.nodes.map((id) => nodeById.get(id)?.name ?? '').join(' → ')}</p>
-          <p style="font-size:var(--fs-small);margin-bottom:6px">목적 ‘${purposeLabel(snap.purpose)}’ · 총 ${snap.minutes}분 · 지도상 거리 지수 ${snap.distanceIndex} · 목표 ${snap.metCount}/${c.goals.length}개 충족</p>
-          <table style="border-collapse:collapse;font-size:var(--fs-small)">
-            ${c.goals
-              .map(
-                (g) => `<tr>
-                  <td style="padding:2px 10px 2px 0">${g.label}</td>
-                  <td style="font-weight:700;color:${snap.met[g.id] ? '#17573d' : '#6b4a00'}">${snap.met[g.id] ? '✓ 충족' : '◐ 아직'}</td>
-                </tr>`
-              )
-              .join('')}
-          </table>`;
-
-        const showFirstResult = (snap: RouteSnap) => {
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            <div class="feedback success"><span aria-hidden="true" style="font-size:1.4em">✓</span><span>${
-              snap.metCount >= c.goals.length ? '우수 경로예요! ' : ''
-            }${c.feedback.good}</span></div>
-            <div class="card" style="padding:12px">${goalTable(snap)}</div>
-            <p style="font-size:var(--fs-small)">이제 다른 목적을 골라 두 번째 경로를 만든 뒤, 시간·거리·충족 목표를 비교해 보세요.</p>
-          </div>`);
-          openOwnedModal({
-            id: 'eu-first-result',
-            title: '첫 번째 경로 완성!',
-            bodyEl,
-            dismissible: false,
-            actions: [
-              {
-                label: '두 번째 경로',
-                kind: 'primary',
-                autofocus: true,
-                onClick: (close) => {
-                  close();
-                  firstSnap = snap;
-                  secondMode = true;
-                  route = [];
-                  purpose = null;
-                  setCp('second_route', {
-                    firstRoute: snap.nodes,
-                    firstPurpose: snap.purpose,
-                    read: [...readSet],
-                    comparedSourceIds: [...comparedSourceIds],
-                    comparisonDone,
-                    route: [],
-                    purpose: null,
-                    failedAttempts
-                  });
-                  renderStage2();
-                }
-              }
-            ]
-          });
+          render();
         };
-
-        const showComparison = (second: RouteSnap) => {
-          const first = firstSnap;
-          if (!first) return;
-          const bestGoals = Math.max(first.metCount, second.metCount);
-          const timeDelta = second.minutes - first.minutes;
-          const distanceDelta = second.distanceIndex - first.distanceIndex;
-          const deltaText = (value: number, unit: string): string =>
-            value === 0 ? `같음` : `${Math.abs(value)}${unit} ${value < 0 ? '줄어듦' : '늘어남'}`;
-          const bodyEl = el(`<div style="display:flex;flex-direction:column;gap:var(--sp-3)">
-            <p>같은 도시에서도 무엇을 중요하게 보느냐에 따라 좋은 경로가 달라져요. 두 경로를 비교해 볼까요?</p>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--sp-3)">
-              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px">첫 번째 경로</p>${goalTable(first)}</div>
-              <div class="card" style="padding:12px"><p class="chip" style="margin-bottom:6px">두 번째 경로</p>${goalTable(second)}</div>
-            </div>
-            <div class="panel" role="status" style="padding:12px">
-              <strong>바뀐 점</strong>
-              <p style="margin-top:4px">목적: ${purposeLabel(first.purpose)} → ${purposeLabel(second.purpose)} · 시간: ${deltaText(timeDelta, '분')} · 지도상 거리 지수: ${deltaText(distanceDelta, '')}</p>
-            </div>
-            <div class="feedback success"><span aria-hidden="true" style="font-size:1.4em">✓</span><span>전략을 바꿔 경로를 다시 설계해 봤어요. 이게 바로 '전략 수정'이에요!</span></div>
-          </div>`);
-          openOwnedModal({
-            id: 'eu-compare',
-            title: '두 경로 비교',
-            bodyEl,
-            dismissible: false,
-            actions: [
-              {
-                label: '미션 완료',
-                kind: 'primary',
-                autofocus: true,
-                onClick: (close) => {
-                  close();
-                  finish(bestGoals, true);
-                }
-              }
-            ]
+        screen.querySelector<HTMLButtonElement>('[data-dir="prev"]')?.addEventListener('click', () => showAt(currentIndex - 1));
+        screen.querySelector<HTMLButtonElement>('[data-dir="next"]')?.addEventListener('click', () => showAt(currentIndex + 1));
+        screen.querySelectorAll<HTMLButtonElement>('[data-visual]').forEach((thumb) => {
+          thumb.addEventListener('click', () => {
+            const index = country.visuals.findIndex((item) => item.id === thumb.dataset.visual);
+            const picked = country.visuals[index];
+            if (!picked) return;
+            if (!state.viewedVisualIds.includes(picked.id)) state.viewedVisualIds.push(picked.id);
+            persist();
+            showCultureDetail(country, picked);
           });
-        };
-
-        submitBtn.addEventListener('click', () => {
-          if (busy || finished || submitBtn.disabled) return;
-          const submissionSignature = routeSignature();
-          if (lastSubmittedSignature === submissionSignature) return;
-          lastSubmittedSignature = submissionSignature;
-          busy = true;
-          submitBtn.disabled = true;
-          try {
-            if (!purpose) {
-              showToast('탐방 목적을 먼저 골라 주세요.', 'warn');
-              return;
-            }
-            if (route.length < c.constraints.mustVisitCount) {
-              showToast(`${c.constraints.mustVisitCount}곳 이상 방문하는 경로를 만들어 주세요.`, 'warn');
-              return;
-            }
-            const total = routeMinutes(route);
-            if (total > c.constraints.maxMinutes) {
-              failedAttempts++;
-              writeRouteCheckpoint();
-              showFeedback(fb, 'retry', c.feedback.overTime, 'europe');
-              return;
-            }
-            const snap = snapFor([...route], purpose);
-            if (snap.metCount < 2) {
-              failedAttempts++;
-              writeRouteCheckpoint();
-              showFeedback(fb, 'partial', c.feedback.goalMissed, 'europe');
-              return;
-            }
-            if (!purposeMetFor(snap.nodes, snap.purpose, snap.met, tagSets)) {
-              failedAttempts++;
-              writeRouteCheckpoint();
-              const selectedPurpose = PURPOSES.find((option) => option.id === snap.purpose);
-              showFeedback(
-                fb,
-                'partial',
-                `시간 안에는 들어왔지만 ‘${purposeLabel(snap.purpose)}’ 목적의 조건이 아직 부족해요. ${selectedPurpose?.help ?? '지점을 다시 살펴보세요.'}`,
-                'europe'
-              );
-              return;
-            }
-            if (secondMode) {
-              if (firstSnap && firstSnap.purpose === snap.purpose) {
-                showToast('첫 번째와 다른 탐방 목적을 골라 주세요.', 'warn');
-                return;
-              }
-              if (firstSnap && firstSnap.nodes.join('|') === snap.nodes.join('|')) {
-                showToast('첫 번째 경로와 똑같아요. 지점이나 순서를 바꿔 볼까요?', 'warn');
-                return;
-              }
-              showComparison(snap);
-            } else {
-              showFirstResult(snap);
-            }
-            popBounce(gauge);
-            burstConfetti(submitBtn);
-            void audio.playSfx('success');
-          } finally {
-            busy = false;
-            updateView();
-          }
         });
+        screen.querySelector<HTMLButtonElement>('[data-meet-traveler]')?.addEventListener('click', () => openTravelerDialogue(country, visual));
+        const back = button('지도', 'ghost');
+        back.addEventListener('click', () => setScreen('map'));
+        setBottom(saved ? '친구 이야기 들음' : '문화 장면 살펴보기', [back]);
+        say('작은 사진을 누르면 문화 설명과 여행가 이야기가 열려.', screen.querySelector<HTMLElement>('[data-visual]'));
+      };
 
-        updateView();
-        if (!purpose) {
-          // 목적을 고르기 전에는 지도를 눌러도 진행되지 않으므로 먼저 띄운다.
-          // 친구 소개가 아직 안 끝났으면 소개를 닫은 뒤에 연다(모달은 동시 1개).
-          if (introGate) pendingAutoModal = openPurposePicker;
-          else openPurposePicker();
+      const renderGallery = (): void => {
+        const savedCountries = content.countries.filter((country) => country.visuals.some((visual) => state.savedVisualIds.includes(visual.id)));
+        if (!galleryFilterId || !savedCountries.some((country) => country.id === galleryFilterId)) galleryFilterId = savedCountries[0]?.id ?? null;
+        const tabs = savedCountries.map((country) => `<button type="button" class="eu-gallery-tab" data-filter="${country.id}" aria-pressed="${country.id === galleryFilterId}">${esc(country.name)}</button>`).join('');
+        const filtered = savedCountries.find((country) => country.id === galleryFilterId)?.visuals.filter((visual) => state.savedVisualIds.includes(visual.id)) ?? [];
+        const cards = filtered.map((visual) => `<button type="button" class="eu-gallery-card" data-pick="${visual.id}" aria-pressed="${visual.id === state.selectedEvidenceId}">
+          <img class="${imageClass(visual)}" src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}" data-asset-id="${visual.imageId}">
+          <span class="eu-card-copy"><strong>${esc(visual.title)}</strong><span>${esc(visual.lookFor)}</span></span>
+        </button>`).join('');
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>친구들의 걱정에서 찾은 공통점</h2><span class="chip">${state.savedVisualIds.length}개</span></div>
+          <div class="eu-board eu-gallery">
+            <div class="eu-gallery-tabs" role="group" aria-label="이야기를 들은 나라 선택">${tabs}</div>
+            <div class="eu-gallery-grid">${cards}</div>
+          </div>
+        </section>`);
+        body.replaceChildren(screen);
+        screen.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((tab) => {
+          tab.addEventListener('click', () => {
+            galleryFilterId = tab.dataset.filter ?? null;
+            renderGallery();
+          });
+        });
+        screen.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((card) => {
+          card.addEventListener('click', () => {
+            const id = card.dataset.pick ?? '';
+            const country = countryByVisual.get(id);
+            if (!country) return;
+            state.selectedEvidenceId = id;
+            state.selectedCountryId = country.id;
+            persist();
+            void audio.playSfx('tap');
+            renderGallery();
+          });
+        });
+        const back = button('지도 다시 보기', 'ghost');
+        back.addEventListener('click', () => setScreen('map'));
+        const next = button('이유 쓰기');
+        next.disabled = !state.selectedCountryId || !state.selectedEvidenceId;
+        next.addEventListener('click', () => setScreen('reason'));
+        setBottom(state.selectedEvidenceId ? '선택한 장면을 보며 내 이유를 써 보자.' : '나라를 고르고 장면 하나를 눌러.', [back, next]);
+        say('네 이유와 바로 이어질 장면 하나를 골라 봐.', screen.querySelector<HTMLElement>('[data-pick]'));
+      };
+
+      const selectedPair = (): { country: EuropeCountry; visual: EuropeVisual } | null => {
+        const country = countryById.get(state.selectedCountryId ?? '');
+        const visual = visualById.get(state.selectedEvidenceId ?? '');
+        return country && visual && country.visuals.some((item) => item.id === visual.id) ? { country, visual } : null;
+      };
+
+      const renderReason = (): void => {
+        const pair = selectedPair();
+        if (!pair) { setScreen('gallery'); return; }
+        const prompts = content.reasonPrompts.map((prompt) => `<button type="button" class="eu-prompt" data-prompt="${prompt.id}" aria-pressed="${prompt.id === state.reasonPromptId}">${esc(prompt.label)}</button>`).join('');
+        const activePrompt = content.reasonPrompts.find((prompt) => prompt.id === state.reasonPromptId);
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>왜 이 나라가 궁금해?</h2><span class="chip">${esc(pair.country.name)}</span></div>
+          <div class="eu-board eu-form-layout">
+            <div class="eu-evidence"><img class="${imageClass(pair.visual)}" src="${assetUrl(pair.visual.imageId)}" alt="${esc(pair.visual.title)}" data-asset-id="${pair.visual.imageId}"><div class="eu-evidence-caption"><strong>${esc(pair.visual.title)}</strong><span>${esc(pair.visual.lookFor)}</span></div></div>
+            <div class="eu-write">
+              <div class="eu-prompt-row" role="group" aria-label="이유 생각 방향">${prompts}</div>
+              <div class="eu-prompt-question">${activePrompt ? esc(activePrompt.prompt) : '먼저 생각 방향 하나를 골라 봐.'}</div>
+              <label for="eu-reason" style="font-size:var(--eu-copy);font-weight:900">나의 이유</label>
+              <textarea id="eu-reason" maxlength="160" placeholder="사진에서 본 것을 넣어 짧게 써 봐.">${esc(state.reasonDraft)}</textarea>
+              <span class="eu-count" data-count>${state.reasonDraft.length}/160</span>
+            </div>
+          </div>
+        </section>`);
+        body.replaceChildren(screen);
+        screen.querySelectorAll<HTMLButtonElement>('[data-prompt]').forEach((promptButton) => {
+          promptButton.addEventListener('click', () => {
+            state.reasonPromptId = promptButton.dataset.prompt ?? null;
+            persist();
+            renderReason();
+          });
+        });
+        const textarea = screen.querySelector<HTMLTextAreaElement>('#eu-reason')!;
+        const count = screen.querySelector<HTMLElement>('[data-count]')!;
+        const back = button('장면 다시 고르기', 'ghost');
+        const next = button('궁금한 점 만들기');
+        const update = () => {
+          state.reasonDraft = textarea.value;
+          count.textContent = `${state.reasonDraft.length}/160`;
+          next.disabled = !state.reasonPromptId || !hasStudentReason(state.reasonDraft);
+          const status = bottom.querySelector<HTMLElement>('.eu-status');
+          if (status) status.textContent = next.disabled ? '이유를 조금 더 써 봐' : '이유가 준비됐어';
+          schedulePersist();
+        };
+        textarea.addEventListener('input', update);
+        back.addEventListener('click', () => setScreen('gallery'));
+        next.disabled = !state.reasonPromptId || !hasStudentReason(state.reasonDraft);
+        next.addEventListener('click', () => setScreen('question'));
+        setBottom(state.reasonDraft.length ? '내 이유를 쓰는 중' : '방향을 고르고 이유를 써 봐', [back, next]);
+        say('방향만 고른 뒤, 사진에서 본 것을 네 문장으로 써.', activePrompt ? textarea : screen.querySelector<HTMLElement>('[data-prompt]'));
+      };
+
+      const renderQuestion = (): void => {
+        const pair = selectedPair();
+        if (!pair) { setScreen('gallery'); return; }
+        const starters = content.questionStarters.map((starter) => `<button type="button" class="eu-prompt" data-starter="${starter.id}" aria-pressed="${starter.id === state.questionStarterId}">${esc(starter.label)}</button>`).join('');
+        const activeStarter = content.questionStarters.find((starter) => starter.id === state.questionStarterId);
+        const questionHint = activeStarter?.id === 'change'
+          ? '예: 무엇이 달라졌는지'
+          : activeStarter?.id === 'why'
+            ? '예: 이곳에 모이는지'
+            : activeStarter?.id === 'how'
+              ? '예: 계절 음식을 고르는지'
+              : '앞말을 먼저 골라 봐.';
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>더 알아볼 질문</h2><span class="chip">${esc(pair.country.name)}</span></div>
+          <div class="eu-board eu-form-layout">
+            <div class="eu-evidence"><img class="${imageClass(pair.visual)}" src="${assetUrl(pair.visual.imageId)}" alt="${esc(pair.visual.title)}" data-asset-id="${pair.visual.imageId}"><div class="eu-evidence-caption"><strong>${esc(pair.visual.title)}</strong><span>${esc(state.reasonDraft)}</span></div></div>
+            <div class="eu-write">
+              <div class="eu-prompt-row" role="group" aria-label="질문 앞말">${starters}</div>
+              <div class="eu-question-preview" data-preview>${activeStarter ? `<span>${esc(activeStarter.text)}</span> ${esc(state.questionDraft || '…')}?` : '질문 앞말을 먼저 골라 봐.'}</div>
+              <label for="eu-question" style="font-size:var(--eu-copy);font-weight:900">내가 이어 쓸 말</label>
+              <textarea id="eu-question" maxlength="120" placeholder="${esc(questionHint)}">${esc(state.questionDraft)}</textarea>
+              <span class="eu-count" data-count>${state.questionDraft.length}/120</span>
+            </div>
+          </div>
+        </section>`);
+        body.replaceChildren(screen);
+        screen.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((starterButton) => {
+          starterButton.addEventListener('click', () => {
+            state.questionStarterId = starterButton.dataset.starter ?? null;
+            persist();
+            renderQuestion();
+          });
+        });
+        const textarea = screen.querySelector<HTMLTextAreaElement>('#eu-question')!;
+        const count = screen.querySelector<HTMLElement>('[data-count]')!;
+        const preview = screen.querySelector<HTMLElement>('[data-preview]')!;
+        const back = button('이유 다시 보기', 'ghost');
+        const next = button('환경 대화 기록 만들기');
+        const update = () => {
+          state.questionDraft = textarea.value;
+          count.textContent = `${state.questionDraft.length}/120`;
+          const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
+          preview.textContent = fullQuestion(starter, state.questionDraft) || '질문 앞말을 고르고 네 말을 이어 써 봐.';
+          next.disabled = !state.questionStarterId || !hasStudentQuestion(state.questionDraft);
+          const status = bottom.querySelector<HTMLElement>('.eu-status');
+          if (status) status.textContent = next.disabled ? '질문을 조금 더 이어 써 봐' : '질문이 준비됐어';
+          schedulePersist();
+        };
+        textarea.addEventListener('input', update);
+        back.addEventListener('click', () => setScreen('reason'));
+        next.disabled = !state.questionStarterId || !hasStudentQuestion(state.questionDraft);
+        next.addEventListener('click', () => setScreen('postcard'));
+        setBottom(state.questionDraft.length ? '내 질문을 만드는 중' : '앞말을 고르고 질문을 이어 써', [back, next]);
+        say('앞말 뒤에 네가 정말 궁금한 내용을 이어 써.', activeStarter ? textarea : screen.querySelector<HTMLElement>('[data-starter]'));
+      };
+
+      const finishMission = (buttonEl: HTMLButtonElement): void => {
+        if (finished) {
+          navigate('#/map');
+          return;
         }
-      }
-
-      if (stage === 1) renderStage1();
-      else renderStage2();
-      // 화면을 다 그린 뒤 친구 소개 + 예상하기. 닫으면 미뤄 둔 말풍선·모달이 이어진다.
-      if (learn) {
-        showFriendIntro('europe', learn, () => {
-          introGate = false;
-          if (pendingSay) {
-            const p = pendingSay;
-            pendingSay = null;
-            say(p.text, p.cue);
-          }
-          const auto = pendingAutoModal;
-          pendingAutoModal = null;
-          auto?.();
+        const pair = selectedPair();
+        const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
+        if (!pair || !state.reasonPromptId || !starter || !hasStudentReason(state.reasonDraft) || !hasStudentQuestion(state.questionDraft)) {
+          showToast('세계 회의에 가져갈 이유와 질문을 먼저 완성해 줘.', 'warn');
+          return;
+        }
+        state.postcardCompleted = true;
+        state.stampAwarded = true;
+        state.updatedAt = new Date().toISOString();
+        persist();
+        finished = true;
+        const traveler = EUROPE_TRAVELERS[pair.country.id];
+        writeMissionArtifact({
+          schemaVersion: 1,
+          missionId: 'europe',
+          title: `${pair.country.name} 환경 걱정 기록`,
+          purpose: '문화 장면과 여행가의 이야기를 연결해 유럽의 환경 변화 이야기를 세계 회의에 가져가.',
+          initialHypothesis: '여행 전에는 유럽 여러 나라의 환경 변화가 서로 어떻게 이어지는지 몰랐어.',
+          evidenceIds: [...state.savedVisualIds],
+          evidenceLabel: `${pair.visual.title}에서 ${traveler?.name ?? '현지 여행가'}가 들려준 환경 걱정을 기록했어.`,
+          voiceId: pair.country.id,
+          voiceName: traveler?.name ?? pair.country.name,
+          voiceLine: traveler?.concern ?? state.reasonDraft.trim(),
+          firstDecision: pair.country.name,
+          observedConsequence: traveler?.concern ?? state.reasonDraft.trim(),
+          revisedDecision: fullQuestion(starter, state.questionDraft),
+          rationale: state.reasonDraft.trim(),
+          transferPrompt: '마지막 세계 회의에서 다른 대륙의 환경 걱정과 어떤 공통점이 있는지 연결해 볼까?',
+          earnedAt: new Date().toISOString()
         });
-      }
+        const progress = statusNow();
+        const result = computeScore({
+          evidence: Math.min(1, progress.readyCountryCount / content.requirements.minCountries),
+          perspective: Math.min(1, progress.savedCountryCount / content.requirements.minSavedCountries),
+          communication: 1,
+          revision: 1
+        }, { evidence: 30, perspective: 25, communication: 25, revision: 15 }, 5);
+        burstConfetti(buttonEl);
+        completeMissionFlow('europe', '유럽', result);
+      };
+
+      const renderPostcard = (): void => {
+        const pair = selectedPair();
+        const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
+        if (!pair || !starter) { setScreen('question'); return; }
+        const question = fullQuestion(starter, state.questionDraft);
+        const nickname = saveRepo.get().profile?.nickname ?? '탐험가';
+        const screen = element(`<section class="eu-screen">
+          <div class="eu-heading"><h2>${esc(content.postcard.title)}</h2><span class="chip">미리보기</span></div>
+          <div class="eu-board eu-postcard-wrap">
+            <article class="eu-postcard" aria-label="${esc(pair.country.name)} 환경 대화 기록">
+              <div class="eu-postcard-photo"><img class="${imageClass(pair.visual)}" src="${assetUrl(pair.visual.imageId)}" alt="${esc(pair.visual.title)}" data-asset-id="${pair.visual.imageId}"></div>
+              <div class="eu-postcard-copy">
+                <h2>세계 회의에 가져갈 나라</h2><h3>${esc(pair.country.name)}</h3>
+                <div class="eu-postcard-line"><strong>내가 고른 문화 장면</strong>${esc(pair.visual.title)}</div>
+                <div class="eu-postcard-line"><strong>환경 문제가 걱정되는 이유</strong>${esc(state.reasonDraft)}</div>
+                <div class="eu-postcard-line"><strong>회의에서 더 물을 점</strong>${esc(question)}</div>
+                <div class="eu-sign">${esc(nickname)} 탐험가</div>
+              </div>
+            </article>
+          </div>
+        </section>`);
+        body.replaceChildren(screen);
+        const back = button('질문 다듬기', 'ghost');
+        back.addEventListener('click', () => setScreen('question'));
+        const finishButton = button(finished ? '세계 지도로 돌아가기' : content.postcard.finishLabel);
+        finishButton.addEventListener('click', () => finishMission(finishButton));
+        setBottom('세계 회의 준비 완료', [back, finishButton]);
+        say(content.feedback.reflection, finishButton);
+      };
+
+      const render = (): void => {
+        const progress = statusNow();
+        const guarded = guardEuropeScreen(state, progress);
+        if (guarded !== state.screen) {
+          state.screen = guarded;
+          persist();
+        }
+        updateSteps(bar, 6, STEP_INDEX[state.screen], STEP_INDEX[state.screen]);
+        if (state.screen === 'map') renderMap();
+        else if (state.screen === 'window') renderWindow();
+        else if (state.screen === 'gallery') renderGallery();
+        else if (state.screen === 'reason') renderReason();
+        else if (state.screen === 'question') renderQuestion();
+        else renderPostcard();
+      };
+
+      render();
     },
 
     unmount() {
       disposed = true;
+      if (saveTimer !== null) window.clearTimeout(saveTimer);
       guide?.dispose();
       guide = null;
-      activeModalClose?.();
-      activeModalClose = null;
     }
   };
 }

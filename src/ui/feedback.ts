@@ -4,9 +4,10 @@ import { saveRepo } from '../core/SaveRepository';
 import { navigate } from '../router';
 import { openModal } from './modal';
 import { assetUrl, hasAsset } from '../core/assets';
-import { playJourneyTransition, queueMissionReturn } from './journeyTransition';
+import { PASSPORT_STAMP_ASSETS, playJourneyTransition, queueMissionReturn } from './journeyTransition';
 import { burstConfetti, stampSlam } from './fx';
 import type { MissionId } from '../types';
+import { selectedAvatarSpeaker } from './avatarRoster';
 
 const KIND_ICON = { success: '✓', partial: '◐', retry: '↻' } as const;
 
@@ -21,80 +22,119 @@ export function showFeedback(
   const el = document.createElement('div');
   el.className = `feedback ${kind}`;
   el.setAttribute('role', 'status');
-  el.innerHTML = `<span aria-hidden="true" style="font-size:1.4em">${KIND_ICON[kind]}</span><span>${message}</span>`;
+  el.innerHTML = `<span class="feedback__icon" aria-hidden="true">${KIND_ICON[kind]}</span><span>${message}</span>`;
   container.appendChild(el);
   void audio.playSfx(kind === 'success' ? 'success' : 'partial');
   if (missionId) bus.emit('MISSION_FEEDBACK', { missionId, kind, message });
 }
 
-const DIMENSION_LABELS: Record<string, string> = {
-  evidence: '근거 활용',
-  perspective: '관점 이해',
-  communication: '존중하는 의사소통',
-  revision: '전략 수정',
-  speedBonus: '속도 보너스'
-};
-
 const LEARNING_LINES: Record<MissionId, string> = {
-  asia: '자료에서 본 사실과 내가 붙인 해석을 나누면 더 정확히 이해할 수 있어요.',
-  europe: '문화유산은 오늘의 생활과 이어서 볼 때 의미가 더 선명해져요.',
-  africa: '서로의 소리를 듣고 차례를 지키면 리듬으로도 대화할 수 있어요.',
-  americas: '친구마다 필요한 것이 다르니 근거를 보고 함께 계획해야 해요.',
-  oceania: '한 가지 선택도 주민·자연·일자리·방문객에게 서로 다르게 작용해요.',
-  dialogue: '관찰하고 물어본 뒤 새 사실에 맞춰 생각을 바꾸는 것이 존중이에요.'
+  asia: '사실과 해석을 나누면 더 정확히 볼 수 있어요.',
+  europe: '장면을 자세히 보고, 관심을 질문으로 이어 봐요.',
+  africa: '서로 다른 지역의 삶을 살피고, 연결된 문제는 책임을 나눠 함께 풀 수 있어.',
+  americas: '같은 대륙 안에서도 자연과 생활이 달라요. 그래도 하루에는 닮은 점이 있어요.',
+  oceania: '한 선택도 사람과 자연에 다르게 닿아요.',
+  dialogue: '보고 묻고 생각을 고치면 존중이 돼요.'
 };
 
-/** 미션 완료 공통 처리: 점수 저장 + 스탬프 + 결과 모달 */
+const RESULT_SPEAKERS: Record<Exclude<MissionId, 'dialogue'>, { assetId: string; name: string }> = {
+  asia: { assetId: 'asia.mina', name: '미나' },
+  europe: { assetId: 'europe.guide', name: '레나' },
+  africa: { assetId: 'plane.africa', name: '리듬 우편기' },
+  americas: { assetId: 'americas.student1', name: '노아' },
+  oceania: { assetId: 'oceania.youth', name: '카일라' }
+};
+
+/** 미션 완료 공통 처리: 점수 경쟁 없이 완료·도장·핵심 배움만 남긴다. */
 export function completeMissionFlow(
   missionId: MissionId,
   missionTitle: string,
-  result: { total: number; byDimension: Record<string, number> }
+  _result?: { total: number; byDimension: Record<string, number> },
+  options: { directToStamp?: boolean } = {}
 ): void {
-  const alreadyDone = saveRepo.get().missions[missionId].status === 'completed';
-  saveRepo.completeMission(missionId, result.total, result.byDimension);
+  // 저장 형식의 하위 호환을 위해 0점/빈 차원을 넘기되 학생 UI와 보상에는 점수를 쓰지 않는다.
+  saveRepo.completeMission(missionId, 0, {});
   void audio.playSfx('complete');
-
-  const rows = Object.entries(result.byDimension)
-    .map(([dim, pts]) => `<tr><td style="padding:4px 12px 4px 0">${DIMENSION_LABELS[dim] ?? dim}</td><td style="text-align:right;font-weight:700">${pts}점</td></tr>`)
-    .join('');
+  if (options.directToStamp) {
+    queueMissionReturn({ missionId, missionTitle });
+    void audio.playSfx('stamp');
+    const transition = playJourneyTransition({
+      kind: 'stamp',
+      label: `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!`,
+      assetId: 'prop.stamp',
+      companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
+    });
+    void transition.finished.then(() => navigate('#/map'));
+    return;
+  }
   const body = document.createElement('div');
-  const stars = result.total >= 90 ? 3 : result.total >= 70 ? 2 : 1;
+  const speaker = missionId === 'dialogue'
+    ? selectedAvatarSpeaker(saveRepo.get().profile)
+    : RESULT_SPEAKERS[missionId];
   body.innerHTML = `
-    <div class="reward-rail" style="align-items:center;flex-wrap:wrap">
-      ${hasAsset('prop.stamp') ? `<img src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="${missionTitle} 완료 도장" style="width:96px;height:96px;object-fit:contain">` : `<div class="stamp is-earned" style="width:96px;height:96px;font-size:1rem">${missionTitle}</div>`}
-      <div>
-        <p style="font-family:var(--font-head);font-size:var(--fs-title);color:var(--c-navy)">${result.total}점</p>
-        <p role="img" aria-label="별 ${stars}개" style="font-family:var(--font-head);font-size:1.45rem;color:#8a5b00">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</p>
-        <table style="border-collapse:collapse;font-size:var(--fs-small)">${rows}</table>
-        ${alreadyDone ? '<p class="chip" style="margin-top:8px">이미 완료한 미션이에요. 최고 점수만 기록돼요.</p>' : ''}
+    <div class="reward-rail mission-result-hero">
+      ${hasAsset('prop.stamp') ? `<img class="mission-result-stamp" src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="${missionTitle} 완료 도장">` : `<div class="stamp is-earned mission-result-stamp">${missionTitle}</div>`}
+      <div class="mission-result-heading">
+        <strong>여행 도장을 받았어요!</strong>
+        <p>${missionTitle} 활동을 끝냈어요.</p>
       </div>
     </div>
-    <p class="feedback success" style="margin-top:var(--sp-4)"><span aria-hidden="true">✓</span><span>${LEARNING_LINES[missionId]}</span></p>`;
+    <div class="mission-result-guide">
+      ${hasAsset(speaker.assetId) ? `<img src="${assetUrl(speaker.assetId)}" data-asset-id="${speaker.assetId}" alt="" aria-hidden="true">` : ''}
+      <div>
+        <strong>${speaker.name}</strong>
+        <p class="feedback success"><span aria-hidden="true">✓</span><span data-result-line aria-hidden="true"></span><span class="visually-hidden" role="status">${LEARNING_LINES[missionId]}</span></p>
+      </div>
+    </div>`;
 
+  let cancelTyping: () => void = () => undefined;
   openModal({
     id: `complete-${missionId}`,
     title: '미션 완료!',
     bodyEl: body,
     dismissible: false,
     actions: [
-      { label: '미션 다시 보기', kind: 'ghost', onClick: (close) => close() },
       {
         label: '도장 찍고 지도 보기',
         kind: 'primary',
         autofocus: true,
         onClick: (close) => {
+          cancelTyping();
           queueMissionReturn({ missionId, missionTitle });
           close();
           void audio.playSfx('stamp');
-          const transition = playJourneyTransition({ kind: 'stamp', label: `${missionTitle} 도장을 받았어요!`, assetId: 'prop.stamp' });
+          const transition = playJourneyTransition({
+            kind: 'stamp',
+            label: `${missionTitle} 도장이 여권에 쾅!`,
+            assetId: 'prop.stamp',
+            companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
+          });
           void transition.finished.then(() => navigate('#/map'));
         }
       }
     ]
   });
+  cancelTyping = typeResultLine(body.querySelector<HTMLElement>('[data-result-line]'), LEARNING_LINES[missionId]);
   const earnedStamp = body.querySelector<HTMLElement>('[data-asset-id="prop.stamp"], .stamp');
   if (earnedStamp) {
     stampSlam(earnedStamp);
     burstConfetti(earnedStamp, 10);
   }
+}
+
+function typeResultLine(target: HTMLElement | null, text: string): () => void {
+  if (!target) return () => undefined;
+  const reduced = saveRepo.get().settings.reducedMotion
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) {
+    target.textContent = text;
+    return () => undefined;
+  }
+  let index = 0;
+  const timer = window.setInterval(() => {
+    index += 1;
+    target.textContent = text.slice(0, index);
+    if (index >= text.length) window.clearInterval(timer);
+  }, 28);
+  return () => window.clearInterval(timer);
 }

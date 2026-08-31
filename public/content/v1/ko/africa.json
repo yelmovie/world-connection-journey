@@ -1,198 +1,201 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "missionId": "africa_sound_dialogue",
+  "title": "아프리카: 넓은 땅, 다양한 삶과 소리",
+  "subtitle": "여러 지역을 탐험하고 함께 지킬 터전을 찾아보자",
   "needsReview": true,
-  "reviewNote": "사실 정보 교사 검수 필요",
+  "reviewNote": "생성 배경은 학습용 일러스트이며, 국가·환경 사례는 연결된 출처를 교사가 수업 전에 확인한다.",
+  "factCheck": {
+    "status": "공식 자료 대조 완료",
+    "verifiedAt": "2026-08-31",
+    "scope": "다섯 권역과 열 나라의 상대 위치, 주요 지형, 언어, UNESCO 문화 사례",
+    "peopleNote": "등장인물과 대화는 학습용 가상 사례이며 국가나 공동체 전체를 대표하지 않는다.",
+    "mediaNote": "권역 장면과 지도는 실제 항공사진이나 축척 지도가 아닌 학습용 재현 이미지다.",
+    "sources": [
+      { "title": "UN Statistics M49 아프리카 권역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
+      { "title": "UNESCO Gnawa", "url": "https://ich.unesco.org/en/RL/gnawa-01170" },
+      { "title": "UNESCO Kente", "url": "https://ich.unesco.org/en/RL/craftsmanship-of-traditional-woven-textile-kente-02130" },
+      { "title": "UNESCO Ceebu Jën", "url": "https://ich.unesco.org/en/RL/ceebu-jen-a-culinary-art-of-senegal-01748" },
+      { "title": "UNESCO Gada system", "url": "https://ich.unesco.org/en/RL/gada-system-an-indigenous-democratic-socio-political-system-of-the-oromo-01164" },
+      { "title": "UNESCO Congolese rumba", "url": "https://ich.unesco.org/en/RL/congolese-rumba-01711" },
+      { "title": "남아프리카공화국 정부 12개 공용어 안내", "url": "https://www.gov.za/about-sa/south-africas-people" }
+    ]
+  },
   "standards": [
     {
-      "code": "[6사10-01]",
+      "code": "[6사10-02]",
       "alignmentLevel": "부분 연계",
-      "activityEvidence": [
-        "서아프리카(말리·기니) 지역 사례에서 리듬이 소통과 행사에 쓰이는 맥락 자료를 읽는다.",
-        "특정 지역의 음악 사례를 아프리카 대륙 전체의 문화로 일반화하지 않도록 맥락 카드에 지역을 명시한다."
-      ],
-      "assessmentEvidence": [
-        "호출 리듬의 구조를 관찰해 응답 리듬을 규칙에 맞게 구성한다.",
-        "두 리듬 패턴을 비교해 같은 점과 다른 점을 찾아 표시한다."
-      ],
-      "scopeNote": "지역의 생활문화(음악·소통) 이해를 부분적으로 다룬다. 지형 경관 자체를 다루는 활동은 아니므로 이 미션만으로 성취기준 전체 달성을 판단하지 않는다."
+      "activityEvidence": ["다섯 권역의 위치와 지형을 지도에서 비교한다.", "열 나라의 오늘날 생활과 살아 있는 문화 사례를 출처와 함께 살핀다."],
+      "assessmentEvidence": ["권역을 하나의 모습으로 일반화하지 않고 국가별 사례의 차이를 설명한다.", "자연환경과 생활의 연결을 지도를 근거로 말한다."],
+      "scopeNote": "선정된 열 나라의 사례이며 각 나라나 아프리카 전체를 대표하지 않는다."
+    },
+    {
+      "code": "[6사12-02]",
+      "alignmentLevel": "부분 연계",
+      "activityEvidence": ["서로 다른 지역에 나타난 환경 신호와 생활 영향을 연결한다.", "주민·지역사회·정부·국제 협력의 행동을 조합해 공동 제안을 만든다."],
+      "assessmentEvidence": ["같은 문제가 지역마다 다르게 나타나는 이유를 설명한다.", "세 가지 행동의 장단점을 비교하고 선택 이유를 말한다."],
+      "scopeNote": "학습용 모형의 결과이며 실제 미래를 수치로 예측하지 않는다."
     }
   ],
   "learningObjectives": [
-    "서아프리카 말리·기니 지역의 젬베 연주를 대륙 전체의 단일한 음악 문화로 일반화하지 않고 맥락이 있는 한 사례로 살펴본다.",
-    "소리와 시각 단서를 이용해 낮은 음과 높은 음의 리듬 패턴을 비교하고 재구성하는 연습을 한다.",
-    "상대의 리듬을 끝까지 듣고 호출과 응답 방식으로 어울리는 리듬을 만드는 연습을 한다."
+    "아프리카의 다섯 권역과 열 나라 사례의 상대적 위치를 지도에서 찾는다.",
+    "오늘날의 생활·문화와 악기·리듬을 한 대륙의 고정된 특징이 아닌 지역 사례로 이해한다.",
+    "연결된 환경 신호와 여러 사람의 관점을 바탕으로 실행 가능한 공동 해결안을 제안한다."
   ],
   "intro": {
-    "title": "아프리카: 소리의 대화",
-    "subtitle": "서아프리카 젬베 리듬 사례로 배우는 소리의 소통",
-    "guide": "아프리카는 50개가 넘는 나라와 수천 개의 언어·음악 전통이 있는 넓은 대륙이에요. 이번 미션에서는 그중 한 사례로, 서아프리카 말리·기니 지역에서 이어져 온 젬베 연주 전통을 살펴볼 거예요. 이 사례가 아프리카 전체를 대표하는 건 아니라는 걸 기억하면서, 리듬이 어떻게 '대화'가 되는지 직접 만들어 볼까요?"
+    "title": "아프리카: 넓은 땅, 다양한 삶과 소리",
+    "subtitle": "여러 지역을 탐험하고 함께 지킬 터전을 찾아보자",
+    "guide": "아프리카의 다섯 지역을 직접 탐험해 보자!",
+    "help": "지도를 움직여 바다와 적도를 보고, 빛나는 지역 표식을 자유로운 순서로 눌러 봐."
   },
-  "contextCards": [
+  "requirements": {
+    "regionCount": 5,
+    "countryCount": 10,
+    "signalCount": 3,
+    "actionCount": 3
+  },
+  "regions": [
     {
-      "id": "ctx_djembe_origin",
-      "title": "젬베는 어떤 악기일까?",
-      "body": "젬베는 서아프리카 말리·기니 지역에서 오래 연주되어 온 손북이에요. 치는 위치에 따라 낮은 소리와 높은 소리를 낼 수 있어서, 한 악기로도 다양한 리듬 표현이 가능해요. 오늘날에는 세계 여러 나라의 음악 수업과 공연에서도 쓰여요.",
-      "factConfidence": "general"
+      "id":"north","name":"북부 아프리카","short":"북부","position":{"x":46,"y":25},"interaction":"climate-slider",
+      "sceneAssetId":"africa.region.north",
+      "sceneAlt":"지중해 항구 도시에서 아틀라스산맥을 지나 사막 가장자리의 물과 농업 공간으로 이어지는 북부 아프리카 풍경",
+      "sceneStops":[
+        {"id":"mediterranean","label":"지중해 연안 도시","note":"항구·대중교통·학교가 이어지는 오늘의 도시 생활을 살펴봐.","focusX":0,"lensX":20,"lensY":55},
+        {"id":"atlas","label":"아틀라스산맥 주변","note":"산지의 높낮이에 따라 도시와 농촌의 생활 공간이 달라져.","focusX":50,"lensX":50,"lensY":42},
+        {"id":"desert-water","label":"사막 가장자리의 물","note":"오아시스와 관개 농업처럼 물을 나누어 쓰는 생활이 보여.","focusX":100,"lensX":82,"lensY":58}
+      ],
+      "instruction":"그림을 눌러 세 풍경을 살펴봐!","summary":"지중해 연안 도시와 산지, 사막 가장자리는 물과 이동의 방식으로 서로 이어져 있어."
     },
     {
-      "id": "ctx_rhythm_occasion",
-      "title": "리듬이 함께하는 순간들",
-      "body": "말리·기니 지역의 여러 공동체에서는 결혼식이나 수확 축제 같은 행사에서 젬베 리듬과 춤이 함께하는 경우가 많아요. 행사마다 어울리는 리듬이 다르기도 해서, 리듬을 들으면 어떤 자리인지 짐작할 수 있었다고 해요. 물론 지역과 마을에 따라 방식은 서로 달라요.",
-      "factConfidence": "general"
+      "id":"west","name":"서부 아프리카","short":"서부","position":{"x":29,"y":46},"interaction":"panorama",
+      "sceneAssetId":"africa.region.west",
+      "sceneAlt":"대서양 항구에서 현대 도시와 강 주변 마을, 사헬 가장자리의 직조와 음악 공간으로 이어지는 서부 아프리카 풍경",
+      "sceneStops":[
+        {"id":"atlantic","label":"대서양 해안과 항구","note":"어업과 항구, 해안 도시의 이동과 일상이 바다와 이어져 있어.","focusX":0,"lensX":18,"lensY":48},
+        {"id":"river-city","label":"강과 현대 도시","note":"강 주변의 시장·학교·대중교통이 여러 생활 공간을 연결해.","focusX":50,"lensX":52,"lensY":45},
+        {"id":"creative-life","label":"직조와 음악의 공간","note":"천을 짜고 음악을 연습하는 모습도 오늘의 생활 속에서 계속돼.","focusX":100,"lensX":82,"lensY":70}
+      ],
+      "instruction":"그림을 눌러 세 장면을 찾아봐!","summary":"대서양 해안과 강, 큰 도시와 사헬 가장자리의 생활은 이동과 교류로 이어져 있어."
     },
     {
-      "id": "ctx_call_response",
-      "title": "부르면 답하는 리듬, 호출과 응답",
-      "body": "여러 연주 전통에서 한 연주자가 리듬으로 '부르면' 다른 연주자들이 리듬으로 '답하는' 호출-응답 방식을 볼 수 있어요. 상대의 리듬을 끝까지 듣고, 그에 어울리게 내 리듬을 조정하는 것이 핵심이에요. 잘 듣는 것이 잘 연주하는 것만큼 중요한 거죠.",
-      "factConfidence": "general"
+      "id":"east","name":"동부 아프리카","short":"동부","position":{"x":66,"y":52},"interaction":"terrain-layers",
+      "sceneAssetId":"africa.region.east",
+      "sceneAlt":"동부 아프리카의 고원 도시와 농장, 큰 호수와 열곡, 인도양 스와힐리 해안 도시가 이어지는 풍경",
+      "sceneStops":[
+        {"id":"highland","label":"고원과 도시","note":"높은 지대의 농장과 학교·기술 공간이 도시의 일상과 함께 보여.","focusX":0,"lensX":20,"lensY":50},
+        {"id":"great-lake","label":"큰 호수와 열곡","note":"호수와 높낮이가 어업·농업·이동 경로에 영향을 줘.","focusX":50,"lensX":52,"lensY":46},
+        {"id":"indian-ocean","label":"인도양 해안","note":"스와힐리 해안의 항구와 시장은 오랜 교류와 오늘의 생활을 이어 줘.","focusX":100,"lensX":84,"lensY":48}
+      ],
+      "instruction":"버튼을 눌러 세 곳을 살펴봐!","summary":"고원과 큰 호수, 인도양 해안은 높낮이와 물길, 사람들의 이동으로 연결돼 있어."
+    },
+    {
+      "id":"central","name":"중부 아프리카","short":"중부","position":{"x":49,"y":57},"interaction":"explorer-lens",
+      "sceneAssetId":"africa.region.central",
+      "sceneAlt":"콩고분지의 열대우림과 습지, 큰 강의 배와 강변 도시의 학교와 음악 공간이 이어지는 중부 아프리카 풍경",
+      "sceneStops":[
+        {"id":"rainforest","label":"콩고분지의 숲","note":"넓은 숲은 다양한 생물의 집이자 지역 주민의 생활 터전이야.","focusX":0,"lensX":18,"lensY":55},
+        {"id":"great-river","label":"큰 강과 이동","note":"강은 마을과 도시를 잇고 사람과 물건이 오가는 길이 돼.","focusX":50,"lensX":50,"lensY":43},
+        {"id":"river-city","label":"강변 도시의 오늘","note":"학교·시장·현대 음악 작업실 같은 도시 생활도 강 주변에 펼쳐져.","focusX":100,"lensX":82,"lensY":64}
+      ],
+      "instruction":"버튼이나 그림을 눌러 살펴봐!","summary":"콩고분지의 숲과 큰 강, 농촌과 큰 도시는 물길과 이동으로 함께 이어져 있어."
+    },
+    {
+      "id":"south","name":"남부 아프리카","short":"남부","position":{"x":55,"y":82},"interaction":"weather-board",
+      "sceneAssetId":"africa.region.south",
+      "sceneAlt":"대서양의 사막 해안에서 내륙 고원 도시와 푸른 남쪽 해안의 항구·문화 공간으로 이어지는 남부 아프리카 풍경",
+      "sceneStops":[
+        {"id":"desert-coast","label":"사막과 대서양 해안","note":"차갑고 건조한 해안에서는 물을 아끼고 바다와 함께 살아가는 모습이 보여.","focusX":0,"lensX":18,"lensY":42},
+        {"id":"plateau-city","label":"내륙 고원과 도시","note":"높은 내륙에는 큰 도시와 교통, 재생에너지 같은 생활 기반이 모여 있어.","focusX":50,"lensX":52,"lensY":48},
+        {"id":"southern-coast","label":"남쪽의 푸른 해안","note":"항구와 박물관·디자인·춤 연습 공간에서 다양한 오늘의 문화를 만날 수 있어.","focusX":100,"lensX":82,"lensY":66}
+      ],
+      "instruction":"버튼을 눌러 세 풍경을 비교해 봐!","summary":"두 대양의 해안과 건조 지대, 고원과 도시는 기후와 이동 방식에 따라 다른 생활 공간을 만들어."
     }
+  ],
+  "countryCases": [
+    {"id":"morocco-gnawa","countryId":"morocco","countryName":"모로코","regionId":"north","title":"해안 도시와 그나와 음악","mapPosition":{"x":29,"y":16},"geographyClue":"대서양과 지중해에 닿고, 아틀라스산맥과 사하라 가장자리가 이어져.","dailyLifeExample":"카사블랑카 같은 큰 도시와 산지·농촌의 생활이 함께 있어.","culturalExample":"그나와는 음악·공연·공동체 실천이 어우러진 모로코 문화의 여러 모습 중 하나야.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"모로코의 해안과 산지 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Intangible Cultural Heritage: Gnawa","url":"https://ich.unesco.org/en/RL/gnawa-01170","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"사막·전통의상만으로 모로코를 대표하지 않는다."},
+    {"id":"egypt-giza","countryId":"egypt","countryName":"이집트","regionId":"north","title":"나일강과 오늘의 대도시","mapPosition":{"x":63,"y":20},"geographyClue":"나일강이 사막을 지나 지중해의 넓은 삼각주로 흘러가.","dailyLifeExample":"카이로와 기자는 역사 유산 곁에서 학교·교통·영화 산업이 움직이는 큰 도시야.","culturalExample":"기자는 고대 유산뿐 아니라 영화와 창작 산업이 이어지는 현대 문화 도시이기도 해.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"이집트 나일강과 지중해 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Creative Cities Network: Giza","url":"https://www.unesco.org/en/creative-cities/giza","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"피라미드만으로 이집트를 설명하지 않는다."},
+    {"id":"ghana-kente","countryId":"ghana","countryName":"가나","regionId":"west","title":"도시와 직조 공방의 켄테","mapPosition":{"x":33,"y":49},"geographyClue":"기니만 해안에서 내륙의 숲과 초원 지대로 이어져.","dailyLifeExample":"아크라 같은 해안 도시와 쿠마시 주변의 상업·공예 공간이 함께 이어져.","culturalExample":"켄테는 비단·면 등의 좁은 천 조각을 직조해 잇는 기술이며 이름과 무늬에 이야기가 담겨.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"가나의 기니만 해안 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Intangible Cultural Heritage: Kente","url":"https://ich.unesco.org/en/RL/craftsmanship-of-traditional-woven-textile-kente-02130","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"직물 하나로 가나의 모든 문화를 대표하지 않는다."},
+    {"id":"senegal-ceebu-jen","countryId":"senegal","countryName":"세네갈","regionId":"west","title":"생루이의 생선과 쌀 요리","mapPosition":{"x":20,"y":40},"geographyClue":"아프리카 대륙의 서쪽 끝 대서양 연안과 세네갈강 주변에 자리해.","dailyLifeExample":"다카르의 도시 생활과 생루이의 어업 공동체 등 여러 생활 모습이 있어.","culturalExample":"체부젠은 생선·쌀·제철 채소를 함께 조리하고 나누는 생루이에서 시작된 음식 문화야.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"세네갈의 대서양 연안 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Intangible Cultural Heritage: Ceebu Jën","url":"https://ich.unesco.org/en/RL/ceebu-jen-a-culinary-art-of-senegal-01748","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"시장·전통의상만으로 세네갈을 설명하지 않는다."},
+    {"id":"kenya-city-highland","countryId":"kenya","countryName":"케냐","regionId":"east","title":"고원 도시와 인도양 항구","mapPosition":{"x":68,"y":54},"geographyClue":"동아프리카 고원과 큰 호수, 인도양 해안이 이어져.","dailyLifeExample":"나이로비의 교통·기술 산업과 몸바사의 항구 생활처럼 지역에 따라 생활이 달라.","culturalExample":"스와힐리어는 국어이며 스와힐리어와 영어는 공용어야. 이 밖에도 여러 공동체의 언어가 쓰여.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"케냐의 고원과 인도양 해안 위치가 빛나는 지도"}],"sources":[{"title":"Kenya Constitution: National, official and other languages","url":"https://klrc.go.ke/index.php/constitution-of-kenya/108-chapter-two-the-republic/173-7-national-official-and-other-languages","reviewedAt":"2026-08-31"}],"needsReview":false,"stereotypeRiskNote":"야생동물 관광으로만 케냐를 설명하지 않는다."},
+    {"id":"ethiopia-gada","countryId":"ethiopia","countryName":"에티오피아","regionId":"east","title":"높은 땅과 여러 공동체의 제도","mapPosition":{"x":72,"y":43},"geographyClue":"높은 고원과 리프트밸리의 낮은 지대가 크게 대비돼.","dailyLifeExample":"아디스아바바 같은 고지대 대도시와 여러 농촌·목축 지역이 함께 있어.","culturalExample":"오로모의 가다 체계는 공동체가 세대와 역할을 조직해 온 사회·정치 제도의 한 사례야.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"에티오피아 고원 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Intangible Cultural Heritage: Gada system","url":"https://ich.unesco.org/en/RL/gada-system-an-indigenous-democratic-socio-political-system-of-the-oromo-01164","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"한 공동체 사례를 에티오피아 전체로 일반화하지 않는다."},
+    {"id":"cameroon-cities","countryId":"cameroon","countryName":"카메룬","regionId":"central","title":"해안에서 고원까지","mapPosition":{"x":42,"y":52},"geographyClue":"기니만 해안에서 열대림, 고원, 북쪽의 건조 지대로 환경이 이어져.","dailyLifeExample":"두알라의 항구와 야운데의 행정·교육 공간, 농촌 생활이 함께 있어.","culturalExample":"프랑스어와 영어 외에도 여러 지역 언어가 생활과 창작 활동에 쓰여.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"카메룬의 기니만 해안과 내륙 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Country Profile: Cameroon","url":"https://www.unesco.org/en/countries/cm","reviewedAt":"2026-08-30"}],"needsReview":true,"stereotypeRiskNote":"숲과 야생동물만으로 카메룬을 설명하지 않는다."},
+    {"id":"drc-rumba","countryId":"drc","countryName":"콩고민주공화국","regionId":"central","title":"콩고강 도시의 룸바","mapPosition":{"x":51,"y":60},"geographyClue":"콩고강 유역의 넓은 숲과 동쪽 고지대가 함께 있어.","dailyLifeExample":"킨샤사는 음악·방송·시장과 교통이 활발한 큰 강변 도시야.","culturalExample":"콩고 룸바는 콩고민주공화국과 콩고공화국에서 이어지고 변화해 온 춤과 음악 문화야.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"콩고강 유역과 킨샤사 방향이 빛나는 지도"}],"sources":[{"title":"UNESCO Intangible Cultural Heritage: Congolese rumba","url":"https://ich.unesco.org/en/RL/congolese-rumba-01711","reviewedAt":"2026-08-30"}],"needsReview":false,"stereotypeRiskNote":"열대림·마을 장면만으로 국가를 대표하지 않는다."},
+    {"id":"south-africa-cape","countryId":"south-africa","countryName":"남아프리카공화국","regionId":"south","title":"두 대양과 여러 언어의 도시","mapPosition":{"x":51,"y":86},"geographyClue":"대서양과 인도양이 만나는 남쪽 해안에서 내륙 고원으로 높아져.","dailyLifeExample":"케이프타운·요하네스버그 같은 도시와 농업·광업·해안 공동체의 생활이 다양해.","culturalExample":"남아프리카수어를 포함한 12개 공용어가 있고, 지역과 사람에 따라 쓰는 언어가 달라.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"남아프리카공화국의 남쪽 해안 위치가 빛나는 지도"}],"sources":[{"title":"South African Government: 12 official languages","url":"https://www.gov.za/about-sa/south-africas-people","reviewedAt":"2026-08-31"}],"needsReview":false,"stereotypeRiskNote":"한 언어·인물·도시가 국가 전체를 대표하지 않는다."},
+    {"id":"namibia-desert-coast","countryId":"namibia","countryName":"나미비아","regionId":"south","title":"사막과 차가운 해류의 해안","mapPosition":{"x":40,"y":77},"geographyClue":"대서양 해안의 나미브사막과 내륙 고원이 이어져.","dailyLifeExample":"빈트후크의 도시 생활, 해안 항구, 여러 농촌과 보호 지역의 생활이 함께 있어.","culturalExample":"문화유산은 박물관·학교·지역 공동체가 기록하고 전하며 오늘의 창작과도 이어져.","media":[{"type":"shortAnimation","assetId":"africa.map","alt":"나미비아의 대서양 해안과 사막 위치가 빛나는 지도"}],"sources":[{"title":"UNESCO Country Profile: Namibia","url":"https://www.unesco.org/en/countries/na","reviewedAt":"2026-08-30"}],"needsReview":true,"stereotypeRiskNote":"사막 하나로 나미비아의 생활을 설명하지 않는다."}
+  ],
+  "landmarks": [
+    {"countryCaseId":"morocco-gnawa","name":"카사블랑카 하산 2세 모스크","note":"대서양 바로 곁에 세워진 모스크로, 높은 사각형 미나렛과 넓은 광장이 카사블랑카 해안 경관과 이어져.","assetId":"africa.morocco.landmark","alt":"대서양 곁 하산 2세 모스크를 그린 학습용 재현 이미지","source":{"title":"모로코 관광청 카사블랑카 안내","url":"https://www.visitmorocco.com/en/travel/casablanca","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"egypt-giza","name":"기자 피라미드와 스핑크스","note":"기자 고원에는 고왕국 시대의 피라미드군과 대스핑크스가 남아 있고, 오늘날의 카이로 대도시권과 가까이 이어져 있어.","assetId":"africa.egypt.landmark","alt":"기자 피라미드군과 대스핑크스를 그린 학습용 재현 이미지","source":{"title":"UNESCO 멤피스와 피라미드 지대","url":"https://whc.unesco.org/en/list/86","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"ghana-kente","name":"쿠마시 주변 아산테 전통 건축물","note":"쿠마시 북동쪽 여러 마을에 남은 전통 건축물은 목재·대나무·흙 회반죽을 사용하고 상징적인 벽 장식을 지닌 유산이야.","assetId":"africa.ghana.landmark","alt":"쿠마시 주변 아산테 전통 건축물의 안마당을 그린 학습용 재현 이미지","source":{"title":"UNESCO 아산테 전통 건축물","url":"https://whc.unesco.org/en/list/35","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"senegal-ceebu-jen","name":"생루이 페데르브 다리","note":"19세기 말에 놓인 금속 다리는 세네갈강의 생루이섬과 본토 소르 지구를 이어 주는 도시의 대표적인 구조물이야.","assetId":"africa.senegal.landmark","alt":"세네갈강을 가로지르는 생루이 페데르브 다리를 그린 학습용 재현 이미지","source":{"title":"UNESCO 생루이섬","url":"https://whc.unesco.org/en/list/956","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"kenya-city-highland","name":"몸바사 포트 지저스","note":"포트 지저스는 16세기 말 몸바사 항구를 지키기 위해 산호 바위 위에 세운 요새로, 여러 문화가 오간 인도양 교류의 흔적을 보여 줘.","assetId":"africa.kenya.landmark","alt":"몸바사 해안의 포트 지저스를 그린 학습용 재현 이미지","source":{"title":"UNESCO 몸바사 포트 지저스","url":"https://whc.unesco.org/en/list/1295/","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"ethiopia-gada","name":"곤다르 파실 게비","note":"파실 게비는 17세기 곤다르에 자리 잡은 성곽 도시로, 궁전·교회·공공건물이 성벽 안팎에 모여 있어.","assetId":"africa.ethiopia.landmark","alt":"에티오피아 고원의 곤다르 파실 게비 성을 그린 학습용 재현 이미지","source":{"title":"UNESCO 곤다르 파실 게비","url":"https://whc.unesco.org/en/list/19","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"cameroon-cities","name":"야운데 통일 기념비","note":"야운데의 통일 기념비는 카메룬의 재통일과 국가 형성의 역사를 기억하도록 만든 나선형 기념 건축물이야.","assetId":"africa.cameroon.landmark","alt":"야운데 통일 기념비와 도시 공원을 그린 학습용 재현 이미지","source":{"title":"카메룬 대통령실 통일 기념비 자료","url":"https://www.prc.cm/files/f6/9e/cd/9e544bcc6412dfd56317bb59a4623fb6.pdf","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"drc-rumba","name":"킨샤사 리메테 교차로 탑","note":"네 개의 높은 기둥이 위에서 모이는 리메테 교차로 탑은 킨샤사로 들어가는 길의 잘 알려진 도시 표식이야.","assetId":"africa.drc.landmark","alt":"킨샤사 리메테 교차로 탑과 도로를 그린 학습용 재현 이미지","source":{"title":"콩고 국립박물관연구소 리메테 교차로 탑","url":"https://imnc.cd/","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"south-africa-cape","name":"케이프타운 테이블산","note":"테이블산은 케이프타운 바로 뒤에서 평평한 정상부가 뚜렷하게 보이는 산으로, 독특한 핀보스 식생을 지닌 케이프 식물구의 일부야.","assetId":"africa.south_africa.landmark","alt":"케이프타운과 평평한 정상의 테이블산을 그린 학습용 재현 이미지","source":{"title":"UNESCO 케이프 식물구 보호지역","url":"https://whc.unesco.org/en/list/1007/","reviewedAt":"2026-08-31"}},
+    {"countryCaseId":"namibia-desert-coast","name":"트위펠폰테인 또는 /Ui-//aes","note":"나미비아 북서부의 바위 계곡에는 오랜 세월에 걸쳐 새긴 수많은 동물과 발자국 암각화가 남아 있어.","assetId":"africa.namibia.landmark","alt":"트위펠폰테인의 암각화와 건조한 산지를 그린 학습용 재현 이미지","source":{"title":"UNESCO 트위펠폰테인 또는 /Ui-//aes","url":"https://whc.unesco.org/en/list/1255/","reviewedAt":"2026-08-31"}}
+  ],
+  "contextCards": [
+    {"id":"instrument-place","title":"악기에도 장소와 이야기가 있어","body":"사진의 이름·지역·재료·연주 방법을 확인하고, 살아 있는 오늘의 음악으로 들어 봐."},
+    {"id":"instrument-sound","title":"보고 듣고 직접 연주해","body":"소리를 끈 상태에서도 파형과 박자 불빛을 보며 활동할 수 있어."},
+    {"id":"instrument-dialogue","title":"리듬으로 듣고 답해","body":"호출 리듬을 끝까지 들은 뒤 이어받아 나만의 여덟 박 응답을 만들어 봐."}
   ],
   "patterns": [
-    {
-      "id": "pattern1",
-      "name": "걷는 리듬",
-      "bpm": 88,
-      "steps": [
-        1,
-        0,
-        2,
-        0,
-        1,
-        0,
-        2,
-        2
-      ],
-      "desc": "저음이 한 걸음씩 바닥을 짚고, 고음이 사이사이 대답하는 기본 리듬이에요. 잘 듣고 여덟 칸에 다시 만들어 볼까요?"
-    },
-    {
-      "id": "pattern2",
-      "name": "달리는 리듬",
-      "bpm": 96,
-      "steps": [
-        1,
-        2,
-        0,
-        1,
-        0,
-        2,
-        0,
-        1
-      ],
-      "desc": "저음과 고음이 번갈아 튀어나오며 앞으로 달려가는 느낌의 리듬이에요. 쉼표의 위치가 힌트예요."
-    },
-    {
-      "id": "pattern3",
-      "name": "물결 리듬 A",
-      "bpm": 84,
-      "steps": [
-        1,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0,
-        2
-      ],
-      "desc": "잔잔하게 흐르다가 고음이 물결처럼 솟는 리듬이에요. 아래의 물결 리듬 B와 비교해 보세요."
-    },
-    {
-      "id": "pattern4",
-      "name": "물결 리듬 B",
-      "bpm": 84,
-      "steps": [
-        1,
-        0,
-        1,
-        2,
-        2,
-        1,
-        0,
-        1
-      ],
-      "desc": "물결 리듬 A와 거의 같지만 두 칸이 달라요. 어디가 어떻게 달라졌는지, 달라지니 느낌이 어떻게 변하는지 찾아볼까요?"
-    }
+    {"id":"pattern1","name":"걷는 리듬","bpm":88,"steps":[1,0,2,0,1,0,2,2],"desc":"가운데 쿵과 가장자리 탁을 번갈아 듣고 여덟 박을 다시 만들어 봐."},
+    {"id":"pattern2","name":"달리는 리듬","bpm":96,"steps":[1,2,0,1,0,2,0,1],"desc":"쉼과 두 소리의 위치를 보고 들으며 따라 해 봐."}
   ],
   "callResponse": {
-    "guide": "이제 리듬으로 대화할 차례예요. 연주자가 호출 리듬으로 부르면, 여러분이 응답 리듬으로 답해요. 규칙 세 가지를 지키면서, 상대의 리듬을 끝까지 듣고 나만의 응답을 만들어 볼까요?",
-    "call": {
-      "bpm": 90,
-      "steps": [
-        1,
-        0,
-        1,
-        0,
-        2,
-        0,
-        2,
-        2
-      ]
-    },
-    "rules": [
-      {
-        "id": "rule_min_hits",
-        "text": "응답에도 소리가 최소 4번은 들어가야 해요. 텅 빈 응답은 대화가 되지 않아요.",
-        "check": "min_hits"
-      },
-      {
-        "id": "rule_echo",
-        "text": "호출의 마지막 두 칸(고음, 고음)을 응답의 처음 두 칸에 이어받아요. 상대의 말을 이어받으면 '듣고 있다'는 표시가 돼요.",
-        "check": "echo_last_two"
-      },
-      {
-        "id": "rule_contrast",
-        "text": "호출을 그대로 복사하면 안 돼요. 최소 두 칸은 다르게 만들어서 나의 대답을 담아요.",
-        "check": "contrast"
-      }
+    "guide":"호출을 끝까지 듣고, 이어받아 나만의 여덟 박 응답을 만들어 봐.",
+    "call":{"bpm":90,"steps":[1,0,1,0,2,0,2,2]},
+    "rules":[
+      {"id":"rule_min_hits","text":"소리를 네 번 이상 넣기","check":"min_hits"},
+      {"id":"rule_echo","text":"호출의 마지막 두 소리 이어받기","check":"echo_last_two"},
+      {"id":"rule_contrast","text":"두 칸 이상 나답게 바꾸기","check":"contrast"}
     ],
-    "examples": [
-      [
-        2,
-        2,
-        0,
-        1,
-        0,
-        1,
-        2,
-        0
-      ],
-      [
-        2,
-        2,
-        1,
-        0,
-        1,
-        0,
-        1,
-        2
-      ]
-    ]
+    "examples":[[2,2,0,1,0,1,2,0],[2,2,1,0,1,0,1,2]]
   },
   "feedback": {
-    "listenAgain": "아직 원래 리듬과 다른 칸이 많아요. 틀린 게 아니라 아직 다 듣지 못한 거예요. 속도를 늦춰서 다시 재생해 보고, 저음이 나오는 칸부터 먼저 찾아볼까요? 저음을 다 찾으면 고음은 훨씬 쉬워져요.",
-    "close": "거의 다 왔어요! 한두 칸만 원래 리듬과 달라요. 쉼표(소리가 없는 칸)의 위치를 한 번 더 확인해 볼까요? 리듬에서는 소리가 없는 곳도 중요한 부분이에요.",
-    "good": "멋진 리듬 대화가 완성됐어요! 상대의 리듬을 끝까지 듣고, 이어받고, 나만의 대답까지 담았어요. 소리로도 서로 존중하는 대화가 가능하다는 걸 보여 준 거예요."
+    "listenAgain":"파형과 박자 불빛을 다시 보고 소리 위치를 바꿔 봐.",
+    "close":"거의 다 왔어. 쉼이 있는 칸도 리듬의 중요한 부분이야.",
+    "good":"상대 리듬을 듣고 이어받아 나만의 응답을 만들었어!"
   },
-  "learn": {
-    "friend": {
-      "name": "아마두",
-      "imageId": "africa.host",
-      "region": "말리(서아프리카)"
-    },
-    "goal": "말이 달라도 리듬으로 마음을 주고받을 수 있어요",
-    "prediction": {
-      "question": "말이 안 통하는 친구와 마음을 나눌 수 있을까요?",
-      "options": [
-        "어려울 것 같아",
-        "리듬이나 몸짓으로 될 것 같아",
-        "잘 모르겠어"
-      ]
-    },
-    "discoveries": [
-      "서아프리카에서는 리듬으로 소식과 마음을 전하기도 해요.",
-      "따라 하고 대답하는 것(콜 앤 리스폰스)이 곧 대화예요.",
-      "아프리카는 아주 넓어서 나라·지역마다 음악이 달라요."
-    ]
-  }
+  "environmentSignals": [
+    {"id":"sahel-water","regionId":"west","issueId":"water","title":"비가 불규칙해진 사헬의 물길","where":"서부 아프리카 사헬의 여러 지역","nature":"가뭄과 강한 비가 번갈아 나타나 물과 토양 관리가 어려워질 수 있어.","life":"생활용수·농업·목축이 같은 물을 필요로 해 지역에 맞는 협력이 중요해.","world":"기후 변화 대응, 조기경보, 물 관리 협력이 국경을 넘어 연결돼.","interaction":"before-after","source":{"title":"WMO State of the Climate in Africa","url":"https://wmo.int/publication-series/state-of-climate-africa","reviewedAt":"2026-08-30"},"needsReview":true},
+    {"id":"congo-forest","regionId":"central","issueId":"forest","title":"콩고분지 숲과 강의 변화","where":"중부 아프리카 콩고분지","nature":"산림 변화는 서식지와 강의 물 순환에 함께 영향을 줄 수 있어.","life":"도시의 에너지·농업·생계와 숲 보전이 연결돼 한 주체만의 선택으로 풀기 어려워.","world":"지역 공동체의 지식과 정부·기업·국제사회의 책임 있는 공급망이 함께 필요해.","interaction":"lens","source":{"title":"UNEP Congo Basin Forests","url":"https://www.unep.org/regions/africa/regional-initiatives/congo-basin-forests","reviewedAt":"2026-08-30"},"needsReview":true},
+    {"id":"coast-waste","regionId":"south","issueId":"waste","title":"도시에서 강과 해안으로 이동하는 쓰레기","where":"아프리카 여러 도시의 하천과 해안 사례","nature":"잘 수거되지 않은 플라스틱은 빗물과 강을 따라 바다로 이동할 수 있어.","life":"배수·어업·해안 생태계와 주민의 건강하고 안전한 생활에 영향을 줄 수 있어.","world":"제품을 만드는 곳, 쓰는 사람, 수거 체계, 기업과 정부의 책임이 함께 연결돼.","interaction":"water-path","source":{"title":"UNEP Africa Waste Management Outlook","url":"https://www.unep.org/resources/report/africa-waste-management-outlook","reviewedAt":"2026-08-30"},"needsReview":true}
+  ],
+  "issues": [
+    {"id":"water","name":"물과 토양","question":"비가 불규칙할 때 생활용수와 농업용수를 어떻게 함께 지킬까?","completion":"같은 물 문제도 장소와 생활에 따라 다른 모습으로 나타나."},
+    {"id":"forest","name":"숲과 강","question":"숲을 지키면서 주민의 생활과 도시의 필요도 함께 생각하려면?","completion":"숲의 변화는 강과 도시, 다른 지역의 생활까지 이어질 수 있어."},
+    {"id":"waste","name":"쓰레기와 물길","question":"도시의 쓰레기가 강과 해안까지 가지 않도록 어디서부터 바꿀까?","completion":"쓰레기는 버린 곳에 머물지 않고 물길과 생활을 따라 이동해."}
+  ],
+  "perspectives": [
+    {"id":"resident","issueIds":["water","waste"],"name":"지역 주민","role":"생활을 꾸리는 사람","line":"매일 쓸 물과 안전한 길이 필요해. 결정할 때 우리 경험도 먼저 들어 줘."},
+    {"id":"farmer","issueIds":["water","forest"],"name":"농업 종사자","role":"먹거리를 기르는 사람","line":"작물이 자랄 물이 필요하지만 강과 토양이 오래 건강해야 다음 해도 농사할 수 있어."},
+    {"id":"coast","issueIds":["waste"],"name":"해안 주민","role":"바다 곁에서 일하는 사람","line":"강에서 온 쓰레기는 어업과 해변 생활에 닿아. 도시의 수거 체계도 함께 바뀌어야 해."},
+    {"id":"researcher","issueIds":["water","forest","waste"],"name":"생태 연구자","role":"변화를 관찰하는 사람","line":"한 장소만 보지 말고 물·숲·도시가 이어지는 자료를 함께 살펴보자."},
+    {"id":"local-government","issueIds":["water","forest","waste"],"name":"지역 행정 담당자","role":"공공 서비스를 맡은 사람","line":"주민이 참여할 수 있는 계획과 예산, 기업이 지킬 기준을 함께 만들어야 해."}
+  ],
+  "actionTiers": [
+    {"id":"home","name":"개인과 가정"},{"id":"community","name":"학교와 지역사회"},{"id":"policy","name":"정부와 기업"},{"id":"cooperation","name":"국가 간 협력"}
+  ],
+  "actions": [
+    {"id":"repair-leaks","tierId":"home","issueIds":["water"],"name":"누수 찾고 물 아끼기","tradeoff":"바로 시작할 수 있지만 큰 물길 관리는 함께 해야 해.","effects":{"environment":7,"communitySafety":5,"cultureAndHome":4,"sustainability":4,"feasibility":12,"fairness":5}},
+    {"id":"rain-storage","tierId":"community","issueIds":["water"],"name":"빗물 저장과 공동 급수 관리","tradeoff":"지역에 맞는 관리와 꾸준한 점검이 필요해.","effects":{"environment":10,"communitySafety":12,"cultureAndHome":8,"sustainability":10,"feasibility":6,"fairness":9}},
+    {"id":"forest-community","tierId":"community","issueIds":["forest"],"name":"주민 참여 숲·습지 복원","tradeoff":"효과가 나타나는 데 시간이 걸리지만 생활 지식이 반영돼.","effects":{"environment":14,"communitySafety":5,"cultureAndHome":13,"sustainability":14,"feasibility":5,"fairness":11}},
+    {"id":"responsible-supply","tierId":"policy","issueIds":["forest"],"name":"기업의 책임 있는 공급망","tradeoff":"확인과 집행 비용이 들지만 멀리 있는 소비와 숲을 연결해.","effects":{"environment":13,"communitySafety":6,"cultureAndHome":8,"sustainability":12,"feasibility":4,"fairness":9}},
+    {"id":"waste-collection","tierId":"policy","issueIds":["waste"],"name":"쓰레기 수거·재사용 체계 개선","tradeoff":"시설과 노동 환경을 함께 마련해야 오래가.","effects":{"environment":13,"communitySafety":11,"cultureAndHome":6,"sustainability":10,"feasibility":7,"fairness":9}},
+    {"id":"plastic-reduction","tierId":"home","issueIds":["waste"],"name":"일회용품 줄이고 다시 쓰기","tradeoff":"참여하기 쉽지만 생산과 유통 기준도 함께 바뀌어야 해.","effects":{"environment":7,"communitySafety":4,"cultureAndHome":3,"sustainability":7,"feasibility":12,"fairness":5}},
+    {"id":"early-warning","tierId":"cooperation","issueIds":["water"],"name":"국가 간 기상 정보와 조기경보","tradeoff":"자료·기술·재정을 공정하게 나눠야 해.","effects":{"environment":5,"communitySafety":15,"cultureAndHome":8,"sustainability":10,"feasibility":5,"fairness":10}},
+    {"id":"river-cooperation","tierId":"cooperation","issueIds":["water","waste","forest"],"name":"국경을 잇는 강·숲 공동 관리","tradeoff":"협의에 시간이 들지만 문제의 이동 경로 전체를 다룰 수 있어.","effects":{"environment":15,"communitySafety":10,"cultureAndHome":10,"sustainability":15,"feasibility":3,"fairness":11}}
+  ],
+  "proposal": {
+    "ideas":["지역 주민의 경험을 먼저 듣기","자연환경과 생활 안전을 함께 보기","정부·기업·국가 간 책임을 나누기"],
+    "reasonExample":"한 곳의 변화가 물길과 생활을 따라 다른 지역에도 이어지기 때문이야."
+  },
+  "sources": [
+    {"title":"UNESCO Africa","url":"https://www.unesco.org/en/africa","reviewedAt":"2026-08-30"},
+    {"title":"WMO State of the Climate in Africa","url":"https://wmo.int/publication-series/state-of-climate-africa","reviewedAt":"2026-08-30"},
+    {"title":"UNEP Africa Waste Management Outlook","url":"https://www.unep.org/resources/report/africa-waste-management-outlook","reviewedAt":"2026-08-30"}
+  ]
 }

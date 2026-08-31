@@ -35,7 +35,9 @@ class AudioManager {
   private activeSfx = new Map<SfxId, AudioBufferSourceNode>();
   private lastSfxAt = new Map<SfxId, number>();
   private fadeTimer: number | null = null;
+  private bgmSuspended = false;
   private fadingFrom: HTMLAudioElement | null = null;
+  private clip: HTMLAudioElement | null = null;
 
   init(): void {
     const unlock = () => {
@@ -47,6 +49,11 @@ class AudioManager {
     };
     window.addEventListener('pointerdown', unlock, { once: true });
     window.addEventListener('keydown', unlock, { once: true });
+  }
+
+  /** 영상 재생 등으로 BGM을 잠시 멈췄다가 되돌릴 때 쓴다. */
+  get currentBgmId(): BgmId | null {
+    return this.currentId ?? this.pendingBgm;
   }
 
   get settings() {
@@ -84,18 +91,87 @@ class AudioManager {
 
   playBgm(id: BgmId): void {
     this.pendingBgm = id;
+    // 영상 오버레이 재생 중에는 unlock·장면 전환이 와도 BGM을 시작하지 않는다(영상 자체 BGM과 겹침 방지).
+    if (this.bgmSuspended) return;
     if (!this.unlocked || !this.settings.bgm) return;
     if (this.currentId === id) return;
 
     const next = new Audio(BGM_SRC[id]);
     next.loop = true;
     next.volume = 0;
-    next.play().catch((err) => console.warn(`[Audio] BGM 재생 실패: ${id}`, err));
+    next.play().catch((err: DOMException) => {
+      // 브라우저의 자동 재생 차단은 오류가 아니라 첫 터치를 기다리는 정상 상태다.
+      if (err?.name !== 'NotAllowedError') console.warn(`[Audio] BGM 재생 실패: ${id}`, err);
+    });
 
     const prev = this.current;
     this.current = next;
     this.currentId = id;
     this.crossfade(prev, next);
+  }
+
+  /**
+   * 악기 연주처럼 긴 클립 1개를 재생한다(동시에 하나만). 재생 중에는 BGM을 낮추고, 끝나거나 멈추면 되돌린다.
+   * SFX 설정을 따르며 파일 누락·차단 시에는 조용히 종료한다.
+   */
+  playClip(src: string, opts: { loop?: boolean; onEnd?: () => void } = {}): boolean {
+    this.stopClip();
+    if (!this.unlocked || !this.settings.sfx) return false;
+    const el = new Audio(src);
+    el.loop = opts.loop === true;
+    el.volume = 0.85 * this.masterVolume;
+    this.clip = el;
+    this.setBgmLevel(0.18);
+    const done = () => {
+      if (this.clip !== el) return;
+      this.clip = null;
+      this.setBgmLevel(1);
+      opts.onEnd?.();
+    };
+    el.addEventListener('ended', done, { once: true });
+    el.addEventListener('error', done, { once: true });
+    el.play().catch(() => done());
+    return true;
+  }
+
+  stopClip(): void {
+    const el = this.clip;
+    if (!el) return;
+    this.clip = null;
+    this.disposeTrack(el);
+    this.setBgmLevel(1);
+  }
+
+  get clipPlaying(): boolean {
+    return this.clip !== null && !this.clip.paused && !this.clip.ended;
+  }
+
+  private setBgmLevel(level: number): void {
+    if (this.current && this.fadeTimer === null) this.current.volume = 0.6 * this.masterVolume * level;
+  }
+
+  /** 알림 순간에 BGM을 잠깐 낮췄다가 되돌린다 (페이드 중이면 건너뜀). */
+  duck(ms = 1600, level = 0.25): void {
+    const track = this.current;
+    if (!track || this.fadeTimer !== null) return;
+    const full = 0.6 * this.masterVolume;
+    track.volume = full * level;
+    window.setTimeout(() => {
+      if (this.current === track && this.fadeTimer === null) track.volume = full;
+    }, ms);
+  }
+
+  /** 영상 재생 동안 BGM을 멈추고, 도중의 playBgm·unlock에 의한 재시작도 막는다. */
+  suspendBgm(): void {
+    this.bgmSuspended = true;
+    this.stopBgm();
+  }
+
+  /** 영상이 끝나면 막음을 풀고, 도중에 요청됐던(없으면 기억해 둔) BGM을 되살린다. */
+  resumeBgmAfterVideo(fallback: BgmId | null): void {
+    this.bgmSuspended = false;
+    const id = this.pendingBgm ?? fallback;
+    if (id) this.playBgm(id);
   }
 
   stopBgm(): void {

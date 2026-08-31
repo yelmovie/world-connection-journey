@@ -4,7 +4,7 @@ import { defaultSave, isRestorableSaveDocument, migrateSave, validateSave } from
 describe('저장 데이터 검증·복구', () => {
   it('완전한 저장 데이터는 그대로 살아남는다', () => {
     const save = defaultSave();
-    save.profile = { nickname: '테스트', createdAt: '2026-08-14T00:00:00Z', avatarId: 'a2', airplaneId: 'plane2', inquiryQuestionId: 'q2' };
+    save.profile = { nickname: '테스트', createdAt: '2026-08-14T00:00:00Z', avatarId: 'a2', airplaneId: 'plane2' };
     save.missions.asia.status = 'completed';
     save.missions.asia.bestScore = 88;
     save.stamps = ['asia'];
@@ -50,7 +50,9 @@ describe('저장 데이터 검증·복구', () => {
       missions: {}
     });
     expect(migrated).toMatchObject({ schemaVersion: 1, profile: { nickname: '예전기록' } });
-    expect(validateSave(migrated).profile?.nickname).toBe('예전기록');
+    const restored = validateSave(migrated);
+    expect(restored.profile?.nickname).toBe('예전기록');
+    expect(restored.profile).not.toHaveProperty('inquiryQuestionId');
   });
 
   it('완료 상태와 도장·미션 보상 불변식을 복구한다', () => {
@@ -81,6 +83,30 @@ describe('저장 데이터 검증·복구', () => {
     expect(validateSave({ schemaVersion: 1, settings: { volume: -1 } }).settings.volume).toBe(0);
     expect(validateSave({ schemaVersion: 1, settings: { volume: Number.NaN } }).settings.volume).toBe(0.8);
     expect(validateSave({ schemaVersion: 1, settings: { volume: '크게' } }).settings.volume).toBe(0.8);
+  });
+
+  it('전이 적용 답을 저장하고, 필드가 없는 구 v1 저장도 안전하게 연다', () => {
+    const legacy = validateSave({
+      schemaVersion: 1,
+      completion: {
+        reflectionDrafts: {
+          initialThought: '처음 생각',
+          evidenceLearned: '확인한 자료',
+          revisedThought: '바뀐 생각'
+        }
+      }
+    });
+    expect(legacy.completion.reflectionDrafts.transferApplication).toBe('');
+
+    const restored = validateSave({
+      schemaVersion: 1,
+      completion: {
+        reflectionDrafts: {
+          transferApplication: '새 친구에게 먼저 원하는 도움을 물어본다.'
+        }
+      }
+    });
+    expect(restored.completion.reflectionDrafts.transferApplication).toBe('새 친구에게 먼저 원하는 도움을 물어본다.');
   });
 
   it('parse 가능한 v1이라도 핵심 컨테이너가 손상되면 원본 백업 대상으로 본다', () => {

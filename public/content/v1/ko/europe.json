@@ -1,304 +1,431 @@
 {
   "schemaVersion": 1,
-  "missionId": "europe_city_route",
+  "missionId": "europe_interest_window",
   "needsReview": true,
-  "reviewNote": "사실 정보 교사 검수 필요",
+  "reviewNote": "AI 생성 학습 장면 21장의 장소 표현과 교육과정 정합성을 교사가 검토해야 한다.",
+  "factCheck": {
+    "status": "공식 자료 대조 완료",
+    "verifiedAt": "2026-08-31",
+    "scope": "일곱 나라의 상대 위치, 도시·유산·생활 공간의 기본 사실, 사그라다 파밀리아 공사 상태",
+    "peopleNote": "카밀라·리나·조피아·아담·루카·소피아·엘레니는 여러 사례를 바탕으로 만든 학습용 가상 친구이며 실제 여행자가 아니다.",
+    "mediaNote": "21개 이미지는 실제 현장 사진이 아니라 학습용 재현 이미지다. 이미지 속 사람·배치·날씨는 사실 근거로 사용하지 않는다.",
+    "sources": [
+      { "title": "UN Statistics M49 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
+      { "title": "UNESCO Paris, Banks of the Seine", "url": "https://whc.unesco.org/en/list/600/" },
+      { "title": "UNESCO Upper Middle Rhine Valley", "url": "https://whc.unesco.org/en/list/1066/" },
+      { "title": "UNESCO Historic Centre of Kraków", "url": "https://whc.unesco.org/en/list/29/" },
+      { "title": "UNESCO Historic Centre of Prague", "url": "https://whc.unesco.org/en/list/616/" },
+      { "title": "UNESCO Porticoes of Bologna", "url": "https://whc.unesco.org/en/list/1650/" },
+      { "title": "사그라다 파밀리아 공식 공사 소식", "url": "https://sagradafamilia.org/en/-/la-grua-central-de-la-sagrada-familia-inicia-una-nova-etapa-despres-de-completar-l-exterior-de-la-torre-de-jesucrist?redirect=/en/" },
+      { "title": "UNESCO Acropolis, Athens", "url": "https://whc.unesco.org/en/list/404/" }
+    ]
+  },
   "standards": [
     {
       "code": "[6사09-01]",
       "alignmentLevel": "부분 연계",
       "activityEvidence": [
-        "도시 지도의 노드와 이동 시간 자료를 읽어 탐방 경로를 구성한다.",
-        "서로 다른 목적에 따라 두 개의 경로를 만들고 공간 선택의 근거를 비교한다."
+        "유럽 여러 나라의 환경·생활·문화 장면을 직접 비교한다.",
+        "각 나라의 문화 장면을 살피고 여행가와 나눈 대화에서 공통된 걱정을 발견한다."
       ],
       "assessmentEvidence": [
-        "시간 제한, 이동 편의, 방문 목적을 함께 고려해 경로를 설명한다.",
-        "최단 거리 외에도 복수의 타당한 공간 선택을 비교한다."
+        "두 나라 이상에서 사진 근거를 모았는지 확인한다.",
+        "선택 이유와 궁금한 점이 고른 장면과 연결되는지 확인한다."
       ],
-      "scopeNote": "도시 지도라는 한 종류의 공간 자료를 읽고 활용하는 요소만 부분적으로 연습한다. 지구본과 세계지도의 표현 방법을 비교하지 않으므로 이 미션만으로 성취기준 전체 달성을 판단하지 않는다."
-    },
-    {
-      "code": "[6사10-01]",
-      "alignmentLevel": "부분 연계",
-      "activityEvidence": [
-        "오래된 건축물, 주민 생활 공간, 이동 접근성 자료를 함께 읽는다.",
-        "문화유산 보존과 현재 주민의 생활을 모두 고려해 경로를 설계한다."
-      ],
-      "assessmentEvidence": [
-        "서로 다른 자료의 관점을 경로 선택 근거에 반영한다.",
-        "보존, 접근성, 주민 생활 가운데 무엇을 고려했는지 비교하여 설명한다."
-      ],
-      "scopeNote": "도시 경관과 다양한 삶의 모습을 함께 살피는 요소만 부분적으로 연습한다. 여러 지역의 지형 경관을 비교하는 활동은 없으므로 성취기준 전체 달성을 뜻하지 않는다."
+      "scopeNote": "이 미션만으로 유럽 전체 지역의 특성을 일반화하지 않는다. 장면은 특정 도시·공간의 관찰 자료로 다룬다."
     }
   ],
   "learningObjectives": [
-    "도시 지도와 이동 시간 자료를 읽고 목적에 맞는 탐방 경로를 구성하는 연습을 한다.",
-    "문화유산, 주민 생활, 이동 접근성 자료의 관점을 비교해 경로 선택의 근거를 설명하는 연습을 한다.",
-    "조건과 목적이 달라지면 복수의 타당한 경로가 나올 수 있음을 비교하는 연습을 한다."
+    "유럽 여러 나라의 환경·생활·문화 장면을 비교한다.",
+    "각 나라의 여행가와 자연스럽게 대화하며 문화와 생활의 변화를 이해한다.",
+    "사진과 대화를 근거로 더 알아볼 질문을 만든다."
   ],
   "intro": {
-    "title": "유럽: 흔적과 오늘의 도시",
-    "subtitle": "벨라리바 구시가 탐방 경로 만들기",
-    "guide": "체코의 수도 프라하에는 수백 년 된 건물과 오늘을 살아가는 사람들의 생활이 한 공간에 함께 있어요. 네 가지 자료를 읽고, 정해진 시간 안에 세 곳을 골라 탐방 경로를 만들어 볼까요? 정답 경로는 하나가 아니에요. 어떤 근거로 골랐는지가 더 중요해요."
+    "title": "유럽: 여러 나라를 만나는 창",
+    "subtitle": "사진처럼 만든 학습용 장면을 살펴보고 그 나라 사례 친구와 이야기해 봐.",
+    "guide": "일곱 나라의 출처를 바탕으로 만든 학습용 재현 장면을 자세히 보고 가상 친구를 만나 봐. 장면 하나나 친구 한 명을 그 나라 전체의 모습으로 단정하지 말자."
   },
-  "city": {
-    "name": "프라하",
-    "note": "프라하는 체코의 수도예요. 수백 년 된 건물과 오늘을 살아가는 사람들의 생활이 한 도시 안에 함께 있어서, 여행자와 주민이 같은 길을 나누어 써요.",
-    "factConfidence": "general"
+  "requirements": {
+    "minCountries": 7,
+    "minVisualsPerVisitedCountry": 3,
+    "minSavedVisuals": 7,
+    "minSavedCountries": 7
   },
-  "sources": [
+  "countries": [
     {
-      "id": "src_official",
-      "type": "official",
-      "title": "프라하 방문 안내",
-      "body": "구시가 광장과 카를교는 낮 시간대에 사람이 가장 많아요. 유대인 지구의 일부 장소는 정해진 시간에만 문을 열고, 조용히 관람해 달라고 안내해요. 이른 아침과 늦은 오후에는 같은 곳도 훨씬 한산해요.",
-      "clues": [
-        "박물관은 역사와 이주민의 이야기를 함께 다룸",
-        "오래된 다리는 통행 인원 제한",
-        "트램과 도보 병행 권장"
-      ],
-      "factConfidence": "general"
+      "id": "france",
+      "name": "프랑스",
+      "map": { "x": 35, "y": 49 },
+      "accent": "#4d83c5",
+      "hook": "강과 시장, 미술관을 만나 봐.",
+      "visuals": [
+        {
+          "id": "france_seine",
+          "title": "센강 곁 길",
+          "category": "environment",
+          "imageId": "europe.france.seine",
+          "caption": "강가 길과 다리, 자전거가 한 장면에 보여.",
+          "lookFor": "물길 · 다리 · 함께 쓰는 길",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-france-seine",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "france_market",
+          "title": "리옹의 아침 시장",
+          "category": "daily",
+          "imageId": "europe.france.market",
+          "caption": "사람들이 채소와 빵을 고르는 아침 풍경이 보여.",
+          "lookFor": "먹거리 · 장바구니 · 이웃",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-france-market",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "france_louvre",
+          "title": "루브르의 옛것과 새것",
+          "category": "heritage",
+          "imageId": "europe.france.louvre",
+          "caption": "오래된 건물 앞에 유리 피라미드가 함께 보여.",
+          "lookFor": "옛 건물 · 유리 · 관람",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-france-louvre",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
     },
     {
-      "id": "src_resident",
-      "type": "resident",
-      "title": "구시가 주민 이야기",
-      "body": "\"여기는 관광지이기 전에 우리가 사는 동네예요. 아침에는 아이를 학교에 데려다주고, 저녁에는 시장에서 장을 봐요. 여행자가 길을 나눠 쓰고 밤에 조용히 해 주면 함께 지내기 좋아요.\"",
-      "clues": [
-        "이른 아침·밤에는 광장 소음을 줄여 주길 바람",
-        "강변 시장은 주민의 생활 공간이기도 함",
-        "주민 문화센터에 교류 프로그램이 있음"
-      ],
-      "factConfidence": "general"
+      "id": "germany",
+      "name": "독일",
+      "map": { "x": 53, "y": 31 },
+      "accent": "#7181a5",
+      "hook": "강과 도시 이동, 성을 살펴봐.",
+      "visuals": [
+        {
+          "id": "germany_rhine",
+          "title": "라인강 곁 풍경",
+          "category": "environment",
+          "imageId": "europe.germany.rhine",
+          "caption": "큰 강 옆으로 마을과 걷는 길이 이어져.",
+          "lookFor": "강 · 마을 · 걷는 길",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-germany-rhine",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "germany_berlin_tram",
+          "title": "베를린의 길",
+          "category": "daily",
+          "imageId": "europe.germany.berlin_tram",
+          "caption": "전차와 자전거, 걷는 사람이 길을 나누어 써.",
+          "lookFor": "전차 · 자전거 · 보행자",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-germany-berlin-tram",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "germany_castle",
+          "title": "산 위의 성",
+          "category": "heritage",
+          "imageId": "europe.heritage3",
+          "caption": "산과 숲 사이에 높은 탑이 있는 성이 보여.",
+          "lookFor": "산 · 숲 · 성의 모양",
+          "sourceTitle": "프로젝트 원본 미니어처",
+          "sourceUrl": "project:europe-heritage-3",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
     },
     {
-      "id": "src_access",
-      "type": "access",
-      "title": "이동 접근 정보",
-      "body": "구시가에는 돌이 깔린 울퉁불퉁한 길과 계단이 많아요. 카를교는 계단으로 오르내리는 구간이 있어 유아차나 휠체어로는 돌아가는 길을 찾아야 해요. 트램과 평평한 강변길은 이동이 편한 편이에요.",
-      "clues": [
-        "광장·시장·문화센터는 경사로 있음",
-        "오래된 다리는 계단이 많음",
-        "트램은 낮은 승강장이라 타기 쉬움"
-      ],
-      "factConfidence": "general"
+      "id": "poland",
+      "name": "폴란드",
+      "map": { "x": 70, "y": 31 },
+      "accent": "#d56d7b",
+      "hook": "산과 강변, 오래된 광장을 만나 봐.",
+      "visuals": [
+        {
+          "id": "poland_tatras",
+          "title": "타트라산맥의 길",
+          "category": "environment",
+          "imageId": "europe.poland.tatras",
+          "caption": "숲길 너머로 뾰족한 산봉우리가 보여.",
+          "lookFor": "숲 · 바위산 · 걷는 길",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-poland-tatras",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "poland_vistula",
+          "title": "바르샤바 강변",
+          "category": "daily",
+          "imageId": "europe.poland.vistula",
+          "caption": "강변 길에서 걷고 자전거를 타는 사람들이 보여.",
+          "lookFor": "강 · 자전거 · 도시",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-poland-vistula",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "poland_krakow",
+          "title": "크라쿠프 광장",
+          "category": "heritage",
+          "imageId": "europe.poland.krakow",
+          "caption": "큰 광장 둘레에 오래된 건물과 사람들이 보여.",
+          "lookFor": "광장 · 건물 · 만남",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-poland-krakow",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
     },
     {
-      "id": "src_preserve",
-      "type": "preserve",
-      "title": "문화유산 보존 규칙",
-      "body": "오래된 벽과 조각은 만지거나 기대면 상할 수 있어 눈으로만 관람해요. 사람이 많은 다리에서는 한 방향으로 천천히 걸어요. 일부 전시실은 사진 촬영이 제한돼요. 보존은 옛것을 가두는 것이 아니라, 다음 사람도 같은 곳을 만날 수 있게 하는 약속이에요.",
-      "clues": [
-        "기억의 벽은 눈으로만 관람",
-        "다리 위에서는 한 방향 통행",
-        "박물관 일부는 촬영 제한"
-      ],
-      "factConfidence": "general"
+      "id": "czechia",
+      "name": "체코",
+      "map": { "x": 61, "y": 43 },
+      "accent": "#6b9a79",
+      "hook": "강 위 다리와 트램, 광장을 살펴봐.",
+      "visuals": [
+        {
+          "id": "czechia_charles_bridge",
+          "title": "강 위의 카를교",
+          "category": "environment",
+          "imageId": "europe.prague.charles_bridge",
+          "caption": "강 위의 오래된 다리와 도시 풍경이 이어져.",
+          "lookFor": "강 · 다리 · 도시",
+          "sourceTitle": "Ryan Lum 사진",
+          "sourceUrl": "https://unsplash.com/photos/1ak3Z7ZmtQA",
+          "license": "Unsplash License",
+          "verifiedAt": "2026-08-30",
+          "needsReview": false
+        },
+        {
+          "id": "czechia_tram",
+          "title": "프라하 트램 거리",
+          "category": "daily",
+          "imageId": "europe.prague.tram",
+          "caption": "도시의 길을 달리는 트램과 사람들이 보여.",
+          "lookFor": "트램 · 정류장 · 거리",
+          "sourceTitle": "Kevin Andre 사진",
+          "sourceUrl": "https://unsplash.com/photos/c1uN4ly-YUY",
+          "license": "Unsplash License",
+          "verifiedAt": "2026-08-30",
+          "needsReview": false
+        },
+        {
+          "id": "czechia_old_town",
+          "title": "프라하 구시가 광장",
+          "category": "heritage",
+          "imageId": "europe.prague.old_town",
+          "caption": "서로 다른 모양의 건물들이 광장을 둘러싸고 있어.",
+          "lookFor": "광장 · 지붕 · 사람",
+          "sourceTitle": "Ronin 사진",
+          "sourceUrl": "https://unsplash.com/photos/zNbNkIYboFY",
+          "license": "Unsplash License",
+          "verifiedAt": "2026-08-30",
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "id": "italy",
+      "name": "이탈리아",
+      "map": { "x": 56, "y": 66 },
+      "accent": "#cb7656",
+      "hook": "산과 광장, 오래된 경기장을 만나 봐.",
+      "visuals": [
+        {
+          "id": "italy_dolomites",
+          "title": "돌로미티의 산길",
+          "category": "environment",
+          "imageId": "europe.italy.dolomites",
+          "caption": "초원 뒤로 밝은 바위산이 높이 솟아 있어.",
+          "lookFor": "초원 · 바위산 · 걷는 길",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-italy-dolomites",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "italy_bologna",
+          "title": "볼로냐의 광장",
+          "category": "daily",
+          "imageId": "europe.italy.bologna",
+          "caption": "회랑이 있는 광장에서 사람들이 만나고 쉬어.",
+          "lookFor": "광장 · 자전거 · 만남",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-italy-bologna",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "italy_colosseum",
+          "title": "콜로세움",
+          "category": "heritage",
+          "imageId": "europe.heritage",
+          "caption": "둥근 벽에 아치 모양의 문이 여러 층으로 이어져.",
+          "lookFor": "둥근 벽 · 아치 · 여러 층",
+          "sourceTitle": "프로젝트 원본 미니어처",
+          "sourceUrl": "project:europe-heritage-1",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
+    },
+    {
+      "id": "spain",
+      "name": "스페인",
+      "map": { "x": 24, "y": 72 },
+      "accent": "#dd9a3d",
+      "hook": "바닷가와 시장, 독특한 건물을 만나 봐.",
+      "visuals": [
+        {
+          "id": "spain_barcelona",
+          "title": "바르셀로나 바닷가",
+          "category": "environment",
+          "imageId": "europe.spain.barcelona",
+          "caption": "모래사장 곁으로 걷는 길과 자전거 길이 보여.",
+          "lookFor": "바다 · 모래 · 자전거 길",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-spain-barcelona",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "spain_madrid_market",
+          "title": "마드리드의 시장",
+          "category": "daily",
+          "imageId": "europe.spain.madrid_market",
+          "caption": "실내 시장에서 이웃들이 먹거리를 고르고 있어.",
+          "lookFor": "먹거리 · 가게 · 이웃",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-spain-madrid-market",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "spain_sagrada",
+          "title": "사그라다 파밀리아",
+          "category": "heritage",
+          "imageId": "europe.heritage2",
+          "caption": "높고 가느다란 탑과 여러 무늬가 눈에 띄어.",
+          "lookFor": "높은 탑 · 무늬 · 빛",
+          "sourceTitle": "프로젝트 원본 미니어처",
+          "sourceUrl": "project:europe-heritage-2",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
+    },
+    {
+      "id": "greece",
+      "name": "그리스",
+      "map": { "x": 76, "y": 75 },
+      "accent": "#4ca5be",
+      "hook": "섬과 바닷길, 오래된 언덕을 만나 봐.",
+      "visuals": [
+        {
+          "id": "greece_island_harbor",
+          "title": "에게해 섬의 항구",
+          "category": "environment",
+          "imageId": "europe.greece.island_harbor",
+          "caption": "바위 해안과 작은 배, 언덕 마을이 이어져.",
+          "lookFor": "바다 · 배 · 언덕 마을",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-greece-island-harbor",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "greece_thessaloniki",
+          "title": "테살로니키 바닷길",
+          "category": "daily",
+          "imageId": "europe.greece.thessaloniki",
+          "caption": "바다 곁 길에서 걷고 자전거를 타는 사람들이 보여.",
+          "lookFor": "바다 · 걷는 길 · 자전거",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-greece-thessaloniki",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "greece_acropolis",
+          "title": "아테네의 아크로폴리스",
+          "category": "heritage",
+          "imageId": "europe.greece.acropolis",
+          "caption": "도시 위 높은 언덕에 기둥이 있는 건물이 보여.",
+          "lookFor": "언덕 · 기둥 · 도시",
+          "sourceTitle": "프로젝트 생성 관찰 그림",
+          "sourceUrl": "project:generated-europe-greece-acropolis",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
     }
   ],
-  "nodeTagLegend": {
-    "stairs": "계단이 많아 이동 약자가 지나기 어려움 (접근성 자료 근거)",
-    "accessible": "경사로·정비된 보도가 있어 누구나 접근 가능 (접근성 자료 근거)",
-    "resident": "주민 생활·교류 공간 (주민 인터뷰 근거)",
-    "preserve": "보존 규칙이 있는 지점 (보존 규칙 자료 근거)"
+  "reasonPrompts": [
+    { "id": "scene", "label": "풍경", "prompt": "어떤 모습이 눈에 남았어?" },
+    { "id": "life", "label": "생활", "prompt": "사람들의 어떤 생활이 궁금해?" },
+    { "id": "story", "label": "이야기", "prompt": "무엇을 더 알고 싶어?" }
+  ],
+  "questionStarters": [
+    { "id": "why", "label": "왜", "text": "이곳에서 사람들은 왜" },
+    { "id": "how", "label": "어떻게", "text": "이곳 사람들은 어떻게" },
+    { "id": "change", "label": "변화", "text": "옛 모습과 오늘 모습은" }
+  ],
+  "postcard": {
+    "title": "유럽 환경 대화 기록",
+    "finishLabel": "세계 회의 준비 마치기"
   },
-  "nodes": [
-    {
-      "id": "old_square",
-      "name": "구시가 광장",
-      "desc": "오래된 건물이 둘러싼 광장이에요. 천문시계를 보러 온 여행자와 이 동네에 사는 사람들이 같은 길을 함께 지나가요.",
-      "x": 0.35,
-      "y": 0.42,
-      "visitMinutes": 25,
-      "tags": [
-        "accessible",
-        "resident"
-      ]
-    },
-    {
-      "id": "city_museum",
-      "name": "유대인 지구",
-      "desc": "오래된 시나고그와 묘지가 남아 있는 동네예요. 여러 공동체가 함께 살아온 흔적을 조용히 지키는 곳이에요.",
-      "x": 0.28,
-      "y": 0.22,
-      "visitMinutes": 30,
-      "tags": [
-        "preserve"
-      ]
-    },
-    {
-      "id": "heritage_bridge",
-      "name": "카를교",
-      "desc": "강을 건너는 오래된 돌다리예요. 걸어서만 건널 수 있고 사람이 아주 많아, 계단과 좁은 길에서 천천히 걸어야 해요.",
-      "x": 0.5,
-      "y": 0.55,
-      "visitMinutes": 15,
-      "tags": [
-        "stairs",
-        "preserve"
-      ]
-    },
-    {
-      "id": "riverside_market",
-      "name": "하벨 시장",
-      "desc": "구시가에 오래 있어 온 시장이에요. 여행자도 들르지만 동네 사람들이 오늘 먹을 것을 사러 오는 곳이에요.",
-      "x": 0.66,
-      "y": 0.6,
-      "visitMinutes": 25,
-      "tags": [
-        "accessible",
-        "resident"
-      ]
-    },
-    {
-      "id": "community_center",
-      "name": "동네 문화센터",
-      "desc": "주민과 방문객이 함께 참여하는 강좌와 공연이 열리는 곳이에요. 이 도시의 \"오늘\"을 만나는 자리예요.",
-      "x": 0.76,
-      "y": 0.34,
-      "visitMinutes": 20,
-      "tags": [
-        "accessible",
-        "resident"
-      ]
-    },
-    {
-      "id": "memorial_wall",
-      "name": "존 레논 벽",
-      "desc": "사람들이 평화의 메시지를 남겨 온 벽이에요. 시간이 지나며 계속 덧칠되어 온, 살아 있는 기록이에요.",
-      "x": 0.55,
-      "y": 0.18,
-      "visitMinutes": 15,
-      "tags": [
-        "accessible",
-        "preserve"
-      ]
-    }
-  ],
-  "edges": [
-    {
-      "from": "old_square",
-      "to": "city_museum",
-      "minutes": 8,
-      "mode": "walk"
-    },
-    {
-      "from": "old_square",
-      "to": "heritage_bridge",
-      "minutes": 10,
-      "mode": "walk"
-    },
-    {
-      "from": "old_square",
-      "to": "memorial_wall",
-      "minutes": 12,
-      "mode": "walk"
-    },
-    {
-      "from": "city_museum",
-      "to": "memorial_wall",
-      "minutes": 10,
-      "mode": "tram"
-    },
-    {
-      "from": "heritage_bridge",
-      "to": "riverside_market",
-      "minutes": 7,
-      "mode": "walk"
-    },
-    {
-      "from": "riverside_market",
-      "to": "community_center",
-      "minutes": 9,
-      "mode": "walk"
-    },
-    {
-      "from": "community_center",
-      "to": "memorial_wall",
-      "minutes": 8,
-      "mode": "tram"
-    },
-    {
-      "from": "heritage_bridge",
-      "to": "community_center",
-      "minutes": 12,
-      "mode": "tram"
-    }
-  ],
-  "goals": [
-    {
-      "id": "goal_access",
-      "label": "접근성 확보",
-      "check": "계단이 많은 곳만으로 경로를 짜지 않고, 함께 가는 친구 누구나 이동할 수 있는 지점을 포함했나요?"
-    },
-    {
-      "id": "goal_resident",
-      "label": "주민 생활 존중",
-      "check": "주민의 생활 공간(광장, 시장 등)을 지날 때 조용히 하기, 통로 막지 않기 같은 약속을 경로 계획에 반영했나요?"
-    },
-    {
-      "id": "goal_preserve",
-      "label": "보존 규칙 준수",
-      "check": "눈으로만 관람하기, 다리 한 방향 통행 같은 보존 규칙이 있는 지점에서 규칙을 지키는 계획인가요?"
-    }
-  ],
-  "constraints": {
-    "maxMinutes": 110,
-    "mustVisitCount": 3
-  },
-  "exampleRoutes": [
-    {
-      "nodeIds": [
-        "city_museum",
-        "old_square",
-        "heritage_bridge"
-      ],
-      "strengths": "도시의 역사 흔적을 깊게 만나는 경로예요. 박물관에서 배경을 먼저 배우고 광장과 다리에서 실제 흔적을 확인해요. 이동 시간이 짧아 여유가 있어요.",
-      "tradeoffs": "오래된 다리는 계단이 많아 이동이 불편한 친구가 있다면 함께 가기 어려워요. 주민의 '오늘'을 만나는 지점이 빠져 있어요."
-    },
-    {
-      "nodeIds": [
-        "riverside_market",
-        "community_center",
-        "memorial_wall"
-      ],
-      "strengths": "주민의 생활과 교류를 중심에 둔 경로예요. 세 곳 모두 경사로나 정비된 보도가 있어 누구나 함께 갈 수 있고, 트램 낮은 승강장도 이용할 수 있어요.",
-      "tradeoffs": "구시가 광장과 박물관을 건너뛰기 때문에 도시의 오래된 역사 흔적을 직접 보는 경험은 줄어들어요."
-    },
-    {
-      "nodeIds": [
-        "city_museum",
-        "memorial_wall",
-        "community_center"
-      ],
-      "strengths": "역사(박물관·기억의 벽)와 오늘(문화센터)을 잇는 균형 경로예요. 트램 구간을 활용해 이동 부담이 적고, 계단 많은 다리를 피해 접근성도 좋아요.",
-      "tradeoffs": "주민들이 실제로 장을 보고 생활하는 광장과 시장의 분위기는 느끼기 어려워요."
-    }
-  ],
   "feedback": {
-    "overTime": "이 경로는 정해진 시간을 넘겨요. 방문 시간이 긴 곳이 몰려 있진 않은지, 더 짧은 이동 방법(트램)이 있는 구간은 없는지 지도를 다시 살펴볼까요?",
-    "goalMissed": "시간 안에는 들어왔지만 아직 챙기지 못한 목표가 있어요. 자료 카드의 단서를 다시 읽어 보세요. 예를 들어 접근성 정보에는 계단이 많은 곳이 어디인지 나와 있어요. 그 단서로 경로를 한 번 더 다듬어 볼까요?",
-    "good": "시간, 접근성, 주민 존중, 보존 규칙까지 근거를 갖춘 경로를 완성했어요! 같은 도시라도 무엇을 중요하게 보느냐에 따라 좋은 경로가 여러 개일 수 있다는 걸 발견한 거예요."
+    "reflection": "사진에서 찾은 변화와 여행가의 걱정을 연결하면 세계 문제를 더 구체적으로 이야기할 수 있어."
   },
   "learn": {
+    "introMode": "friend-only",
     "friend": {
       "name": "레나",
       "imageId": "europe.guide",
-      "region": "체코 프라하"
+      "region": "유럽 여러 나라"
     },
-    "goal": "옛 유산과 오늘의 생활이 함께 있는 도시를 존중하며 여행해요",
+    "goal": "여러 나라의 모습을 비교하고, 가장 궁금한 나라를 사진 근거와 질문으로 남겨 보자.",
     "prediction": {
-      "question": "여행 계획에서 제일 중요한 건 뭘까요?",
+      "question": "나라를 더 알고 싶어지는 순간은 언제일까?",
       "options": [
-        "빨리 많이 보기",
-        "사는 사람들 배려하기",
-        "둘 다 생각해야 할 것 같아"
+        "사진을 자세히 볼 때",
+        "내 질문을 만들 때",
+        "정답을 빨리 찾을 때"
       ]
     },
     "discoveries": [
-      "도시는 구경거리이기 전에 사람들이 사는 곳이에요.",
-      "좋은 경로는 하나가 아니에요 — 목적에 따라 여러 개예요.",
-      "보존 규칙은 다음 사람도 같은 곳을 만날 수 있게 하는 약속이에요."
+      "같은 나라 안에도 자연환경, 오늘의 생활, 오래된 문화 공간이 함께 있어.",
+      "한 장면을 보고 생긴 관심은 다른 장면과 비교할수록 더 구체적으로 바뀔 수 있어.",
+      "궁금한 점을 질문으로 남기면 다음 조사에서 무엇을 찾아볼지 분명해져."
     ]
   }
 }

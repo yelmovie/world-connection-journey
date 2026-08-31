@@ -1,50 +1,70 @@
+import commonFallback from '../../public/content/v1/ko/common.json';
+import asiaFallback from '../../public/content/v1/ko/asia.json';
+import europeFallback from '../../public/content/v1/ko/europe.json';
+import africaFallback from '../../public/content/v1/ko/africa.json';
+import americasFallback from '../../public/content/v1/ko/americas.json';
+import oceaniaFallback from '../../public/content/v1/ko/oceania.json';
+import dialogueFallback from '../../public/content/v1/ko/dialogue.json';
+import environmentFallback from '../../public/content/v1/ko/environment.json';
+
+const FALLBACK_CONTENTS: Record<string, unknown> = {
+  common: commonFallback,
+  asia: asiaFallback,
+  europe: europeFallback,
+  africa: africaFallback,
+  americas: americasFallback,
+  oceania: oceaniaFallback,
+  dialogue: dialogueFallback,
+  environment: environmentFallback
+};
+
 /** 콘텐츠 JSON 로더 — public/content/v1/ko/*.json, 페이지별 lazy + 캐시 */
 const cache = new Map<string, unknown>();
+const CONTENT_CACHE_VERSION = '0.1.11';
 
 export interface ContentEnvelope {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   missionId: string;
   needsReview: boolean;
 }
 
 const CONTENT_SHAPES: Record<string, { missionId: string; objects: string[]; arrays: string[]; strings?: string[] }> = {
-  common: { missionId: 'common', objects: ['ui', 'nickname'], arrays: ['inquiryQuestions', 'actionPrinciples', 'stamps'], strings: ['reflectionFrame'] },
-  asia: { missionId: 'asia_daily_life_evidence', objects: ['intro', 'round1_timeline', 'round2_classification', 'round3_question'], arrays: [] },
-  europe: { missionId: 'europe_city_route', objects: ['intro', 'city', 'constraints', 'feedback'], arrays: ['sources', 'nodes', 'edges', 'goals'] },
-  africa: { missionId: 'africa_sound_dialogue', objects: ['intro', 'callResponse', 'feedback'], arrays: ['contextCards', 'patterns'] },
+  common: { missionId: 'common', objects: ['ui', 'nickname'], arrays: ['actionPrinciples', 'stamps'], strings: ['reflectionFrame'] },
+  asia: { missionId: 'asia_connected_regions', objects: ['intro', 'requirements', 'proposal'], arrays: ['regions', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions'] },
+  europe: { missionId: 'europe_interest_window', objects: ['intro', 'requirements', 'postcard', 'feedback'], arrays: ['countries', 'reasonPrompts', 'questionStarters'] },
+  africa: { missionId: 'africa_sound_dialogue', objects: ['intro', 'requirements', 'callResponse', 'feedback', 'proposal'], arrays: ['regions', 'countryCases', 'contextCards', 'patterns', 'environmentSignals', 'issues', 'perspectives', 'actionTiers', 'actions', 'sources'] },
   americas: { missionId: 'americas_shared_day', objects: ['intro', 'constraints', 'altCompare', 'feedback'], arrays: ['students', 'blocks'] },
-  oceania: { missionId: 'oceania_shared_future', objects: ['intro', 'sim', 'feedback'], arrays: ['hotspots', 'perspectives'] },
-  dialogue: { missionId: 'respect_dialogue', objects: ['intro', 'listening', 'compass', 'feedback'], arrays: ['greetings'] }
+  oceania: { missionId: 'oceania_one_ocean', objects: ['intro', 'requirements', 'proposal'], arrays: ['zones', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions', 'sources'] },
+  dialogue: { missionId: 'respect_dialogue', objects: ['intro', 'listening', 'compass', 'feedback'], arrays: ['greetings'] },
+  environment: { missionId: 'earth_council', objects: ['titles', 'connectionReasons', 'roundtable', 'simulationFeedback', 'pledge'], arrays: ['friends', 'lenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions'] }
 };
 
 const NESTED_SHAPES: Record<string, { objects?: string[]; arrays?: string[]; objectArrays?: string[] }> = {
   asia: {
-    objects: ['round3_question.fragments'],
-    arrays: [
-      'round1_timeline.slots', 'round1_timeline.items',
-      'round2_classification.categories', 'round2_classification.statements',
-      'round3_question.fragments.openers', 'round3_question.fragments.topics', 'round3_question.fragments.closers',
-      'round3_question.goodCombos', 'round3_question.badPatterns'
-    ],
+    objectArrays: ['regions', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions']
+  },
+  europe: {
     objectArrays: [
-      'round1_timeline.items', 'round2_classification.categories', 'round2_classification.statements',
-      'round3_question.goodCombos', 'round3_question.badPatterns'
+      'countries', 'reasonPrompts', 'questionStarters',
+      'countries.0.visuals', 'countries.1.visuals', 'countries.2.visuals', 'countries.3.visuals',
+      'countries.4.visuals', 'countries.5.visuals', 'countries.6.visuals'
     ]
   },
-  europe: { objectArrays: ['sources', 'nodes', 'edges', 'goals'] },
   africa: {
     arrays: ['callResponse.rules', 'callResponse.examples'],
     objectArrays: ['contextCards', 'patterns']
   },
   americas: { objectArrays: ['students', 'blocks'] },
   oceania: {
-    objects: ['sim.controls', 'sim.effects', 'sim.thresholds'],
-    arrays: ['sim.turnLabels'],
-    objectArrays: ['hotspots', 'perspectives']
+    objectArrays: ['zones', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions', 'sources']
   },
   dialogue: {
     arrays: ['listening.scenarios', 'compass.npcs'],
     objectArrays: ['greetings', 'listening.scenarios', 'compass.npcs']
+  },
+  environment: {
+    arrays: ['pledge.frame', 'pledge.helperQuestions'],
+    objectArrays: ['friends', 'lenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions']
   }
 };
 
@@ -79,7 +99,11 @@ function assertPlainTextTree(value: unknown, path: string, depth = 0, fieldName?
 
 function valueAt(record: Record<string, unknown>, dottedPath: string): unknown {
   return dottedPath.split('.').reduce<unknown>((value, key) => {
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+    if (Array.isArray(value)) {
+      const index = Number(key);
+      return Number.isInteger(index) && index >= 0 ? value[index] : undefined;
+    }
+    if (typeof value !== 'object' || value === null) return undefined;
     return (value as Record<string, unknown>)[key];
   }, record);
 }
@@ -112,8 +136,8 @@ export function validateContentEnvelope(value: unknown, name = 'unknown'): Conte
     throw new Error(`콘텐츠 형식 오류: ${name}은 객체여야 해요.`);
   }
   const record = value as Record<string, unknown>;
-  if (record.schemaVersion !== 1) {
-    throw new Error(`콘텐츠 버전 오류: ${name}의 schemaVersion은 1이어야 해요.`);
+  if (record.schemaVersion !== 1 && record.schemaVersion !== 2) {
+    throw new Error(`콘텐츠 버전 오류: ${name}의 schemaVersion은 1 또는 2여야 해요.`);
   }
   if (typeof record.missionId !== 'string' || record.missionId.length === 0) {
     throw new Error(`콘텐츠 형식 오류: ${name}에 missionId가 없어요.`);
@@ -161,9 +185,22 @@ export function validateContentDocument(value: unknown, name: string): ContentEn
 export async function loadContent<T>(name: string): Promise<T> {
   const hit = cache.get(name);
   if (hit) return hit as T;
-  const res = await fetch(`content/v1/ko/${name}.json`);
-  if (!res.ok) throw new Error(`콘텐츠 로드 실패: ${name} (HTTP ${res.status})`);
-  const json = validateContentDocument(await res.json(), name);
-  cache.set(name, json);
-  return json as T;
+  try {
+    const baseUrl = (import.meta.env.BASE_URL ?? './').replace(/\/+$/, '') + '/';
+    const res = await fetch(`${baseUrl}content/v1/ko/${name}.json?v=${CONTENT_CACHE_VERSION}`, { cache: 'no-cache' });
+    if (res.ok) {
+      const json = validateContentDocument(await res.json(), name);
+      cache.set(name, json);
+      return json as T;
+    }
+  } catch (err) {
+    console.warn(`[Content] 네트워크/동적 로드 경고 (${name}), 번들 내장 데이터로 자동 복구:`, err);
+  }
+  const fallback = FALLBACK_CONTENTS[name];
+  if (fallback) {
+    const json = validateContentDocument(fallback, name);
+    cache.set(name, json);
+    return json as T;
+  }
+  throw new Error(`콘텐츠 로드 실패: ${name}`);
 }

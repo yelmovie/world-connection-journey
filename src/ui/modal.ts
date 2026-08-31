@@ -36,24 +36,27 @@ export function openModal(opts: ModalOptions): () => void {
   backdrop.className = 'modal-backdrop';
   const modal = document.createElement('div');
   modal.className = 'modal';
+  modal.dataset.modalId = opts.id;
   modal.setAttribute('role', 'dialog');
   modal.setAttribute('aria-modal', 'true');
   modal.tabIndex = -1;
 
   if (opts.title) {
     const h = document.createElement('h2');
+    h.className = 'modal-title';
     const titleId = `modal-title-${++modalSequence}`;
     h.id = titleId;
     h.textContent = opts.title;
     modal.appendChild(h);
     modal.setAttribute('aria-labelledby', titleId);
+  } else {
+    modal.setAttribute('aria-label', '안내');
   }
-  if (opts.bodyHtml) {
-    const body = document.createElement('div');
-    body.innerHTML = opts.bodyHtml;
-    modal.appendChild(body);
-  }
-  if (opts.bodyEl) modal.appendChild(opts.bodyEl);
+  const body = document.createElement('div');
+  body.className = 'modal-body';
+  if (opts.bodyHtml) body.innerHTML = opts.bodyHtml;
+  if (opts.bodyEl) body.appendChild(opts.bodyEl);
+  if (body.childNodes.length > 0) modal.appendChild(body);
 
   const focusableSelector = [
     'button:not([disabled])',
@@ -103,6 +106,22 @@ export function openModal(opts: ModalOptions): () => void {
     if (previouslyFocused?.isConnected) previouslyFocused.focus();
     bus.emit('MODAL_CLOSED', { id: opts.id });
   };
+
+  if (opts.dismissible !== false) {
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'modal-close';
+    closeButton.setAttribute('aria-label', '팝업 닫기');
+    closeButton.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>`;
+    closeButton.addEventListener('click', () => {
+      void audio.playSfx('tap');
+      close();
+    });
+    modal.appendChild(closeButton);
+  }
 
   if (opts.actions?.length) {
     const bar = document.createElement('div');
