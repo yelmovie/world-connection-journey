@@ -10,6 +10,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { openModal } from '../ui/modal';
 import { showKeyPoint } from '../ui/keyPoint';
+import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { enableMapZoom } from '../ui/mapZoom';
 
 type Hotspot = { id: string; x: number; y: number; label: string };
@@ -53,6 +54,8 @@ type Action = { id: string; tier: string; label: string; detail: string };
 
 interface RegionalModel {
   id: Extract<MissionId, 'asia' | 'oceania'>;
+  /** 배움 카드(learnFrame) 원본 — JSON의 learn 섹션을 그대로 전달한다. */
+  learn?: unknown;
   title: string;
   subtitle: string;
   guide: string;
@@ -239,6 +242,7 @@ function normalizeState(model: RegionalModel): RegionalState {
 
 function asiaModel(content: AsiaSource): RegionalModel {
   return {
+    learn: (content as { learn?: unknown }).learn,
     id: 'asia', title: content.intro.title, subtitle: content.intro.subtitle, guide: content.intro.guide,
     backgroundId: 'bg.asia', mapAssetId: 'asia.map.regional', bgm: 'asia', areaLabel: '권역',
     requirements: { minAreas: content.requirements.minRegions, minExamples: content.requirements.minExamples, minDiscoveries: content.requirements.minDiscoveries, minSignals: content.requirements.minSignals },
@@ -255,6 +259,7 @@ function oceaniaModel(content: OceaniaSource): RegionalModel {
   const scenesByZone = new Map<string, string[]>();
   for (const scene of content.scenes.filter((item) => item.category !== 'landmark')) scenesByZone.set(scene.zoneId, [...(scenesByZone.get(scene.zoneId) ?? []), scene.id]);
   return {
+    learn: (content as { learn?: unknown }).learn,
     id: 'oceania', title: content.intro.title, subtitle: content.intro.subtitle, guide: content.intro.guide,
     backgroundId: 'bg.oceania', mapAssetId: 'oceania.map.regional', bgm: 'oceania', areaLabel: '구역',
     requirements: { minAreas: content.requirements.minZones, minExamples: content.requirements.minExamples, minDiscoveries: content.requirements.minDiscoveries, minSignals: content.requirements.minSignals },
@@ -415,7 +420,10 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             const heard = model.perspectives.filter((item) => state.listenedPerspectiveIds.includes(item.id));
             writeMissionArtifact({ schemaVersion: 1, missionId: model.id, title: `${model.title.split(':')[0]} 권역 탐험 기록`, purpose: '여러 지역의 자연·생활·문화를 한 모습으로 단정하지 않고 비교해.', initialHypothesis: '지도에서 서로 다른 지역의 위치와 생활을 먼저 살펴봤어.', evidenceIds: [...state.viewedSceneIds, ...state.discoveredSignalIds], evidenceLabel: `${state.visitedAreaIds.length}개 ${model.areaLabel}, ${state.viewedExampleIds.length}개 나라·장소, ${state.viewedSceneIds.length}개 장면을 확인했어.`, voiceId: heard[0]?.id ?? `${model.id}-voices`, voiceName: heard.map((item) => item.name).join('·') || '지역의 친구들', voiceLine: heard.map((item) => item.line).join(' ') || '지역마다 필요한 방법이 다르니 먼저 사정을 들어야 해.', firstDecision: '한 장면을 지역 전체의 모습으로 단정하지 않기', observedConsequence: `${state.discoveredSignalIds.length}개의 연결된 환경 신호를 확인했어.`, revisedDecision: `${state.selectedActionIds.length}개의 행동을 여러 주체의 책임으로 골랐어.`, rationale: '생활 속 행동과 지역사회·정부·기업·국가 간 협력을 함께 골라야 오래 이어질 수 있어.', transferPrompt: '우리 동네 문제에서도 당사자의 말을 듣고 여러 주체의 행동을 함께 제안한다면 무엇이 달라질까?', earnedAt: new Date().toISOString() });
             recordEarthSignals(model.id, model.signals.filter((item) => state.discoveredSignalIds.includes(item.id)).map((item) => item.title));
-            completeMissionFlow(model.id, model.title.split(':')[0] ?? model.title);
+            const doComplete = (): void => completeMissionFlow(model.id, model.title.split(':')[0] ?? model.title);
+            const learn = getLearn({ learn: model.learn });
+            if (learn) showLearningWrap(model.id, learn, doComplete);
+            else doComplete();
           });
         }
       };

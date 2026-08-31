@@ -6,6 +6,7 @@ import { fitAspect } from '../ui/aspectBox';
 import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
+import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
@@ -93,7 +94,8 @@ const CSS = `
 .africa-mission .top-bar{background:linear-gradient(#174b68e8,#174b68bd)}
 .africa-mission .page-body{padding:clamp(8px,1.4vh,16px) clamp(12px,2vw,28px);overflow:auto;display:grid;place-items:center}
 .africa-shell{width:100%;height:calc(100dvh - var(--top-bar-h) - 24px);min-height:0;position:relative;display:grid}
-.africa-panel{min-height:0;border:2px solid rgba(255,255,255,.72);border-radius:26px;background:rgba(249,247,236,.94);box-shadow:0 18px 46px #06243966;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+/* 배경 지도 일러스트가 비치는 유리 패널 — 본문 카드들이 대비를 책임진다 */
+.africa-panel{min-height:0;border:2px solid rgba(255,255,255,.72);border-radius:26px;background:rgba(249,247,236,.72);backdrop-filter:blur(10px) saturate(1.05);box-shadow:0 18px 46px #06243966;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
 .africa-head{padding:clamp(12px,2vh,22px) clamp(18px,2vw,30px);display:flex;align-items:center;justify-content:space-between;gap:16px;background:#fff9e9;border-bottom:1px solid #d7cba9}
 .africa-head h1,.africa-head h2{margin:0;color:var(--c-navy);font:900 var(--stage-title)/1.1 var(--font-head)}
 .africa-head p{margin:4px 0 0;font-size:var(--body-text);font-weight:750;color:#31536a}
@@ -373,7 +375,7 @@ export function createPage(): Page {
       };
 
       const finishMission = (): void => {
-        if(finishing||!canCompleteAfrica(P))return;finishing=true;P.passportStampAwarded=true;P.updatedAt=new Date().toISOString();saveRepo.setCheckpoint('africa','proposal',{africaProgress:structuredClone(P)});const issue=content.issues.find((i)=>i.id===P.environmentInvestigation.selectedIssueId);writeMissionArtifact({schemaVersion:1,missionId:'africa',title:'아프리카 공동 제안',purpose:'다섯 지역의 다양한 지리와 오늘의 생활을 살피고 연결된 환경문제에 협력 방안을 제안해.',initialHypothesis:'아프리카를 하나의 모습으로 묶지 않고 지도에서 직접 확인했어.',evidenceIds:[...P.visitedCountries,...P.environmentInvestigation.inspectedSignalIds],evidenceLabel:`다섯 권역과 ${P.visitedCountries.length}개 국가 사례, 환경 신호 ${P.environmentInvestigation.inspectedSignalIds.length}개를 살폈어.`,voiceId:'africa-regional-voices',voiceName:'여러 지역의 친구들',voiceLine:'지역마다 생활과 변화는 다르지만 물길·숲·도시·바다를 따라 서로 연결돼 있어.',firstDecision:issue?.name??'연결된 환경문제',observedConsequence:P.solutionLab.selectedActions.join(', '),revisedDecision:P.jointProposal.selectedIdeas.join(', '),rationale:P.jointProposal.reason||content.proposal.reasonExample,transferPrompt:'마지막 세계 회의에서 지역의 목소리와 여러 주체의 책임을 함께 제안해 볼까?',earnedAt:new Date().toISOString()});recordEarthSignals('africa',[issue?.name,...content.environmentSignals.filter((s)=>P.environmentInvestigation.inspectedSignalIds.includes(s.id)).map((s)=>s.title)].filter((x): x is string => Boolean(x)));completeMissionFlow('africa','아프리카');
+        if(finishing||!canCompleteAfrica(P))return;finishing=true;P.passportStampAwarded=true;P.updatedAt=new Date().toISOString();saveRepo.setCheckpoint('africa','proposal',{africaProgress:structuredClone(P)});const issue=content.issues.find((i)=>i.id===P.environmentInvestigation.selectedIssueId);writeMissionArtifact({schemaVersion:1,missionId:'africa',title:'아프리카 공동 제안',purpose:'다섯 지역의 다양한 지리와 오늘의 생활을 살피고 연결된 환경문제에 협력 방안을 제안해.',initialHypothesis:'아프리카를 하나의 모습으로 묶지 않고 지도에서 직접 확인했어.',evidenceIds:[...P.visitedCountries,...P.environmentInvestigation.inspectedSignalIds],evidenceLabel:`다섯 권역과 ${P.visitedCountries.length}개 국가 사례, 환경 신호 ${P.environmentInvestigation.inspectedSignalIds.length}개를 살폈어.`,voiceId:'africa-regional-voices',voiceName:'여러 지역의 친구들',voiceLine:'지역마다 생활과 변화는 다르지만 물길·숲·도시·바다를 따라 서로 연결돼 있어.',firstDecision:issue?.name??'연결된 환경문제',observedConsequence:P.solutionLab.selectedActions.join(', '),revisedDecision:P.jointProposal.selectedIdeas.join(', '),rationale:P.jointProposal.reason||content.proposal.reasonExample,transferPrompt:'마지막 세계 회의에서 지역의 목소리와 여러 주체의 책임을 함께 제안해 볼까?',earnedAt:new Date().toISOString()});recordEarthSignals('africa',[issue?.name,...content.environmentSignals.filter((s)=>P.environmentInvestigation.inspectedSignalIds.includes(s.id)).map((s)=>s.title)].filter((x): x is string => Boolean(x)));const doComplete=():void=>completeMissionFlow('africa','아프리카');const learn=getLearn(content);if(learn)showLearningWrap('africa',learn,doComplete);else doComplete();
       };
 
       const renderProposal = (): void => {

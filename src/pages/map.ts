@@ -95,6 +95,11 @@ const SVG_CARD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" st
 /** 새 사진 도착 신호 아이콘 */
 const SVG_MAIL = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
 
+/** 완료했지만 배움 카드는 못 받은 미션 — 재탐험 이유가 된다. */
+function hasLearnCardFor(missionId: MissionId): boolean {
+  return readLearnCard(missionId).earned;
+}
+
 const STATUS_LABEL: Record<MissionStatus, string> = {
   locked: '아직 잠겨 있음',
   available: '지금 도전 가능',
@@ -197,6 +202,7 @@ const MAP_CSS = `
 .map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
 /* 대륙에서 모은 것이 마지막 회의로 이어진다는 걸 매 화면에서 보이게 한다 */
+.map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(15px,var(--fs-small));font-weight:850;line-height:1.4; }
 .map-bag { margin-top:var(--sp-2);padding:10px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
 .map-bag strong { display:block;font-family:var(--font-head);font-size:max(17px,var(--fs-small));color:var(--c-navy); }
 .map-bag ul { margin:6px 0 0;padding:0;list-style:none;display:grid;gap:4px; }
@@ -415,6 +421,8 @@ export function createPage(): Page {
           <p class="mission-brief__objective">${photosArrived ? '사진 속에서 친구들이 걱정하는 변화를 찾아보세요.' : spot.objective}</p>
           ${photosArrived ? '' : `<div class="map-brief__flow"><ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>`}
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
+          ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
+          ${mission.status === 'completed' && spot.id === 'dialogue' ? '<p class="map-brief__replay">다른 환경 문제를 골라 회의를 다시 열 수 있어.</p>' : ''}
           ${(() => {
             const bag = collectedEarthSignals();
             if (bag.length === 0) return '';
@@ -424,7 +432,7 @@ export function createPage(): Page {
               .join('')}${bag.length > shown.length ? `<li class="map-bag__more">…앞서 모은 ${bag.length - shown.length}개도 들어 있어</li>` : ''}</ul></div>`;
           })()}
           <div class="map-brief__actions">
-            <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
+            <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
             ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">완주 기록 보기</button>' : ''}
           </div>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');

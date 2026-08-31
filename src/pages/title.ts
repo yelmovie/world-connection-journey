@@ -88,8 +88,9 @@ const TITLE_CSS = `
   margin:0;max-width:36em;color:#fff;
   font-family:var(--font-head);font-size:clamp(26px,2.25vw,38px);font-weight:800;line-height:1.22;
   text-wrap: balance; word-break: keep-all; text-shadow: 0 3px 12px rgba(9,34,63,.82);
-  white-space: nowrap;
 }
+/* 넓은 화면에서만 한 줄 — 좁은 화면에서 nowrap은 잘린다 */
+@media (min-width: 1101px) { .title-subtitle { white-space: nowrap; } }
 .title-launch {
   position:relative;display:flex;align-items:flex-end;justify-content:center;
   width:100%;height:100%;
