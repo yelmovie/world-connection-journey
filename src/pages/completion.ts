@@ -99,6 +99,14 @@ const COMPLETION_CSS = `
   background: radial-gradient(circle at 35% 30%, #bfe6ff, #2588E8 70%); box-shadow: var(--shadow-pop);
   display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; overflow: hidden;
 }
+/* 바깥쪽 칸은 원에 잘리므로 글자를 안쪽으로 당긴다 */
+.globe-slice {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--font-head); font-size: max(15px, var(--fs-small)); line-height: 1.25;
+  padding: 4px; word-break: keep-all;
+}
+.globe-slice:nth-child(3n+1) { padding-left: 20%; }
+.globe-slice:nth-child(3n) { padding-right: 20%; }
 .puzzle-trophy-row { display: flex; justify-content: center; align-items: center; gap: var(--sp-4); flex-wrap: wrap; margin-top: var(--sp-2); }
 /* 축하 연출이 끝난 뒤(회고·수료증)에는 헤더를 줄여 본문이 한 화면에 들어오게 한다 */
 .completion-page.is-writing .completion-wreath,
@@ -420,7 +428,7 @@ export function createPage(): Page {
 
         <section class="panel" id="sec-reflect" style="display:none">
           <h2 style="color:var(--c-navy)">세계 연결 회의: 여행 근거로 공동 약속 만들기</h2>
-          <p>미션에서 실제로 만든 기록 하나를 회의 자료로 골라요. 고르면 처음 생각·근거·수정한 결정이 회고 칸으로 이어져요.</p>
+          <p>회의에 가져갈 여행 기록 하나를 골라 보세요.</p>
           ${missionArtifacts.length > 0
             ? `<div class="council-records" role="radiogroup" aria-label="세계 연결 회의에 가져갈 미션 기록">
                 ${missionArtifacts.map((artifact) => {
@@ -433,7 +441,7 @@ export function createPage(): Page {
                   </button>`;
                 }).join('')}
               </div>`
-            : '<p class="council-empty">이전 버전에서 완료한 기록은 아래 배움 카드를 보고 직접 회고할 수 있어요.</p>'}
+            : '<p class="council-empty">아래 배움 카드를 열어 여행에서 알게 된 것을 다시 보고 써 보세요.</p>'}
           <details class="completion-details">
             <summary>배움 카드 보기</summary>
             <div class="completion-learn" aria-label="여행에서 받은 배움 카드">
@@ -585,7 +593,9 @@ export function createPage(): Page {
       const appendPlacedPiece = (id: MissionId) => {
         const seg = document.createElement('div');
         seg.dataset.pieceId = id;
-        seg.style.cssText = `background:${PIECE_COLORS[id]};display:flex;align-items:center;justify-content:center;color:${PIECE_TEXT_COLORS[id]};font-family:var(--font-head);font-size:var(--fs-body);line-height:1.3;padding:4px`;
+        seg.className = 'globe-slice';
+        seg.style.background = PIECE_COLORS[id];
+        seg.style.color = PIECE_TEXT_COLORS[id];
         seg.textContent = PIECES.find((p) => p.id === id)?.label ?? '';
         globe.appendChild(seg);
       };
