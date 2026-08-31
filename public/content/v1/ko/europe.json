@@ -10,14 +10,38 @@
     "peopleNote": "카밀라·리나·조피아·아담·루카·소피아·엘레니는 여러 사례를 바탕으로 만든 학습용 가상 친구이며 실제 여행자가 아니다.",
     "mediaNote": "21개 이미지는 실제 현장 사진이 아니라 학습용 재현 이미지다. 이미지 속 사람·배치·날씨는 사실 근거로 사용하지 않는다.",
     "sources": [
-      { "title": "UN Statistics M49 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
-      { "title": "UNESCO Paris, Banks of the Seine", "url": "https://whc.unesco.org/en/list/600/" },
-      { "title": "UNESCO Upper Middle Rhine Valley", "url": "https://whc.unesco.org/en/list/1066/" },
-      { "title": "UNESCO Historic Centre of Kraków", "url": "https://whc.unesco.org/en/list/29/" },
-      { "title": "UNESCO Historic Centre of Prague", "url": "https://whc.unesco.org/en/list/616/" },
-      { "title": "UNESCO Porticoes of Bologna", "url": "https://whc.unesco.org/en/list/1650/" },
-      { "title": "사그라다 파밀리아 공식 공사 소식", "url": "https://sagradafamilia.org/en/-/la-grua-central-de-la-sagrada-familia-inicia-una-nova-etapa-despres-de-completar-l-exterior-de-la-torre-de-jesucrist?redirect=/en/" },
-      { "title": "UNESCO Acropolis, Athens", "url": "https://whc.unesco.org/en/list/404/" }
+      {
+        "title": "UN Statistics M49 국가·지역 분류",
+        "url": "https://unstats.un.org/unsd/methodology/m49/"
+      },
+      {
+        "title": "UNESCO Paris, Banks of the Seine",
+        "url": "https://whc.unesco.org/en/list/600/"
+      },
+      {
+        "title": "UNESCO Upper Middle Rhine Valley",
+        "url": "https://whc.unesco.org/en/list/1066/"
+      },
+      {
+        "title": "UNESCO Historic Centre of Kraków",
+        "url": "https://whc.unesco.org/en/list/29/"
+      },
+      {
+        "title": "UNESCO Historic Centre of Prague",
+        "url": "https://whc.unesco.org/en/list/616/"
+      },
+      {
+        "title": "UNESCO Porticoes of Bologna",
+        "url": "https://whc.unesco.org/en/list/1650/"
+      },
+      {
+        "title": "사그라다 파밀리아 공식 공사 소식",
+        "url": "https://sagradafamilia.org/en/-/la-grua-central-de-la-sagrada-familia-inicia-una-nova-etapa-despres-de-completar-l-exterior-de-la-torre-de-jesucrist?redirect=/en/"
+      },
+      {
+        "title": "UNESCO Acropolis, Athens",
+        "url": "https://whc.unesco.org/en/list/404/"
+      }
     ]
   },
   "standards": [
@@ -55,7 +79,10 @@
     {
       "id": "france",
       "name": "프랑스",
-      "map": { "x": 35, "y": 49 },
+      "map": {
+        "x": 27,
+        "y": 36
+      },
       "accent": "#4d83c5",
       "hook": "강과 시장, 미술관을 만나 봐.",
       "visuals": [
@@ -103,7 +130,10 @@
     {
       "id": "germany",
       "name": "독일",
-      "map": { "x": 53, "y": 31 },
+      "map": {
+        "x": 45,
+        "y": 20
+      },
       "accent": "#7181a5",
       "hook": "강과 도시 이동, 성을 살펴봐.",
       "visuals": [
@@ -151,7 +181,10 @@
     {
       "id": "poland",
       "name": "폴란드",
-      "map": { "x": 70, "y": 31 },
+      "map": {
+        "x": 71,
+        "y": 24
+      },
       "accent": "#d56d7b",
       "hook": "산과 강변, 오래된 광장을 만나 봐.",
       "visuals": [
@@ -199,7 +232,10 @@
     {
       "id": "czechia",
       "name": "체코",
-      "map": { "x": 61, "y": 43 },
+      "map": {
+        "x": 60,
+        "y": 36
+      },
       "accent": "#6b9a79",
       "hook": "강 위 다리와 트램, 광장을 살펴봐.",
       "visuals": [
@@ -247,7 +283,10 @@
     {
       "id": "italy",
       "name": "이탈리아",
-      "map": { "x": 56, "y": 66 },
+      "map": {
+        "x": 45,
+        "y": 58
+      },
       "accent": "#cb7656",
       "hook": "산과 광장, 오래된 경기장을 만나 봐.",
       "visuals": [
@@ -295,7 +334,10 @@
     {
       "id": "spain",
       "name": "스페인",
-      "map": { "x": 24, "y": 72 },
+      "map": {
+        "x": 14,
+        "y": 82
+      },
       "accent": "#dd9a3d",
       "hook": "바닷가와 시장, 독특한 건물을 만나 봐.",
       "visuals": [
@@ -343,7 +385,10 @@
     {
       "id": "greece",
       "name": "그리스",
-      "map": { "x": 76, "y": 75 },
+      "map": {
+        "x": 81,
+        "y": 71
+      },
       "accent": "#4ca5be",
       "hook": "섬과 바닷길, 오래된 언덕을 만나 봐.",
       "visuals": [
@@ -390,14 +435,38 @@
     }
   ],
   "reasonPrompts": [
-    { "id": "scene", "label": "풍경", "prompt": "어떤 모습이 눈에 남았어?" },
-    { "id": "life", "label": "생활", "prompt": "사람들의 어떤 생활이 궁금해?" },
-    { "id": "story", "label": "이야기", "prompt": "무엇을 더 알고 싶어?" }
+    {
+      "id": "scene",
+      "label": "풍경",
+      "prompt": "어떤 모습이 눈에 남았어?"
+    },
+    {
+      "id": "life",
+      "label": "생활",
+      "prompt": "사람들의 어떤 생활이 궁금해?"
+    },
+    {
+      "id": "story",
+      "label": "이야기",
+      "prompt": "무엇을 더 알고 싶어?"
+    }
   ],
   "questionStarters": [
-    { "id": "why", "label": "왜", "text": "이곳에서 사람들은 왜" },
-    { "id": "how", "label": "어떻게", "text": "이곳 사람들은 어떻게" },
-    { "id": "change", "label": "변화", "text": "옛 모습과 오늘 모습은" }
+    {
+      "id": "why",
+      "label": "왜",
+      "text": "이곳에서 사람들은 왜"
+    },
+    {
+      "id": "how",
+      "label": "어떻게",
+      "text": "이곳 사람들은 어떻게"
+    },
+    {
+      "id": "change",
+      "label": "변화",
+      "text": "옛 모습과 오늘 모습은"
+    }
   ],
   "postcard": {
     "title": "유럽 환경 대화 기록",

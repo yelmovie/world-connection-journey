@@ -120,6 +120,8 @@ body, h1, h2, h3, p, button, label, li, span { word-break: keep-all; overflow-wr
 @media (prefers-reduced-motion: reduce) { body::after { animation: none; } }
 :root[data-reduced-motion="true"] body::after { animation: none; }
 
+.aspect-fit { min-width: 0; min-height: 0; display: grid; place-items: center; }
+
 .visually-hidden {
   position: absolute; width: 1px; height: 1px;
   clip-path: inset(50%); overflow: hidden; white-space: nowrap;

@@ -19,6 +19,7 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
+import { fitAspect } from '../ui/aspectBox';
 import { createGuide, type GuideController } from '../ui/guide';
 import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
@@ -204,6 +205,11 @@ const PAGE_CSS = `
 .europe-mission .eu-progress-row { display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:40px;font-size:var(--eu-small);font-weight:800; }
 .europe-mission .eu-progress-row .mark { width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#dfe8ed;color:#527080; }
 .europe-mission .eu-progress-row.is-done .mark { background:#dff2df;color:#277147; }
+/* 아직 안 한 항목에 체크 표시를 보여 주면 아이는 '다 했다'고 읽는다 — 빈 동그라미로 둔다 */
+.europe-mission .eu-progress-row:not(.is-done) .mark { background:transparent;border:3px solid #b9cbd6; }
+.europe-mission .eu-progress-row:not(.is-done) .mark svg { display:none; }
+.europe-mission .eu-progress-row .count { font:900 var(--eu-small) var(--font-head);color:#527080; }
+.europe-mission .eu-progress-row.is-done .count { color:#277147; }
 .europe-mission .eu-progress-row svg { width:18px;height:18px; }
 .europe-mission .eu-bag-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:auto; }
 .europe-mission .eu-bag-thumb { aspect-ratio:1;border:2px solid #fff;border-radius:12px;overflow:hidden;background:#dce7e9;box-shadow:0 3px 8px rgba(25,50,77,.18); }
@@ -238,10 +244,10 @@ const PAGE_CSS = `
 .europe-mission .eu-gallery-tabs { display:flex;gap:7px;flex-wrap:wrap; }
 .europe-mission .eu-gallery-tab { min-height:48px;padding:8px 15px;border:2px solid #b8c7cf;border-radius:999px;background:#fff;font:850 var(--eu-small)/1 var(--font-body);cursor:pointer; }
 .europe-mission .eu-gallery-tab[aria-pressed="true"] { background:#4e3db3;color:#fff;border-color:#4e3db3; }
-.europe-mission .eu-gallery-grid { flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;align-content:start; }
+.europe-mission .eu-gallery-grid { flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));grid-auto-rows:max-content;gap:11px;align-content:start; }
 .europe-mission .eu-gallery-card { min-width:0;padding:0;border:4px solid transparent;border-radius:18px;background:#fff;overflow:hidden;text-align:left;box-shadow:0 5px 13px rgba(25,50,77,.18);cursor:pointer; }
 .europe-mission .eu-gallery-card[aria-pressed="true"] { border-color:#efb92f;box-shadow:0 0 0 3px rgba(239,185,47,.28); }
-.europe-mission .eu-gallery-card img { width:100%;height:clamp(128px,20vh,210px);object-fit:cover;display:block;background:#dbe7e8; }
+.europe-mission .eu-gallery-card img { width:100%;height:clamp(80px,10.5vh,150px);object-fit:cover;display:block;background:#dbe7e8; }
 .europe-mission .eu-gallery-card img.is-object { object-fit:contain;padding:12px; }
 .europe-mission .eu-card-copy { padding:9px 12px 12px;display:grid;gap:4px; }
 .europe-mission .eu-card-copy strong { font:900 var(--eu-copy)/1.15 var(--font-head); }.europe-mission .eu-card-copy span { font-size:var(--eu-small);font-weight:750;line-height:1.3; }
@@ -348,6 +354,7 @@ export function createPage(): Page {
   let disposed = false;
   let guide: GuideController | null = null;
   let saveTimer: number | null = null;
+  let stopMapFit: (() => void) | null = null;
 
   return {
     async mount(root: HTMLElement) {
@@ -361,7 +368,8 @@ export function createPage(): Page {
       const shapes = content.countries.map((country) => ({ id: country.id, visualIds: country.visuals.map((visual) => visual.id) }));
       let state = normalizeEuropeProgress(saveRepo.get().missions.europe.data, shapes);
       let finished = saveRepo.get().missions.europe.status === 'completed';
-      let galleryFilterId: string | null = state.selectedCountryId;
+      // '공통점 찾기' 화면이므로 기본은 모아 보기 — 한 나라씩만 보이면 비교가 안 된다
+      let galleryFilterId: string = state.selectedCountryId ?? 'all';
       const playerSpeaker = selectedAvatarSpeaker(saveRepo.get().profile);
 
       void preloadImages([
@@ -502,15 +510,20 @@ export function createPage(): Page {
             <aside class="eu-board eu-bag" aria-label="문화 탐험 진행">
               <div class="eu-bag-title">${ICON.eye}<span>문화 탐험 기록</span></div>
               <div class="eu-progress-list">
-                <div class="eu-progress-row ${progress.readyCountryCount >= content.requirements.minCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>나라 살펴보기</span></div>
-                <div class="eu-progress-row ${progress.savedVisualCount >= content.requirements.minSavedVisuals ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>여행가 만나기</span></div>
-                <div class="eu-progress-row ${progress.savedCountryCount >= content.requirements.minSavedCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>친구 이야기 듣기</span></div>
+                <div class="eu-progress-row ${progress.readyCountryCount >= content.requirements.minCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>나라 살펴보기</span><span class="count">${Math.min(progress.readyCountryCount, content.requirements.minCountries)} / ${content.requirements.minCountries}</span></div>
+                <div class="eu-progress-row ${progress.savedVisualCount >= content.requirements.minSavedVisuals ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>여행가 만나기</span><span class="count">${Math.min(progress.savedVisualCount, content.requirements.minSavedVisuals)} / ${content.requirements.minSavedVisuals}</span></div>
+                <div class="eu-progress-row ${progress.savedCountryCount >= content.requirements.minSavedCountries ? 'is-done' : ''}"><span class="mark">${ICON.check}</span><span>친구 이야기 듣기</span><span class="count">${Math.min(progress.savedCountryCount, content.requirements.minSavedCountries)} / ${content.requirements.minSavedCountries}</span></div>
               </div>
               ${savedThumbs ? `<div class="eu-bag-grid">${savedThumbs}</div>` : '<div class="eu-empty">사진을 살펴본 뒤 여행가와 이야기해 봐</div>'}
             </aside>
           </div>
         </section>`);
         body.replaceChildren(screen);
+        const mapEl = screen.querySelector<HTMLElement>('.eu-map');
+        if (mapEl) {
+          stopMapFit?.();
+          stopMapFit = fitAspect(mapEl);
+        }
         screen.querySelectorAll<HTMLButtonElement>('[data-country]').forEach((countryButton) => {
           countryButton.addEventListener('click', () => {
             const country = countryById.get(countryButton.dataset.country ?? '');
@@ -602,9 +615,13 @@ export function createPage(): Page {
 
       const renderGallery = (): void => {
         const savedCountries = content.countries.filter((country) => country.visuals.some((visual) => state.savedVisualIds.includes(visual.id)));
-        if (!galleryFilterId || !savedCountries.some((country) => country.id === galleryFilterId)) galleryFilterId = savedCountries[0]?.id ?? null;
-        const tabs = savedCountries.map((country) => `<button type="button" class="eu-gallery-tab" data-filter="${country.id}" aria-pressed="${country.id === galleryFilterId}">${esc(country.name)}</button>`).join('');
-        const filtered = savedCountries.find((country) => country.id === galleryFilterId)?.visuals.filter((visual) => state.savedVisualIds.includes(visual.id)) ?? [];
+        if (galleryFilterId !== 'all' && !savedCountries.some((country) => country.id === galleryFilterId)) galleryFilterId = 'all';
+        const tabs = [
+          `<button type="button" class="eu-gallery-tab" data-filter="all" aria-pressed="${galleryFilterId === 'all'}">모두 보기</button>`,
+          ...savedCountries.map((country) => `<button type="button" class="eu-gallery-tab" data-filter="${country.id}" aria-pressed="${country.id === galleryFilterId}">${esc(country.name)}</button>`)
+        ].join('');
+        const filtered = (galleryFilterId === 'all' ? savedCountries : savedCountries.filter((country) => country.id === galleryFilterId))
+          .flatMap((country) => country.visuals.filter((visual) => state.savedVisualIds.includes(visual.id)));
         const cards = filtered.map((visual) => `<button type="button" class="eu-gallery-card" data-pick="${visual.id}" aria-pressed="${visual.id === state.selectedEvidenceId}">
           <img class="${imageClass(visual)}" src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}" data-asset-id="${visual.imageId}">
           <span class="eu-card-copy"><strong>${esc(visual.title)}</strong><span>${esc(visual.lookFor)}</span></span>
@@ -619,7 +636,7 @@ export function createPage(): Page {
         body.replaceChildren(screen);
         screen.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((tab) => {
           tab.addEventListener('click', () => {
-            galleryFilterId = tab.dataset.filter ?? null;
+            galleryFilterId = tab.dataset.filter ?? 'all';
             renderGallery();
           });
         });
@@ -829,6 +846,7 @@ export function createPage(): Page {
       };
 
       const render = (): void => {
+        if (state.screen !== 'map') { stopMapFit?.(); stopMapFit = null; }
         const progress = statusNow();
         const guarded = guardEuropeScreen(state, progress);
         if (guarded !== state.screen) {
@@ -849,6 +867,8 @@ export function createPage(): Page {
 
     unmount() {
       disposed = true;
+      stopMapFit?.();
+      stopMapFit = null;
       if (saveTimer !== null) window.clearTimeout(saveTimer);
       guide?.dispose();
       guide = null;

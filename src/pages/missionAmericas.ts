@@ -14,6 +14,7 @@ import { createGuide, type GuideController } from '../ui/guide';
 import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
+import { fitAspect } from '../ui/aspectBox';
 
 /* ================= 콘텐츠 타입 ================= */
 
@@ -155,7 +156,7 @@ const PAGE_CSS = `
 
 /* ---- 대륙 지도 ---- */
 .exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(330px,.78fr); gap:var(--sp-3); }
-.exp-map-fit { min-width:0; min-height:0; display:grid; place-items:center; }
+.exp-map-fit { min-width:0; min-height:0; display:grid; }
 .exp-wrap > .exp-map-fit, .am-stage > .exp-map-fit { min-height:0; }
 .am-stage > .exp-map-fit { flex:1; }
 .exp-map { position:relative; border-radius:24px; overflow:hidden; background:linear-gradient(180deg,#3f9fd4,#1c72ad); border:3px solid rgba(255,255,255,.7); box-shadow:var(--shadow-card); touch-action:none; }
@@ -341,8 +342,8 @@ export function createPage(): Page {
   let disposed = false;
   let guide: GuideController | null = null;
   let dnd: PickPlaceController | null = null;
-  const mapFits = new Set<ResizeObserver>();
-  const clearMapFits = (): void => { mapFits.forEach((o) => o.disconnect()); mapFits.clear(); };
+  const mapFits = new Set<() => void>();
+  const clearMapFits = (): void => { mapFits.forEach((stop) => stop()); mapFits.clear(); };
   const timers = new Set<number>();
   const later = (fn: () => void, ms: number): number => {
     const id = window.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, ms);
@@ -439,21 +440,11 @@ export function createPage(): Page {
          그림 위 실제 위치와 일치한다(contain 레터박스가 생기면 전부 어긋난다). */
       const fitMap = (map: HTMLElement): HTMLElement => {
         clearMapFits();
-        const box = document.createElement('div');
-        box.className = 'exp-map-fit';
-        box.appendChild(map);
-        const apply = (): void => {
-          const { width, height } = box.getBoundingClientRect();
-          if (width < 8 || height < 8) return;
-          const w = Math.min(width, height * (16 / 9));
-          map.style.width = `${Math.round(w)}px`;
-          map.style.height = `${Math.round(w * (9 / 16))}px`;
-        };
-        const ro = new ResizeObserver(apply);
-        ro.observe(box);
-        mapFits.add(ro);
-        apply();
-        return box;
+        const holder = document.createElement('div');
+        holder.className = 'exp-map-fit';
+        holder.appendChild(map);
+        mapFits.add(fitAspect(map));
+        return holder;
       };
 
       const buildMap = (): HTMLElement => {
