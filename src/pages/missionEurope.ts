@@ -17,6 +17,7 @@ import { computeScore } from '../core/scoring';
 import type { EuropeMissionProgress, EuropeMissionScreen } from '../types';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
+import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
 import { fitAspect } from '../ui/aspectBox';
@@ -184,8 +185,8 @@ const PAGE_CSS = `
   min-width:0;min-height:0;border:2px solid rgba(255,255,255,.92);border-radius:24px;
   background:#f7f2df;box-shadow:0 14px 34px rgba(8,25,45,.34);color:var(--c-ink);overflow:hidden;
 }
-.europe-mission .eu-map-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
-.europe-mission .eu-map { position:relative;min-height:390px;background:#12496e;touch-action:none;overflow:hidden; }
+.europe-mission .eu-map-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
+.europe-mission .eu-map { position:relative;min-height:min(390px,58vh);background:#12496e;touch-action:none;overflow:hidden; }
 /* 확대·이동은 이 층에만 건다 — 표식이 지도와 함께 움직여야 위치가 어긋나지 않는다 */
 .europe-mission .eu-map-layer {
   position:absolute;inset:0;transform-origin:50% 50%;transition:transform .12s ease-out;background:
@@ -202,7 +203,7 @@ const PAGE_CSS = `
 .europe-mission .eu-country::after { content:"";position:absolute;left:50%;bottom:-10px;translate:-50% 0;border:7px solid transparent;border-top-color:#fff;border-bottom:0; }
 .europe-mission .eu-country:hover,.europe-mission .eu-country:focus-visible { scale:1.06; }
 .europe-mission .eu-country.is-ready { box-shadow:0 0 0 5px #f3c758,0 7px 16px rgba(8,24,42,.44); }
-.europe-mission .eu-country small { display:block;margin-top:4px;font:800 14px/1 var(--font-body); }
+.europe-mission .eu-country small { display:block;margin-top:4px;font:800 15px/1 var(--font-body); }
 .europe-mission .eu-bag { padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto; }
 .europe-mission .eu-bag-title { display:flex;align-items:center;gap:9px;font:900 var(--eu-copy)/1.15 var(--font-head); }
 .europe-mission svg { width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round; }
@@ -220,8 +221,8 @@ const PAGE_CSS = `
 .europe-mission .eu-bag-thumb { aspect-ratio:1;border:2px solid #fff;border-radius:12px;overflow:hidden;background:#dce7e9;box-shadow:0 3px 8px rgba(25,50,77,.18); }
 .europe-mission .eu-bag-thumb img { width:100%;height:100%;object-fit:cover; }
 .europe-mission .eu-empty { padding:13px;border:2px dashed #aab7bd;border-radius:14px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35;text-align:center; }
-.europe-mission .eu-window-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,24vw,360px);border-radius:26px; }
-.europe-mission .eu-stage { position:relative;min-height:390px;background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
+.europe-mission .eu-window-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,24vw,360px);border-radius:26px; }
+.europe-mission .eu-stage { position:relative;min-height:min(390px,58vh);background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
 .europe-mission .eu-stage > img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }
 .europe-mission .eu-stage > img.is-object { object-fit:contain;padding:5%;background:linear-gradient(145deg,#d8f0f1,#b5d5df); }
 .europe-mission .eu-stage-shade { position:absolute;inset:auto 0 0;padding:60px 20px 17px;background:linear-gradient(transparent,rgba(7,24,42,.84));color:#fff; }
@@ -245,8 +246,7 @@ const PAGE_CSS = `
 .europe-mission .eu-thumb img { width:100%;height:68px;object-fit:cover;display:block; }.europe-mission .eu-thumb img.is-object { object-fit:contain;padding:6px; }
 .europe-mission .eu-traveler-slot { margin-top:auto;padding:12px;border:2px solid #e4c064;border-radius:18px;background:#fff9e7;box-shadow:0 6px 15px rgba(43,55,74,.13); }
 .europe-mission .eu-traveler-slot .btn { width:100%;min-height:54px;border-radius:14px;font-size:var(--eu-small); }
-.europe-mission .eu-art-note { font-size:15px!important;color:#52657e; }
-.europe-mission .eu-gallery { flex:1;min-height:390px;padding:14px;display:flex;flex-direction:column;gap:10px; }
+.europe-mission .eu-gallery { flex:1;min-height:min(390px,58vh);padding:14px;display:flex;flex-direction:column;gap:10px; }
 .europe-mission .eu-gallery-tabs { display:flex;gap:7px;flex-wrap:wrap; }
 .europe-mission .eu-gallery-tab { min-height:48px;padding:8px 15px;border:2px solid #b8c7cf;border-radius:999px;background:#fff;font:850 var(--eu-small)/1 var(--font-body);cursor:pointer; }
 .europe-mission .eu-gallery-tab[aria-pressed="true"] { background:#4e3db3;color:#fff;border-color:#4e3db3; }
@@ -257,8 +257,8 @@ const PAGE_CSS = `
 .europe-mission .eu-gallery-card img.is-object { object-fit:contain;padding:12px; }
 .europe-mission .eu-card-copy { padding:9px 12px 12px;display:grid;gap:4px; }
 .europe-mission .eu-card-copy strong { font:900 var(--eu-copy)/1.15 var(--font-head); }.europe-mission .eu-card-copy span { font-size:var(--eu-small);font-weight:750;line-height:1.3; }
-.europe-mission .eu-form-layout { flex:1;min-height:390px;display:grid;grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr); }
-.europe-mission .eu-evidence { position:relative;min-height:390px;background:#dce8e8;overflow:hidden; }
+.europe-mission .eu-form-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr); }
+.europe-mission .eu-evidence { position:relative;min-height:min(390px,58vh);background:#dce8e8;overflow:hidden; }
 .europe-mission .eu-evidence img { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }.europe-mission .eu-evidence img.is-object { object-fit:contain;padding:8%; }
 .europe-mission .eu-evidence-caption { position:absolute;inset:auto 0 0;padding:52px 18px 16px;background:linear-gradient(transparent,rgba(7,24,42,.88));color:#fff; }
 .europe-mission .eu-evidence-caption strong { font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-evidence-caption span { display:block;margin-top:4px;font-size:var(--eu-small);font-weight:800; }
@@ -273,7 +273,7 @@ const PAGE_CSS = `
 .europe-mission .eu-count { align-self:flex-end;color:#52657e;font-size:var(--eu-small);font-weight:800; }
 .europe-mission .eu-question-preview { padding:14px 16px;border:3px solid #efbd45;border-radius:16px;background:#fffaf0;font-size:var(--eu-copy);font-weight:900;line-height:1.45; }
 .europe-mission .eu-question-preview span { color:#5c43c3; }
-.europe-mission .eu-postcard-wrap { flex:1;min-height:390px;display:grid;place-items:center;padding:12px; }
+.europe-mission .eu-postcard-wrap { flex:1;min-height:min(390px,58vh);display:grid;place-items:center;padding:12px; }
 .europe-mission .eu-postcard { width:min(100%,980px);min-height:370px;display:grid;grid-template-columns:1fr 1fr;border:10px solid #fff;border-radius:28px;background:#fff8df;box-shadow:0 14px 30px rgba(21,41,62,.25);overflow:hidden; }
 .europe-mission .eu-postcard-photo { position:relative;min-height:360px;background:#d7e7e8; }.europe-mission .eu-postcard-photo img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }.europe-mission .eu-postcard-photo img.is-object { object-fit:contain;padding:8%; }
 .europe-mission .eu-postcard-copy { padding:clamp(18px,2.5vw,32px);display:flex;flex-direction:column;gap:12px;background:radial-gradient(circle at 90% 10%,#d9eff0 0 13%,transparent 14%),#fff8df; }
@@ -322,15 +322,15 @@ const PAGE_CSS = `
   #overlay-root .modal:has(.eu-culture-detail) { width:min(700px,calc(100vw - 28px));overflow:hidden; }
 }
 @media (max-width:520px) {
-  .europe-mission .eu-country { min-width:58px;min-height:48px;padding:5px 6px;border-width:2px;border-radius:13px;font-size:13px; }
-  .europe-mission .eu-country small { margin-top:2px;font-size:12px; }
+  .europe-mission .eu-country { min-width:58px;min-height:48px;padding:5px 6px;border-width:2px;border-radius:13px;font-size:14px; }
+  .europe-mission .eu-country small { margin-top:2px;font-size:14px; }
   .europe-mission .eu-gallery-grid { grid-template-columns:1fr; }
 }
 @media (max-height:650px) {
   .europe-mission .page-body { padding-block:5px; }
   .europe-mission .eu-heading p { display:none; }
-  .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:390px; }
-  .europe-mission .eu-gallery { min-height:390px; }
+  .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:min(390px,58vh); }
+  .europe-mission .eu-gallery { min-height:min(390px,58vh); }
   .europe-mission .eu-window-panel { padding:11px;gap:7px; }
   .europe-mission textarea { min-height:96px; }
 }
@@ -849,7 +849,11 @@ export function createPage(): Page {
         }, { evidence: 30, perspective: 25, communication: 25, revision: 15 }, 5);
         burstConfetti(buttonEl);
         recordEarthSignals('europe', pair ? [`${pair.country.name} · ${pair.visual.title}`] : []);
-        completeMissionFlow('europe', '유럽', result);
+        // 배움 카드 정리(예상/발견 비교) 뒤에 완료 연출로 넘어간다 — 아메리카 finish와 같은 패턴
+        const doComplete = (): void => { completeMissionFlow('europe', '유럽', result); };
+        const learn = getLearn(content);
+        if (learn) showLearningWrap('europe', learn, doComplete);
+        else doComplete();
       };
 
       const renderPostcard = (): void => {

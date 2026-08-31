@@ -141,27 +141,27 @@ const PAGE_CSS = `
 .regional-map::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(2,42,70,.05),rgba(2,42,70,.28));pointer-events:none}
 .regional-map-note{position:absolute;z-index:2;left:18px;bottom:18px;max-width:min(520px,72%);padding:10px 14px;border-radius:16px;background:rgba(255,253,246,.92);font-weight:800;line-height:1.4}
 .regional-pin{position:absolute;z-index:3;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:104px;min-height:62px;padding:7px 12px;border:3px solid #fff;border-radius:22px;background:var(--pin);color:#fff;font:800 18px/1.1 var(--font-head);box-shadow:0 7px 0 rgba(7,38,62,.28),0 12px 25px rgba(5,30,50,.28)}
-.regional-pin small{display:block;margin-top:4px;font:700 13px/1.1 var(--font-body)}
+.regional-pin small{display:block;margin-top:4px;font:700 15px/1.1 var(--font-body)}
 .regional-pin.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-pin.is-visited::after{content:"✓";position:absolute;right:-8px;top:-10px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#1b9b68;border:2px solid #fff}
 .regional-country-shortcut{position:absolute;z-index:4;left:84%;top:52%;transform:translate(-50%,-50%);padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
-.regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 12px/1.1 var(--font-body)}
+.regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 14px/1.1 var(--font-body)}
 .regional-country-shortcut.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-side{padding:18px;background:rgba(255,253,247,.96);display:flex;flex-direction:column;gap:12px;min-height:0}
 .regional-side h2,.regional-connections h2{font-family:var(--font-head);font-size:clamp(25px,2.2vw,34px);color:var(--c-navy)}
 .regional-side p{line-height:1.5}
 .regional-example-list{display:grid;gap:8px;max-height:210px;overflow:auto;padding:2px}
 .regional-example{justify-content:flex-start;text-align:left;min-height:58px;padding:9px 13px;border-radius:16px}
-.regional-example span{display:block;font:700 14px/1.3 var(--font-body);color:var(--c-ink-soft)}
+.regional-example span{display:block;font:700 16px/1.3 var(--font-body);color:var(--c-ink-soft)}
 .regional-photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .regional-photo{position:relative;min-width:0;padding:0;overflow:hidden;border:2px solid transparent;border-radius:18px;background:#d9edf2;box-shadow:var(--shadow-card);cursor:pointer}
 .regional-photo img{width:100%;aspect-ratio:4/3;display:block;object-fit:cover}
-.regional-photo strong{display:block;padding:8px 7px;font-size:14px;line-height:1.25}
+.regional-photo strong{display:block;padding:8px 7px;font-size:16px;line-height:1.25}
 .regional-photo.is-viewed{border-color:var(--c-success)}
 .regional-photo.is-viewed::after{content:"✓";position:absolute;right:7px;top:7px;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:var(--c-success);color:#fff;font-weight:900}
 .regional-source{padding-top:10px;border-top:1px solid var(--c-line);font-size:14px;line-height:1.4}
 .regional-source a{color:#165ca9;font-weight:800}
-.regional-dock{background:rgba(10,42,68,.9);align-items:center}
+.regional-dock{background:rgba(10,42,68,.94);align-items:center}
 .regional-dock [data-next]{margin-left:auto}
 .regional-connections{grid-column:1/-1;padding:18px;background:rgba(255,253,247,.97);overflow:auto}
 .regional-connection-layout{display:grid;grid-template-columns:1.12fr .88fr;gap:16px}
@@ -172,7 +172,7 @@ const PAGE_CSS = `
 .regional-choice img{width:54px;height:64px;object-fit:contain}
 .regional-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .regional-action{text-align:left;padding:10px;border-radius:16px;min-height:66px}
-.regional-media-note{font-size:13px;color:var(--c-ink-soft);font-weight:700}
+.regional-media-note{font-size:15px;color:var(--c-ink-soft);font-weight:700}
 .regional-info{align-self:start;min-height:48px;padding:8px 16px;border-radius:999px;font-size:16px}
 .regional-goals{margin-top:auto;display:grid;gap:7px;padding-top:12px;border-top:1px solid var(--c-line)}
 .regional-goal{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:42px;font-weight:850;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
@@ -185,18 +185,23 @@ const PAGE_CSS = `
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
 .regional-modal-visual .regional-after{position:absolute;inset:0}
 .regional-wipe-bar{position:absolute;top:0;bottom:0;width:4px;transform:translateX(-50%);background:#fff;box-shadow:0 0 8px #0008;pointer-events:none}
-.regional-wipe-bar::after{content:'94';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#173b53;font-size:20px;font-weight:900;box-shadow:0 4px 12px #0006}
+.regional-wipe-bar::after{content:'↔';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#173b53;font-size:20px;font-weight:900;box-shadow:0 4px 12px #0006}
 .regional-wipe-tag{position:absolute;top:10px;padding:3px 12px;border-radius:999px;font:900 14px var(--font-head);color:#fff;background:rgba(10,35,58,.75);pointer-events:none}
 .regional-wipe-tag.is-before{left:10px}
 .regional-wipe-tag.is-after{right:10px}
 .regional-wipe{position:absolute;left:0;right:0;bottom:8px;width:calc(100% - 20px);margin:0 10px;height:44px;opacity:.92;accent-color:#f2c14e}
 .regional-wipe-hint{padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font-weight:900;color:#5b430a;font-size:max(15px,var(--fs-small))}
-.regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:27px;height:27px;border-radius:50%;border:3px solid #fff;background:var(--c-gold);box-shadow:0 0 0 4px rgba(24,70,103,.45)}
+.regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:32px;height:32px;padding:0;border-radius:50%;border:3px solid #fff;background:var(--c-gold);box-shadow:0 0 0 4px rgba(24,70,103,.45);cursor:pointer}
+.regional-hotspot:not(.is-found){animation:regional-ping 1.4s ease-out infinite}
+@keyframes regional-ping{0%{box-shadow:0 0 0 4px rgba(255,203,67,.75)}100%{box-shadow:0 0 0 16px rgba(255,203,67,0)}}
+.regional-hotspot.is-found{background:var(--c-success);cursor:default}
+.regional-hotspot-label{position:absolute;left:50%;top:100%;transform:translate(-50%,7px);white-space:nowrap;background:rgba(255,253,246,.96);color:#173b53;border-radius:999px;padding:4px 11px;font:800 14px/1.2 var(--font-body);box-shadow:0 4px 10px rgba(0,0,0,.35);pointer-events:none}
+.regional-discovery.is-lit{outline:3px solid var(--c-turquoise);outline-offset:2px}
 .regional-modal-copy{display:grid;gap:10px;align-content:start;font-size:18px;line-height:1.55}
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
 .modal:has(.regional-modal){width:min(900px,94vw);border-radius:28px;overflow:hidden}
-@media(max-width:900px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-map{min-height:520px;aspect-ratio:auto;background-size:cover}.regional-photo-grid{grid-template-columns:repeat(2,1fr)}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:260px}}
-@media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:15px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:12px}}
+@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-map{min-height:520px;aspect-ratio:auto;background-size:cover}.regional-photo-grid{grid-template-columns:repeat(2,1fr)}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:260px}}
+@media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:15px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:14px}}
 `;
 
 function esc(value: string): string {
@@ -314,37 +319,62 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       const finishReady = () => teacherUnlocked || (state.discoveredSignalIds.length >= model.requirements.minSignals && state.listenedPerspectiveIds.length >= 2 && state.selectedActionIds.length >= 3 && chosenTierCount() >= 2);
 
       const openScene = (scene: Scene) => {
-        add(state.viewedSceneIds, scene.id);
         const example = model.examples.find((item) => item.id === scene.exampleId);
-        persist();
-        render();
         const modalBody = document.createElement('div');
         modalBody.className = 'regional-modal';
+        /** 핫스팟이 있는 장면은 점을 하나 이상 탭해야 '본 것'으로 기록한다 — 열자마자 닫는 클릭 러시 방지. */
+        const markViewed = () => {
+          if (state.viewedSceneIds.includes(scene.id)) return;
+          add(state.viewedSceneIds, scene.id);
+          void audio.playSfx('success');
+          const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
+          if (hint) hint.textContent = '✓ 발견을 기록했어!';
+          modalBody.querySelector<HTMLElement>('.regional-discovery')?.classList.add('is-lit');
+          persist();
+          render();
+        };
+        if (scene.hotspots.length === 0) markViewed();
+        const viewed = state.viewedSceneIds.includes(scene.id);
         modalBody.innerHTML = `
           <div class="regional-modal-visual">
             <img src="${imageFor(model, scene.assetId)}" alt="${esc(scene.title)} 학습용 재현 이미지">
-            ${scene.hotspots.map((spot) => `<span class="regional-hotspot" style="--x:${spot.x}%;--y:${spot.y}%" title="${esc(spot.label)}" aria-label="${esc(spot.label)}"></span>`).join('')}
+            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot aria-label="${esc(spot.label)}"></button>`).join('')}
           </div>
           <div class="regional-modal-copy">
             <span class="chip">${esc(scene.categoryLabel)}</span>
             <h3>${esc(scene.title)}</h3>
+            ${scene.hotspots.length ? `<p class="regional-wipe-hint" data-scene-hint>${viewed ? '✓ 발견을 기록했어!' : '사진 속 반짝이는 점을 눌러 봐!'}</p>` : ''}
             <p>${esc(scene.detail)}</p>
             <p class="regional-discovery">발견: ${esc(scene.discovery)}</p>
             <p>${esc(scene.category === 'landmark' && example ? `${scene.title}은 ${example.country} 안의 특정 장소 사례이며, 이 한 장면이 나라 전체의 모습을 대표하지는 않아.` : example?.scope ?? '')}</p>
             <p class="regional-media-note">실제 현장 사진이 아닌 학습용 재현 이미지야. 사람·배치·날씨는 사실 근거로 쓰지 않아.</p>
             ${scene.sourceUrl || example ? `<a href="${esc(scene.sourceUrl ?? example!.sourceUrl)}" target="_blank" rel="noreferrer">공식·공공 출처: ${esc(scene.sourceTitle ?? example!.sourceTitle)}</a>` : ''}
           </div>`;
+        modalBody.querySelectorAll<HTMLElement>('[data-hotspot]').forEach((spot) => spot.addEventListener('click', () => {
+          spot.classList.add('is-found');
+          spot.innerHTML = `<span class="regional-hotspot-label">${esc(spot.getAttribute('aria-label') ?? '')}</span>`;
+          markViewed();
+        }));
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
       };
 
       const openSignal = (signal: Signal) => {
-        add(state.discoveredSignalIds, signal.id);
-        persist();
-        render();
         const modalBody = document.createElement('div');
         modalBody.className = 'regional-modal';
         const hasBefore = hasAsset(signal.beforeAssetId) && hasAsset(signal.afterAssetId);
+        /** 비교 슬라이더를 충분히(누적 70 이상) 밀어야 신호가 기록된다 — 비교 자산이 없는 신호는 열람 즉시. */
+        const markDiscovered = () => {
+          if (state.discoveredSignalIds.includes(signal.id)) return;
+          add(state.discoveredSignalIds, signal.id);
+          void audio.playSfx('success');
+          const hint = modalBody.querySelector<HTMLElement>('[data-signal-hint]');
+          if (hint) hint.textContent = '✓ 신호를 기록했어!';
+          persist();
+          render();
+        };
+        if (!hasBefore) markDiscovered();
+        const discovered = state.discoveredSignalIds.includes(signal.id);
         modalBody.innerHTML = `
           <div class="regional-modal-visual">
             <img src="${imageFor(model, signal.beforeAssetId)}" alt="">
@@ -354,15 +384,20 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             <input class="regional-wipe" type="range" min="0" max="100" value="50" aria-label="지금과 달라진 모습을 밀어서 비교하기">` : ''}
           </div>
           <div class="regional-modal-copy"><span class="chip">이어진 환경 신호</span><h3>${esc(signal.title)}</h3>
-            ${hasBefore ? '<p class="regional-wipe-hint">손잡이를 밀어 두 모습을 비교해 봐!</p>' : ''}
+            ${hasBefore ? `<p class="regional-wipe-hint" data-signal-hint>${discovered ? '✓ 신호를 기록했어!' : '손잡이를 밀어서 두 모습을 비교하면 신호가 기록돼!'}</p>` : ''}
             <p>${esc(signal.prompt)}</p><p class="regional-discovery">${esc(signal.connection)}</p><p class="regional-media-note">장면은 변화를 비교하는 학습용 재현 이미지이며 실제 미래를 예측하지 않아.</p><a href="${esc(signal.sourceUrl)}" target="_blank" rel="noreferrer">출처: ${esc(signal.sourceTitle)}</a></div>`;
         const wipe = modalBody.querySelector<HTMLInputElement>('.regional-wipe');
         const after = modalBody.querySelector<HTMLElement>('.regional-after');
         const wipeBar = modalBody.querySelector<HTMLElement>('.regional-wipe-bar');
+        let traveled = 0;
+        let lastValue = wipe ? Number(wipe.value) : 50;
         wipe?.addEventListener('input', () => {
           const v = Number(wipe.value);
+          traveled += Math.abs(v - lastValue);
+          lastValue = v;
           if (after) after.style.clipPath = `inset(0 0 0 ${v}%)`;
           if (wipeBar) wipeBar.style.left = `${v}%`;
+          if (traveled >= 70) markDiscovered();
         });
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-signal`, title: signal.title, bodyEl: modalBody, actions: [] });

@@ -1,3 +1,7 @@
+/**
+ * @deprecated — 실제 아시아·오세아니아 로직은 src/pages/connectedRegionMission.ts.
+ * 이 파일은 어디서도 import되지 않는 사용되지 않는 코드다(구버전 저장 데이터 asiaProgress/oceaniaProgress 형식의 참고용으로만 보존).
+ */
 import type { OceaniaMissionProgress, OceaniaMissionScreen } from '../types';
 
 const SCREENS: readonly OceaniaMissionScreen[] = [

@@ -191,7 +191,7 @@ const MAP_CSS = `
 .map-hotspot[data-state="completed"] .node-img { box-shadow:0 0 0 5px rgba(46,173,120,.85),0 0 0 9px rgba(46,173,120,.28),var(--shadow-card); }
 .map-hotspot[data-state="completed"]::after { content:'완료!'; position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);padding:3px 14px;border-radius:999px;background:var(--c-success);color:#fff;font:900 15px/1.2 var(--font-head);border:2px solid #fff;box-shadow:var(--shadow-card);white-space:nowrap;z-index:4; }
 /* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
-.map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap; }
+.map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis; }
 .map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
 /* 완료 노드의 배움 카드 획득 칩 */
 .map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
@@ -201,8 +201,8 @@ const MAP_CSS = `
 .map-bag strong { display:block;font-family:var(--font-head);font-size:max(17px,var(--fs-small));color:var(--c-navy); }
 .map-bag ul { margin:6px 0 0;padding:0;list-style:none;display:grid;gap:4px; }
 .map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(15px,var(--fs-small));font-weight:800;color:var(--c-ink); }
-.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:13px;font-weight:900; }
-.map-bag__more { color:var(--c-ink-soft);font-size:13px;font-weight:750; }
+.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:14px;font-weight:900; }
+.map-bag__more { color:var(--c-ink-soft);font-size:14px;font-weight:750; }
 .map-brief {
   position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
   height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
@@ -223,13 +223,7 @@ const MAP_CSS = `
 .map-brief__flow strong { font-size:max(16px,var(--fs-small)); }
 .map-brief__flow .mission-brief__steps { font-size:max(16px,var(--fs-small));line-height:1.35; }
 .map-brief__locked { margin:0;padding:9px 11px;border-radius:12px;background:rgba(242,193,78,.2);border:2px solid rgba(199,166,77,.55);font-weight:850;line-height:1.35; }
-.map-brief .btn-primary { min-height:60px;position:relative;overflow:visible; }
-.map-brief .btn-primary:not(:disabled)::before {
-  /* 패널이 overflow-x:hidden이라 버튼 밖에 두면 잘린다 — 버튼 안쪽 왼편에 배치 */
-  content:'☝';position:absolute;left:10px;top:50%;transform:translate(0,-50%) rotate(-18deg);
-  font-size:26px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.28));animation:map-point 1.15s ease-in-out infinite;
-}
-@keyframes map-point { 0%,100%{transform:translate(0,-45%) rotate(-18deg)}50%{transform:translate(0,-62%) rotate(-18deg)} }
+.map-brief .btn-primary { min-height:60px; }
 .map-brief__actions { display:grid;gap:var(--sp-2);margin-top:auto; }
 .map-teacher-mode {
   display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:12px;

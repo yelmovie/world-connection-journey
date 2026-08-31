@@ -194,7 +194,7 @@ const DIALOGUE_CSS = `
 .dl-side-btn { display: inline-flex; min-height: 52px; font-size: var(--dl-label); }
 .dl-bag-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
 .dl-bag-list li { display: flex; gap: 9px; align-items: baseline; font-size: var(--dl-copy); font-weight: 800; }
-.dl-bag-list em { flex: 0 0 auto; padding: 2px 10px; border-radius: 999px; background: #e8f2fb; color: #1c5a8c; font-style: normal; font-size: 14px; font-weight: 900; }
+.dl-bag-list em { flex: 0 0 auto; padding: 2px 10px; border-radius: 999px; background: #e8f2fb; color: #1c5a8c; font-style: normal; font-size: 15px; font-weight: 900; }
 
 /* 안내선·진행 띠보다 캐릭터와 활동이 먼저 보이게 한다. */
 .dialogue-scene > .bottom-bar {

@@ -233,9 +233,9 @@ const PAGE_CSS = `
 .stop-node.is-seen { background:#147b63; }
 .stop-node.is-next { animation:lensPing 1.4s ease-out infinite; background:#e2842d; }
 .voyage-rail { position:absolute; left:10%; right:10%; bottom:14px; z-index:5; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; background:#fffdf2ee; box-shadow:var(--shadow-card); }
-.voyage-rail span { font:900 15px var(--font-head); color:#17506e; white-space:nowrap; }
+.voyage-rail span { font:900 16px var(--font-head); color:#17506e; white-space:nowrap; }
 .voyage-rail input { flex:1; min-width:0; height:34px; accent-color:#e2842d; }
-.voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-30px; transform:translateX(-50%); padding:3px 12px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 15px var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
+.voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-30px; transform:translateX(-50%); padding:3px 12px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 16px var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
 .voyage-rail.is-used::after { display:none; }
 /* 친구가 나타나면 항해는 끝났다 — 만나기 버튼과 겹치지 않게 레일을 걷는다 */
 .country-scene:has(.friend-meet) .voyage-rail { display:none; }
@@ -1047,7 +1047,7 @@ export function createPage(): Page {
           }
         });
 
-        const allKeywords = [...E.note.keywords, ...E.note.wrongKeywords].sort(() => 0.5); // 순서 고정(셔플 아님) — 재방문 시 위치가 흔들리지 않게
+        const allKeywords = [...E.note.keywords, ...E.note.wrongKeywords]; // 순서 고정(셔플 아님) — 재방문 시 위치가 흔들리지 않게
         allKeywords.forEach((kw) => {
           const good = E.note.keywords.includes(kw);
           const b = el(`<button type="button" class="btn" aria-pressed="${S.keywords.includes(kw)}">${kw}</button>`);

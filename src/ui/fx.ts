@@ -35,7 +35,7 @@ export function burstConfetti(anchor: HTMLElement, count = 8): FxCleanup {
     const dist = 42 + (i % 4) * 12;
     const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
     p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:${size}px;height:${size * 0.6}px;
-      background:${color};border-radius:2px;pointer-events:none;z-index:300;
+      background:${color};border-radius:2px;pointer-events:none;z-index:calc(var(--z-modal) + 20);
       transform:translate(-50%,-50%) rotate(${i * 40}deg);`;
     host.appendChild(p);
     particles.push(p);

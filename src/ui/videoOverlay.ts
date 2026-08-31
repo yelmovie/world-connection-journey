@@ -3,6 +3,10 @@ import { saveRepo } from '../core/SaveRepository';
 
 export interface VideoCue { start: number; end: number; text: string }
 
+// unmount에서 오버레이 DOM만 지우면 finish가 안 돌아 BGM이 영구 정지된다 — 반드시 finish 경유로 닫는다
+let activeVideoFinish: (() => void) | null = null;
+export function closeActiveVideoOverlay(): void { activeVideoFinish?.(); }
+
 /**
  * 인트로·엔딩 영상 오버레이. 재생 중에는 BGM을 멈추고 끝나면 되돌린다.
  * 로드 실패·자동재생 차단이어도 흐름이 막히지 않는다(재생 버튼 또는 건너뛰기).
@@ -45,6 +49,7 @@ export function playVideoOverlay(opts: {
   const finish = () => {
     if (finished) return;
     finished = true;
+    if (activeVideoFinish === finish) activeVideoFinish = null;
     window.clearTimeout(stallTimer);
     video.pause();
     video.removeAttribute('src');
@@ -90,6 +95,7 @@ export function playVideoOverlay(opts: {
   });
   skipBtn.addEventListener('click', finish);
   overlay.addEventListener('keydown', onKeyDown);
+  activeVideoFinish = finish;
   (document.getElementById('overlay-root') ?? document.body).appendChild(overlay);
   skipBtn.focus();
   video.play().catch(() => {

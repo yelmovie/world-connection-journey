@@ -14,7 +14,7 @@ import { burstConfetti, popBounce } from '../ui/fx';
 import { readLearnCard } from '../ui/learnFrame';
 import { airplaneWingmen, selectedAirplaneAssetId, selectedAirplanePortraitAssetId } from '../ui/airplaneFleet';
 import { selectedAvatarAssetId } from '../ui/avatarRoster';
-import { playVideoOverlay } from '../ui/videoOverlay';
+import { closeActiveVideoOverlay, playVideoOverlay } from '../ui/videoOverlay';
 
 /** 엔딩 자막 — 장면 순서: 지구 위 비행 → 도시·자연 → 원탁 지구본 → 해변 청소·나무 심기 → 마무리 */
 const FINAL_CUES = [
@@ -312,6 +312,7 @@ const COMPLETION_CSS = `
 .reflection-step label { display:grid;gap:var(--sp-2);font-family:var(--font-head);color:var(--c-navy);font-size:var(--fs-title); }
 .reflection-step .ref-input { width:100%;min-height:64px;padding:10px 14px;font-family:var(--font-body);font-size:var(--fs-body);line-height:1.4; }
 .transfer-prompt { margin:0;padding:10px 14px;border-left:5px solid var(--c-turquoise);border-radius:var(--radius-s);background:#edfafa;color:var(--c-ink);font-family:var(--font-body);font-size:var(--fs-body);font-weight:750;line-height:1.5; }
+.ref-hint { margin:0;padding:8px 12px;border-left:5px solid var(--c-gold);border-radius:var(--radius-s);background:#fff8e4;color:var(--c-ink);font-family:var(--font-body);font-size:var(--fs-body);font-weight:750;line-height:1.4; }
 .reflection-actions { display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--sp-2);margin-top:var(--sp-3); }
 .reflection-step-count { justify-self:center;color:var(--c-ink-soft);font-size:var(--fs-body);font-weight:800; }
 @media (max-width: 700px) { .completion-learn { grid-template-columns: 1fr; } }
@@ -721,22 +722,24 @@ export function createPage(): Page {
             : artifact.evidenceLabel,
           revisedThought: artifact.revisedDecision || artifact.rationale
         };
-        const clipped = {
-          initialThought: values.initialThought.slice(0, 60),
-          evidenceLearned: values.evidenceLearned.slice(0, 60),
-          revisedThought: values.revisedThought.slice(0, 60),
-          transferApplication: body.querySelector<HTMLInputElement>('#ref-4')?.value.slice(0, 100) ?? ''
+        // 자동 대입하면 회고가 복사가 된다 — 참고 문구로만 보여 주고 학생이 직접 타이핑하게 한다
+        const hintByInput = {
+          '#ref-1': values.initialThought.slice(0, 60),
+          '#ref-2': values.evidenceLearned.slice(0, 60),
+          '#ref-3': values.revisedThought.slice(0, 60)
         };
-        const inputByKey = {
-          initialThought: body.querySelector<HTMLInputElement>('#ref-1'),
-          evidenceLearned: body.querySelector<HTMLInputElement>('#ref-2'),
-          revisedThought: body.querySelector<HTMLInputElement>('#ref-3'),
-          transferApplication: body.querySelector<HTMLInputElement>('#ref-4')
-        };
-        for (const key of Object.keys(clipped) as Array<keyof typeof clipped>) {
-          if (inputByKey[key]) inputByKey[key]!.value = clipped[key];
+        for (const [selector, hint] of Object.entries(hintByInput)) {
+          const input = body.querySelector<HTMLInputElement>(selector);
+          if (!input) continue;
+          input.placeholder = hint;
+          let quote = input.parentElement?.querySelector<HTMLElement>('.ref-hint') ?? null;
+          if (!quote) {
+            quote = document.createElement('p');
+            quote.className = 'ref-hint';
+            input.before(quote);
+          }
+          quote.textContent = `참고: ${hint}`;
         }
-        saveRepo.update((next) => { next.completion.reflectionDrafts = clipped; });
         const transferPrompt = body.querySelector<HTMLElement>('#transfer-prompt');
         if (transferPrompt) transferPrompt.textContent = artifact.transferPrompt;
         body.querySelectorAll<HTMLButtonElement>('[data-artifact-id]').forEach((button) => {
@@ -744,7 +747,7 @@ export function createPage(): Page {
           button.classList.toggle('is-selected', on);
           button.setAttribute('aria-checked', String(on));
         });
-        showToast(`${artifact.title} 기록을 회의 자료로 가져왔어요.`);
+        showToast(`${artifact.title} 기록을 참고 문구로 띄웠어요. 내 말로 직접 적어 봐요.`);
       };
       body.querySelectorAll<HTMLButtonElement>('[data-artifact-id]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -997,6 +1000,8 @@ export function createPage(): Page {
     },
 
     unmount() {
+      // 엔딩 영상 도중 이탈해도 BGM이 되살아나게 finish 경유로 닫는다
+      closeActiveVideoOverlay();
       for (const t of timers) window.clearTimeout(t);
       timers.length = 0;
       dnd?.dispose();

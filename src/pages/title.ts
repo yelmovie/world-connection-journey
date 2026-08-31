@@ -6,7 +6,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { confirmDialog } from '../ui/modal';
 import { buildTopBar, describeSavedRoute } from '../ui/chrome';
 import { openCharacterDialogue } from '../ui/characterDialogue';
-import { playVideoOverlay } from '../ui/videoOverlay';
+import { closeActiveVideoOverlay, playVideoOverlay } from '../ui/videoOverlay';
 
 const TITLE_LEFT_PLANE = 'title.plane.green.transparent';
 const TITLE_RIGHT_PLANE = 'title.plane.pink.transparent';
@@ -255,7 +255,6 @@ export function createPage(): Page {
               <strong class="title-speech__name" data-speech-name></strong>
               <p class="title-speech__text" data-speech-text aria-hidden="true"></p>
               <span class="visually-hidden" data-speech-live role="status" aria-live="polite" aria-atomic="true"></span>
-              <span class="title-speech__hint" aria-hidden="true">말풍선을 눌러 계속</span>
             </aside>
             <div class="title-cta">
               <button class="btn btn-primary btn-big" data-act="new">시작하기</button>
@@ -370,7 +369,7 @@ export function createPage(): Page {
     },
     unmount() {
       /* DOM은 라우터가 정리, BGM은 다음 장면에서 crossfade */
-      document.querySelector('.video-overlay')?.remove();
+      closeActiveVideoOverlay();
     }
   };
 }

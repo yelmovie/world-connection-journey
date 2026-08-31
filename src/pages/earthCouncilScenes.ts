@@ -167,7 +167,7 @@ export const EARTH_CSS = `
 .ec-issue .ec-issue-body { padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px; }
 .ec-issue strong { font:900 max(20px,var(--fs-body))/1.2 var(--font-head);color:var(--c-navy); }
 .ec-issue .ec-issue-mine { display:block;padding:6px 9px;border-radius:10px;background:#eef6ee;border:1.5px dashed #7fae86;font-size:max(13px,calc(var(--fs-small) - 2px));font-weight:800;line-height:1.45;color:#2c5a38; }
-.ec-issue-mine em { display:inline-block;margin-right:5px;padding:0 7px;border-radius:999px;background:#d9ecd9;color:#1e4e2a;font-style:normal;font-size:12px;font-weight:900; }
+.ec-issue-mine em { display:inline-block;margin-right:5px;padding:0 7px;border-radius:999px;background:#d9ecd9;color:#1e4e2a;font-style:normal;font-size:14px;font-weight:900; }
 .ec-issue-q { font-size:max(17px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.3; }
 
 /* 장면 4 — 원탁 */
@@ -180,7 +180,7 @@ export const EARTH_CSS = `
 .ec-seats { position:relative;min-height:0;display:flex;justify-content:center;align-items:flex-end;gap:clamp(4px,1.2vw,22px);padding:0 12px; }
 .ec-seat { position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:transparent;padding:4px;cursor:pointer;min-width:var(--hotspot-min); }
 .ec-seat img { width:clamp(60px,8.5vh,120px);height:clamp(60px,8.5vh,120px);object-fit:contain;transition:transform 260ms,filter 260ms;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)); }
-.ec-seat .ec-seat-name { background:rgba(255,252,240,.95);border-radius:999px;padding:2px 10px;font:800 max(14px,calc(var(--fs-small) - 2px))/1.2 var(--font-body);box-shadow:var(--shadow-card); }
+.ec-seat .ec-seat-name { background:rgba(255,252,240,.95);border-radius:999px;padding:2px 10px;font:800 max(15px,calc(var(--fs-small) - 2px))/1.2 var(--font-body);box-shadow:var(--shadow-card); }
 .ec-seat.is-active img { transform:scale(1.1); }
 .ec-seat.is-heard .ec-seat-name::before { content:'✓ ';color:var(--c-success-ink); }
 .ec-seat:not(.is-active):not(.is-heard) img { filter:drop-shadow(0 8px 14px rgba(0,0,0,.45)) saturate(.7); }
@@ -226,7 +226,8 @@ export const EARTH_CSS = `
 .ec-finale p { margin:0;font:700 max(20px,var(--fs-body))/1.4 var(--font-body);color:#f5f9ff;max-width:30em; }
 .ec-finale svg { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
 
-@media (max-height:820px) {
+/* 압축 레이아웃은 진짜 낮은 화면(폴드 가로 등)에서만 — 1280×720·1366×768 전자칠판은 기본 레이아웃 유지 */
+@media (max-height:640px) {
   .ec { gap:6px; }
   .ec-head .ribbon-sub { display:none; }
   .ec-head .ribbon-title { padding-block:4px; }
@@ -235,7 +236,7 @@ export const EARTH_CSS = `
   .ec-photo-side .ec-portrait { display:none; }
   .ec-sub { min-height:0; }
   .ec-note { font-size:16px; }
-  .ec-rings { gap:4px; } .ec-ring { padding:4px 6px; } .ec-act { min-height:60px;font-size:15px; }
+  .ec-rings { gap:4px; } .ec-ring { padding:4px 6px; } .ec-act { min-height:60px;font-size:max(16px,var(--fs-small)); }
 }
 @media (max-height:640px) {
   .ec-photo-row,.ec-connect,.ec-actions { grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr); }

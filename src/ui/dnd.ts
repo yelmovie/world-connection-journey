@@ -94,7 +94,7 @@ export function enablePickPlace(opts: {
         void audio.playSfx('pickup');
         item.classList.add('is-dragging');
         ghost = item.cloneNode(true) as HTMLElement;
-        ghost.style.cssText = `position:fixed;left:0;top:0;width:${item.offsetWidth}px;pointer-events:none;z-index:200;opacity:0.9;margin:0;`;
+        ghost.style.cssText = `position:fixed;left:0;top:0;width:${item.offsetWidth}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.9;margin:0;`;
         document.body.appendChild(ghost);
       }
       if (ghost) {
