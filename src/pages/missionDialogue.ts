@@ -198,8 +198,17 @@ const DIALOGUE_CSS = `
 
 /* 안내선·진행 띠보다 캐릭터와 활동이 먼저 보이게 한다. */
 .dialogue-scene > .bottom-bar {
-  background:transparent!important;backdrop-filter:none!important;border:0!important;box-shadow:none!important;
-  justify-content:flex-end;
+  /* 배경 그림은 살리되 안내와 다음 버튼은 반드시 읽혀야 한다 — 아래로 갈수록 짙어지는 그림자만 깐다 */
+  background:linear-gradient(to top,rgba(10,30,52,.92) 0%,rgba(10,30,52,.8) 62%,rgba(10,30,52,0) 100%)!important;
+  backdrop-filter:none!important;border:0!important;box-shadow:none!important;
+  justify-content:flex-end;gap:var(--sp-3);
+}
+.dialogue-scene > .bottom-bar .ec-progress {
+  margin-right:auto;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.8);
+}
+.dialogue-scene > .bottom-bar .btn:disabled {
+  background:rgba(255,253,246,.34);color:#fff;border:2px solid rgba(255,255,255,.6);
+  text-shadow:0 2px 6px rgba(0,0,0,.6);opacity:1;
 }
 .dialogue-scene :where(.dl-greet-grid,.dl-task,.dl-cues,.dl-chat).tap-cue {
   outline:0!important;animation:none!important;

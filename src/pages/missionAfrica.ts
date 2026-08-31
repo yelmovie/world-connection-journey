@@ -272,11 +272,10 @@ export function createPage(): Page {
         page.style.backgroundImage=`linear-gradient(#08334e55,#08334eaa),url('${assetUrl('africa.map')}')`;
         const layout=document.createElement('div');layout.className='region-layout';const visual=document.createElement('section');visual.className='region-visual';const mapStage=document.createElement('div');mapStage.className='region-mapstage';mapStage.setAttribute('role','region');mapStage.setAttribute('aria-label',`${region.name} 탐험 지도`);
         mapStage.style.backgroundImage=`url('${assetUrl(region.sceneAssetId)}')`;mapStage.setAttribute('aria-label',region.sceneAlt);
-        const instruction=document.createElement('p');instruction.className='region-instruction';instruction.textContent=region.instruction;mapStage.appendChild(instruction);
         const detail=document.createElement('aside');detail.className='country-detail';
         const photo=document.createElement('div');photo.className='detail-photo';photo.style.backgroundImage=`url('${assetUrl(region.sceneAssetId)}')`;
         const progress=document.createElement('p');progress.className='region-progress';
-        const info=document.createElement('div');info.style.display='grid';info.style.gap='14px';info.innerHTML=`<h3>${safe(region.name)}</h3><p class="fact">${safe(region.summary)}</p>`;
+        const info=document.createElement('div');info.style.display='grid';info.style.gap='14px';info.innerHTML=`<h3>${safe(region.name)}</h3>`;
         detail.append(photo,progress,info);
         let sceneCount=0;const cases=content.countryCases.filter((item)=>item.regionId===region.id);const required=cases.map((item)=>item.id);
         const refresh=()=>{
