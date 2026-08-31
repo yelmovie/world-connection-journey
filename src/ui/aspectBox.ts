@@ -12,14 +12,18 @@ export function fitAspect(el: HTMLElement, ratio = 16 / 9): () => void {
   box.className = 'aspect-fit';
   parent.insertBefore(box, el);
   box.appendChild(el);
+  let lastW = -1;
   const apply = (): void => {
     const { width, height } = box.getBoundingClientRect();
     if (width < 8 || height < 8) return;
-    const w = Math.min(width, height * ratio);
-    el.style.width = `${Math.round(w)}px`;
+    const w = Math.round(Math.min(width, height * ratio));
+    // 크기를 다시 쓰면 부모 행 높이가 바뀌고 관찰자가 또 불린다 — 값이 같으면 멈춘다.
+    if (w === lastW) return;
+    lastW = w;
+    el.style.width = `${w}px`;
     el.style.height = `${Math.round(w / ratio)}px`;
   };
-  const observer = new ResizeObserver(apply);
+  const observer = new ResizeObserver(() => requestAnimationFrame(apply));
   observer.observe(box);
   apply();
   return () => observer.disconnect();

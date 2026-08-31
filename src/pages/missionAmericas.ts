@@ -158,7 +158,7 @@ const PAGE_CSS = `
 .am-actions .btn { min-height:56px; font-size:max(20px,var(--am-label)); }
 
 /* ---- 대륙 지도 ---- */
-.exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(330px,.78fr); gap:var(--sp-3); }
+.exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(330px,.78fr); grid-template-rows:minmax(0,1fr); gap:var(--sp-3); }
 .exp-map-fit { min-width:0; min-height:0; display:grid; }
 .exp-wrap > .exp-map-fit, .am-stage > .exp-map-fit { min-height:0; }
 .am-stage > .exp-map-fit { flex:1; }
@@ -185,7 +185,7 @@ const PAGE_CSS = `
 
 /* 엽서 */
 .exp-cards { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.postcard { position:relative; text-align:left; padding:10px 14px 10px 62px; min-height:76px; border:3px solid #d9c9a3; border-radius:16px; background:linear-gradient(160deg,#fffdf4,#fbf3dd); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; }
+.postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 14px 10px 62px; min-height:76px; border:3px solid #d9c9a3; border-radius:16px; background:linear-gradient(160deg,#fffdf4,#fbf3dd); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; }
 .postcard::after { content:''; position:absolute; right:10px; top:10px; width:26px; height:32px; border:2px dashed #c9a86a; border-radius:4px; }
 .postcard img { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:var(--shadow-card); }
 .postcard.is-selected { border-color:var(--c-gold); background:#fff6cf; }
@@ -290,9 +290,17 @@ const PAGE_CSS = `
 .signal-token.is-lit { border-color:var(--c-gold); background:#fffbe8; box-shadow:0 0 0 4px rgba(242,193,78,.35); }
 .signal-token strong { display:block; font-family:var(--font-head); color:#173b53; }
 
+/* 1024x576(교실 최소 기준)에서도 지도와 엽서가 나란히 있어야 한다 —
+   한 줄로 쌓으면 지도가 납작해지고 카드가 지도를 덮는다. */
 @media (max-width:1050px) {
-  .exp-wrap, .country-stage { grid-template-columns:1fr; }
+  .exp-wrap { grid-template-columns:minmax(0,1.2fr) minmax(258px,.8fr); gap:var(--sp-2); }
+  .postcard { padding:8px 10px 8px 54px; min-height:66px; font-size:max(15px,var(--fs-small)); }
+  .postcard img { left:8px; width:38px; height:38px; }
   .day-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .note-zones { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media (max-width:900px) {
+  .exp-wrap, .country-stage { grid-template-columns:1fr; }
   .country-scene { min-height:420px; }
   .note-zones { grid-template-columns:1fr; }
 }
