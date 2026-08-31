@@ -183,6 +183,14 @@ const PAGE_CSS = `
 .regional-modal{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(270px,1.1fr);gap:18px;max-width:820px}
 .regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:300px}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
+.regional-modal-visual .regional-after{position:absolute;inset:0}
+.regional-wipe-bar{position:absolute;top:0;bottom:0;width:4px;transform:translateX(-50%);background:#fff;box-shadow:0 0 8px #0008;pointer-events:none}
+.regional-wipe-bar::after{content:'94';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#173b53;font-size:20px;font-weight:900;box-shadow:0 4px 12px #0006}
+.regional-wipe-tag{position:absolute;top:10px;padding:3px 12px;border-radius:999px;font:900 14px var(--font-head);color:#fff;background:rgba(10,35,58,.75);pointer-events:none}
+.regional-wipe-tag.is-before{left:10px}
+.regional-wipe-tag.is-after{right:10px}
+.regional-wipe{position:absolute;left:0;right:0;bottom:8px;width:calc(100% - 20px);margin:0 10px;height:44px;opacity:.92;accent-color:#f2c14e}
+.regional-wipe-hint{padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font-weight:900;color:#5b430a;font-size:max(15px,var(--fs-small))}
 .regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:27px;height:27px;border-radius:50%;border:3px solid #fff;background:var(--c-gold);box-shadow:0 0 0 4px rgba(24,70,103,.45)}
 .regional-modal-copy{display:grid;gap:10px;align-content:start;font-size:18px;line-height:1.55}
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
@@ -336,9 +344,26 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         render();
         const modalBody = document.createElement('div');
         modalBody.className = 'regional-modal';
+        const hasBefore = hasAsset(signal.beforeAssetId) && hasAsset(signal.afterAssetId);
         modalBody.innerHTML = `
-          <div class="regional-modal-visual"><img src="${imageFor(model, signal.afterAssetId)}" alt="${esc(signal.title)} 학습용 비교 장면"></div>
-          <div class="regional-modal-copy"><span class="chip">이어진 환경 신호</span><h3>${esc(signal.title)}</h3><p>${esc(signal.prompt)}</p><p class="regional-discovery">${esc(signal.connection)}</p><p class="regional-media-note">장면은 변화를 비교하는 학습용 재현 이미지이며 실제 미래를 예측하지 않아.</p><a href="${esc(signal.sourceUrl)}" target="_blank" rel="noreferrer">출처: ${esc(signal.sourceTitle)}</a></div>`;
+          <div class="regional-modal-visual">
+            <img src="${imageFor(model, signal.beforeAssetId)}" alt="">
+            ${hasBefore ? `<img class="regional-after" src="${imageFor(model, signal.afterAssetId)}" alt="${esc(signal.title)} 학습용 비교 장면" style="clip-path:inset(0 0 0 50%)">
+            <span class="regional-wipe-bar" style="left:50%"></span>
+            <span class="regional-wipe-tag is-before">지금</span><span class="regional-wipe-tag is-after">달라진 모습</span>
+            <input class="regional-wipe" type="range" min="0" max="100" value="50" aria-label="지금과 달라진 모습을 밀어서 비교하기">` : ''}
+          </div>
+          <div class="regional-modal-copy"><span class="chip">이어진 환경 신호</span><h3>${esc(signal.title)}</h3>
+            ${hasBefore ? '<p class="regional-wipe-hint">손잡이를 밀어 두 모습을 비교해 봐!</p>' : ''}
+            <p>${esc(signal.prompt)}</p><p class="regional-discovery">${esc(signal.connection)}</p><p class="regional-media-note">장면은 변화를 비교하는 학습용 재현 이미지이며 실제 미래를 예측하지 않아.</p><a href="${esc(signal.sourceUrl)}" target="_blank" rel="noreferrer">출처: ${esc(signal.sourceTitle)}</a></div>`;
+        const wipe = modalBody.querySelector<HTMLInputElement>('.regional-wipe');
+        const after = modalBody.querySelector<HTMLElement>('.regional-after');
+        const wipeBar = modalBody.querySelector<HTMLElement>('.regional-wipe-bar');
+        wipe?.addEventListener('input', () => {
+          const v = Number(wipe.value);
+          if (after) after.style.clipPath = `inset(0 0 0 ${v}%)`;
+          if (wipeBar) wipeBar.style.left = `${v}%`;
+        });
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-signal`, title: signal.title, bodyEl: modalBody, actions: [] });
       };
