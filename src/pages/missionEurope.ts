@@ -280,11 +280,12 @@ const PAGE_CSS = `
 .europe-mission .eu-traveler-meet.is-appear { animation:eu-traveler-in .55s cubic-bezier(.2,.9,.3,1.35) backwards,eu-traveler-bob 2.4s .55s ease-in-out infinite; }
 @keyframes eu-traveler-in { from { opacity:0;transform:translateY(26px) scale(.6); } to { opacity:1;transform:none; } }
 @media (prefers-reduced-motion: reduce) { .europe-mission .eu-traveler-meet,.europe-mission .eu-traveler-meet.is-appear { animation:none; } }
-.europe-mission .eu-gallery { flex:1;min-height:min(390px,58vh);padding:14px;display:flex;flex-direction:column;gap:10px; }
+/* 패널은 내용 높이만 — 남은 세로까지 차지하면 배경 일러스트를 빈 칸으로 덮는다 */
+.europe-mission .eu-gallery { flex:0 1 auto;min-height:0;max-height:100%;padding:14px;display:flex;flex-direction:column;gap:10px; }
 .europe-mission .eu-gallery-tabs { display:flex;gap:7px;flex-wrap:wrap; }
 .europe-mission .eu-gallery-tab { min-height:48px;padding:8px 15px;border:2px solid #b8c7cf;border-radius:999px;background:#fff;font:850 var(--eu-small)/1 var(--font-body);cursor:pointer; }
 .europe-mission .eu-gallery-tab[aria-pressed="true"] { background:#4e3db3;color:#fff;border-color:#4e3db3; }
-.europe-mission .eu-gallery-grid { flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));grid-auto-rows:max-content;gap:11px;align-content:start; }
+.europe-mission .eu-gallery-grid { flex:0 1 auto;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(210px,100%),1fr));grid-auto-rows:max-content;gap:11px;align-content:start; }
 .europe-mission .eu-gallery-card { min-width:0;padding:0;border:4px solid transparent;border-radius:18px;background:#fff;overflow:hidden;text-align:left;box-shadow:0 5px 13px rgba(25,50,77,.18);cursor:pointer; }
 .europe-mission .eu-gallery-card[aria-pressed="true"] { border-color:#efb92f;box-shadow:0 0 0 3px rgba(239,185,47,.28); }
 .europe-mission .eu-gallery-card img { width:100%;height:clamp(80px,10.5vh,150px);object-fit:cover;display:block;background:#dbe7e8; }
@@ -298,7 +299,9 @@ const PAGE_CSS = `
 .europe-mission .eu-evidence-caption strong { font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-evidence-caption span { display:block;margin-top:4px;font-size:var(--eu-small);font-weight:800; }
 .europe-mission .eu-write { padding:clamp(15px,2vw,26px);display:flex;flex-direction:column;gap:12px;overflow:auto; }
 .europe-mission .eu-write h2 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }.europe-mission .eu-write > p { margin:0;font-size:var(--eu-copy);font-weight:750;line-height:1.4; }
-.europe-mission .eu-prompt-row { display:flex;gap:8px;flex-wrap:wrap; }
+.europe-mission .eu-prompt-row { display:flex;gap:8px;flex-wrap:wrap;border-radius:18px; }
+/* 아직 고르지 않았으면 여기부터 해야 한다는 걸 눈으로 보여 준다 */
+.europe-mission .eu-prompt-row.is-required { outline:3px dashed #efb92f;outline-offset:6px;background:rgba(255,244,205,.55); }
 .europe-mission .eu-prompt { min-height:50px;padding:9px 15px;border:2px solid #aebfc8;border-radius:15px;background:#fff;font:850 var(--eu-small)/1.1 var(--font-body);cursor:pointer; }
 .europe-mission .eu-prompt[aria-pressed="true"] { border-color:#5c43c3;background:#ebe8ff;color:#362898; }
 .europe-mission .eu-prompt-question { min-height:54px;padding:12px 15px;border-radius:14px;background:#e8f1f4;font-size:var(--eu-copy);font-weight:900;line-height:1.3; }
@@ -496,7 +499,6 @@ export function createPage(): Page {
         openCharacterDialogue({
           id: `europe-traveler-${country.id}-${visual.id}`,
           title: `${country.name} 여행가와 이야기하기`,
-          reactions: true,
           name: traveler.name,
           meta: `${country.name} 생활 사례를 들려주는 학습용 가상 친구`,
           assetId: traveler.assetId,
@@ -754,19 +756,30 @@ export function createPage(): Page {
         const count = screen.querySelector<HTMLElement>('[data-count]')!;
         const back = button('장면 다시 고르기', 'ghost');
         const next = button('궁금한 점 만들기');
+        // 막히는 이유를 그대로 말해 준다 — 방향을 안 골랐는데 "더 써 봐"라고만 하면 학생은 계속 쓰다 갇힌다
+        const blockReason = (): string | null => {
+          if (!state.reasonPromptId) return '먼저 위에서 생각 방향 하나를 골라 줘!';
+          if (!hasStudentReason(state.reasonDraft)) return '이유를 두 낱말 이상, 조금 더 써 봐';
+          return null;
+        };
+        const syncNext = () => {
+          const blocked = blockReason();
+          next.disabled = blocked !== null;
+          screen.querySelector<HTMLElement>('.eu-prompt-row')?.classList.toggle('is-required', !state.reasonPromptId);
+          const status = bottom.querySelector<HTMLElement>('.eu-status');
+          if (status) status.textContent = blocked ?? '이유가 준비됐어';
+        };
         const update = () => {
           state.reasonDraft = textarea.value;
           count.textContent = `${state.reasonDraft.length}/160`;
-          next.disabled = !state.reasonPromptId || !hasStudentReason(state.reasonDraft);
-          const status = bottom.querySelector<HTMLElement>('.eu-status');
-          if (status) status.textContent = next.disabled ? '이유를 조금 더 써 봐' : '이유가 준비됐어';
+          syncNext();
           schedulePersist();
         };
         textarea.addEventListener('input', update);
         back.addEventListener('click', () => setScreen('gallery'));
-        next.disabled = !state.reasonPromptId || !hasStudentReason(state.reasonDraft);
         next.addEventListener('click', () => setScreen('question'));
-        setBottom(state.reasonDraft.length ? '내 이유를 쓰는 중' : '방향을 고르고 이유를 써 봐', [back, next]);
+        setBottom(blockReason() ?? '이유가 준비됐어', [back, next]);
+        syncNext();
         say('방향만 고른 뒤, 사진에서 본 것을 네 문장으로 써.', activePrompt ? textarea : screen.querySelector<HTMLElement>('[data-prompt]'));
       };
 
@@ -808,21 +821,32 @@ export function createPage(): Page {
         const preview = screen.querySelector<HTMLElement>('[data-preview]')!;
         const back = button('이유 다시 보기', 'ghost');
         const next = button('환경 대화 기록 만들기');
+        // reason 화면과 같은 규칙 — 무엇 때문에 막혔는지 안내에 그대로 쓴다
+        const blockReason = (): string | null => {
+          if (!state.questionStarterId) return '먼저 위에서 질문 앞말을 골라 줘!';
+          if (!hasStudentQuestion(state.questionDraft)) return '앞말 뒤에 궁금한 내용을 조금 더 이어 써 봐';
+          return null;
+        };
+        const syncNext = () => {
+          const blocked = blockReason();
+          next.disabled = blocked !== null;
+          screen.querySelector<HTMLElement>('.eu-prompt-row')?.classList.toggle('is-required', !state.questionStarterId);
+          const status = bottom.querySelector<HTMLElement>('.eu-status');
+          if (status) status.textContent = blocked ?? '질문이 준비됐어';
+        };
         const update = () => {
           state.questionDraft = textarea.value;
           count.textContent = `${state.questionDraft.length}/120`;
           const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
           preview.textContent = fullQuestion(starter, state.questionDraft) || '질문 앞말을 고르고 네 말을 이어 써 봐.';
-          next.disabled = !state.questionStarterId || !hasStudentQuestion(state.questionDraft);
-          const status = bottom.querySelector<HTMLElement>('.eu-status');
-          if (status) status.textContent = next.disabled ? '질문을 조금 더 이어 써 봐' : '질문이 준비됐어';
+          syncNext();
           schedulePersist();
         };
         textarea.addEventListener('input', update);
         back.addEventListener('click', () => setScreen('reason'));
-        next.disabled = !state.questionStarterId || !hasStudentQuestion(state.questionDraft);
         next.addEventListener('click', () => setScreen('postcard'));
-        setBottom(state.questionDraft.length ? '내 질문을 만드는 중' : '앞말을 고르고 질문을 이어 써', [back, next]);
+        setBottom(blockReason() ?? '질문이 준비됐어', [back, next]);
+        syncNext();
         say('앞말 뒤에 네가 정말 궁금한 내용을 이어 써.', activeStarter ? textarea : screen.querySelector<HTMLElement>('[data-starter]'));
       };
 

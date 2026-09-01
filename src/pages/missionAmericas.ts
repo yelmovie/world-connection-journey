@@ -16,7 +16,6 @@ import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
-import { openModal } from '../ui/modal';
 import { enableMapZoom } from '../ui/mapZoom';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
@@ -92,7 +91,7 @@ function assertContent(content: AmericasContent): void {
 
 /* ================= 진행 상태 ================= */
 
-const SCREENS = ['landing', 'lens', 'countries', 'day', 'note', 'signal'] as const;
+const SCREENS = ['landing', 'lens', 'countries', 'day', 'signal'] as const;
 type Screen = (typeof SCREENS)[number];
 
 interface CountryProgress { stopsSeen: string[]; met: boolean; bagSeen: string[]; keep: string | null; done: boolean }
@@ -353,14 +352,16 @@ const PAGE_CSS = `
 }
 
 /* ---- 하루 비교 ---- 시간대는 탭으로 하나씩. 가로 스크롤은 뒤쪽 시간대를 통째로 숨긴다. */
-.day-board { flex:1; min-height:0; display:flex; }
-.day-slot { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
-.day-cards { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.day-board { flex:1; min-height:0; display:flex; align-items:center; }
+.day-slot { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:10px; }
+/* 카드는 내용 높이만큼만 — 남은 세로를 카드가 먹으면 그림 위아래로 빈 여백만 커진다 */
+.day-cards { flex:0 1 auto; min-height:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; align-items:stretch; }
 .lens-tabs .btn.is-solved::after { content:' ✓'; color:#149067; }
-.day-card { position:relative; border:3px solid rgba(255,255,255,.68); border-radius:22px; background:rgba(255,255,255,.4); backdrop-filter:blur(5px) saturate(1.05); padding:clamp(12px,1.3vw,20px); display:grid; gap:clamp(8px,1.2vh,14px); justify-items:center; align-content:center; text-align:center; cursor:pointer; box-shadow:0 10px 28px rgba(3,29,52,.12); }
+.day-card { position:relative; border:3px solid rgba(255,255,255,.68); border-radius:22px; background:rgba(255,255,255,.4); backdrop-filter:blur(5px) saturate(1.05); padding:clamp(10px,1vw,16px); display:grid; gap:clamp(6px,.8vh,10px); justify-items:center; align-content:start; text-align:center; cursor:pointer; box-shadow:0 10px 28px rgba(3,29,52,.12); }
 .day-card strong { font:900 clamp(26px,1.85vw,34px)/1.1 var(--font-head); color:var(--c-navy); text-shadow:0 1px 3px rgba(255,255,255,.8); }
 .day-card span { font-size:clamp(22px,1.42vw,27px); font-weight:800; line-height:1.4; color:#12293d; word-break:keep-all; text-wrap:balance; }
-.day-card img { width:clamp(96px,10vw,150px); height:clamp(96px,10vw,150px); border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow:var(--shadow-card); background:rgba(255,255,255,.7); }
+/* 친구 그림이 카드의 주인공 — 화면 높이에도 맞춰 잘리지 않게 vh를 함께 본다 */
+.day-card img { width:min(clamp(150px,16vw,260px), 30vh); height:min(clamp(150px,16vw,260px), 30vh); border-radius:50%; object-fit:cover; border:4px solid #fff; box-shadow:var(--shadow-card); background:rgba(255,255,255,.7); }
 .day-card.is-selected { border-color:var(--c-gold); background:#fff6cf; }
 .day-card.is-linked { border-color:var(--c-success); background:#f0fbf6; }
 /* 과제 배너 — 지금 해야 할 미션이 화면에서 가장 먼저 읽히게 */
@@ -369,20 +370,6 @@ const PAGE_CSS = `
 .day-common { min-height:64px; padding:13px 20px; border-radius:16px; background:rgba(224,246,237,.78); backdrop-filter:blur(4px); border:2px solid #18836a; color:#0d5a44; font-weight:900; font-size:clamp(21px,1.4vw,27px); text-align:center; word-break:keep-all; text-wrap:balance; display:none; }
 .day-slot.is-solved .day-common { display:block; }
 
-/* ---- 탐험 노트 ---- */
-.note-layout { flex:1; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:var(--sp-3); }
-.note-pool:empty { display:none; }
-.note-pool { display:flex; gap:10px; flex-wrap:wrap; align-content:flex-start; padding:12px; max-height:34vh; overflow:auto; background:rgba(255,255,255,.52) !important; }
-.note-zones { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); min-height:0; }
-.note-zone { min-height:0; overflow:auto; padding:clamp(12px,1.1vw,18px); border-radius:20px; border:3px dashed rgba(255,255,255,.82); background:rgba(255,255,255,.48); backdrop-filter:blur(5px) saturate(1.04); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 28px rgba(3,29,52,.12); }
-.note-zone h3 { margin:0; font:900 clamp(25px,1.55vw,31px)/1.15 var(--font-head); color:var(--c-navy); }
-.note-zone small { color:#28475e; font-size:clamp(18px,1.05vw,22px); font-weight:800; line-height:1.35; word-break:keep-all; }
-.note-chip { flex:0 0 auto; min-height:58px; padding:10px 16px; border-radius:999px; border:3px solid rgba(203,215,223,.82); background:rgba(255,255,255,.72); font-weight:900; font-size:clamp(19px,1.12vw,23px); line-height:1.25; white-space:nowrap; cursor:pointer; }
-.note-zone .note-chip { min-height:48px; padding:7px 13px; white-space:normal; }
-.note-chip.is-selected { border-color:var(--c-gold); background:#fff6cf; }
-.keyword-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.keyword-row .btn { min-height:58px; font-size:clamp(19px,1.12vw,23px); }
-.keyword-row .btn[aria-pressed=true] { background:var(--c-gold); }
 
 /* ---- 지구 신호 ---- */
 .signal-final { flex:1; min-height:0; display:grid; place-content:center; gap:clamp(14px,1.5vh,20px); justify-items:center; }
@@ -408,7 +395,6 @@ const PAGE_CSS = `
   .stop-node .stop-step { width:38px; height:38px; font-size:21px; }
   .stop-node.is-next::after { top:calc(100% + 4px); padding:3px 9px; font-size:14px; }
   .day-card span { font-size:clamp(18px,1.42vw,22px); }
-  .note-zone small { font-size:17px; }
   .signal-token { min-height:76px; padding:10px 16px; font-size:clamp(18px,1.3vw,22px); }
   .signal-token::before { width:50px; height:50px; }
 }
@@ -420,13 +406,11 @@ const PAGE_CSS = `
   .postcard { padding:8px 56px 8px 54px; min-height:66px; font-size:max(15px,var(--fs-small)); }
   .postcard img { left:8px; width:38px; height:38px; }
   .day-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .note-zones { grid-template-columns:repeat(3,minmax(0,1fr)); }
 }
 @media (max-width:900px) {
   .exp-wrap, .country-stage { grid-template-columns:1fr; }
   .country-scene { min-height:420px; }
   .country-side { display:flex; overflow:auto; }
-  .note-zones { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce) {
   .lens-point, .stop-node.is-next, .friend-meet, .postcard.is-wrong, .voyage-rail::after, .exp-slot { animation:none !important; }
@@ -508,7 +492,6 @@ export function createPage(): Page {
       // 구버전(어울림 학급) 저장은 새 탐험 흐름과 호환되지 않아 처음부터 시작한다(완료 도장은 그대로 유지됨).
       if (mission.data.exploreProgress && S.screen !== 'landing') showToast('저장한 탐험 지점에서 이어갈게.', 'info');
       let finished = false;
-      let shakeupDone = false; // 흔들리는 계획 카드(P2-14) — 회당 1회만
 
       const page = document.createElement('div');
       page.className = 'page am-scene';
@@ -963,8 +946,7 @@ export function createPage(): Page {
             const startDialogue = (): void => {
               openCharacterDialogue({
                 id: `am-${c.id}`,
-                reactions: true,
-                name: student?.name ?? '친구',
+                      name: student?.name ?? '친구',
                 meta: `${c.name}에서 만난 친구`,
                 assetId: avatarAsset(content, c.studentId),
                 partner: {
@@ -1080,7 +1062,7 @@ export function createPage(): Page {
         const tabs = el('<div class="lens-tabs"></div>');
         const task = el('<p class="am-task" role="status"></p>');
         const board = el('<div class="day-board"></div>');
-        const next = nextButton('탐험 노트 펼치기', 'note');
+        const next = nextButton('지구 신호로 바꾸기', 'signal');
         let active = E.day.slots.find((slot) => !S.daySolved.includes(slot.id)) ?? E.day.slots[0]!;
 
         const refresh = (): void => {
@@ -1170,115 +1152,11 @@ export function createPage(): Page {
         });
       };
 
-      /* ===== 화면 5 — 탐험 노트: 분류 + 키워드 ===== */
-      interface Sticker { id: string; label: string; cats: string[] }
-      const buildStickers = (): Sticker[] => {
-        const out: Sticker[] = [];
-        E.lenses.forEach((l) => l.points.forEach((p) => {
-          if (S.pointsSeen.includes(`${l.id}:${p.id}`)) {
-            out.push({ id: `pt-${l.id}-${p.id}`, label: p.label, cats: l.id === 'life' ? ['culture', 'common'] : ['nature'] });
-          }
-        }));
-        E.countries.forEach((c) => {
-          const keep = S.countries[c.id]?.keep;
-          const item = c.bag.find((b) => b.id === keep);
-          if (item) out.push({ id: `keep-${item.id}`, label: item.label, cats: item.kind === 'env' ? ['nature', 'common'] : ['culture', 'common'] });
-        });
-        E.day.slots.forEach((slot) => {
-          if (S.daySolved.includes(slot.id)) out.push({ id: `day-${slot.id}`, label: slot.stickerLabel, cats: ['common'] });
-        });
-        return out;
-      };
-
-      const renderNote = (): void => {
-        const stickers = buildStickers();
-        const task = el('<p class="am-task" role="status"></p>');
-        const layout = el('<div class="note-layout"></div>');
-        const pool = el('<div class="note-pool panel"></div>');
-        const zonesWrap = el('<div class="note-zones"></div>');
-        const zones: HTMLElement[] = [];
-        const zoneLists = new Map<string, HTMLElement>();
-
-        E.note.categories.forEach((cat) => {
-          const zone = el(`<div class="note-zone" data-zone-id="${cat.id}"><h3>${cat.label}</h3><small>${cat.desc}</small></div>`);
-          zones.push(zone);
-          zoneLists.set(cat.id, zone);
-          zonesWrap.appendChild(zone);
-        });
-
-        const next = nextButton('지구 신호로 바꾸기', 'signal');
-        const keywordRow = el('<div class="keyword-row panel" hidden></div>');
-        const refresh = (): void => {
-          const allPlaced = stickers.every((s) => S.notePlaced[s.id]);
-          keywordRow.hidden = !allPlaced;
-          next.disabled = !(allPlaced && S.keywords.length >= E.note.keywordSlots);
-          task.textContent = next.disabled
-            ? allPlaced ? `우리 여행을 나타내는 말 ${E.note.keywordSlots}개를 골라 봐!` : '모은 스티커를 어울리는 칸으로 옮겨 봐!'
-            : '탐험 노트 완성! 지구 신호로 바꿔 보자.';
-          setBottom('', next);
-        };
-
-        const items: HTMLElement[] = [];
-        stickers.forEach((s) => {
-          const chip = el(`<button type="button" class="note-chip" data-item-id="${s.id}">${s.label}</button>`);
-          items.push(chip);
-          const placedCat = S.notePlaced[s.id];
-          if (placedCat && zoneLists.has(placedCat)) zoneLists.get(placedCat)!.appendChild(chip);
-          else pool.appendChild(chip);
-        });
-
-        dnd = enablePickPlace({
-          items, zones,
-          onPlace: (itemId, zoneId) => {
-            const sticker = stickers.find((s) => s.id === itemId);
-            const chip = items.find((i) => i.dataset.itemId === itemId);
-            if (!sticker || !chip) return;
-            if (!sticker.cats.includes(zoneId)) {
-              void audio.playSfx('partial');
-              announceGuide('음, 이건 자연 때문일까, 사람들이 만든 모습일까? 다시 생각해 보자.');
-              return;
-            }
-            S.notePlaced[itemId] = zoneId;
-            persist();
-            zoneLists.get(zoneId)?.appendChild(chip);
-            void audio.playSfx('drop');
-            refresh();
-          }
-        });
-
-        const allKeywords = [...E.note.keywords, ...E.note.wrongKeywords]; // 순서 고정(셔플 아님) — 재방문 시 위치가 흔들리지 않게
-        allKeywords.forEach((kw) => {
-          const good = E.note.keywords.includes(kw);
-          const b = el(`<button type="button" class="btn" aria-pressed="${S.keywords.includes(kw)}">${kw}</button>`);
-          b.addEventListener('click', () => {
-            if (S.keywords.includes(kw)) {
-              S.keywords = S.keywords.filter((k) => k !== kw);
-            } else if (!good) {
-              void audio.playSfx('partial');
-              announceGuide('우리가 만난 하루들이 정말 모두 똑같았을까? 노트를 다시 봐 줘.');
-              return;
-            } else if (S.keywords.length < E.note.keywordSlots) {
-              S.keywords.push(kw);
-              void audio.playSfx('success');
-            }
-            persist();
-            keywordRow.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(S.keywords.includes(x.textContent ?? ''))));
-            refresh();
-          });
-          keywordRow.appendChild(b);
-        });
-
-        layout.append(pool, zonesWrap);
-        stage.replaceChildren(task, layout, keywordRow);
-        refresh();
-        announceGuide('여행에서 모은 이야기야! 자연환경, 생활과 문화, 여러 나라에서 함께 보인 것으로 나눠 보자.');
-      };
-
-      /* ===== 화면 6 — 지구 신호 ===== */
+      /* ===== 화면 5 — 지구 신호 ===== */
       const lit = new Set<string>();
       const renderSignal = (): void => {
         const wrap = el('<div class="signal-final"></div>');
-        wrap.appendChild(el('<h2 class="signal-title">탐험 노트가 지구 신호가 되었어!</h2>'));
+        wrap.appendChild(el('<h2 class="signal-title">여행에서 모은 이야기가 지구 신호가 되었어!</h2>'));
         const finishBtn = el('<button type="button" class="btn btn-primary btn-big">지구 신호 챙기고 도장 받기</button>') as HTMLButtonElement;
 
         const refresh = (): void => {
@@ -1298,34 +1176,7 @@ export function createPage(): Page {
           wrap.appendChild(token);
         });
 
-        finishBtn.addEventListener('click', () => {
-          // 흔들리는 계획 카드(P2-14) — 제출 직전 사건 1장: 노트 한 칸을 다시 확인하고 온다. 실패 없음.
-          if (!shakeupDone && !finished) {
-            shakeupDone = true;
-            openModal({
-              id: 'americas-shakeup',
-              title: '흔들리는 소식!',
-              bodyHtml: `<div style="display:grid;gap:8px;text-align:left">
-                <p style="font-weight:800;line-height:1.5">지구회의에서 미리 물어봤어 — <strong>"노트의 낱말들이 정말 네 여행과 맞아?"</strong></p>
-                <p style="font-weight:800;color:var(--c-ink-soft)">지금 고른 낱말: ${S.keywords.map((kw) => `<em style="font-style:normal;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c">${kw}</em>`).join(' ')}</p>
-                <p style="font-weight:800">노트로 돌아가 한 번만 다시 살펴보고 오자. 바꿔도 되고, 그대로 확신해도 돼!</p>
-              </div>`,
-              dismissible: false,
-              actions: [{
-                label: '노트 확인하고 오기',
-                kind: 'primary',
-                autofocus: true,
-                onClick: (close) => {
-                  close();
-                  void audio.playSfx('tap');
-                  go('note');
-                }
-              }]
-            });
-            return;
-          }
-          finish();
-        });
+        finishBtn.addEventListener('click', () => finish());
         stage.replaceChildren(wrap);
         refresh();
         announceGuide('네 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');
@@ -1350,9 +1201,9 @@ export function createPage(): Page {
             voiceId: 'americas-friends',
             voiceName: content.students.map((s) => s.name).join('·'),
             voiceLine: keeps.map((k) => k.label).join(' · ') || '네 친구의 이야기',
-            firstDecision: S.keywords[0] ?? '서로 다른 자연환경',
+            firstDecision: '서로 다른 자연환경',
             observedConsequence: '환경은 달라도 하루의 모습에는 닮은 점이 있었어요.',
-            revisedDecision: S.keywords.join(' · ') || '다양한 문화 · 함께 사는 지구',
+            revisedDecision: '다양한 문화 · 함께 사는 지구',
             rationale: '한 장면으로 나라 전체를 단정하지 않고, 여러 지역의 모습을 직접 비교했어요.',
             transferPrompt: '다른 대륙의 친구들에게서도 물·숲·생활 신호를 찾아 이어 볼까?',
             earnedAt: new Date().toISOString()
@@ -1377,7 +1228,6 @@ export function createPage(): Page {
           case 'lens': renderLens(); break;
           case 'countries': renderCountries(); break;
           case 'day': renderDay(); break;
-          case 'note': renderNote(); break;
           case 'signal': renderSignal(); break;
         }
       };

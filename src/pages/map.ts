@@ -15,7 +15,6 @@ import {
 } from '../ui/journeyTransition';
 import { cancelJourneyBridge, playDepartureBridge } from '../ui/journeyBridge';
 import { readLearnCard } from '../ui/learnFrame';
-import { reactionCounts } from '../ui/characterDialogue';
 import {
   missionCompanionAssetId,
   selectedAirplaneAssetId,
@@ -122,28 +121,6 @@ function replayDeckText(missionId: MissionId, missionData: unknown): string {
     }
   }
   return REPLAY_DECK[missionId];
-}
-
-/** 대화 반응 배지 4종(P2-16) — 빈 칸이 보여야 다시 하고 싶어진다. */
-function badgeShelf(): string {
-  const counts = reactionCounts();
-  const badges = [
-    { label: '질문 탐험가', hint: '친구에게 더 물어보기 3번', earned: (counts.ask ?? 0) >= 3 },
-    { label: '마음 통역가', hint: '공감으로 반응하기 3번', earned: (counts.empathy ?? 0) >= 3 },
-    { label: '이야기 다리', hint: '내 이야기 들려주기 3번', earned: (counts.share ?? 0) >= 3 },
-    { label: '골고루 대화가', hint: '세 반응 모두 써 보기', earned: ['ask', 'empathy', 'share'].every((key) => (counts[key] ?? 0) >= 1) }
-  ];
-  // 금테 비밀 도장 — 조건을 밝히지 않는다. 여섯 배움 카드를 모두 받으면 열린다.
-  const secretEarned = SPOTS.every((spot) => hasLearnCardFor(spot.id));
-  const slots = badges.map((badge) => `<span class="map-badge${badge.earned ? ' is-earned' : ''}" title="${badge.hint}">
-    <i aria-hidden="true">${badge.earned ? '★' : ''}</i>${badge.label}</span>`).join('');
-  const secret = `<span class="map-badge map-badge--secret${secretEarned ? ' is-earned' : ''}" title="${secretEarned ? '여섯 배움 카드의 주인' : '숨은 조건이 있어!'}">
-    <i aria-hidden="true">${secretEarned ? '◉' : '?'}</i>${secretEarned ? '금테 비밀 도장' : '비밀 도장'}</span>`;
-  const earnedCount = badges.filter((badge) => badge.earned).length + (secretEarned ? 1 : 0);
-  return `<div class="map-badges" aria-label="대화 배지 진열장, ${earnedCount}/5 획득">
-    <strong>대화 배지 진열장 · ${earnedCount}/5</strong>
-    <div class="map-badges__row">${slots}${secret}</div>
-  </div>`;
 }
 
 const STATUS_LABEL: Record<MissionStatus, string> = {
@@ -262,16 +239,6 @@ const MAP_CSS = `
 .map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(16px,var(--fs-small));font-weight:800;color:var(--c-ink); }
 .map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:16px;font-weight:900;white-space:nowrap; }
 .map-bag__more { color:var(--c-ink-soft);font-size:16px;font-weight:750; }
-/* 대화 배지 진열장(P2-16) — 빈 칸이 재플레이 이유가 된다 */
-.map-badges { margin-top:var(--sp-2);padding:9px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
-.map-badges strong { display:block;font-family:var(--font-head);font-size:max(16px,var(--fs-small));color:var(--c-navy); }
-.map-badges__row { margin-top:6px;display:flex;flex-wrap:wrap;gap:5px; }
-.map-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:2px dashed #b9cbd6;background:#fff;color:var(--c-ink-soft);font-size:16px;font-weight:850;white-space:nowrap; }
-.map-badge i { display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#e8eef2;font-style:normal;font-size:16px; }
-.map-badge.is-earned { border-style:solid;border-color:var(--c-violet);background:#f3efff;color:var(--c-violet-ink); }
-.map-badge.is-earned i { background:var(--c-violet);color:#fff; }
-.map-badge--secret.is-earned { border-color:#c79a2c;background:linear-gradient(160deg,#fff6dc,#ffe9a8);color:#6f5514;box-shadow:0 0 0 2px rgba(242,193,78,.35); }
-.map-badge--secret.is-earned i { background:var(--c-gold);color:#5b430a; }
 .map-brief {
   position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
   height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
@@ -494,7 +461,6 @@ export function createPage(): Page {
               .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
               .join('')}${bag.length > shown.length ? `<li class="map-bag__more">…앞서 모은 ${bag.length - shown.length}개도 들어 있어</li>` : ''}</ul></div>`;
           })()}
-          ${badgeShelf()}
           <div class="map-brief__actions">
             <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
             ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">완주 기록 보기</button>' : ''}

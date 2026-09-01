@@ -336,7 +336,6 @@ export function createPage(): Page {
         closeActiveModal = openCharacterDialogue({
           id: `greet-story-${greeting.id}`,
           title: `${greeting.country} 친구와 이야기하기`,
-          reactions: true,
           name: `${greeting.country} 사례 친구`,
           meta: `학습용 가상 인물 · ${greeting.continent} · ${greeting.country}`,
           assetId: greetingImg(greeting),

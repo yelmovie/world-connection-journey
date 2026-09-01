@@ -129,57 +129,6 @@ export function playDepartureBridge(destinationName: string): Promise<void> {
         ]
       });
       playCall();
-    } else {
-      /* ===== 배낭 챙기기 — 10초 안에 3개 고르기(소프트 타이머, 실패 없음) ===== */
-      const picked = new Set<string>();
-      let remain = 10;
-      body.innerHTML = `
-        <p class="journey-bridge__copy"><strong>${destinationName}</strong> 여행에 가져갈 물건 <strong>3개</strong>를 골라 배낭에 담아!</p>
-        <div class="journey-bridge__grid" role="group" aria-label="배낭에 담을 물건 고르기">
-          ${PACK_ITEMS.map((item) => `<button type="button" class="journey-bridge__item" data-item="${item.id}" aria-pressed="false">${icon(item.svg)}<span>${item.label}</span></button>`).join('')}
-        </div>
-        <p class="journey-bridge__status" data-status>남은 시간 10초 · 0/3 담았어</p>`;
-      const status = body.querySelector<HTMLElement>('[data-status]')!;
-      const departLater = (message: string) => {
-        status.textContent = message;
-        void audio.playSfx('success');
-        timers.push(window.setTimeout(() => done(closeModal), 650));
-      };
-      const tick = () => {
-        remain -= 1;
-        if (settled) return;
-        if (remain <= 0) {
-          // 시간이 끝나도 벌은 없다 — 챙긴 만큼 들고 출발
-          departLater(picked.size > 0 ? '시간 끝! 챙긴 것만 들고 출발!' : '시간 끝! 몸만 가볍게 출발!');
-          return;
-        }
-        status.textContent = `남은 시간 ${remain}초 · ${picked.size}/3 담았어`;
-        timers.push(window.setTimeout(tick, 1000));
-      };
-      timers.push(window.setTimeout(tick, 1000));
-      body.querySelectorAll<HTMLButtonElement>('[data-item]').forEach((button) => button.addEventListener('click', () => {
-        const id = button.dataset.item!;
-        if (picked.has(id)) {
-          picked.delete(id);
-          button.setAttribute('aria-pressed', 'false');
-        } else if (picked.size < 3) {
-          picked.add(id);
-          button.setAttribute('aria-pressed', 'true');
-          void audio.playSfx('pickup');
-        }
-        status.textContent = `남은 시간 ${remain}초 · ${picked.size}/3 담았어`;
-        if (picked.size >= 3) {
-          const labels = PACK_ITEMS.filter((item) => picked.has(item.id)).map((item) => item.label).join('·');
-          departLater(`${labels} 챙겼다 — 출발!`);
-        }
-      }));
-      closeModal = openModal({
-        id: 'journey-bridge',
-        title: '배낭 챙기기',
-        bodyEl: body,
-        dismissible: false,
-        actions: [{ label: '바로 출발', kind: 'ghost', onClick: () => done(closeModal) }]
-      });
     }
   });
 }
