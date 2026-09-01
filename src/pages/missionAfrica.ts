@@ -15,7 +15,6 @@ import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { showToast } from '../ui/toast';
-import { openModal } from '../ui/modal';
 
 type Cell = 0 | 1 | 2;
 type Screen = AfricaMissionProgress['screen'];
@@ -115,7 +114,7 @@ const CSS = `
 .map-plane{position:absolute;width:clamp(64px,6vw,96px);transform:translate(-50%,-112%);filter:drop-shadow(0 8px 8px #001a);transition:left .7s cubic-bezier(.2,.8,.3,1),top .7s cubic-bezier(.2,.8,.3,1);pointer-events:none;z-index:3}
 .map-controls{position:absolute;left:14px;bottom:14px;display:flex;gap:8px;z-index:5}.map-controls button{width:52px;height:52px;border-radius:50%;font-size:25px}
 .map-help{position:absolute;right:14px;top:14px;max-width:330px;padding:10px 14px;border-radius:14px;background:#fffdf2e8;color:#183b52;font-size:clamp(16px,1.1vw,19px);font-weight:800;box-shadow:0 6px 18px #0a304d44;z-index:5}
-.region-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,1.22fr) minmax(400px,1fr);gap:16px}
+.region-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,.95fr) minmax(460px,1.15fr);gap:16px}
 .region-visual{min-height:430px;border-radius:20px;overflow:hidden;background:#d9eef0;display:grid;grid-template-rows:minmax(300px,1fr) auto;gap:10px;padding:10px;isolation:isolate}
 .region-mapstage{position:relative;min-height:0;border-radius:15px;overflow:hidden;background:#0e6580 center/contain no-repeat;transition:background-position 360ms ease,background-size 360ms ease}
 .region-mapstage::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#03293a55,transparent 45%,#fff3);pointer-events:none}
@@ -123,9 +122,10 @@ const CSS = `
 .region-mapstage .country-pin{min-width:112px;min-height:54px;border-radius:999px;background:#fff;color:#153750;border-color:#ffc64d;z-index:5}.country-pin::after{content:'나라 이야기';display:block;font-size:16px;color:#775300}.country-pin.is-viewed{background:#e2f7ef;border-color:#168467}.country-pin.is-viewed::after{content:'✓ 살펴봄';color:#17634f}
 .region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:38px}.region-tool-copy{margin:0;min-height:1.5em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}.region-tool.is-done::after{content:'세 장면을 모두 살펴봤어!';color:#8ff5d0;font-weight:900;font-size:clamp(17px,1.2vw,20px)}
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
-.country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(14px,1.6vw,20px);display:grid;grid-template-rows:minmax(clamp(180px,24vh,330px),1fr);grid-auto-rows:auto;gap:12px;overflow:auto}
-.detail-photo{position:relative;min-height:clamp(180px,24vh,330px);width:100%;padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;cursor:zoom-in}
-.detail-photo .zoom-hint{position:absolute;left:0;right:0;bottom:0;padding:8px 12px;border-radius:0 0 13px 13px;background:#0c2c40cc;color:#fff;font:800 clamp(16px,1.15vw,19px)/1.2 var(--font-head)}
+.country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(12px,1.4vw,18px);display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.detail-photo{position:relative;flex:1 1 auto;min-height:clamp(200px,30vh,460px);width:100%;padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33}
+.detail-caption,.detail-facts,.detail-pager,.detail-dots,.region-progress{flex:0 0 auto}
+.detail-facts{max-height:24vh;overflow:auto}
 .detail-pager{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
 .detail-pager button{min-width:60px;min-height:60px;border-radius:50%;border:3px solid #cbd7df;background:#fff;color:#173b53;font-size:28px;font-weight:900;cursor:pointer}
 .detail-pager button:disabled{opacity:.32;cursor:default}
@@ -138,8 +138,6 @@ const CSS = `
 .detail-dots i{width:14px;height:14px;border-radius:50%;background:#cfdde4}.detail-dots i.is-on{background:#1b9a7a;transform:scale(1.2)}
 .region-progress{margin:0;padding:9px 14px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font:900 clamp(17px,1.2vw,21px)/1.3 var(--font-head);color:#5b430a;text-align:center}
 .region-progress.is-done{background:#e0f6ed;border-color:#18836a;color:#116d5b}
-.photo-zoom-figure{margin:0;display:grid;gap:14px}.photo-zoom-figure img{width:100%;max-height:64vh;object-fit:contain;border-radius:16px;background:#eef4f6}
-.photo-zoom-figure figcaption{font-size:clamp(19px,1.4vw,24px);line-height:1.45;color:#173b53;word-break:keep-all}
 .intro-scene{height:100%;display:grid;place-items:center;background:linear-gradient(#eafaff22,#0a527755),url('${assetUrl('africa.map')}') center/cover no-repeat}.intro-card{width:min(720px,90%);padding:clamp(22px,4vw,46px);text-align:center;border-radius:28px;background:#fffbeaed;border:3px solid #f3c44f;box-shadow:0 20px 60px #0018;animation:mapUnfold .8s ease-out both}.intro-card h1{font:900 var(--stage-title)/1.15 var(--font-head);color:#163b55}.intro-card p{font-size:var(--body-text);font-weight:800;color:#31556a}.intro-card .btn{font-size:var(--button-text);min-height:58px}@keyframes mapUnfold{from{opacity:0;transform:scaleX(.12) rotateY(24deg)}to{opacity:1;transform:none}}
 .lab-layout{height:100%;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(350px,.85fr);gap:16px;align-items:stretch}.instrument-gallery{min-height:0;background:#1a2b3be8;color:white;border-radius:20px;padding:14px;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:10px}.instrument-photo{position:relative;min-height:0;border-radius:16px;overflow:hidden;background:#eef2ed}.instrument-photo img{width:100%;height:100%;min-height:300px;object-fit:contain}.instrument-photo button{position:absolute;inset:0;border:0;background:transparent;cursor:pointer}.instrument-photo .wave{position:absolute;left:18px;right:18px;bottom:14px;height:46px;display:flex;align-items:center;justify-content:center;gap:6px;pointer-events:none}.instrument-photo .wave i{width:6px;height:15px;background:#20c8c7;border-radius:6px}.instrument-photo.is-playing .wave i{animation:wave .7s ease-in-out infinite alternate}.instrument-photo .wave i:nth-child(2n){animation-delay:.15s}.instrument-photo .wave i:nth-child(3n){animation-delay:.3s}@keyframes wave{to{height:42px;background:#ffd34d}}
 .instrument-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.instrument-thumbs button{min-height:72px;padding:4px;border:3px solid transparent;border-radius:12px;background:#fff;color:#173b53;font-weight:900}.instrument-thumbs button[aria-pressed=true]{border-color:#ffd04c;background:#fff7d9}.instrument-thumbs img{width:100%;height:42px;object-fit:cover;border-radius:8px}.instrument-copy{display:grid;align-content:start;gap:10px;background:#fff;border-radius:20px;padding:18px;overflow:auto}.instrument-copy h2{margin:0;font:900 var(--section-title)/1 var(--font-head);color:#173b53}.instrument-meta{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:clamp(16px,1.1vw,19px)}.instrument-meta dt{font-weight:900;color:#207862}.instrument-meta dd{margin:0}.instrument-controls{display:flex;gap:8px;flex-wrap:wrap}.instrument-controls .btn{flex:1;min-height:52px}.drum-pad{display:grid;grid-template-columns:1fr 1fr;gap:8px}.drum-pad button{min-height:72px;border:3px solid #fff;border-radius:16px;font:900 22px var(--font-head)}.drum-pad .low{background:#6651cf;color:white}.drum-pad .high{background:#f4c74f;color:#4c3600}
@@ -309,8 +307,8 @@ export function createPage(): Page {
           })
         ];
         let pageIndex=0;
-        const photo=document.createElement('button');photo.type='button';photo.className='detail-photo';
-        photo.innerHTML='<span class="zoom-hint">사진을 누르면 더 크게 볼 수 있어</span>';
+        // 사진은 처음부터 크게 보여 준다 — 눌러서 확대하는 단계를 없애고 화살표로 바로 넘긴다.
+        const photo=document.createElement('div');photo.className='detail-photo';photo.setAttribute('role','img');
         const pager=document.createElement('div');pager.className='detail-pager';
         pager.innerHTML='<button type="button" data-prev aria-label="이전 그림 보기">◀</button><h3></h3><button type="button" data-next aria-label="다음 그림 보기">▶</button>';
         const caption=document.createElement('p');caption.className='detail-caption';
@@ -330,7 +328,7 @@ export function createPage(): Page {
           pageIndex=Math.max(0,Math.min(pages.length-1,index));
           const current=pages[pageIndex]!;
           photo.style.backgroundImage=`url('${assetUrl(current.assetId)}')`;
-          photo.setAttribute('aria-label',`${current.title} 그림 크게 보기 · ${current.alt}`);
+          photo.setAttribute('aria-label',`${current.title} · ${current.alt}`);
           const head=pager.querySelector('h3');
           if(head)head.innerHTML=`${safe(current.title)}<span class="sub">${safe(current.sub)}</span>`;
           caption.textContent=current.caption;
@@ -347,13 +345,6 @@ export function createPage(): Page {
         };
         pager.querySelector('[data-prev]')?.addEventListener('click',()=>show(pageIndex-1));
         pager.querySelector('[data-next]')?.addEventListener('click',()=>show(pageIndex+1));
-        // 작은 확대 아이콘 대신 사진 자체를 눌러 전체 화면으로 본다.
-        photo.addEventListener('click',()=>{
-          const current=pages[pageIndex]!;
-          const figure=document.createElement('figure');figure.className='photo-zoom-figure';
-          figure.innerHTML=`<img src="${assetUrl(current.assetId)}" alt="${safe(current.alt)}"><figcaption>${safe(current.caption)}</figcaption>`;
-          openModal({id:'africa-photo-zoom',title:`${current.title} · ${current.sub}`,bodyEl:figure,actions:[{label:'닫기',kind:'primary',onClick:(close)=>close(),autofocus:true}]});
-        });
         cases.forEach((item,index)=>{const pin=button(item.countryName,'country-pin');pin.dataset.case=item.id;const scenePosition=COUNTRY_SCENE_POSITIONS[item.id]??item.scenePosition??item.mapPosition;pin.style.left=`${scenePosition.x}%`;pin.style.top=`${scenePosition.y}%`;pin.classList.toggle('is-viewed',P.visitedCountries.includes(item.id));
           pin.addEventListener('click',()=>show(index+1)); mapStage.appendChild(pin);
         });
