@@ -3,23 +3,10 @@ import { saveRepo } from '../core/SaveRepository';
 import { openModal } from './modal';
 
 /**
- * 대륙 이동 전 15초 브릿지 미니게임(P2-13) — 읽기-탭 사이의 페이스 브레이커.
- * - 기본: 배낭 챙기기(6개 중 3개 고르기, 10초 소프트 타이머 — 실패 없음)
- * - 아프리카 완료 후: 학생이 만든 여덟 박 리듬이 콜&리스폰스로 재등장
- * 언제든 "바로 출발"로 건너뛸 수 있다.
+ * 대륙 이동 전 브릿지(P2-13) — 아프리카를 완주해 자기 리듬을 만든 학생에게만 나온다.
+ * 학생이 만든 여덟 박 리듬이 출발 신호로 재등장하고, 언제든 "바로 출발"로 건너뛸 수 있다.
+ * 리듬이 없으면 브릿지 없이 곧장 출발한다.
  */
-
-const PACK_ITEMS: Array<{ id: string; label: string; svg: string }> = [
-  { id: 'bottle', label: '물병', svg: '<path d="M9 3h6v3l1.5 2v12a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V8L9 6z"/><path d="M8 12h8"/>' },
-  { id: 'hat', label: '모자', svg: '<path d="M4 15c0-4 3.5-8 8-8s8 4 8 8"/><path d="M2 15h20"/>' },
-  { id: 'map', label: '탐험 지도', svg: '<path d="m3 6 5-2 8 2 5-2v14l-5 2-8-2-5 2z"/><path d="M8 4v14M16 6v14"/>' },
-  { id: 'camera', label: '사진기', svg: '<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M9 7l1.5-3h3L15 7"/>' },
-  { id: 'note', label: '여행 수첩', svg: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>' },
-  { id: 'scope', label: '쌍안경', svg: '<circle cx="7" cy="16" r="4"/><circle cx="17" cy="16" r="4"/><path d="M7 12V5h4v7M13 12V5h4v7M11 8h2"/>' }
-];
-
-const icon = (svg: string): string =>
-  `<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${svg}</svg>`;
 
 let activeCleanup: (() => void) | null = null;
 
@@ -40,8 +27,10 @@ function savedAfricaRhythm(): number[] | null {
 }
 
 export function playDepartureBridge(destinationName: string): Promise<void> {
+  const rhythm = savedAfricaRhythm();
+  // 들려줄 내 리듬이 없으면 브릿지 없이 곧장 출발한다 — 여기서 멈추면 여행 자체가 막힌다
+  if (!rhythm) return Promise.resolve();
   return new Promise((resolve) => {
-    const rhythm = savedAfricaRhythm();
     const timers: number[] = [];
     let settled = false;
     const done = (close?: () => void) => {
@@ -60,8 +49,7 @@ export function playDepartureBridge(destinationName: string): Promise<void> {
     body.className = 'journey-bridge';
     let closeModal: () => void = () => undefined;
 
-    if (rhythm) {
-      /* ===== 리듬 에코 — 내가 만든 리듬으로 출발 신호 보내기 ===== */
+    /* ===== 리듬 에코 — 내가 만든 리듬으로 출발 신호 보내기 ===== */
       const beats = rhythm.filter((cell) => cell !== 0);
       let echoIndex = 0;
       body.innerHTML = `
@@ -128,7 +116,6 @@ export function playDepartureBridge(destinationName: string): Promise<void> {
           { label: '바로 출발', kind: 'ghost', onClick: () => done(closeModal) }
         ]
       });
-      playCall();
-    }
+    playCall();
   });
 }

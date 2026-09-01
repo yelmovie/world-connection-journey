@@ -20,7 +20,6 @@ import { completeMissionFlow } from '../ui/feedback';
 import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
-import { openModal } from '../ui/modal';
 import { fitAspect } from '../ui/aspectBox';
 import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
@@ -191,7 +190,8 @@ const PAGE_CSS = `
 .europe-mission .eu-heading .chip { color:var(--c-ink);text-shadow:none;white-space:nowrap; }
 .europe-mission .eu-board {
   min-width:0;min-height:0;border:2px solid rgba(255,255,255,.92);border-radius:24px;
-  background:#f7f2df;box-shadow:0 14px 34px rgba(8,25,45,.34);color:var(--c-ink);overflow:hidden;
+  background:rgba(255,255,255,.84);backdrop-filter:blur(11px) saturate(1.08);
+  box-shadow:0 14px 34px rgba(8,25,45,.28);color:var(--c-ink);overflow:hidden;
 }
 .europe-mission .eu-map-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
 .europe-mission .eu-map { position:relative;min-height:min(390px,58vh);background:#12496e;touch-action:none;overflow:hidden; }
@@ -242,7 +242,7 @@ const PAGE_CSS = `
 .europe-mission .eu-nav[data-dir="prev"] { left:12px; }.europe-mission .eu-nav[data-dir="next"] { right:12px; }
 .europe-mission .eu-window-panel {
   min-width:0;min-height:0;padding:13px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;
-  overflow:hidden;background:#f7f2df;border-radius:0 22px 22px 0;
+  overflow:hidden;background:rgba(255,255,255,.86);backdrop-filter:blur(11px) saturate(1.08);border-radius:0 22px 22px 0;
 }
 .europe-mission .eu-label { align-self:flex-start;padding:5px 11px;border-radius:999px;background:#e0e9f1;font-size:var(--eu-small);font-weight:900; }
 .europe-mission .eu-window-panel h3 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }
@@ -303,6 +303,14 @@ const PAGE_CSS = `
 /* 아직 고르지 않았으면 여기부터 해야 한다는 걸 눈으로 보여 준다 */
 .europe-mission .eu-prompt-row.is-required { outline:3px dashed #efb92f;outline-offset:6px;background:rgba(255,244,205,.55); }
 .europe-mission .eu-prompt { min-height:50px;padding:9px 15px;border:2px solid #aebfc8;border-radius:15px;background:#fff;font:850 var(--eu-small)/1.1 var(--font-body);cursor:pointer; }
+/* 자유 입력 대신 고르는 카드 — 문장이 카드에 그대로 보여서 무엇이 기록될지 알 수 있다 */
+.europe-mission .eu-pick-guide { margin:0;font:900 var(--eu-copy)/1.35 var(--font-head);color:var(--c-navy);word-break:keep-all; }
+.europe-mission .eu-pick-row { display:grid;gap:10px; }
+.europe-mission .eu-pick-card { display:grid;gap:5px;justify-items:start;text-align:left;padding:13px 16px;border:3px solid #cfdce3;border-radius:18px;background:#fff;cursor:pointer;box-shadow:0 4px 12px rgba(25,50,77,.1); }
+.europe-mission .eu-pick-card strong { padding:2px 12px;border-radius:999px;background:#eef3f7;color:#3c5a70;font:900 var(--eu-small)/1.3 var(--font-body); }
+.europe-mission .eu-pick-card span { font:800 var(--eu-copy)/1.4 var(--font-body);color:var(--c-ink);word-break:keep-all; }
+.europe-mission .eu-pick-card[aria-pressed="true"] { border-color:#efb92f;background:#fff9e6;box-shadow:0 0 0 3px rgba(239,185,47,.3); }
+.europe-mission .eu-pick-card[aria-pressed="true"] strong { background:#efb92f;color:#4c3600; }
 .europe-mission .eu-prompt[aria-pressed="true"] { border-color:#5c43c3;background:#ebe8ff;color:#362898; }
 .europe-mission .eu-prompt-question { min-height:54px;padding:12px 15px;border-radius:14px;background:#e8f1f4;font-size:var(--eu-copy);font-weight:900;line-height:1.3; }
 .europe-mission textarea { width:100%;min-height:120px;padding:14px 16px;resize:vertical;border:3px solid #a9bac5;border-radius:16px;background:#fff;font:800 var(--eu-copy)/1.5 var(--font-body);color:var(--c-ink); }
@@ -726,167 +734,105 @@ export function createPage(): Page {
         return country && visual && country.visuals.some((item) => item.id === visual.id) ? { country, visual } : null;
       };
 
+      /** 고른 방향 + 고른 장면으로 이유 문장을 만든다 — 자유 입력 대신 선택으로 문장을 완성한다. */
+      const reasonSentence = (promptId: string, visual: EuropeVisual): string => {
+        if (promptId === 'life') return `${visual.title}에서 사람들이 살아가는 모습이 궁금해.`;
+        if (promptId === 'story') return `${visual.title}에 담긴 이야기를 더 알고 싶어.`;
+        return `${visual.title}의 모습이 오래 눈에 남았어.`;
+      };
+
       const renderReason = (): void => {
         const pair = selectedPair();
         if (!pair) { setScreen('gallery'); return; }
-        const prompts = content.reasonPrompts.map((prompt) => `<button type="button" class="eu-prompt" data-prompt="${prompt.id}" aria-pressed="${prompt.id === state.reasonPromptId}">${esc(prompt.label)}</button>`).join('');
-        const activePrompt = content.reasonPrompts.find((prompt) => prompt.id === state.reasonPromptId);
+        const cards = content.reasonPrompts.map((prompt) => `<button type="button" class="eu-pick-card" data-prompt="${prompt.id}" aria-pressed="${prompt.id === state.reasonPromptId}">
+          <strong>${esc(prompt.label)}</strong><span>${esc(reasonSentence(prompt.id, pair.visual))}</span>
+        </button>`).join('');
         const screen = element(`<section class="eu-screen">
           <div class="eu-heading"><h2>왜 이 나라가 궁금해?</h2><span class="chip">${esc(pair.country.name)}</span></div>
           <div class="eu-board eu-form-layout">
             <div class="eu-evidence"><img class="${imageClass(pair.visual)}" src="${assetUrl(pair.visual.imageId)}" alt="${esc(pair.visual.title)}" data-asset-id="${pair.visual.imageId}"><div class="eu-evidence-caption"><strong>${esc(pair.visual.title)}</strong><span>${esc(pair.visual.lookFor)}</span></div></div>
             <div class="eu-write">
-              <div class="eu-prompt-row" role="group" aria-label="이유 생각 방향">${prompts}</div>
-              <div class="eu-prompt-question">${activePrompt ? esc(activePrompt.prompt) : '먼저 생각 방향 하나를 골라 봐.'}</div>
-              <label for="eu-reason" style="font-size:var(--eu-copy);font-weight:900">나의 이유</label>
-              <textarea id="eu-reason" maxlength="160" placeholder="사진에서 본 것을 넣어 짧게 써 봐.">${esc(state.reasonDraft)}</textarea>
-              <span class="eu-count" data-count>${state.reasonDraft.length}/160</span>
+              <p class="eu-pick-guide">이 장면을 고른 이유에 가장 가까운 것을 하나 골라 줘.</p>
+              <div class="eu-pick-row" role="radiogroup" aria-label="이 나라가 궁금한 이유">${cards}</div>
             </div>
           </div>
         </section>`);
         body.replaceChildren(screen);
-        screen.querySelectorAll<HTMLButtonElement>('[data-prompt]').forEach((promptButton) => {
-          promptButton.addEventListener('click', () => {
-            state.reasonPromptId = promptButton.dataset.prompt ?? null;
-            persist();
-            renderReason();
-          });
-        });
-        const textarea = screen.querySelector<HTMLTextAreaElement>('#eu-reason')!;
-        const count = screen.querySelector<HTMLElement>('[data-count]')!;
         const back = button('장면 다시 고르기', 'ghost');
         const next = button('궁금한 점 만들기');
-        // 막히는 이유를 그대로 말해 준다 — 방향을 안 골랐는데 "더 써 봐"라고만 하면 학생은 계속 쓰다 갇힌다
-        const blockReason = (): string | null => {
-          if (!state.reasonPromptId) return '먼저 위에서 생각 방향 하나를 골라 줘!';
-          if (!hasStudentReason(state.reasonDraft)) return '이유를 두 낱말 이상, 조금 더 써 봐';
-          return null;
-        };
         const syncNext = () => {
-          const blocked = blockReason();
-          next.disabled = blocked !== null;
-          screen.querySelector<HTMLElement>('.eu-prompt-row')?.classList.toggle('is-required', !state.reasonPromptId);
+          next.disabled = !state.reasonPromptId;
           const status = bottom.querySelector<HTMLElement>('.eu-status');
-          if (status) status.textContent = blocked ?? '이유가 준비됐어';
+          if (status) status.textContent = state.reasonPromptId ? '이유가 준비됐어' : '이유 카드 하나를 골라 줘';
         };
-        const update = () => {
-          state.reasonDraft = textarea.value;
-          count.textContent = `${state.reasonDraft.length}/160`;
-          syncNext();
-          schedulePersist();
-        };
-        textarea.addEventListener('input', update);
+        screen.querySelectorAll<HTMLButtonElement>('[data-prompt]').forEach((card) => {
+          card.addEventListener('click', () => {
+            state.reasonPromptId = card.dataset.prompt ?? null;
+            // 고른 카드의 문장이 그대로 학생의 이유가 된다(엽서·수료증이 이 문장을 읽는다)
+            state.reasonDraft = state.reasonPromptId ? reasonSentence(state.reasonPromptId, pair.visual) : '';
+            persist();
+            void audio.playSfx('tap');
+            screen.querySelectorAll<HTMLButtonElement>('[data-prompt]').forEach((other) => {
+              other.setAttribute('aria-pressed', String(other === card));
+            });
+            syncNext();
+          });
+        });
         back.addEventListener('click', () => setScreen('gallery'));
-        next.addEventListener('click', () => setScreen('question'));
-        setBottom(blockReason() ?? '이유가 준비됐어', [back, next]);
+        next.addEventListener('click', () => { if (state.reasonPromptId) setScreen('question'); });
+        setBottom('', [back, next]);
         syncNext();
-        say('방향만 고른 뒤, 사진에서 본 것을 네 문장으로 써.', activePrompt ? textarea : screen.querySelector<HTMLElement>('[data-prompt]'));
+        say('마음에 가장 가까운 이유 카드를 골라 봐.', screen.querySelector<HTMLElement>('[data-prompt]'));
+      };
+
+      /** 앞말 + 고른 장면으로 질문 문장을 만든다 — 자유 입력 없이 완성되는 질문. */
+      const questionTail = (starterId: string, visual: EuropeVisual): string => {
+        if (starterId === 'how') return `${withJosa(visual.title, '을', '를')} 가꾸며 지낼까?`;
+        if (starterId === 'change') return `${visual.title}에서 무엇이 달라졌을까?`;
+        return `${withJosa(visual.title, '을', '를')} 소중히 지킬까?`;
       };
 
       const renderQuestion = (): void => {
         const pair = selectedPair();
         if (!pair) { setScreen('gallery'); return; }
-        const starters = content.questionStarters.map((starter) => `<button type="button" class="eu-prompt" data-starter="${starter.id}" aria-pressed="${starter.id === state.questionStarterId}">${esc(starter.label)}</button>`).join('');
-        const activeStarter = content.questionStarters.find((starter) => starter.id === state.questionStarterId);
-        const questionHint = activeStarter?.id === 'change'
-          ? '예: 무엇이 달라졌는지'
-          : activeStarter?.id === 'why'
-            ? '예: 이곳에 모이는지'
-            : activeStarter?.id === 'how'
-              ? '예: 계절 음식을 고르는지'
-              : '앞말을 먼저 골라 봐.';
+        const cards = content.questionStarters.map((starter) => `<button type="button" class="eu-pick-card" data-starter="${starter.id}" aria-pressed="${starter.id === state.questionStarterId}">
+          <strong>${esc(starter.label)}</strong><span>${esc(`${starter.text} ${questionTail(starter.id, pair.visual)}`)}</span>
+        </button>`).join('');
         const screen = element(`<section class="eu-screen">
           <div class="eu-heading"><h2>더 알아볼 질문</h2><span class="chip">${esc(pair.country.name)}</span></div>
           <div class="eu-board eu-form-layout">
             <div class="eu-evidence"><img class="${imageClass(pair.visual)}" src="${assetUrl(pair.visual.imageId)}" alt="${esc(pair.visual.title)}" data-asset-id="${pair.visual.imageId}"><div class="eu-evidence-caption"><strong>${esc(pair.visual.title)}</strong><span>${esc(state.reasonDraft)}</span></div></div>
             <div class="eu-write">
-              <div class="eu-prompt-row" role="group" aria-label="질문 앞말">${starters}</div>
-              <div class="eu-question-preview" data-preview>${activeStarter ? `<span>${esc(activeStarter.text)}</span> ${esc(state.questionDraft || '…')}?` : '질문 앞말을 먼저 골라 봐.'}</div>
-              <label for="eu-question" style="font-size:var(--eu-copy);font-weight:900">내가 이어 쓸 말</label>
-              <textarea id="eu-question" maxlength="120" placeholder="${esc(questionHint)}">${esc(state.questionDraft)}</textarea>
-              <span class="eu-count" data-count>${state.questionDraft.length}/120</span>
+              <p class="eu-pick-guide">회의에서 물어보고 싶은 질문을 하나 골라 줘.</p>
+              <div class="eu-pick-row" role="radiogroup" aria-label="회의에 가져갈 질문">${cards}</div>
             </div>
           </div>
         </section>`);
         body.replaceChildren(screen);
-        screen.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((starterButton) => {
-          starterButton.addEventListener('click', () => {
-            state.questionStarterId = starterButton.dataset.starter ?? null;
-            persist();
-            renderQuestion();
-          });
-        });
-        const textarea = screen.querySelector<HTMLTextAreaElement>('#eu-question')!;
-        const count = screen.querySelector<HTMLElement>('[data-count]')!;
-        const preview = screen.querySelector<HTMLElement>('[data-preview]')!;
         const back = button('이유 다시 보기', 'ghost');
         const next = button('환경 대화 기록 만들기');
-        // reason 화면과 같은 규칙 — 무엇 때문에 막혔는지 안내에 그대로 쓴다
-        const blockReason = (): string | null => {
-          if (!state.questionStarterId) return '먼저 위에서 질문 앞말을 골라 줘!';
-          if (!hasStudentQuestion(state.questionDraft)) return '앞말 뒤에 궁금한 내용을 조금 더 이어 써 봐';
-          return null;
-        };
         const syncNext = () => {
-          const blocked = blockReason();
-          next.disabled = blocked !== null;
-          screen.querySelector<HTMLElement>('.eu-prompt-row')?.classList.toggle('is-required', !state.questionStarterId);
+          next.disabled = !state.questionStarterId;
           const status = bottom.querySelector<HTMLElement>('.eu-status');
-          if (status) status.textContent = blocked ?? '질문이 준비됐어';
+          if (status) status.textContent = state.questionStarterId ? '질문이 준비됐어' : '질문 카드 하나를 골라 줘';
         };
-        const update = () => {
-          state.questionDraft = textarea.value;
-          count.textContent = `${state.questionDraft.length}/120`;
-          const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
-          preview.textContent = fullQuestion(starter, state.questionDraft) || '질문 앞말을 고르고 네 말을 이어 써 봐.';
-          syncNext();
-          schedulePersist();
-        };
-        textarea.addEventListener('input', update);
-        back.addEventListener('click', () => setScreen('reason'));
-        next.addEventListener('click', () => setScreen('postcard'));
-        setBottom(blockReason() ?? '질문이 준비됐어', [back, next]);
-        syncNext();
-        say('앞말 뒤에 네가 정말 궁금한 내용을 이어 써.', activeStarter ? textarea : screen.querySelector<HTMLElement>('[data-starter]'));
-      };
-
-      /** 흔들리는 계획 카드(P2-14) — 제출 직전 사건 1장. 실패는 없지만 계획 한 칸을 직접 고쳐야 한다. */
-      let shakeupDone = false;
-      const showShakeupCard = (buttonEl: HTMLButtonElement): void => {
-        const original = state.reasonDraft.trim();
-        const cardBody = element(`<div style="display:grid;gap:10px;text-align:left">
-          <p style="font-weight:800;line-height:1.5">회의 준비 중 소식이 왔어! 발표 시간이 줄어서, <strong>사진에서 본 것이 담긴 생생한 이유</strong>부터 발표한대.</p>
-          <p style="font-weight:800;color:var(--c-ink-soft)">네 이유에 사진에서 본 것을 한 마디만 더해 줘.</p>
-          <textarea id="eu-shakeup" maxlength="160" rows="3" style="width:100%;font:inherit;padding:10px;border-radius:12px;border:2px solid var(--c-line)">${esc(original)}</textarea>
-          <p id="eu-shakeup-hint" style="margin:0;font-weight:800;color:var(--c-coral)" hidden>이유가 아직 그대로야 — 사진 속 모습 하나만 더 붙여 줘!</p>
-        </div>`);
-        openModal({
-          id: 'europe-shakeup',
-          title: '흔들리는 소식!',
-          bodyEl: cardBody,
-          dismissible: false,
-          actions: [{
-            label: '이유 고쳐서 제출하기',
-            kind: 'primary',
-            onClick: (close) => {
-              const input = cardBody.querySelector<HTMLTextAreaElement>('#eu-shakeup')!;
-              const revised = input.value.replace(/\s+/g, ' ').trim();
-              if (revised === original || !hasStudentReason(revised)) {
-                const hint = cardBody.querySelector<HTMLElement>('#eu-shakeup-hint');
-                if (hint) hint.hidden = false;
-                input.focus();
-                return;
-              }
-              state.reasonDraft = revised.slice(0, 160);
-              state.updatedAt = new Date().toISOString();
-              persist();
-              shakeupDone = true;
-              void audio.playSfx('success');
-              close();
-              finishMission(buttonEl);
-            }
-          }]
+        screen.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((card) => {
+          card.addEventListener('click', () => {
+            state.questionStarterId = card.dataset.starter ?? null;
+            state.questionDraft = state.questionStarterId ? questionTail(state.questionStarterId, pair.visual) : '';
+            persist();
+            void audio.playSfx('tap');
+            screen.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((other) => {
+              other.setAttribute('aria-pressed', String(other === card));
+            });
+            syncNext();
+          });
         });
+        back.addEventListener('click', () => setScreen('reason'));
+        next.addEventListener('click', () => { if (state.questionStarterId) setScreen('postcard'); });
+        setBottom('', [back, next]);
+        syncNext();
+        say('궁금한 질문 카드를 골라 봐.', screen.querySelector<HTMLElement>('[data-starter]'));
       };
 
       const finishMission = (buttonEl: HTMLButtonElement): void => {
@@ -898,10 +844,6 @@ export function createPage(): Page {
         const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
         if (!pair || !state.reasonPromptId || !starter || !hasStudentReason(state.reasonDraft) || !hasStudentQuestion(state.questionDraft)) {
           showToast('세계 회의에 가져갈 이유와 질문을 먼저 완성해 줘.', 'warn');
-          return;
-        }
-        if (!shakeupDone) {
-          showShakeupCard(buttonEl);
           return;
         }
         state.postcardCompleted = true;
