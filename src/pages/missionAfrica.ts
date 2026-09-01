@@ -115,24 +115,24 @@ const CSS = `
 .map-controls{position:absolute;left:14px;bottom:14px;display:flex;gap:8px;z-index:5}.map-controls button{width:52px;height:52px;border-radius:50%;font-size:25px}
 .map-help{position:absolute;right:14px;top:14px;max-width:330px;padding:10px 14px;border-radius:14px;background:#fffdf2e8;color:#183b52;font-size:clamp(16px,1.1vw,19px);font-weight:800;box-shadow:0 6px 18px #0a304d44;z-index:5}
 .region-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,.95fr) minmax(460px,1.15fr);gap:16px}
-.region-visual{min-height:430px;border-radius:20px;overflow:hidden;background:#d9eef0;display:grid;grid-template-rows:minmax(300px,1fr) auto;gap:10px;padding:10px;isolation:isolate}
-.region-mapstage{position:relative;min-height:0;border-radius:15px;overflow:hidden;background:#0e6580 center/contain no-repeat;transition:background-position 360ms ease,background-size 360ms ease}
+.region-visual{min-height:0;border-radius:20px;overflow:hidden;background:#d9eef0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px;isolation:isolate}
+.region-mapstage{position:relative;min-height:clamp(150px,26vh,420px);border-radius:15px;overflow:hidden;background:#0e6580 center/contain no-repeat;transition:background-position 360ms ease,background-size 360ms ease}
 .region-mapstage::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#03293a55,transparent 45%,#fff3);pointer-events:none}
 .region-instruction{position:absolute;left:16px;top:16px;right:16px;z-index:4;background:#fffdf1e8;border-left:7px solid #f3bf45;border-radius:14px;padding:10px 14px;font-size:var(--body-text);font-weight:850;color:#173b53}
 .region-mapstage .country-pin{min-width:112px;min-height:54px;border-radius:999px;background:#fff;color:#153750;border-color:#ffc64d;z-index:5}.country-pin::after{content:'나라 이야기';display:block;font-size:16px;color:#775300}.country-pin.is-viewed{background:#e2f7ef;border-color:#168467}.country-pin.is-viewed::after{content:'✓ 살펴봄';color:#17634f}
-.region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:38px}.region-tool-copy{margin:0;min-height:1.5em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}.region-tool.is-done::after{content:'세 장면을 모두 살펴봤어!';color:#8ff5d0;font-weight:900;font-size:clamp(17px,1.2vw,20px)}
+.region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:38px}.region-tool{flex:0 0 auto}.region-tool-copy{margin:0;min-height:2.8em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff;word-break:keep-all}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}.region-tool.is-done::after{content:'세 장면을 모두 살펴봤어!';color:#8ff5d0;font-weight:900;font-size:clamp(17px,1.2vw,20px)}
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
-.country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(12px,1.4vw,18px);display:flex;flex-direction:column;gap:10px;overflow:hidden}
-.detail-photo{position:relative;flex:1 1 auto;min-height:clamp(200px,30vh,460px);width:100%;padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33}
+.country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(11px,1.2vw,16px);display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.detail-photo{position:relative;flex:0 0 auto;width:100%;aspect-ratio:16/9;max-height:min(30vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33}
 .detail-caption,.detail-facts,.detail-pager,.detail-dots,.region-progress{flex:0 0 auto}
 .detail-facts{max-height:24vh;overflow:auto}
 .detail-pager{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px}
-.detail-pager button{min-width:60px;min-height:60px;border-radius:50%;border:3px solid #cbd7df;background:#fff;color:#173b53;font-size:28px;font-weight:900;cursor:pointer}
+.detail-pager button{min-width:54px;min-height:54px;border-radius:50%;border:3px solid #cbd7df;background:#fff;color:#173b53;font-size:28px;font-weight:900;cursor:pointer}
 .detail-pager button:disabled{opacity:.32;cursor:default}
 .detail-pager h3{margin:0;text-align:center;font:900 clamp(23px,1.95vw,33px)/1.15 var(--font-head);color:#173b53;word-break:keep-all}
 .detail-pager .sub{display:block;margin-top:3px;font:800 clamp(17px,1.25vw,21px)/1.2 var(--font-body);color:#3f7f6d}
-.detail-caption{margin:0;padding:13px 16px;border-radius:14px;background:#eff7f4;border-left:7px solid #1b9a7a;font-size:clamp(19px,1.4vw,24px);line-height:1.45;color:#123f3a;word-break:keep-all}
-.detail-facts{margin:0;display:grid;gap:8px;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#1d3b4a}
+.detail-caption{flex:0 0 auto;margin:0;padding:12px 15px;border-radius:14px;background:#eff7f4;border-left:7px solid #1b9a7a;font-size:clamp(19px,1.4vw,24px);line-height:1.45;color:#123f3a;word-break:keep-all}
+.detail-facts{flex:1 1 auto;min-height:0;overflow:auto;margin:0;display:grid;gap:8px;align-content:start;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#1d3b4a}
 .detail-facts p{margin:0;word-break:keep-all}.detail-facts b{color:#155b4c;margin-right:6px}
 .detail-dots{display:flex;gap:8px;justify-content:center}
 .detail-dots i{width:14px;height:14px;border-radius:50%;background:#cfdde4}.detail-dots i.is-on{background:#1b9a7a;transform:scale(1.2)}

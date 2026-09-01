@@ -93,6 +93,9 @@ function planePosition(x: number, y: number): { x: number; y: number } {
 /** 배움 카드 칩 아이콘 (이모지 금지 — §6) */
 const SVG_CARD = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 9h6M9 13h6"/></svg>`;
 
+/** 잠긴 단계 표시 — 색을 빼는 대신 자물쇠 배지로 알린다 */
+const SVG_LOCK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>`;
+
 /** 새 사진 도착 신호 아이콘 */
 const SVG_MAIL = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
 
@@ -205,13 +208,15 @@ const MAP_CSS = `
   object-fit:contain;object-position:center bottom;padding:6px 7px 0;
   background:radial-gradient(circle at 50% 38%,rgba(224,250,255,.46),rgba(34,126,161,.18) 68%,transparent 72%);
 }
-.map-hotspot[data-state="locked"] { filter:grayscale(.8) brightness(.75);cursor:pointer; }
-.map-hotspot[data-state="locked"].is-selected { filter:grayscale(.2) brightness(.94); }
-/* 색이 차오르는 지도(P2-12) — 아직 안 간 대륙은 옅고, 완료하면 온전한 색이 된다 */
-.map-hotspot[data-state="available"] .node-img,
-.map-hotspot[data-state="in_progress"] .node-img { filter:saturate(.32) brightness(.97); }
-.map-hotspot[data-state="available"].is-selected .node-img,
-.map-hotspot[data-state="in_progress"].is-selected .node-img { filter:none; }
+/* 상태는 색을 죽여서 알리지 않는다 — 캐릭터는 늘 제 색으로 두고 테두리·배지로 구분한다 */
+.map-hotspot[data-state="locked"] { cursor:pointer; }
+.map-hotspot[data-state="locked"] .node-img { box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 8px rgba(120,145,170,.55),var(--shadow-card); }
+/* 아직 안 간 대륙은 점선 링으로 "여기부터 가 봐"를 표시 */
+.map-hotspot[data-state="available"] .node-img { box-shadow:0 0 0 4px rgba(255,255,255,.92),0 0 0 8px rgba(242,193,78,.85),var(--shadow-card); }
+.map-hotspot[data-state="in_progress"] .node-img { box-shadow:0 0 0 4px rgba(255,255,255,.92),0 0 0 8px rgba(108,76,232,.75),var(--shadow-card); }
+/* 잠긴 단계는 자물쇠 배지로 알린다 */
+.map-node-lock { position:absolute;left:-6px;top:-2px;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#5d7793;color:#fff;border:3px solid #fff;box-shadow:var(--shadow-card);z-index:4; }
+.map-node-lock svg { width:17px;height:17px; }
 /* 완료 대륙에 모은 환경 신호 개수 뱃지 */
 .map-node-signals { position:absolute;left:50%;top:-16px;transform:translateX(-50%);padding:2px 10px;border-radius:999px;background:var(--c-turquoise);color:#063c3e;border:2px solid #fff;font:900 16px/1.3 var(--font-head);white-space:nowrap;box-shadow:var(--shadow-card);z-index:4; }
 .map-hotspot[data-state="available"] .node-label { border-color:var(--c-coral); }
@@ -538,6 +543,7 @@ export function createPage(): Page {
           ${hasAsset(spot.assetId) ? `<img class="node-img" src="${assetUrl(spot.assetId)}" data-asset-id="${spot.assetId}" alt="${spot.assetAlt}">` : ''}
           <span class="node-badge" aria-hidden="true">${index + 1}</span>
           ${mission.status === 'completed' ? '<span class="map-node-check" aria-hidden="true">✓</span>' : ''}
+          ${mission.status === 'locked' && !saveRepo.get().teacherUnlocked ? `<span class="map-node-lock" aria-hidden="true">${SVG_LOCK}</span>` : ''}
           ${(() => {
             if (mission.status !== 'completed') return '';
             const signalCount = collectedEarthSignals().filter((item) => item.missionId === spot.id).length;

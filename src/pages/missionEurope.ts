@@ -193,8 +193,8 @@ const PAGE_CSS = `
   background:rgba(255,255,255,.84);backdrop-filter:blur(11px) saturate(1.08);
   box-shadow:0 14px 34px rgba(8,25,45,.28);color:var(--c-ink);overflow:hidden;
 }
-.europe-mission .eu-map-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
-.europe-mission .eu-map { position:relative;min-height:min(390px,58vh);background:#12496e;touch-action:none;overflow:hidden; }
+.europe-mission .eu-map-layout { flex:1 1 0;min-height:0;max-height:100%;display:grid;grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr) clamp(245px,20vw,310px);gap:12px; }
+.europe-mission .eu-map { position:relative;min-height:0;height:100%;background:#12496e;touch-action:none;overflow:hidden; }
 /* 확대·이동은 이 층에만 건다 — 표식이 지도와 함께 움직여야 위치가 어긋나지 않는다 */
 .europe-mission .eu-map-layer {
   position:absolute;inset:0;transform-origin:50% 50%;transition:transform .12s ease-out;background:
@@ -229,8 +229,9 @@ const PAGE_CSS = `
 .europe-mission .eu-bag-thumb { aspect-ratio:1;border:2px solid #fff;border-radius:12px;overflow:hidden;background:#dce7e9;box-shadow:0 3px 8px rgba(25,50,77,.18); }
 .europe-mission .eu-bag-thumb img { width:100%;height:100%;object-fit:cover; }
 .europe-mission .eu-empty { padding:13px;border:2px dashed #aab7bd;border-radius:14px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35;text-align:center; }
-.europe-mission .eu-window-layout { flex:1;height:100%;min-height:min(460px,66vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(400px,29vw,470px);border-radius:26px; }
-.europe-mission .eu-stage { position:relative;min-height:min(390px,58vh);background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
+/* 화면에 남은 높이만 쓴다 — 고정 최소 높이를 두면 북마크바가 있는 창에서 아래가 잘린다 */
+.europe-mission .eu-window-layout { flex:1 1 0;height:auto;min-height:0;max-height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,27vw,470px);grid-template-rows:minmax(0,1fr);border-radius:26px; }
+.europe-mission .eu-stage { position:relative;min-height:0;height:100%;background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
 .europe-mission .eu-stage > img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }
 .europe-mission .eu-stage > img.is-object { object-fit:contain;padding:5%;background:linear-gradient(145deg,#d8f0f1,#b5d5df); }
 .europe-mission .eu-stage-shade { position:absolute;inset:auto 0 0;padding:60px 20px 17px;background:linear-gradient(transparent,rgba(7,24,42,.84));color:#fff; }
@@ -362,9 +363,9 @@ const PAGE_CSS = `
 @media (max-height:650px) {
   .europe-mission .page-body { padding-block:5px; }
   .europe-mission .eu-heading p { display:none; }
-  .europe-mission .eu-map-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:min(390px,58vh); }
-  .europe-mission .eu-window-layout { min-height:min(420px,68vh); }
-  .europe-mission .eu-gallery { min-height:min(390px,58vh); }
+  /* 짧은 화면일수록 최소 높이를 강제하면 아래가 잘린다 — 남는 높이만 쓰게 둔다 */
+  .europe-mission .eu-map-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap,
+  .europe-mission .eu-window-layout,.europe-mission .eu-gallery { min-height:0; }
   .europe-mission .eu-window-panel { padding:11px;gap:7px; }
   .europe-mission .eu-story-detail { padding:11px;gap:7px; }
   .europe-mission .eu-story-detail__story { line-height:1.38!important; }

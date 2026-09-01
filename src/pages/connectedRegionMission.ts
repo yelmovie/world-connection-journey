@@ -193,8 +193,9 @@ const PAGE_CSS = `
 .regional-goal{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:4px 11px;border-radius:999px;border:2px solid #b9cbd6;background:#fff;font-weight:850;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
 .regional-goal.is-done{color:#1d5c39;border-color:#277147;background:#eefaf2}
 .regional-goal.is-done::before{content:'✓';font-weight:900}
-.regional-modal{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(330px,1fr);gap:20px;max-width:none}
-.regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:clamp(340px,58vh,660px)}
+.regional-modal{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(320px,.95fr);gap:18px;max-width:none;align-items:start}
+/* 사진은 세로로 세우지 않고 가로(16:9)로 크게 — 아프리카 지역 화면과 같은 눈높이 */
+.regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;width:100%;aspect-ratio:16/9;max-height:64vh}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
 .regional-modal-visual .regional-after{position:absolute;inset:0}
 .regional-wipe-bar{position:absolute;top:0;bottom:0;width:4px;transform:translateX(-50%);background:#fff;box-shadow:0 0 8px #0008;pointer-events:none}
@@ -214,11 +215,6 @@ const PAGE_CSS = `
 .regional-hotspot.is-found::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:950 25px/1 var(--font-head);text-shadow:0 2px 4px rgba(3,35,28,.75)}
 .regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
 @media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
-/* 오세아니아 '숨은 변화 찾기'(P2-15) — 점이 숨어 있어서 사진을 관찰해야 찾는다 */
-.regional-hotspot.is-hunt{opacity:0}
-.regional-hotspot.is-hunt::after{animation:none;opacity:0}
-.regional-hotspot.is-hunt:focus-visible,.regional-hotspot.is-hunt.is-found,.regional-hotspot.is-hunt.is-revealed{opacity:1}
-.regional-hotspot.is-hunt.is-revealed::after{animation:regional-ping 1.6s ease-out infinite;opacity:1}
 /* 오세아니아 바다 지킴 게이지 — 선택할 때마다 물이 차오른다 */
 .regional-gauge{display:flex;align-items:center;gap:9px;flex:1 1 220px;min-width:200px}
 .regional-gauge strong{flex:0 0 auto;font:900 max(16px,calc(var(--fs-small) - 2px))/1.2 var(--font-head);color:#0c4a63}
@@ -230,7 +226,7 @@ const PAGE_CSS = `
 .regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
 .regional-scene-guide strong{font-size:clamp(17px,1.25vw,21px);line-height:1.25}
 .regional-scene-count{min-width:64px;padding:5px 10px;border-radius:999px;background:#173b53;color:#fff;text-align:center;font:900 clamp(16px,1.1vw,19px)/1.2 var(--font-head)}
-.regional-spot-detail{min-height:220px;padding:20px;display:grid;align-content:center;gap:10px;border:3px solid #b9d9dc;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(232,248,246,.96));box-shadow:0 10px 24px rgba(18,60,81,.12);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.regional-spot-detail{min-height:0;padding:16px 18px;display:grid;align-content:center;gap:10px;border:3px solid #b9d9dc;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(232,248,246,.96));box-shadow:0 10px 24px rgba(18,60,81,.12);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
 .regional-spot-detail.is-empty{justify-items:center;text-align:center;border-style:dashed;background:rgba(246,251,250,.84);color:var(--c-ink-soft)}
 .regional-spot-detail.is-revealed{border-color:var(--c-turquoise);box-shadow:0 12px 28px rgba(18,128,123,.18);animation:regional-detail-in .28s ease-out}
 .regional-spot-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:#173b53;color:#ffd34f;font-size:28px;box-shadow:0 7px 16px rgba(12,47,71,.22)}
@@ -240,7 +236,7 @@ const PAGE_CSS = `
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
 .modal:has(.regional-modal){width:min(1320px,96vw);border-radius:28px;overflow:hidden}
 @media(min-width:941px){.regional-side{overflow:hidden;padding:13px 14px;gap:7px}.regional-side p{font-size:max(16px,var(--fs-small));line-height:1.35}.regional-example-list{gap:6px}.regional-example{min-height:52px;padding:7px 12px}.regional-photo-grid{flex:1 1 auto;min-height:0;gap:7px;grid-auto-rows:minmax(clamp(102px,14vh,178px),1fr)}.regional-photo img{height:100%;min-height:clamp(74px,10.5vh,126px);aspect-ratio:auto}.regional-goals{gap:5px;padding-top:7px}.regional-goal{min-height:32px;padding:3px 10px}}
-@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px)}.regional-map{height:auto;min-height:clamp(190px,44vh,520px)}.regional-map-layer{max-height:none}.regional-photo-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}.regional-photo{height:auto}.regional-photo img{height:auto;aspect-ratio:4/3}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:clamp(300px,42vh,420px)}}
+@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px)}.regional-map{height:auto;min-height:clamp(190px,44vh,520px)}.regional-map-layer{max-height:none}.regional-photo-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}.regional-photo{height:auto}.regional-photo img{height:auto;aspect-ratio:4/3}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{aspect-ratio:16/9;max-height:46vh}}
 @media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:16px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:16px}}
 `;
 
@@ -392,21 +388,19 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const spotCopy = (index: number): string => index === 0
           ? [scene.summary, scene.detail].filter(Boolean).join(' ')
           : scene.discovery;
-        // 오세아니아는 점이 숨어 있는 '숨은 변화 찾기' — 사진을 직접 관찰해야 한다(P2-15). 세 번 빗나가면 점을 보여 준다.
-        const huntMode = model.id === 'oceania' && !viewed && scene.hotspots.length > 0;
         modalBody.innerHTML = `
           <div class="regional-modal-visual" data-scene-visual>
             <img src="${imageFor(model, scene.assetId)}" alt="${esc(scene.title)} 학습용 재현 이미지">
-            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}${huntMode ? ' is-hunt' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
+            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
           </div>
           <div class="regional-modal-copy">
             <span class="chip">${esc(scene.categoryLabel)}</span>
             <h3>${esc(scene.title)}</h3>
-            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : huntMode ? '숨은 변화 찾기! 달라진 곳을 사진에서 직접 찾아 눌러 봐.' : '사진 속 반짝이는 점을 하나씩 눌러 봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
-            <section class="regional-spot-detail is-empty" data-spot-detail aria-live="polite">
+            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : '사진 속 반짝이는 점을 눌러 자세히 살펴봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
+            <section class="regional-spot-detail" data-spot-detail aria-live="polite">
               <span class="regional-spot-icon" aria-hidden="true">✦</span>
-              <h4 data-spot-title>${scene.hotspots.length ? '어느 점이 궁금해?' : esc(scene.title)}</h4>
-              <p data-spot-copy>${scene.hotspots.length ? '점을 누르면 그곳의 설명이 여기에 한 개씩 나타나.' : esc([scene.detail, scene.discovery].filter(Boolean).join(' '))}</p>
+              <h4 data-spot-title>${esc(scene.title)}</h4>
+              <p data-spot-copy>${esc([scene.summary, scene.detail].filter(Boolean).join(' '))}</p>
             </section>
           </div>`;
         modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((button) => button.addEventListener('click', () => {
@@ -440,22 +434,6 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           if (!wasFound) void audio.playSfx('pickup');
           if (foundHotspotIds.size >= scene.hotspots.length) markViewed();
         }));
-        if (huntMode) {
-          let misses = 0;
-          modalBody.querySelector<HTMLElement>('[data-scene-visual]')?.addEventListener('click', (ev) => {
-            if ((ev.target as HTMLElement).closest('[data-hotspot]')) return;
-            misses += 1;
-            void audio.playSfx('partial');
-            const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
-            if (misses >= 3) {
-              // 세 번 빗나가면 실패 대신 점을 보여 준다 — 관찰 유도, 좌절 방지
-              modalBody.querySelectorAll('.regional-hotspot.is-hunt').forEach((spot) => spot.classList.add('is-revealed'));
-              if (hint) hint.textContent = '좋아, 반짝이는 점을 보여 줄게! 눌러서 확인해 봐.';
-            } else if (hint) {
-              hint.textContent = misses === 1 ? '가까워! 사진 속 달라진 곳을 자세히 봐.' : '한 번 더! 사람이나 물건이 달라진 곳을 찾아 봐.';
-            }
-          });
-        }
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
       };

@@ -608,7 +608,8 @@
   white-space: nowrap;
 }
 .round-node[data-state="completed"] .node-label { background: var(--c-success); color: #fff; border-color: #1f8158; }
-.round-node[data-state="locked"] { cursor: not-allowed; filter: grayscale(0.75) brightness(0.85); }
+/* 잠긴 노드도 캐릭터 색은 그대로 — 상태는 자물쇠 배지와 테두리로 알린다 */
+.round-node[data-state="locked"] { cursor: pointer; }
 
 /* 보드 패널 — 크림색 게시판 + 상단 클립바 */
 .panel-board {
