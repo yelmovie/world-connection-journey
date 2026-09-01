@@ -387,12 +387,11 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         if (scene.hotspots.length === 0) markViewed();
         const viewed = state.viewedSceneIds.includes(scene.id);
         const foundHotspotIds = new Set<string>(viewed ? scene.hotspots.map((spot) => spot.id) : []);
-        const scopeText = scene.category === 'landmark' && example
-          ? `${scene.title}은 ${example.country} 안의 특정 장소 사례이며, 이 한 장면이 나라 전체의 모습을 대표하지는 않아.`
-          : example?.scope ?? '';
+        // "한 모습으로 설명하지 않는다"류의 범위 안내(scope)는 팝업마다 반복하지 않는다.
+        // 설정 > 학생용 가이드에 한 번만 두고, 여기서는 관찰한 내용만 보여 준다.
         const spotCopy = (index: number): string => index === 0
           ? [scene.summary, scene.detail].filter(Boolean).join(' ')
-          : [scene.discovery, scopeText].filter(Boolean).join(' ');
+          : scene.discovery;
         // 오세아니아는 점이 숨어 있는 '숨은 변화 찾기' — 사진을 직접 관찰해야 한다(P2-15). 세 번 빗나가면 점을 보여 준다.
         const huntMode = model.id === 'oceania' && !viewed && scene.hotspots.length > 0;
         modalBody.innerHTML = `
@@ -407,7 +406,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             <section class="regional-spot-detail is-empty" data-spot-detail aria-live="polite">
               <span class="regional-spot-icon" aria-hidden="true">✦</span>
               <h4 data-spot-title>${scene.hotspots.length ? '어느 점이 궁금해?' : esc(scene.title)}</h4>
-              <p data-spot-copy>${scene.hotspots.length ? '점을 누르면 그곳의 설명이 여기에 한 개씩 나타나.' : esc([scene.detail, scene.discovery, scopeText].filter(Boolean).join(' '))}</p>
+              <p data-spot-copy>${scene.hotspots.length ? '점을 누르면 그곳의 설명이 여기에 한 개씩 나타나.' : esc([scene.detail, scene.discovery].filter(Boolean).join(' '))}</p>
             </section>
           </div>`;
         modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((button) => button.addEventListener('click', () => {

@@ -93,4 +93,12 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
       }
     }
   }).catch((err) => console.warn('[SW] 개발용 등록 해제 실패', err));
+  // 등록 해제만으로는 이미 저장된 캐시가 남아 다음 로드에서 다시 옛 화면이 나올 수 있다.
+  // 주의: 남의 서비스워커가 index.html까지 캐시로 돌려주면 이 코드 자체가 실행되지 않는다.
+  // 그래서 포트를 이 프로젝트 전용(5273)으로 분리해 origin이 겹치지 않게 해 두었다.
+  if ('caches' in window) {
+    void caches.keys()
+      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+      .catch((err) => console.warn('[SW] 개발용 캐시 정리 실패', err));
+  }
 }
