@@ -193,9 +193,12 @@ const PAGE_CSS = `
 .regional-goal{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:4px 11px;border-radius:999px;border:2px solid #b9cbd6;background:#fff;font-weight:850;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
 .regional-goal.is-done{color:#1d5c39;border-color:#277147;background:#eefaf2}
 .regional-goal.is-done::before{content:'✓';font-weight:900}
-.regional-modal{display:grid;grid-template-columns:minmax(0,1.62fr) minmax(320px,.95fr);gap:18px;max-width:none;align-items:start}
+/* 장면 모달은 그림이 주인공 — 기본 모달 폭(680px)으로는 사진이 작아져 넓힌다 */
+#overlay-root .modal:has(.regional-modal){width:min(1340px,96vw);max-height:min(92dvh,940px)}
+#overlay-root .modal:has(.regional-modal) > div{max-width:none}
+.regional-modal{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(300px,.9fr);gap:16px;max-width:none;align-items:start}
 /* 사진은 세로로 세우지 않고 가로(16:9)로 크게 — 아프리카 지역 화면과 같은 눈높이 */
-.regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;width:100%;aspect-ratio:16/9;max-height:64vh}
+.regional-modal-visual{position:relative;overflow:hidden;border-radius:20px;background:#dceff4;width:100%;aspect-ratio:16/9;max-height:72vh}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
 .regional-modal-visual .regional-after{position:absolute;inset:0}
 .regional-wipe-bar{position:absolute;top:0;bottom:0;width:4px;transform:translateX(-50%);background:#fff;box-shadow:0 0 8px #0008;pointer-events:none}
@@ -222,14 +225,13 @@ const PAGE_CSS = `
 .regional-gauge .bar i{position:absolute;inset:0;width:var(--fill,0%);border-radius:999px;background:linear-gradient(90deg,#38b6d8,#1188b8);transition:width .5s ease}
 .regional-gauge b{flex:0 0 auto;font-size:16px;color:#0c4a63}
 .regional-discovery.is-lit{outline:3px solid var(--c-turquoise);outline-offset:2px}
-.regional-modal-copy{display:grid;gap:11px;align-content:start;font-size:clamp(19px,1.4vw,24px);line-height:1.5}
+.regional-modal-copy{display:grid;gap:9px;align-content:start;font-size:clamp(18px,1.3vw,22px);line-height:1.45}
 .regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
 .regional-scene-guide strong{font-size:clamp(17px,1.25vw,21px);line-height:1.25}
 .regional-scene-count{min-width:64px;padding:5px 10px;border-radius:999px;background:#173b53;color:#fff;text-align:center;font:900 clamp(16px,1.1vw,19px)/1.2 var(--font-head)}
-.regional-spot-detail{min-height:0;padding:16px 18px;display:grid;align-content:center;gap:10px;border:3px solid #b9d9dc;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(232,248,246,.96));box-shadow:0 10px 24px rgba(18,60,81,.12);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.regional-spot-detail{min-height:0;padding:14px 16px;display:grid;align-content:start;gap:8px;border:3px solid #b9d9dc;border-radius:18px;background:rgba(255,255,255,.96);box-shadow:0 8px 20px rgba(18,60,81,.1);transition:border-color .2s ease,box-shadow .2s ease}
 .regional-spot-detail.is-empty{justify-items:center;text-align:center;border-style:dashed;background:rgba(246,251,250,.84);color:var(--c-ink-soft)}
 .regional-spot-detail.is-revealed{border-color:var(--c-turquoise);box-shadow:0 12px 28px rgba(18,128,123,.18);animation:regional-detail-in .28s ease-out}
-.regional-spot-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:#173b53;color:#ffd34f;font-size:28px;box-shadow:0 7px 16px rgba(12,47,71,.22)}
 .regional-spot-detail h4{font-family:var(--font-head);font-size:clamp(24px,1.9vw,31px);line-height:1.2;color:var(--c-navy)}
 .regional-spot-detail p{font-size:clamp(18px,1.35vw,23px);line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
 @keyframes regional-detail-in{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -398,7 +400,6 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             <h3>${esc(scene.title)}</h3>
             ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : '사진 속 반짝이는 점을 눌러 자세히 살펴봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
             <section class="regional-spot-detail" data-spot-detail aria-live="polite">
-              <span class="regional-spot-icon" aria-hidden="true">✦</span>
               <h4 data-spot-title>${esc(scene.title)}</h4>
               <p data-spot-copy>${esc([scene.summary, scene.detail].filter(Boolean).join(' '))}</p>
             </section>
