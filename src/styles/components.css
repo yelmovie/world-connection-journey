@@ -224,6 +224,23 @@
 .character-dialogue__caret { display:none;width:3px;height:1.05em;margin-left:3px;vertical-align:-.12em;background:var(--c-violet);animation:caret-blink .7s step-end infinite; }
 .character-dialogue.is-typing .character-dialogue__caret { display:inline-block; }
 .character-dialogue__footer { display:flex;justify-content:flex-end;gap:var(--sp-3);align-items:center;flex-wrap:wrap; }
+/* ===== 대륙 이동 브릿지 미니게임 (배낭 챙기기 · 리듬 에코) ===== */
+.journey-bridge { display:grid;gap:12px;text-align:center;justify-items:center; }
+.journey-bridge__copy { margin:0;font-weight:800;line-height:1.45;word-break:keep-all; }
+.journey-bridge__grid { display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:10px;width:100%; }
+.journey-bridge__item { display:grid;justify-items:center;gap:6px;min-height:96px;padding:10px;border:2.5px solid var(--c-line);border-radius:var(--radius-m);background:#fff;color:var(--c-ink);font:800 max(16px,var(--fs-small))/1.2 var(--font-body);cursor:pointer; }
+.journey-bridge__item[aria-pressed="true"] { border-color:var(--c-violet);background:#f3efff;color:var(--c-violet-ink);box-shadow:0 0 0 3px rgba(108,76,232,.18); }
+.journey-bridge__status { margin:0;min-height:1.4em;font:900 max(17px,var(--fs-small))/1.35 var(--font-head);color:var(--c-navy); }
+.journey-bridge__cells { display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;width:100%;max-width:520px; }
+.journey-bridge__cell { display:grid;place-items:center;aspect-ratio:1;border-radius:12px;border:2.5px solid var(--c-line);background:#fff;font:900 20px/1 var(--font-head);color:#8a6410; }
+.journey-bridge__cell[data-cell="0"] { background:#f2f5f7;color:#b9c5cc; }
+.journey-bridge__cell.is-play { border-color:var(--c-gold);background:#fff3cf;transform:scale(1.06); }
+.journey-bridge__cell.is-echoed { border-color:var(--c-success);background:#eefaf2;color:#1d5c39; }
+.journey-bridge__drums { display:flex;gap:10px;flex-wrap:wrap;justify-content:center; }
+.journey-bridge__drum { min-height:64px;min-width:150px;font-size:max(18px,var(--fs-small)); }
+.journey-bridge__drum.is-shake { animation:kp-shake .35s ease; }
+@media (prefers-reduced-motion: reduce) { .journey-bridge__cell.is-play { transform:none; } .journey-bridge__drum.is-shake { animation:none; } }
+
 /* 대화 중 학생 반응 선택 — 우열 없는 3택 */
 .character-dialogue__choices { display:grid;gap:8px; }
 .character-dialogue__choices[hidden] { display:none; }

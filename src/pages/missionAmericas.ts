@@ -17,6 +17,7 @@ import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
+import { openModal } from '../ui/modal';
 import { enableMapZoom } from '../ui/mapZoom';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
@@ -508,6 +509,7 @@ export function createPage(): Page {
       // 구버전(어울림 학급) 저장은 새 탐험 흐름과 호환되지 않아 처음부터 시작한다(완료 도장은 그대로 유지됨).
       if (mission.data.exploreProgress && S.screen !== 'landing') showToast('저장한 탐험 지점에서 이어갈게.', 'info');
       let finished = false;
+      let shakeupDone = false; // 흔들리는 계획 카드(P2-14) — 회당 1회만
 
       const page = document.createElement('div');
       page.className = 'page am-scene';
@@ -1297,7 +1299,34 @@ export function createPage(): Page {
           wrap.appendChild(token);
         });
 
-        finishBtn.addEventListener('click', () => finish());
+        finishBtn.addEventListener('click', () => {
+          // 흔들리는 계획 카드(P2-14) — 제출 직전 사건 1장: 노트 한 칸을 다시 확인하고 온다. 실패 없음.
+          if (!shakeupDone && !finished) {
+            shakeupDone = true;
+            openModal({
+              id: 'americas-shakeup',
+              title: '흔들리는 소식!',
+              bodyHtml: `<div style="display:grid;gap:8px;text-align:left">
+                <p style="font-weight:800;line-height:1.5">지구회의에서 미리 물어봤어 — <strong>"노트의 낱말들이 정말 네 여행과 맞아?"</strong></p>
+                <p style="font-weight:800;color:var(--c-ink-soft)">지금 고른 낱말: ${S.keywords.map((kw) => `<em style="font-style:normal;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c">${kw}</em>`).join(' ')}</p>
+                <p style="font-weight:800">노트로 돌아가 한 번만 다시 살펴보고 오자. 바꿔도 되고, 그대로 확신해도 돼!</p>
+              </div>`,
+              dismissible: false,
+              actions: [{
+                label: '노트 확인하고 오기',
+                kind: 'primary',
+                autofocus: true,
+                onClick: (close) => {
+                  close();
+                  void audio.playSfx('tap');
+                  go('note');
+                }
+              }]
+            });
+            return;
+          }
+          finish();
+        });
         stage.replaceChildren(wrap);
         refresh();
         announceGuide('네 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');

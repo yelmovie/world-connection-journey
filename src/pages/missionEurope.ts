@@ -21,6 +21,7 @@ import { completeMissionFlow } from '../ui/feedback';
 import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { burstConfetti } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
+import { openModal } from '../ui/modal';
 import { fitAspect } from '../ui/aspectBox';
 import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
@@ -826,6 +827,45 @@ export function createPage(): Page {
         say('앞말 뒤에 네가 정말 궁금한 내용을 이어 써.', activeStarter ? textarea : screen.querySelector<HTMLElement>('[data-starter]'));
       };
 
+      /** 흔들리는 계획 카드(P2-14) — 제출 직전 사건 1장. 실패는 없지만 계획 한 칸을 직접 고쳐야 한다. */
+      let shakeupDone = false;
+      const showShakeupCard = (buttonEl: HTMLButtonElement): void => {
+        const original = state.reasonDraft.trim();
+        const cardBody = element(`<div style="display:grid;gap:10px;text-align:left">
+          <p style="font-weight:800;line-height:1.5">회의 준비 중 소식이 왔어! 발표 시간이 줄어서, <strong>사진에서 본 것이 담긴 생생한 이유</strong>부터 발표한대.</p>
+          <p style="font-weight:800;color:var(--c-ink-soft)">네 이유에 사진에서 본 것을 한 마디만 더해 줘.</p>
+          <textarea id="eu-shakeup" maxlength="160" rows="3" style="width:100%;font:inherit;padding:10px;border-radius:12px;border:2px solid var(--c-line)">${esc(original)}</textarea>
+          <p id="eu-shakeup-hint" style="margin:0;font-weight:800;color:var(--c-coral)" hidden>이유가 아직 그대로야 — 사진 속 모습 하나만 더 붙여 줘!</p>
+        </div>`);
+        openModal({
+          id: 'europe-shakeup',
+          title: '흔들리는 소식!',
+          bodyEl: cardBody,
+          dismissible: false,
+          actions: [{
+            label: '이유 고쳐서 제출하기',
+            kind: 'primary',
+            onClick: (close) => {
+              const input = cardBody.querySelector<HTMLTextAreaElement>('#eu-shakeup')!;
+              const revised = input.value.replace(/\s+/g, ' ').trim();
+              if (revised === original || !hasStudentReason(revised)) {
+                const hint = cardBody.querySelector<HTMLElement>('#eu-shakeup-hint');
+                if (hint) hint.hidden = false;
+                input.focus();
+                return;
+              }
+              state.reasonDraft = revised.slice(0, 160);
+              state.updatedAt = new Date().toISOString();
+              persist();
+              shakeupDone = true;
+              void audio.playSfx('success');
+              close();
+              finishMission(buttonEl);
+            }
+          }]
+        });
+      };
+
       const finishMission = (buttonEl: HTMLButtonElement): void => {
         if (finished) {
           navigate('#/map');
@@ -835,6 +875,10 @@ export function createPage(): Page {
         const starter = content.questionStarters.find((item) => item.id === state.questionStarterId);
         if (!pair || !state.reasonPromptId || !starter || !hasStudentReason(state.reasonDraft) || !hasStudentQuestion(state.questionDraft)) {
           showToast('세계 회의에 가져갈 이유와 질문을 먼저 완성해 줘.', 'warn');
+          return;
+        }
+        if (!shakeupDone) {
+          showShakeupCard(buttonEl);
           return;
         }
         state.postcardCompleted = true;

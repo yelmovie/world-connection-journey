@@ -84,6 +84,8 @@ interface RegionalState {
   viewedSceneIds: string[];
   discoveredSignalIds: string[];
   listenedPerspectiveIds: string[];
+  /** 지금까지 한 번이라도 들은 목소리(누적) — 최대 2개만 유지되는 listened와 달리 지우지 않는다 */
+  heardPerspectiveIds: string[];
   selectedActionIds: string[];
 }
 
@@ -178,8 +180,11 @@ const PAGE_CSS = `
 .regional-section{display:grid;gap:10px;align-content:start}
 .regional-signal-grid,.regional-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .regional-signal,.regional-choice{text-align:left;padding:12px;min-height:78px;border-radius:18px}
-.regional-choice{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px}
+.regional-choice{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px}
 .regional-choice img{width:54px;height:64px;object-fit:contain}
+/* 아직 못 들은 목소리(P2-16) — "…" 표시가 재방문 이유가 된다 */
+.regional-voice-dots{position:absolute;right:8px;top:6px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8eef2;color:#41627a;font:900 15px/1 var(--font-head);font-style:normal}
+.regional-choice.is-unheard{border-style:dashed}
 .regional-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .regional-action{text-align:left;padding:10px;border-radius:16px;min-height:66px}
 .regional-info{align-self:start;min-height:48px;padding:8px 16px;border-radius:999px;font-size:16px}
@@ -210,6 +215,17 @@ const PAGE_CSS = `
 .regional-hotspot.is-found::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:950 25px/1 var(--font-head);text-shadow:0 2px 4px rgba(3,35,28,.75)}
 .regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
 @media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
+/* 오세아니아 '숨은 변화 찾기'(P2-15) — 점이 숨어 있어서 사진을 관찰해야 찾는다 */
+.regional-hotspot.is-hunt{opacity:0}
+.regional-hotspot.is-hunt::after{animation:none;opacity:0}
+.regional-hotspot.is-hunt:focus-visible,.regional-hotspot.is-hunt.is-found,.regional-hotspot.is-hunt.is-revealed{opacity:1}
+.regional-hotspot.is-hunt.is-revealed::after{animation:regional-ping 1.6s ease-out infinite;opacity:1}
+/* 오세아니아 바다 지킴 게이지 — 선택할 때마다 물이 차오른다 */
+.regional-gauge{display:flex;align-items:center;gap:9px;flex:1 1 220px;min-width:200px}
+.regional-gauge strong{flex:0 0 auto;font:900 max(14px,calc(var(--fs-small) - 2px))/1.2 var(--font-head);color:#0c4a63}
+.regional-gauge .bar{position:relative;flex:1;height:18px;border-radius:999px;background:#dceaf1;border:2px solid #9dc3d4;overflow:hidden}
+.regional-gauge .bar i{position:absolute;inset:0;width:var(--fill,0%);border-radius:999px;background:linear-gradient(90deg,#38b6d8,#1188b8);transition:width .5s ease}
+.regional-gauge b{flex:0 0 auto;font-size:13px;color:#0c4a63}
 .regional-discovery.is-lit{outline:3px solid var(--c-turquoise);outline-offset:2px}
 .regional-modal-copy{display:grid;gap:11px;align-content:start;font-size:clamp(19px,1.4vw,24px);line-height:1.5}
 .regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
@@ -258,6 +274,7 @@ function normalizeState(model: RegionalModel): RegionalState {
     viewedSceneIds: uniqueValid(raw.viewedSceneIds, sceneIds),
     discoveredSignalIds: uniqueValid(raw.discoveredSignalIds, signalIds),
     listenedPerspectiveIds: uniqueValid(raw.listenedPerspectiveIds, perspectiveIds),
+    heardPerspectiveIds: uniqueValid([...(Array.isArray(raw.heardPerspectiveIds) ? raw.heardPerspectiveIds : []), ...(Array.isArray(raw.listenedPerspectiveIds) ? raw.listenedPerspectiveIds : [])], perspectiveIds),
     selectedActionIds: uniqueValid(raw.selectedActionIds, actionIds)
   };
 }
@@ -376,15 +393,17 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const spotCopy = (index: number): string => index === 0
           ? [scene.summary, scene.detail].filter(Boolean).join(' ')
           : [scene.discovery, scopeText].filter(Boolean).join(' ');
+        // 오세아니아는 점이 숨어 있는 '숨은 변화 찾기' — 사진을 직접 관찰해야 한다(P2-15). 세 번 빗나가면 점을 보여 준다.
+        const huntMode = model.id === 'oceania' && !viewed && scene.hotspots.length > 0;
         modalBody.innerHTML = `
-          <div class="regional-modal-visual">
+          <div class="regional-modal-visual" data-scene-visual>
             <img src="${imageFor(model, scene.assetId)}" alt="${esc(scene.title)} 학습용 재현 이미지">
-            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
+            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}${huntMode ? ' is-hunt' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
           </div>
           <div class="regional-modal-copy">
             <span class="chip">${esc(scene.categoryLabel)}</span>
             <h3>${esc(scene.title)}</h3>
-            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : '사진 속 반짝이는 점을 하나씩 눌러 봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
+            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : huntMode ? '숨은 변화 찾기! 달라진 곳을 사진에서 직접 찾아 눌러 봐.' : '사진 속 반짝이는 점을 하나씩 눌러 봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
             <section class="regional-spot-detail is-empty" data-spot-detail aria-live="polite">
               <span class="regional-spot-icon" aria-hidden="true">✦</span>
               <h4 data-spot-title>${scene.hotspots.length ? '어느 점이 궁금해?' : esc(scene.title)}</h4>
@@ -422,6 +441,22 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           if (!wasFound) void audio.playSfx('pickup');
           if (foundHotspotIds.size >= scene.hotspots.length) markViewed();
         }));
+        if (huntMode) {
+          let misses = 0;
+          modalBody.querySelector<HTMLElement>('[data-scene-visual]')?.addEventListener('click', (ev) => {
+            if ((ev.target as HTMLElement).closest('[data-hotspot]')) return;
+            misses += 1;
+            void audio.playSfx('partial');
+            const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
+            if (misses >= 3) {
+              // 세 번 빗나가면 실패 대신 점을 보여 준다 — 관찰 유도, 좌절 방지
+              modalBody.querySelectorAll('.regional-hotspot.is-hunt').forEach((spot) => spot.classList.add('is-revealed'));
+              if (hint) hint.textContent = '좋아, 반짝이는 점을 보여 줄게! 눌러서 확인해 봐.';
+            } else if (hint) {
+              hint.textContent = misses === 1 ? '가까워! 사진 속 달라진 곳을 자세히 봐.' : '한 번 더! 사람이나 물건이 달라진 곳을 찾아 봐.';
+            }
+          });
+        }
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
       };
@@ -532,20 +567,28 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         // 완료 조건을 스크롤 밖(맨 아래)에 두지 않는다 — 항상 보이는 상단 고정 진행 띠로 안내한다.
         const goalChip = (label: string, got: number, need: number) =>
           `<span class="regional-progress-goal ${got >= need ? 'is-done' : ''}">${label} <b>${Math.min(got, need)}/${need}</b></span>`;
+        // 오세아니아: 선택할 때마다 바다 지킴 게이지가 차오른다(P2-15 라이트)
+        const gaugePercent = Math.round(Math.min(1, state.discoveredSignalIds.length / model.requirements.minSignals) * 40
+          + Math.min(1, state.listenedPerspectiveIds.length / 2) * 30
+          + Math.min(1, state.selectedActionIds.length / 3) * 30);
+        const gauge = model.id === 'oceania'
+          ? `<span class="regional-gauge" role="img" aria-label="바다 지킴 게이지 ${gaugePercent}%"><strong>바다 지킴</strong><span class="bar"><i style="--fill:${gaugePercent}%"></i></span><b>${gaugePercent}%</b></span>`
+          : '';
         const progressStrip = `<div class="regional-progress-strip" role="status" aria-label="환경 연결 완료 조건 진행">
           ${goalChip('환경 신호', state.discoveredSignalIds.length, model.requirements.minSignals)}
           ${goalChip('친구 목소리', state.listenedPerspectiveIds.length, 2)}
           ${goalChip('행동 고르기', state.selectedActionIds.length, 3)}
           ${goalChip('서로 다른 주체', chosenTierCount(), 2)}
+          ${gauge}
         </div>`;
         body.innerHTML = `<section class="regional-shell"><div class="regional-connections">${progressStrip}<div class="regional-connection-layout">
-          <section class="regional-section"><span class="chip">1. 바다·물·기후의 연결</span><h2>멀리 떨어진 지역도 이어져 있어</h2><p>신호를 눌러 변화의 근거와 출처를 확인해 봐.</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}" aria-label="환경 신호: ${esc(item.title)}${state.discoveredSignalIds.includes(item.id) ? ', 기록함' : ''}"><strong>${state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong><br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span></button>`).join('')}</div><span class="chip">2. 지역의 목소리</span><div class="regional-choice-grid">${model.perspectives.map((item) => `<button class="card card-pick regional-choice" data-voice="${item.id}" aria-pressed="${state.listenedPerspectiveIds.includes(item.id)}" aria-label="목소리 듣기: ${esc(item.name)} ${esc(item.role)}${state.listenedPerspectiveIds.includes(item.id) ? ', 들음' : ''}"><img src="${imageFor(model, item.assetId)}" alt=""><span><strong>${esc(item.name)} · ${esc(item.role)}</strong><br>${esc(item.line)}</span></button>`).join('')}</div></section>
+          <section class="regional-section"><span class="chip">1. 바다·물·기후의 연결</span><h2>멀리 떨어진 지역도 이어져 있어</h2><p>신호를 눌러 변화의 근거와 출처를 확인해 봐.</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}" aria-label="환경 신호: ${esc(item.title)}${state.discoveredSignalIds.includes(item.id) ? ', 기록함' : ''}"><strong>${state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong><br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span></button>`).join('')}</div><span class="chip">2. 지역의 목소리</span><div class="regional-choice-grid">${model.perspectives.map((item) => `<button class="card card-pick regional-choice${state.heardPerspectiveIds.includes(item.id) ? '' : ' is-unheard'}" data-voice="${item.id}" aria-pressed="${state.listenedPerspectiveIds.includes(item.id)}" aria-label="목소리 듣기: ${esc(item.name)} ${esc(item.role)}${state.listenedPerspectiveIds.includes(item.id) ? ', 들음' : state.heardPerspectiveIds.includes(item.id) ? ', 들어 봄' : ', 아직 못 들음'}"><img src="${imageFor(model, item.assetId)}" alt=""><span><strong>${esc(item.name)} · ${esc(item.role)}</strong><br>${esc(item.line)}</span>${state.heardPerspectiveIds.includes(item.id) ? '' : '<i class="regional-voice-dots" aria-hidden="true">…</i>'}</button>`).join('')}</div>${(() => { const unheard = model.perspectives.length - state.heardPerspectiveIds.length; return unheard > 0 ? `<p class="regional-discovery">아직 못 들은 목소리가 ${unheard}개 있어 — 완료 뒤에도 언제든 다시 와서 들을 수 있어.</p>` : ''; })()}</section>
           <section class="regional-section"><span class="chip">3. 책임을 나누는 행동</span><h2>서로 다른 크기의 행동을 함께 골라 봐</h2><p>나·학교와 지역사회·정부와 기업·여러 나라의 행동 중 세 가지 이상을 골라.</p><div class="regional-action-grid">${model.actions.map((item) => `<button class="card card-pick regional-action" data-action="${item.id}" aria-pressed="${state.selectedActionIds.includes(item.id)}" aria-label="행동 고르기: ${esc(item.label)}${state.selectedActionIds.includes(item.id) ? ', 고름' : ''}"><strong>${esc(item.label)}</strong><br><small>${esc(item.detail)}</small></button>`).join('')}</div></section>
         </div></div></section>`;
         const connectKeys = KEY_POINTS[model.id];
         if (connectKeys) showKeyPoint({ id: `${model.id}.connect`, lines: connectKeys.connect, onDone: () => undefined });
         body.querySelectorAll<HTMLElement>('[data-signal]').forEach((button) => button.addEventListener('click', () => { const signal = model.signals.find((item) => item.id === button.dataset.signal); if (signal) openSignal(signal); }));
-        body.querySelectorAll<HTMLElement>('[data-voice]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.voice!; if (state.listenedPerspectiveIds.includes(id)) state.listenedPerspectiveIds = state.listenedPerspectiveIds.filter((item) => item !== id); else { if (state.listenedPerspectiveIds.length >= 2) state.listenedPerspectiveIds.shift(); state.listenedPerspectiveIds.push(id); } persist(); render(); }));
+        body.querySelectorAll<HTMLElement>('[data-voice]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.voice!; add(state.heardPerspectiveIds, id); if (state.listenedPerspectiveIds.includes(id)) state.listenedPerspectiveIds = state.listenedPerspectiveIds.filter((item) => item !== id); else { if (state.listenedPerspectiveIds.length >= 2) state.listenedPerspectiveIds.shift(); state.listenedPerspectiveIds.push(id); } persist(); render(); }));
         body.querySelectorAll<HTMLElement>('[data-action]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.action!; state.selectedActionIds = state.selectedActionIds.includes(id) ? state.selectedActionIds.filter((item) => item !== id) : [...state.selectedActionIds, id].slice(-4); persist(); render(); }));
       };
 

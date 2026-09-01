@@ -540,7 +540,7 @@ export function createPage(): Page {
               <p class="ending-message">다름을 이해하는 질문이 우리를 연결해요.</p>
               <div class="ending-actions">
                 <button class="btn btn-primary btn-big" id="btn-ending-home">처음 화면</button>
-                <button class="btn btn-success btn-big" id="btn-ending-map">세계지도</button>
+                <button class="btn btn-success btn-big" id="btn-ending-map">다시 여행하기</button>
               </div>
             </div>
             <div class="ending-fleet" role="img" aria-label="선택한 비행기와 친구들이 함께 날며 완주를 축하합니다">
