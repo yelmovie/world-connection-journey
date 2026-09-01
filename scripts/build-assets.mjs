@@ -17,6 +17,7 @@ const Q_BG = Number(process.argv[2] ?? 78);
 const Q_CHAR = Number(process.argv[3] ?? 82);
 const KINDS = {
   bg:   { resize: { width: 1600 }, quality: Q_BG },
+  photo:{ resize: { width: 1600 }, quality: Q_BG },
   logo: { resize: { width: 1024 }, quality: Q_CHAR },
   char: { resize: { width: 512, height: 512, fit: 'inside' }, quality: Q_CHAR },
   deco: { resize: { width: 384, height: 384, fit: 'inside' }, quality: Q_CHAR },

@@ -303,6 +303,20 @@ const DIALOGUE_CSS = `
   .dl-greet-card { min-height:146px; }
   .dl-greet-card img { height:clamp(98px,15vh,118px); }
 }
+/* 모바일 가로 — 여섯 인사 카드가 화면을 넘기지 않게 낮춘다 */
+@media (max-height: 460px) {
+  .dialogue-scene .page-body { padding:4px 8px 34px; }
+  .dl-stage { gap:6px; }
+  .dl-greet-row { grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);gap:6px; }
+  .dl-greet-grid { grid-template-columns:repeat(6,minmax(0,1fr));overflow:visible; }
+  .dl-greet-card { min-height:64px;padding:2px; }
+  .dl-greet-card img { height:clamp(34px,9vh,48px); }
+  .dl-greet-card .g-name { font-size:16px; }
+  .dl-greet-card .g-location { display:none; }
+  .dl-task { min-height:0; }
+  .dl-opt { min-height:44px;padding:6px 10px; }
+  .dl-ox .btn { min-height:44px; }
+}
 @media (max-width: 900px) {
   .dl-greet-row, .dl-talk { grid-template-columns: 1fr; }
   .dl-council__issues,.dl-council__promises { grid-template-columns:1fr; }

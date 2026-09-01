@@ -89,6 +89,7 @@ const COUNTRY_SCENE_POSITIONS: Record<string, Position> = {
 };
 
 const CSS = `
+@media (max-height:460px){.map-help,.map-zoom-hint{display:none}}
 .africa-mission{--stage-title:clamp(28px,2.2vw,44px);--section-title:clamp(24px,1.8vw,34px);--body-text:clamp(18px,1.25vw,24px);--button-text:clamp(18px,1.35vw,26px);background:#0c5b7d center/cover no-repeat;overflow:hidden}
 .africa-mission *{word-break:keep-all;overflow-wrap:break-word}
 .africa-mission .top-bar{background:linear-gradient(#174b68e8,#174b68bd)}

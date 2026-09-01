@@ -1,7 +1,7 @@
 {
   "name": "world-connection-journey",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.11",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,12 +11,13 @@
     "test": "vitest run",
     "assets": "node scripts/build-assets.mjs",
     "audit:assets": "node scripts/audit-source-assets.mjs --check",
-    "verify": "npm run typecheck && npm run test && npm run build"
+    "verify": "npm run typecheck && npm run test && npm run audit:assets && npm run build"
   },
   "dependencies": {
     "phaser": "3.90.0"
   },
   "devDependencies": {
+    "playwright": "^1.62.1",
     "sharp": "0.34.5",
     "typescript": "5.9.3",
     "vite": "7.3.6",

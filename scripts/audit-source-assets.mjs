@@ -14,14 +14,15 @@ function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) return walk(full);
-    return /\.(ts|css|html)$/.test(entry.name) ? [full] : [];
+    return /\.(ts|css|html|json)$/.test(entry.name) ? [full] : [];
   });
 }
 
 const sourceFiles = [
   ...walk(path.join(root, 'src', 'pages')),
   ...walk(path.join(root, 'src', 'ui')),
-  ...walk(path.join(root, 'src', 'styles'))
+  ...walk(path.join(root, 'src', 'styles')),
+  ...walk(path.join(root, 'public', 'content'))
 ];
 const sources = sourceFiles.map((file) => ({
   file: path.relative(root, file).replaceAll('\\', '/'),

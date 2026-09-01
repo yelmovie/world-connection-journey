@@ -145,7 +145,7 @@ const MAP_CSS = `
 :root[data-reduced-motion="true"] .map-node-mail { animation:none; }
 /* 지도 원화가 화면 전체를 채우고 상단바·안내판·캐릭터만 그 위에 뜬다. */
 .map-page {
-  --guide-size:clamp(140px,15vw,220px);
+  --guide-size:clamp(112px,11vw,168px);
   grid-template-rows:auto minmax(0,1fr);background:#69b9dc;isolation:isolate;overflow:hidden;
 }
 .map-page::before {
@@ -160,7 +160,8 @@ const MAP_CSS = `
 }
 .map-page > .guide-wrap {
   position:absolute;left:clamp(4px,2vw,34px);bottom:clamp(4px,1.5vh,18px);grid-row:auto;height:calc(var(--guide-size) + var(--scene-safe));
-  z-index:calc(var(--z-panel) + 1);pointer-events:none;
+  /* 대륙 노드보다 아래에 둔다 — 안내 캐릭터가 고를 대상을 가리지 않게 */
+  z-index:1;pointer-events:none;
 }
 .map-page > .guide-wrap .guide-mascot-button { bottom:var(--scene-safe);pointer-events:auto; }
 .map-page > .guide-wrap .guide-bubble { bottom:var(--scene-safe);pointer-events:auto; }
@@ -315,7 +316,7 @@ const MAP_CSS = `
   .map-brief__actions { margin-top:0; }
   .map-brief .btn-primary { width:100%;min-width:0; }
 }
-@media (max-width:600px) {
+@media (max-width:600px), (max-height:460px) {
   .map-layout { display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;gap:6px;padding:6px 10px;overflow-y:auto; }
   .map-world { position:relative;inset:auto;width:100%;height:auto;min-height:300px;aspect-ratio:auto;background-position:center;background-size:cover;border:2px solid rgba(255,255,255,.72);border-radius:var(--radius-m); }
   .map-canvas,.map-route-layer,.map-world-deco,.map-home { display:none; }

@@ -223,7 +223,7 @@ const PAGE_CSS = `
 .am-scene[data-screen=landing] .exp-cards { align-self:stretch; height:100%; max-height:none; overflow:hidden; display:grid; grid-template-rows:auto auto repeat(4,minmax(0,1fr)); gap:clamp(5px,.65vh,8px); }
 #scene-root .am-scene[data-screen=landing] .exp-cards.panel { align-self:stretch; max-height:none; }
 .am-scene[data-screen=landing] .exp-cards__title { font-size:clamp(28px,2vw,40px); line-height:1; margin-bottom:2px; }
-.am-scene[data-screen=landing] .postcard { min-height:0; height:100%; padding-block:clamp(6px,.75vh,10px); font-size:clamp(16px,1.03vw,20px); line-height:1.3; overflow:hidden; }
+.am-scene[data-screen=landing] .postcard { min-height:44px; height:100%; padding-block:clamp(6px,.75vh,10px); font-size:clamp(16px,1.03vw,20px); line-height:1.3; overflow:hidden; }
 .am-scene[data-screen=landing] .postcard .pc-extra { margin-top:3px; }
 .am-scene > .guide-wrap { z-index:calc(var(--z-panel) + 2); }
 .am-scene > .guide-wrap .guide-bubble { left:var(--scene-safe); bottom:calc(var(--guide-size) - 18px); width:min(300px,calc(100vw - (var(--scene-safe) * 2))); max-width:300px; border-color:#f2c14e; background:rgba(255,253,241,.97); }
@@ -352,6 +352,9 @@ const PAGE_CSS = `
 }
 
 /* ---- 하루 비교 ---- 시간대는 탭으로 하나씩. 가로 스크롤은 뒤쪽 시간대를 통째로 숨긴다. */
+/* 초등 손가락 기준 — 어떤 화면에서도 조작 버튼은 44px 이상 */
+.am-scene button { min-height:44px; }
+@media (max-height:460px){ .am-scene .exp-map,.am-scene .country-scene{max-height:62vh} .am-scene .map-zoom-controls{top:auto!important;bottom:6px!important} .am-scene .map-zoom-hint{display:none} }
 .day-board { flex:1; min-height:0; display:flex; align-items:center; }
 .day-slot { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:10px; }
 /* 카드는 내용 높이만큼만 — 남은 세로를 카드가 먹으면 그림 위아래로 빈 여백만 커진다 */

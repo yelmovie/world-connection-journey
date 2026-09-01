@@ -212,7 +212,7 @@ const PAGE_CSS = `
 .europe-mission .eu-country:hover,.europe-mission .eu-country:focus-visible { scale:1.06; }
 .europe-mission .eu-country.is-ready { box-shadow:0 0 0 5px #f3c758,0 7px 16px rgba(8,24,42,.44); }
 .europe-mission .eu-country small { display:block;margin-top:4px;font:800 15px/1 var(--font-body); }
-.europe-mission .eu-bag { padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto; }
+.europe-mission .eu-bag { align-self:start;max-height:100%;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:auto; }
 .europe-mission .eu-bag-title { display:flex;align-items:center;gap:9px;font:900 var(--eu-copy)/1.15 var(--font-head); }
 .europe-mission svg { width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round; }
 .europe-mission .eu-progress-list { display:grid;gap:7px; }
@@ -359,6 +359,10 @@ const PAGE_CSS = `
   .europe-mission .eu-country { min-width:58px;min-height:48px;padding:5px 6px;border-width:2px;border-radius:13px;font-size:14px; }
   .europe-mission .eu-country small { margin-top:2px;font-size:14px; }
   .europe-mission .eu-gallery-grid { grid-template-columns:1fr; }
+}
+@media (max-height:460px) {
+  .europe-mission .eu-country { min-width:0;min-height:40px;padding:4px 9px;font-size:13px;line-height:1.1; }
+  .europe-mission .map-zoom-hint { display:none; }
 }
 @media (max-height:650px) {
   .europe-mission .page-body { padding-block:5px; }

@@ -1,12 +1,12 @@
 {
   "bg.title": {
     "kind": "bg",
-    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (1).png",
+    "original": "background/bg_title_korea_centered_v2.png",
     "pages": [
       "p01"
     ],
     "preload": "core",
-    "note": "구름 위 세계지도 파노라마"
+    "note": "한국·동아시아 중심의 구름 위 세계지도 파노라마"
   },
   "bg.completion": {
     "kind": "bg",
@@ -28,13 +28,13 @@
   },
   "bg.map": {
     "kind": "bg",
-    "original": "background/ChatGPT Image 2026년 8월 14일 오전 03_21_55 (3).png",
+    "original": "background/bg_map_korea_centered_2026-08-22.png",
     "pages": [
       "p02",
       "p03"
     ],
     "preload": "core",
-    "note": "평면 세계지도(대륙 아이콘)"
+    "note": "한국을 중앙에 둔 태평양 중심 2.5D 세계지도(랜드마크 없는 베이스)"
   },
   "bg.asia": {
     "kind": "bg",
@@ -97,6 +97,24 @@
     "preload": "core",
     "note": "세계를 잇는 여행 한글 로고"
   },
+  "title.plane.green.transparent": {
+    "kind": "char",
+    "original": "assets/generated/title_plane_green_transparent.png",
+    "pages": [
+      "p01"
+    ],
+    "preload": "core",
+    "note": "타이틀 좌측 초록 생태 비행기 투명 배경"
+  },
+  "title.plane.pink.transparent": {
+    "kind": "char",
+    "original": "assets/generated/title_plane_pink_transparent.png",
+    "pages": [
+      "p01"
+    ],
+    "preload": "core",
+    "note": "타이틀 우측 핑크 축제 비행기 투명 배경"
+  },
   "plane.main": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_10 (1).png",
@@ -110,37 +128,158 @@
   "plane.alt1": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_11 (2).png",
-    "pages": ["p02", "p03"],
+    "pages": [
+      "p02",
+      "p03"
+    ],
     "preload": "page",
     "note": "로봇 비행기 비행 자세 변형 — 지도 전환 연출용"
   },
   "plane.alt2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (1).png",
-    "pages": ["p01", "p03"],
+    "pages": [
+      "p01",
+      "p03"
+    ],
     "preload": "page",
     "note": "로봇 비행기 돋보기 든 변형"
   },
   "plane.africa": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_50 (1).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "아프리카 문양 로봇 비행기 — 아프리카 미션 히어로/입장 연출"
   },
   "plane.explorer": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_15 (1).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "탐험 모자 로봇 비행기 — 지도 전환·미션 안내 연출"
   },
   "plane.jet": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (1).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "만화풍 여객기(비행 자세) — 지도 이동 연출용"
+  },
+  "plane.green": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (1).png",
+    "pages": [
+      "p02",
+      "p03"
+    ],
+    "preload": "page",
+    "note": "초록빛 로봇 비행기 — 선택 비행기의 투명 이동 스프라이트"
+  },
+  "plane.portrait.classic": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (1).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "클래식 크림색 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.flower": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (10).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "꽃 장식 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.violet": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (2).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "보랏빛 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.coral": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (3).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "산호빛 하트 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.mint": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (4).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "민트빛 탐험 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.peach": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (5).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "복숭아빛 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.navy": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (6).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "밤하늘색 제트 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.rose": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (7).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "장밋빛 축제 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.ice": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (8).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "빙하빛 로봇 비행기 선택 아이콘"
+  },
+  "plane.portrait.forest": {
+    "kind": "char",
+    "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_36_07 (9).png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "page",
+    "note": "초록숲 생태 로봇 비행기 선택 아이콘"
+  },
+  "prop.passport_builder": {
+    "kind": "logo",
+    "original": "assets/generated/passport_builder_open_v2.png",
+    "pages": [
+      "p03"
+    ],
+    "preload": "core",
+    "note": "선택한 탐험가와 비행기를 끼워 넣는 어린이 수제 여권 프레임"
   },
   "prop.passport": {
     "kind": "char",
@@ -269,6 +408,24 @@
     "preload": "page",
     "note": "한복 소녀"
   },
+  "asia.mina": {
+    "kind": "char",
+    "original": "public/assets/asia_mina_explorer.png",
+    "pages": [
+      "p04"
+    ],
+    "preload": "page",
+    "note": "아시아·네팔 탐험 흐름에 쓰는 중립적인 현대 어린이 캐릭터"
+  },
+  "asia.flight_overview": {
+    "kind": "bg",
+    "original": "public/assets/asia_flight_overview.png",
+    "pages": [
+      "p04"
+    ],
+    "preload": "page",
+    "note": "아시아 여러 나라를 비행기로 둘러보는 도입 장면"
+  },
   "asia.child2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (4).png",
@@ -295,6 +452,141 @@
     ],
     "preload": "page",
     "note": "추정: 지도 든 탐험 복장 소녀 가이드"
+  },
+  "europe.france.seine": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_france_seine.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "프랑스 센강 곁 공공 공간 관찰 그림"
+  },
+  "europe.france.market": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_france_market.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "프랑스 리옹 시장 관찰 그림"
+  },
+  "europe.france.louvre": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_france_louvre.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "프랑스 루브르 안뜰 관찰 그림"
+  },
+  "europe.germany.berlin_tram": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_germany_berlin_tram.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "독일 베를린 도시 이동 관찰 그림"
+  },
+  "europe.germany.rhine": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_germany_rhine.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "독일 라인강 풍경 관찰 그림"
+  },
+  "europe.italy.bologna": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_italy_bologna.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "이탈리아 볼로냐 광장 관찰 그림"
+  },
+  "europe.italy.dolomites": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_italy_dolomites.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "이탈리아 돌로미티 환경 관찰 그림"
+  },
+  "europe.spain.barcelona": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_spain_barcelona.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "스페인 바르셀로나 바닷가 관찰 그림"
+  },
+  "europe.spain.madrid_market": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_spain_madrid_market.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "스페인 마드리드 시장 관찰 그림"
+  },
+  "europe.poland.vistula": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_poland_vistula.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "폴란드 바르샤바 강변 관찰 그림"
+  },
+  "europe.poland.krakow": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_poland_krakow.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "폴란드 크라쿠프 광장 관찰 그림"
+  },
+  "europe.poland.tatras": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_poland_tatras.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "폴란드 타트라산맥 관찰 그림"
+  },
+  "europe.greece.acropolis": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_greece_acropolis.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "그리스 아테네 아크로폴리스 관찰 그림"
+  },
+  "europe.greece.thessaloniki": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_greece_thessaloniki.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "그리스 테살로니키 바닷길 관찰 그림"
+  },
+  "europe.greece.island_harbor": {
+    "kind": "bg",
+    "original": "assets/generated/europe/europe_greece_island_harbor.webp",
+    "pages": [
+      "p05"
+    ],
+    "preload": "page",
+    "note": "그리스 에게해 섬 항구 관찰 그림"
   },
   "europe.heritage": {
     "kind": "char",
@@ -413,450 +705,655 @@
     "preload": "page",
     "note": "추정: 배낭 여행자 소녀"
   },
-  "oceania.island": {
-    "kind": "char",
-    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (5).png",
+  "oceania.viti_levu_video_poster": {
+    "kind": "bg",
+    "original": "public/assets/oceania_viti_levu_video_poster.png",
     "pages": [
       "p08"
     ],
     "preload": "page",
-    "note": "산호초·바다거북 섬"
+    "note": "피지 비티레부섬 영상 탐험용 첫 장면 포스터"
   },
   "icon.listening": {
     "kind": "icon",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_53 (9).png",
-    "pages": ["p09"],
+    "pages": [
+      "p09"
+    ],
     "preload": "page",
     "note": "대체 배정: 하트 장식 나침반 원형 엠블럼 → 경청 아이콘"
   },
   "icon.heart_speech": {
     "kind": "icon",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 06_39_02 (9).png",
-    "pages": ["p09"],
+    "pages": [
+      "p09"
+    ],
     "preload": "page",
     "note": "대체 배정: 날개·하트 나침반 아이콘 → 하트 말풍선 아이콘"
   },
   "asia.costume1": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_06 (6).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "분홍 한복(의상 단품) — 아시아 의상 카드"
   },
   "asia.costume2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_07 (8).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "중국 전통 저고리(의상 단품) — 아시아 의상 카드"
   },
   "asia.costume3": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_07 (7).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "사리(의상 단품) — 아시아 의상 카드"
   },
   "asia.costume4": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_30 (3).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "분홍 살와르 카미즈(의상 단품) — 아시아 의상 카드"
   },
   "americas.food1": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_38 (1).png",
-    "pages": ["p07"],
+    "pages": [
+      "p07"
+    ],
     "preload": "page",
     "note": "샌드위치 급식판 — 미주 점심 미션 카드"
   },
   "americas.food2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_38 (2).png",
-    "pages": ["p07"],
+    "pages": [
+      "p07"
+    ],
     "preload": "page",
     "note": "타코 접시 — 미주 점심 미션 카드"
   },
   "americas.food3": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_39 (3).png",
-    "pages": ["p07"],
+    "pages": [
+      "p07"
+    ],
     "preload": "page",
     "note": "콩·곡물 요리 접시 — 미주 점심 미션 카드"
   },
   "africa.instrument4": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_55 (7).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "칼림바(엄지 피아노) — 아프리카 악기 확장"
   },
   "africa.instrument5": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_57 (8).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "코라(현악기) — 아프리카 악기 확장"
   },
   "africa.stage": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_59 (10).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "바오밥 나무 북 무대 — 아프리카 리듬 미션 무대 히어로"
   },
   "africa.emblem": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_59 (9).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "북 문양 아프리카 엠블럼 — 미션 완료 장식"
   },
   "europe.heritage2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (2).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "사그라다 파밀리아 미니어처 — 유럽 문화유산 카드"
   },
   "europe.heritage3": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_05 (3).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "노이슈반슈타인 성 미니어처 — 유럽 문화유산 카드"
   },
   "europe.heritage4": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_05 (4).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "풍차 마을 미니어처 — 유럽 문화유산 카드"
   },
   "oceania.sydney": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_16 (4).png",
-    "pages": ["p08"],
+    "pages": [
+      "p08"
+    ],
     "preload": "page",
     "note": "시드니 오페라하우스·하버브리지 섬 — 오세아니아 히어로"
-  },
-  "oceania.island2": {
-    "kind": "char",
-    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (6).png",
-    "pages": ["p08"],
-    "preload": "page",
-    "note": "열대 산악 섬 미니어처 — 오세아니아 관점 카드 배경"
-  },
-  "oceania.island3": {
-    "kind": "char",
-    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (7).png",
-    "pages": ["p08"],
-    "preload": "page",
-    "note": "야자수 오두막 해변 섬 — 오세아니아 관점 카드 배경"
   },
   "reward.turtle_medal": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_18 (9).png",
-    "pages": ["p08"],
+    "pages": [
+      "p08"
+    ],
     "preload": "page",
     "note": "바다거북 원형 메달 — 오세아니아 미션 보상"
   },
   "reward.trophy": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (3).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "지구본 트로피 — 완주 보상 연출"
   },
   "reward.medal2": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_57_07 (4).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "보라 리본 지구 메달 — 보상 변형"
   },
   "reward.certificate": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 04_00_42.png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "인증서 두루마리 — 최종 인증서 화면"
   },
   "reward.wreath": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_52 (5).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "지구 장식 월계수 화환 — 완주 화면 프레임 장식"
   },
   "reward.star3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (8).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "3D 별 훈장 펜던트 — 보상 연출"
   },
   "prop.journal": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_49 (1).png",
-    "pages": ["p03"],
+    "pages": [
+      "p03"
+    ],
     "preload": "page",
     "note": "보라색 여행 일지(닫힘) — 여권/기록 화면 소품"
   },
   "prop.scrapbook": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_50 (2).png",
-    "pages": ["p03"],
+    "pages": [
+      "p03"
+    ],
     "preload": "page",
     "note": "펼친 여행 스크랩북 — 여권/기록 화면 소품"
   },
   "prop.globe_glow": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_52 (4).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "반짝이는 지구본 — 지도 화면 장식"
   },
   "prop.treasure": {
     "kind": "char",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_52 (6).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "보물상자(나침반·보석) — 완주 보상 연출"
   },
   "char.boy3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_56 (1).png",
-    "pages": ["p01"],
+    "pages": [
+      "p01"
+    ],
     "preload": "page",
     "note": "소년 캐릭터 3D 렌더 — 타이틀/안내 히어로 후보"
   },
   "prop.plane3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_56 (2).png",
-    "pages": ["p01"],
+    "pages": [
+      "p01"
+    ],
     "preload": "page",
     "note": "장난감풍 프로펠러 비행기 3D — 타이틀 장식"
   },
   "prop.globe3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (3).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "파란 지구본 3D(받침대) — 지도 화면 히어로"
   },
   "prop.book3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (4).png",
-    "pages": ["p09"],
+    "pages": [
+      "p09"
+    ],
     "preload": "page",
     "note": "펼친 책 3D — 대화 미션 소품"
   },
   "prop.compass3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (5).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "원형 나침반 3D — 지도/미션 히어로"
   },
   "prop.portal3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (6).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "포털 아치문 3D — 미션 입장 연출"
   },
   "prop.puzzle3d": {
     "kind": "char",
     "original": "3d assets/ChatGPT Image 2026년 8월 14일 오후 05_51_58 (7).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "퍼즐 지구본 3D — completion-globe 슬롯 후보"
   },
   "deco.landmark_liberty": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_22_55 (5).png",
-    "pages": ["p07"],
+    "pages": [
+      "p07"
+    ],
     "preload": "page",
     "note": "자유의 여신상 섬 미니어처 — 미주 미션 장식"
   },
   "deco.landmark_eiffel": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_22_57 (6).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "에펠탑 섬 미니어처 — 유럽 미션 장식"
   },
   "deco.landmark_rio": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_22_58 (7).png",
-    "pages": ["p07"],
+    "pages": [
+      "p07"
+    ],
     "preload": "page",
     "note": "리우 예수상 섬 미니어처 — 미주 미션 장식"
   },
   "deco.landmark_taj": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_22_58 (8).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "타지마할 섬 미니어처 — 아시아 미션 장식"
   },
   "deco.landmark_sydney": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_22_58 (9).png",
-    "pages": ["p08"],
+    "pages": [
+      "p08"
+    ],
     "preload": "page",
     "note": "시드니 오페라하우스 섬 미니어처 — 오세아니아 장식"
   },
   "deco.landmark_pyramid": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_20 (3) (1).png",
-    "pages": ["p06"],
+    "pages": [
+      "p06"
+    ],
     "preload": "page",
     "note": "피라미드·스핑크스 섬 미니어처 — 아프리카 미션 장식"
   },
   "deco.signpost": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_13 (10).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "세계 랜드마크 이정표 팻말 — 지도 화면 장식"
   },
   "deco.map_kit": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_13 (9).png",
-    "pages": ["p03"],
+    "pages": [
+      "p03"
+    ],
     "preload": "page",
     "note": "지도·나침반·연필 세트 — 여권/준비 화면 장식"
   },
   "deco.emblem_unity": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_12 (7).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "지구·악수·국기 원형 엠블럼 — 완주 화면 장식"
   },
   "deco.emblem_stamp": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_13 (8).png",
-    "pages": ["p03"],
+    "pages": [
+      "p03"
+    ],
     "preload": "page",
     "note": "우표 장식 지구 메달 엠블럼 — 여권 화면 장식"
   },
   "deco.explorer1": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_32 (2).png",
-    "pages": ["p09"],
+    "pages": [
+      "p09"
+    ],
     "preload": "page",
     "note": "쌍안경 든 탐험 소년 — 대화/안내 장식 인물"
   },
   "deco.explorer2": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 06_17_33 (4).png",
-    "pages": ["p09"],
+    "pages": [
+      "p09"
+    ],
     "preload": "page",
     "note": "망원경 든 사파리 모자 소년 — 대화/안내 장식 인물"
   },
   "deco.necklace": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_07 (9).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "금 목걸이 장신구 — 아시아 미션 장식"
   },
   "deco.scarf": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_08 (10).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "연꽃 무늬 파란 스카프 — 아시아 미션 장식"
   },
   "deco.norigae": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_23_30 (4).png",
-    "pages": ["p04"],
+    "pages": [
+      "p04"
+    ],
     "preload": "page",
     "note": "매듭 노리개 — 아시아 미션 장식"
   },
   "deco.mask": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_05 (5).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "베네치아 카니발 가면 — 유럽 미션 장식"
   },
   "deco.tomato": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_05 (6).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "토마토 상자(토마티나) — 유럽 미션 장식"
   },
   "deco.accordion": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_06 (7).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "아코디언과 음표 — 유럽 미션 장식"
   },
   "deco.lantern_star": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_06 (8).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "별 모양 등불 장대 — 유럽 미션 장식"
   },
   "deco.tulip": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_06 (9).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "튤립 바구니 — 유럽 미션 장식"
   },
   "deco.violin": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_07 (10).png",
-    "pages": ["p05"],
+    "pages": [
+      "p05"
+    ],
     "preload": "page",
     "note": "바이올린과 월계수 — 유럽 미션 장식"
   },
   "deco.shell_compass": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_17 (8).png",
-    "pages": ["p08"],
+    "pages": [
+      "p08"
+    ],
     "preload": "page",
     "note": "조개껍데기 나침반 — 오세아니아 미션 장식"
   },
   "deco.sea_lantern": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_18 (10).png",
-    "pages": ["p08"],
+    "pages": [
+      "p08"
+    ],
     "preload": "page",
     "note": "바다 랜턴(빛나는 구슬) — 오세아니아 미션 장식"
   },
   "deco.flight_kids": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_53 (7).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "아이들 태운 비행기와 지구 — 완주 화면 장식"
   },
   "deco.ring_frame": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_53 (8).png",
-    "pages": ["p10"],
+    "pages": [
+      "p10"
+    ],
     "preload": "page",
     "note": "지구·핀 고리 프레임 — 사진/배지 프레임 장식"
   },
   "deco.portal_globe": {
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 14일 오후 04_15_54 (10).png",
-    "pages": ["p02"],
+    "pages": [
+      "p02"
+    ],
     "preload": "page",
     "note": "소용돌이 포털 지구본 — 지도 전환 연출 장식"
   },
   "__missing__": [
     "europe.map"
-  ]
+  ],
+  "env.signal.morocco": {
+    "kind": "photo",
+    "original": "assets/environment/env_signal_morocco.png",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "환경 신호 현장 사진 — morocco (개념 일러스트, AI 생성)"
+  },
+  "env.signal.colombia": {
+    "kind": "photo",
+    "original": "assets/environment/env_signal_colombia.png",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "환경 신호 현장 사진 — colombia (개념 일러스트, AI 생성)"
+  },
+  "env.signal.australia": {
+    "kind": "photo",
+    "original": "assets/environment/env_signal_australia.png",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "환경 신호 현장 사진 — australia (개념 일러스트, AI 생성)"
+  },
+  "env.signal.tanzania": {
+    "kind": "photo",
+    "original": "assets/environment/env_signal_tanzania.png",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "환경 신호 현장 사진 — tanzania (개념 일러스트, AI 생성)"
+  },
+  "stage6.yusra.before": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_yusra_before.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 유스라, 말할 기회를 얻기 전"
+  },
+  "stage6.yusra.after": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_yusra_after.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 유스라, 발언 순서를 나눈 뒤"
+  },
+  "stage6.kenji.before": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_kenji_before.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 켄지, 거절이 존중받기 전"
+  },
+  "stage6.kenji.after": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_kenji_after.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 켄지, 선택을 존중받은 뒤"
+  },
+  "stage6.amara.before": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_amara_before.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 아마라, 발표가 멈춘 순간"
+  },
+  "stage6.amara.after": {
+    "kind": "photo",
+    "original": "assets/stage6/stage6_amara_after.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "6단계 사진 비교 — 아마라, 경청과 응원을 받은 뒤"
+  },
+  "earth.council.globe": {
+    "kind": "char",
+    "original": "assets/earth-council/earth_council_globe_korea_v3.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "한반도·동아시아 중심의 세계 친구 지구회의 문제 선택 화면 전용 연결 지구본"
+  },
+  "earth.council.finale": {
+    "kind": "bg",
+    "original": "assets/earth-council/earth_council_finale_korea_v3.png",
+    "pages": ["p09"],
+    "preload": "page",
+    "note": "한반도·동아시아 중심의 세계 친구 지구회의 공동약속 완성 화면 전용 우주 속 지구"
+  },
+  "earth.completion.globe": {
+    "kind": "char",
+    "original": "assets/earth-council/earth_completion_globe_korea_v3.png",
+    "pages": ["p10"],
+    "preload": "page",
+    "note": "한반도·동아시아 중심의 세계 연결 완주 여섯 조각 퍼즐 전용 연결 지구"
+  }
 }

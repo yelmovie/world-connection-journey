@@ -1001,3 +1001,13 @@
   pointer-events: none;
 }
 .is-zoomed .map-zoom-hint { display: none; }
+
+/* 모바일 가로(세로가 아주 짧은 화면)에서는 가이드가 버튼 위를 덮는다 —
+   캐릭터는 숨기고 말풍선은 화면 위쪽 좁은 띠로 올려 조작을 가리지 않게 한다 */
+@media (max-height: 460px) {
+  .guide-wrap { pointer-events: none; width: auto; max-width: min(58vw, 430px); inset: auto auto auto 8px; bottom: auto; top: 4px; height: auto; }
+  .guide-wrap .guide-mascot-button, .guide-wrap .guide-mascot { display: none !important; }
+  /* 말풍선도 숨긴다 — 390px 높이에서는 어디에 두어도 조작 버튼을 가린다.
+     안내 문구는 하단 상태 줄과 화면 안내에 남아 있어 정보 손실이 없다. */
+  .guide-wrap { display: none !important; }
+}
