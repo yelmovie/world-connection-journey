@@ -962,6 +962,7 @@ export function createPage(): Page {
             const startDialogue = (): void => {
               openCharacterDialogue({
                 id: `am-${c.id}`,
+                reactions: true,
                 name: student?.name ?? '친구',
                 meta: `${c.name}에서 만난 친구`,
                 assetId: avatarAsset(content, c.studentId),

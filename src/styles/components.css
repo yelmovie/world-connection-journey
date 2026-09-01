@@ -145,17 +145,17 @@
 /* ===== 캐릭터 확대 타이핑 대화 ===== */
 .modal-backdrop:has(.character-dialogue) { background:rgba(7,22,40,.58);backdrop-filter:none; }
 .modal-backdrop .modal:has(.character-dialogue) {
-  width:min(980px,94vw);max-height:min(92dvh,840px);border-top-color:var(--c-violet);
+  width:min(1280px,96vw);max-height:min(92dvh,900px);border-top-color:var(--c-violet);
   background:#fffdf7;
 }
-.modal:has(.character-dialogue) .modal-title { padding-block:var(--sp-3); }
+.modal:has(.character-dialogue) .modal-title { padding-block:var(--sp-3);font-size:clamp(32px,2.2vw,44px); }
 .modal:has(.character-dialogue) .modal-body { padding:clamp(14px,2vw,28px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain; }
 .character-dialogue {
-  min-height:min(460px,62dvh);display:grid;grid-template-columns:minmax(230px,.72fr) minmax(0,1.28fr);
+  min-height:min(520px,62dvh);display:grid;grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr);
   gap:clamp(18px,3vw,40px);align-items:stretch;
 }
 .character-dialogue.has-partner {
-  grid-template-columns:minmax(170px,.58fr) minmax(330px,1.18fr) minmax(170px,.58fr);
+  grid-template-columns:minmax(210px,.66fr) minmax(420px,1.25fr) minmax(210px,.66fr);
   grid-template-areas:'character conversation partner';
   gap:clamp(12px,2vw,26px);
 }
@@ -190,7 +190,7 @@
 .character-dialogue__meta {
   position:absolute;z-index:2;left:50%;bottom:12px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 16px);
   padding:6px 14px;border-radius:999px;background:rgba(14,36,64,.9);color:#fff;
-  font-size:max(16px,var(--fs-small));font-weight:800;line-height:1.2;text-align:center;white-space:normal;word-break:keep-all;
+  font-size:clamp(18px,1.05vw,22px);font-weight:800;line-height:1.2;text-align:center;white-space:normal;word-break:keep-all;
 }
 @keyframes character-dialogue-in { from{opacity:0;transform:translateY(18px) scale(.92)} to{opacity:1;transform:none} }
 @keyframes character-dialogue-partner-in {
@@ -218,16 +218,22 @@
 }
 .character-dialogue__bubble.is-turning { animation:character-dialogue-turn var(--t-med) cubic-bezier(.2,.86,.35,1.08); }
 @keyframes character-dialogue-turn { from{opacity:.35;transform:translateY(8px) scale(.98)} to{opacity:1;transform:none} }
-.character-dialogue__label { padding:4px 10px;border-radius:999px;background:#eee9ff;color:#4d35af;font-size:max(16px,var(--fs-small));font-weight:800; }
-.character-dialogue__speaker { color:var(--c-violet-ink);font-family:var(--font-head);font-size:var(--fs-title);line-height:1.2; }
-.character-dialogue__line { font-size:max(22px,var(--fs-body));font-weight:700;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere; }
+.character-dialogue__label { padding:5px 12px;border-radius:999px;background:#eee9ff;color:#4d35af;font-size:clamp(18px,1.05vw,22px);font-weight:800; }
+.character-dialogue__speaker { color:var(--c-violet-ink);font-family:var(--font-head);font-size:clamp(30px,2vw,40px);line-height:1.2; }
+.character-dialogue__line { font-size:clamp(22px,1.42vw,29px);font-weight:700;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere; }
 .character-dialogue__caret { display:none;width:3px;height:1.05em;margin-left:3px;vertical-align:-.12em;background:var(--c-violet);animation:caret-blink .7s step-end infinite; }
 .character-dialogue.is-typing .character-dialogue__caret { display:inline-block; }
 .character-dialogue__footer { display:flex;justify-content:flex-end;gap:var(--sp-3);align-items:center;flex-wrap:wrap; }
-.character-dialogue__progress { min-width:58px;color:var(--c-ink-soft);font-weight:800; }
+/* 대화 중 학생 반응 선택 — 우열 없는 3택 */
+.character-dialogue__choices { display:grid;gap:8px; }
+.character-dialogue__choices[hidden] { display:none; }
+.character-dialogue__choice-prompt { margin:0;font:900 max(17px,var(--fs-small))/1.3 var(--font-head);color:var(--c-violet-ink); }
+.character-dialogue__choice { text-align:left;min-height:52px;padding:10px 14px;font-weight:800;line-height:1.35;word-break:keep-all; }
+.character-dialogue__progress { min-width:64px;color:var(--c-ink-soft);font-size:clamp(20px,1.25vw,26px);font-weight:800; }
 .character-dialogue__hint { color:var(--c-ink-soft);font-size:max(16px,var(--fs-small)); }
 .character-dialogue__skip { min-width:150px; }
 .character-dialogue__next { min-width:180px; }
+.character-dialogue__footer .btn { min-height:56px;font-size:clamp(18px,1.1vw,22px); }
 
 @media (max-width:760px) {
   .modal:has(.character-dialogue) .modal-body { overflow-y:auto; }
@@ -794,12 +800,13 @@
   filter:drop-shadow(0 5px 8px rgba(25,50,77,.22));
 }
 .journey-transition__stamp-grid {
-  position:absolute;left:54%;top:61%;z-index:2;width:38%;height:25%;padding:1.5%;
+  /* 여권 원화의 아래쪽 원형 도장 칸 3개 안에 도장 2개씩 정확히 배치한다. */
+  position:absolute;left:54%;top:64%;z-index:2;width:38%;height:14%;padding:0 1.5%;
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));
-  place-items:center;gap:2%;
+  place-items:center;gap:1% 2%;
 }
 .journey-transition__stamp-slot {
-  width:min(78%,58px);aspect-ratio:1;display:grid;place-items:center;border-radius:50%;
+  position:relative;width:min(52%,40px);aspect-ratio:1;display:grid;place-items:center;border-radius:50%;
   border:2px dashed rgba(29,74,111,.32);background:rgba(255,252,239,.78);opacity:.62;
 }
 .journey-transition__stamp-slot.is-earned { border-style:solid;border-color:rgba(190,133,28,.68);opacity:1;box-shadow:0 3px 8px rgba(25,50,77,.14); }
@@ -810,14 +817,15 @@
   filter:sepia(.15) saturate(1.08);animation:passport-earned-seal-in 620ms 390ms cubic-bezier(.16,1.15,.34,1) both;
 }
 .journey-transition__stamp-tool {
-  position:absolute;left:73%;top:42%;z-index:5;width:clamp(84px,12vw,154px);height:clamp(84px,12vw,154px);object-fit:contain;
+  position:absolute;left:50%;top:50%;z-index:5;width:clamp(84px,12vw,154px);height:clamp(84px,12vw,154px);max-width:none;object-fit:contain;
+  pointer-events:none;
   filter:drop-shadow(0 12px 18px rgba(0,0,0,.38));animation:passport-stamp-press 1100ms cubic-bezier(.3,.08,.2,1) both;
 }
 @keyframes passport-stamp-press {
-  0% { transform:translate(-50%,-108%) rotate(-8deg) scale(.82);opacity:0; }
-  34% { transform:translate(-50%,40%) rotate(1deg) scale(1.08);opacity:1; }
-  48% { transform:translate(-50%,32%) rotate(0) scale(.96);opacity:1; }
-  100% { transform:translate(-50%,-112%) rotate(7deg) scale(.88);opacity:0; }
+  0% { transform:translate(-50%,-190%) rotate(-8deg) scale(.82);opacity:0; }
+  34% { transform:translate(-50%,-50%) rotate(1deg) scale(1.08);opacity:1; }
+  48% { transform:translate(-50%,-62%) rotate(0) scale(.96);opacity:1; }
+  100% { transform:translate(-50%,-195%) rotate(7deg) scale(.88);opacity:0; }
 }
 @keyframes passport-earned-seal-in {
   0% { transform:rotate(-16deg) scale(2.15);opacity:0; }
@@ -881,7 +889,7 @@
 :root[data-reduced-motion="true"] .journey-ticket.is-new-stamp,
 :root[data-reduced-motion="true"] .stamp-collection__slot.is-new { animation: none; }
 
-/* ===== 배움 프레임 (친구 만나기 · 예상하기 · 배움 카드) ===== */
+/* ===== 배움 프레임 (친구 만나기 · 예상하기 · 여행 확인) ===== */
 .learn-intro, .learn-wrap { display:flex;flex-direction:column;gap:clamp(10px,1.5vw,18px);text-align:center;align-items:center; }
 .learn-hero { display:flex;align-items:center;justify-content:center;gap:var(--sp-3); }
 .learn-hero--small img { max-height:126px !important; }
@@ -899,25 +907,14 @@
   font-size: var(--fs-body); background: rgba(108,76,232,0.1); border: 2px solid rgba(108,76,232,0.35);
   border-radius: var(--radius-m); padding: var(--sp-2) var(--sp-4); color: var(--c-violet-ink); font-weight: 700;
 }
-.learn-first-thought { display:flex;align-items:center;gap:10px;margin:0;padding:8px 14px;border-radius:999px;background:#eee9ff;color:var(--c-violet-ink);font-size:max(17px,var(--fs-small));line-height:1.3; }
-.learn-first-thought strong { flex:none; }
-.learn-discovery-view { width:100%;display:grid;grid-template-columns:56px minmax(0,1fr) 56px;align-items:stretch;gap:10px; }
-.learn-discovery-nav { min-width:56px;min-height:56px;border:2px solid var(--c-line);border-radius:16px;background:#fff;color:var(--c-navy);font:900 38px/1 var(--font-head); }
-.learn-discovery-nav:disabled { opacity:.35; }
-.learn-discovery {
-  min-height:132px;background:#fff;border:3px solid var(--c-line);border-radius:var(--radius-m);padding:clamp(14px,2vw,24px);
-  color:var(--c-ink);font-size:max(20px,var(--fs-body));font-weight:800;line-height:1.48;text-align:center;word-break:keep-all;
-}
-.learn-discovery::after { content:'카드로 고르기';display:block;margin-top:10px;color:var(--c-violet-ink);font-size:max(16px,var(--fs-small));font-weight:800; }
-.learn-discovery.is-selected { border-color:var(--c-violet);background:#f5f2ff;box-shadow:0 0 0 4px rgba(95,70,199,.16); }
-.learn-discovery.is-selected::after { content:'선택했어'; }
-.learn-discovery-meta { width:100%;display:flex;justify-content:center;gap:14px;color:var(--c-ink-soft);font-size:max(16px,var(--fs-small));font-weight:800; }
+.learn-confirm-list { width:100%;display:grid;gap:10px;margin:0; }
+.learn-confirm-item { display:flex;align-items:flex-start;gap:12px;width:100%;margin:0;padding:14px 18px;border:2px solid rgba(24,131,106,.28);border-radius:16px;background:#f3fbf7;color:var(--c-ink);font-size:max(20px,var(--fs-body));line-height:1.42;text-align:left;word-break:keep-all; }
+.learn-confirm-item > span { flex:0 0 auto;display:grid;place-items:center;width:34px;height:34px;margin-top:1px;border-radius:50%;background:var(--c-success);color:#fff;font:900 21px/1 var(--font-head); }
+.learn-confirm-item strong { font-weight:800; }
 @media (max-width:620px) {
   .learn-hero { gap:10px; }
-  .learn-discovery-view { grid-template-columns:48px minmax(0,1fr) 48px;gap:6px; }
-  .learn-discovery-nav { min-width:48px;min-height:52px; }
-  .learn-discovery { min-height:154px;padding:14px 10px; }
-  .learn-first-thought { border-radius:16px;align-items:flex-start;text-align:left; }
+  .learn-confirm-item { padding:12px 14px;font-size:18px; }
+  .learn-confirm-item > span { width:30px;height:30px;font-size:18px; }
 }
 /* 여권의 배움 카드 목록 */
 .learn-card-row {
@@ -947,6 +944,26 @@
 .modal h2, .modal h3, .modal p, .feedback, .learn-question, .learn-goal, .learn-hint {
   text-wrap: balance; word-break: keep-all;
 }
+/* 포맷 로테이션 ① 카드 뒤집기 */
+.keypoint__cards { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%; }
+.keypoint-card { position:relative;min-height:128px;padding:14px;border:3px solid var(--c-gold);border-radius:var(--radius-m);background:linear-gradient(160deg,#ffe9a8,#f7c948);cursor:pointer;font:inherit; }
+.keypoint-card__front { display:grid;place-items:center;height:100%;font:900 clamp(34px,4vw,52px)/1 var(--font-head);color:#8a6410; }
+.keypoint-card__back { display:none;font:800 max(18px,var(--fs-small))/1.5 var(--font-body);color:var(--c-ink);word-break:keep-all;text-align:left; }
+.keypoint-card.is-open { background:#fffdf4;cursor:default;transform:rotateY(0);animation:kp-flip .45s ease; }
+.keypoint-card.is-open .keypoint-card__front { display:none; }
+.keypoint-card.is-open .keypoint-card__back { display:block; }
+@keyframes kp-flip { from { transform:rotateY(90deg); } to { transform:rotateY(0); } }
+/* 포맷 로테이션 ② 앞·뒤 문장 짝 맞추기 */
+.keypoint__match { display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;text-align:left; }
+.keypoint__match-col { display:grid;gap:8px;align-content:start; }
+.keypoint-piece { min-height:64px;padding:10px 13px;border:2.5px solid var(--c-line);border-radius:var(--radius-m);background:#fff;font:800 max(16px,var(--fs-small))/1.4 var(--font-body);color:var(--c-ink);text-align:left;word-break:keep-all;cursor:pointer; }
+.keypoint-piece.is-picked { border-color:var(--c-violet);background:#f3efff;box-shadow:0 0 0 3px rgba(108,76,232,.18); }
+.keypoint-piece.is-matched { border-color:var(--c-success);background:#eefaf2;color:#1d5c39;cursor:default; }
+.keypoint-piece.is-shake { animation:kp-shake .35s ease; }
+@keyframes kp-shake { 25% { transform:translateX(-6px); } 55% { transform:translateX(5px); } 80% { transform:translateX(-3px); } }
+.keypoint__done { display:grid;gap:6px;width:100%; }
+.keypoint__done-line { margin:0;padding:8px 12px;border-radius:12px;background:#eefaf2;color:#1d5c39;font-weight:800;text-align:left;word-break:keep-all; }
+@media (prefers-reduced-motion: reduce) { .keypoint-card.is-open,.keypoint-piece.is-shake { animation:none; } }
 .keypoint__dots { display: flex; gap: 8px; }
 .keypoint__dots i { width: 11px; height: 11px; border-radius: 50%; background: rgba(23, 58, 91, 0.18); }
 .keypoint__dots i.is-now { background: var(--c-gold); }

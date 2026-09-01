@@ -364,7 +364,7 @@ export function createPage(): Page {
       const selectedPlane = selectedAirplanePortraitAssetId(save.profile?.airplaneId);
       const [celebrationWing = 'plane.alt1', completionGuidePlane = 'plane.alt2'] = airplaneWingmen(selectedPlaneFlight, 2);
       await preloadImages([
-        'bg.completion', 'reward.globe_puzzle', 'reward.badge', 'reward.trophy',
+        'bg.completion', 'earth.completion.globe', 'reward.globe_puzzle', 'reward.badge', 'reward.trophy',
         'reward.certificate', 'reward.wreath', selectedPlane, celebrationWing, completionGuidePlane,
         'prop.stamp', 'prop.suitcase',
         'deco.emblem_unity', 'prop.globe_glow', 'deco.flight_kids', reflectionSpeakerId,
@@ -589,14 +589,26 @@ export function createPage(): Page {
       // ---- 퍼즐 지구본 ----
       const tray = body.querySelector('#piece-tray') as HTMLElement;
       const globe = body.querySelector('#globe-zone') as HTMLElement;
+      const hasCompletionGlobe = hasAsset('earth.completion.globe');
+      if (hasCompletionGlobe) {
+        globe.style.backgroundImage = `radial-gradient(circle,rgba(8,45,85,.05),rgba(8,45,85,.18)),url('${assetUrl('earth.completion.globe')}')`;
+        globe.style.backgroundSize = 'cover';
+        globe.style.backgroundPosition = 'center';
+      }
       const alreadyIssued = save.completion.certificateIssued;
 
       const appendPlacedPiece = (id: MissionId) => {
         const seg = document.createElement('div');
         seg.dataset.pieceId = id;
         seg.className = 'globe-slice';
-        seg.style.background = PIECE_COLORS[id];
-        seg.style.color = PIECE_TEXT_COLORS[id];
+        seg.style.background = hasCompletionGlobe
+          ? `color-mix(in srgb, ${PIECE_COLORS[id]} 38%, transparent)`
+          : PIECE_COLORS[id];
+        seg.style.color = hasCompletionGlobe ? '#fff' : PIECE_TEXT_COLORS[id];
+        if (hasCompletionGlobe) {
+          seg.style.border = '1px solid rgba(255,255,255,.62)';
+          seg.style.textShadow = '0 2px 5px rgba(0,0,0,.7)';
+        }
         seg.textContent = PIECES.find((p) => p.id === id)?.label ?? '';
         globe.appendChild(seg);
       };
@@ -809,9 +821,11 @@ export function createPage(): Page {
         const r2 = (body.querySelector('#ref-2') as HTMLInputElement).value.trim();
         const r3 = (body.querySelector('#ref-3') as HTMLInputElement).value.trim();
         const r4 = (body.querySelector('#ref-4') as HTMLInputElement).value.trim();
-        if (!r1 || !r2 || !r3 || !r4) {
-          const missingStep = !r1 ? 1 : !r2 ? 2 : !r3 ? 3 : 4;
-          showToast('이 생각을 짧게라도 적어 주세요.', 'warn');
+        // 1~2자 입력만으로 수료증이 발급되지 않게, 각 생각은 최소 6자를 요구한다
+        const tooShort = [r1, r2, r3, r4].findIndex((value) => value.length < 6);
+        if (tooShort >= 0) {
+          const missingStep = tooShort + 1;
+          showToast('여섯 글자 이상, 한 문장으로 적어 주세요.', 'warn');
           showReflectionStep(missingStep);
           reflectionCue(missingStep)?.focus();
           return;
@@ -847,8 +861,8 @@ export function createPage(): Page {
       reflectionNext?.addEventListener('click', () => {
         if (reflectionStep <= 4) {
           const current = body.querySelector<HTMLInputElement>(`#ref-${reflectionStep}`);
-          if (!current?.value.trim()) {
-            showToast('짧게라도 생각을 적어 주세요.', 'warn');
+          if ((current?.value.trim().length ?? 0) < 6) {
+            showToast('여섯 글자 이상, 한 문장으로 적어 주세요.', 'warn');
             current?.focus();
             return;
           }

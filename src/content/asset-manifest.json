@@ -684,6 +684,78 @@
       "license": "AI-generated (project original)",
       "note": "추정: 지도 든 탐험 복장 소녀 가이드"
     },
+    "europe.traveler.france": {
+      "type": "image",
+      "src": "assets/europe_traveler_camille-v1.webp",
+      "original": "assets/generated/europe_traveler_camille-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "프랑스 여행 친구 카미유. 무릎을 꿇고 스케치하는 3D 전신 캐릭터"
+    },
+    "europe.traveler.germany": {
+      "type": "image",
+      "src": "assets/europe_traveler_lina-v1.webp",
+      "original": "assets/generated/europe_traveler_lina-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "독일 여행 친구 리나. 지도를 펼치고 걷는 3D 전신 캐릭터"
+    },
+    "europe.traveler.poland": {
+      "type": "image",
+      "src": "assets/europe_traveler_zofia-v1.webp",
+      "original": "assets/generated/europe_traveler_zofia-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "폴란드 여행 친구 조피아. 몸을 낮춰 잎을 관찰하는 3D 전신 캐릭터"
+    },
+    "europe.traveler.czechia": {
+      "type": "image",
+      "src": "assets/europe_traveler_adam-v1.webp",
+      "original": "assets/generated/europe_traveler_adam-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "체코 여행 친구 아담. 목적지를 힘차게 가리키는 3D 전신 캐릭터"
+    },
+    "europe.traveler.italy": {
+      "type": "image",
+      "src": "assets/europe_traveler_luca-v1.webp",
+      "original": "assets/generated/europe_traveler_luca-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "이탈리아 여행 친구 루카. 가방에서 노트를 꺼내는 3D 전신 캐릭터"
+    },
+    "europe.traveler.greece": {
+      "type": "image",
+      "src": "assets/europe_traveler_eleni-v1.webp",
+      "original": "assets/generated/europe_traveler_eleni-v1-chroma.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "그리스 여행 친구 엘레니. 한쪽 다리를 들고 멀리 살피는 3D 전신 캐릭터"
+    },
     "europe.traveler.spain": {
       "type": "image",
       "src": "assets/europe_traveler_sofia-v2.webp",
@@ -2113,15 +2185,15 @@
     },
     "plane.portrait.classic.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_classic_transparent.webp",
-      "original": "assets/plane_portrait_classic.webp",
+      "src": "assets/plane_guide_clean_v2.webp",
+      "original": "assets/plane_guide_clean_v2.png",
       "pages": [
         "p03"
       ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "몽실이 투명 배경 선택 이미지"
+      "note": "몽실이 투명 배경 선택 이미지 v2 — 체크무늬·손상 경계 없이 재생성"
     },
     "plane.portrait.flower.transparent": {
       "type": "image",
@@ -2494,6 +2566,51 @@
       "preload": "page",
       "license": "AI-generated (project original)",
       "note": "탄자니아 북부 초원 — 작아진 물웅덩이와 이동하는 동물 (환경 신호 현장 사진, 개념 일러스트)"
+    },
+    "stage6.yusra.before": {
+      "type": "image", "src": "assets/stage6_yusra_before.webp", "original": "assets/stage6/stage6_yusra_before.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 유스라, 말할 기회를 얻기 전"
+    },
+    "stage6.yusra.after": {
+      "type": "image", "src": "assets/stage6_yusra_after.webp", "original": "assets/stage6/stage6_yusra_after.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 유스라, 발언 순서를 나눈 뒤"
+    },
+    "stage6.kenji.before": {
+      "type": "image", "src": "assets/stage6_kenji_before.webp", "original": "assets/stage6/stage6_kenji_before.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 켄지, 거절이 존중받기 전"
+    },
+    "stage6.kenji.after": {
+      "type": "image", "src": "assets/stage6_kenji_after.webp", "original": "assets/stage6/stage6_kenji_after.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 켄지, 선택을 존중받은 뒤"
+    },
+    "stage6.amara.before": {
+      "type": "image", "src": "assets/stage6_amara_before.webp", "original": "assets/stage6/stage6_amara_before.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 아마라, 발표가 멈춘 순간"
+    },
+    "stage6.amara.after": {
+      "type": "image", "src": "assets/stage6_amara_after.webp", "original": "assets/stage6/stage6_amara_after.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "6단계 사진 비교 — 아마라, 경청과 응원을 받은 뒤"
+    },
+    "earth.council.globe": {
+      "type": "image", "src": "assets/earth_council_globe_korea_v3.webp", "original": "assets/earth-council/earth_council_globe_korea_v3.png",
+      "pages": ["p09"], "preload": "page", "alpha": true, "license": "AI-generated (project original)",
+      "note": "한반도·동아시아 중심의 세계 친구 지구회의 문제 선택 화면 전용 연결 지구본"
+    },
+    "earth.council.finale": {
+      "type": "image", "src": "assets/earth_council_finale_korea_v3.webp", "original": "assets/earth-council/earth_council_finale_korea_v3.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "한반도·동아시아 중심의 세계 친구 지구회의 공동약속 완성 화면 전용 우주 속 지구"
+    },
+    "earth.completion.globe": {
+      "type": "image", "src": "assets/earth_completion_globe_korea_v3.webp", "original": "assets/earth-council/earth_completion_globe_korea_v3.png",
+      "pages": ["p10"], "preload": "page", "alpha": true, "license": "AI-generated (project original)",
+      "note": "한반도·동아시아 중심의 세계 연결 완주 여섯 조각 퍼즐 전용 연결 지구"
     }
   }
 }

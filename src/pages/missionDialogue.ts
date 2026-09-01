@@ -337,6 +337,7 @@ export function createPage(): Page {
         closeActiveModal = openCharacterDialogue({
           id: `greet-story-${greeting.id}`,
           title: `${greeting.country} 친구와 이야기하기`,
+          reactions: true,
           name: `${greeting.country} 사례 친구`,
           meta: `학습용 가상 인물 · ${greeting.continent} · ${greeting.country}`,
           assetId: greetingImg(greeting),
@@ -450,12 +451,13 @@ export function createPage(): Page {
         if (saved.checkpointId === 'stage4') stage = 4;
       }
       // 완주한 학생이 다시 들어오면 여섯 친구 인사부터 반복하지 않고, 지구회의를 다른 문제로 다시 연다.
+      // 학생이 직접 쓴 약속(jointPledgeDraft·personalActionDraft)은 지우지 않는다 — 다시 쓰는 게 아니라 고쳐 쓰는 경험이 되게.
       if (saved.status === 'completed' && saved.data.earth) {
         earthProgress = validateEarthProgress(saved.data.earth, earth);
         earthProgress = {
           ...earthProgress,
           scene: 'issue', missionCompleted: false, selectedIssueId: null, listenedPerspectiveIds: [], selectedPerspectiveIds: [],
-          perspectiveReason: '', selectedActionIds: [], simulationAttempts: 0, jointPledgeDraft: '', personalActionDraft: ''
+          perspectiveReason: '', selectedActionIds: [], simulationAttempts: 0
         };
         stage = 4;
       }
@@ -547,9 +549,10 @@ export function createPage(): Page {
             </div>
           </div>`;
 
-        // 다섯 대륙에서 모아 온 것을 먼저 펼쳐 보인다 — 마지막 단계가 갑자기 등장한 별개 게임으로 보이지 않게
+        // 다섯 대륙에서 모아 온 것을 먼저 펼쳐 보인다 — 마지막 단계가 갑자기 등장한 별개 게임으로 보이지 않게.
+        // renderStage1은 친구를 만날 때마다 다시 불리므로, 14줄 목록은 첫 입장(연결 0개)에서 딱 한 번만 연다.
         const bag = collectedEarthSignals();
-        if (bag.length > 0) {
+        if (bag.length > 0 && matched.size === 0 && !oxDone) {
           openModal({
             id: 'dialogue-bag',
             title: '다섯 대륙에서 모아 온 이야기',

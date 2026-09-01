@@ -9,6 +9,52 @@ import { avatarChoice } from './avatarRoster';
 
 let teacherSessionAuthenticated = false;
 
+const SOURCE_DOCS: Array<[string, string]> = [
+  ['asia', '아시아'], ['europe', '유럽'], ['africa', '아프리카'],
+  ['americas', '아메리카'], ['oceania', '오세아니아'],
+  ['environment', '지구 회의'], ['dialogue', '존스 대화']
+];
+
+/**
+ * 콘텐츠 JSON 어디에 있든 url + 제목 쌍을 모은다.
+ * 미션 화면에서는 출처를 숨기고 설정 한 곳에서만 보여 주기 때문에,
+ * 파일 구조가 바뀌어도 빠지는 출처가 없도록 통째로 훑는다.
+ */
+function collectSources(node: unknown, out: Map<string, string>): void {
+  if (Array.isArray(node)) { node.forEach((item) => collectSources(item, out)); return; }
+  if (!node || typeof node !== 'object') return;
+  const record = node as Record<string, unknown>;
+  const url = typeof record.url === 'string' ? record.url
+    : typeof record.sourceUrl === 'string' ? record.sourceUrl : null;
+  const title = typeof record.title === 'string' ? record.title
+    : typeof record.sourceTitle === 'string' ? record.sourceTitle : null;
+  if (url && /^https?:\/\//.test(url) && !out.has(url)) out.set(url, title ?? url);
+  Object.values(record).forEach((value) => collectSources(value, out));
+}
+
+async function fillSourceList(host: HTMLElement | null): Promise<void> {
+  if (!host) return;
+  const { loadContent } = await import('../core/ContentRepository');
+  const blocks: string[] = [];
+  for (const [name, label] of SOURCE_DOCS) {
+    try {
+      const found = new Map<string, string>();
+      collectSources(await loadContent<unknown>(name), found);
+      if (found.size === 0) continue;
+      const items = [...found].map(([url, title]) =>
+        `<li><a href="${escapeAttr(url)}" target="_blank" rel="noreferrer">${escapeText(title)}</a></li>`).join('');
+      blocks.push(`<p class="settings-copy"><strong>${escapeText(label)}</strong></p><ul class="settings-list">${items}</ul>`);
+    } catch {
+      blocks.push(`<p class="settings-copy">${escapeText(label)} 자료를 불러오지 못했어요.</p>`);
+    }
+  }
+  host.innerHTML = blocks.join('') || '<p class="settings-copy">표시할 출처가 없어요.</p>';
+}
+
+const escapeText = (value: string): string =>
+  value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] ?? char));
+const escapeAttr = escapeText;
+
 /** 설정 모달 — 모든 페이지 공용 */
 export function openSettings(): void {
   const s = saveRepo.get().settings;
@@ -45,6 +91,7 @@ export function openSettings(): void {
           <li>여권을 만들고 세계 지도에서 대륙을 골라요.</li>
           <li>그림을 누르고, 비교하고, 내 생각의 근거를 남겨요.</li>
           <li>완료한 여행은 도장으로 표시되고 이 기기에 자동 저장돼요.</li>
+          <li>미션에 나오는 사진과 이야기는 그 나라의 한 장면이에요. 한 장면이 나라 전체나 그곳 사람들 모두를 대표하지는 않아요.</li>
         </ol>
       </details>
       <details class="settings-card">
@@ -94,11 +141,17 @@ export function openSettings(): void {
         <summary>이미지·소리·저작권 고지</summary>
         <ul class="settings-list">
           <li>캐릭터·배경·장식은 프로젝트 자체 AI 생성 이미지예요.</li>
+          <li>미션에 나오는 장면 그림은 실제 현장 사진이 아닌 학습용 재현 이미지예요. 사람·배치·날씨는 사실 근거로 쓰지 않아요.</li>
           <li>프라하 사진은 Unsplash, 아프리카 악기 사진은 Wikimedia Commons의 재사용 가능 자료를 라이선스에 맞게 사용했어요.</li>
           <li>배경 음악 6곡은 프로젝트 자체 AI 생성 음원이에요.</li>
           <li>효과음은 Pixabay Content License에 따라 사용·가공했어요.</li>
           <li>출처와 라이선스 상세 내용은 프로젝트의 <code>assets/CREDITS.md</code>에서 확인할 수 있어요.</li>
         </ul>
+        <details class="settings-section">
+          <summary>자료 출처 모아 보기</summary>
+          <p class="settings-copy">미션 화면에는 출처를 표시하지 않고 이곳에 모아 두었어요.</p>
+          <div id="settings-sources" class="settings-list">불러오는 중이에요…</div>
+        </details>
         <p class="settings-copyright">ⓒ 2026 옐샘 &amp; 아이스크림미디어. All rights reserved.</p>
         <p class="settings-copy">앱 화면 캡처·자체 제작 일러스트·자체 제작 음원은 무단 복제·재배포·전용·상업적 이용을 금지해요.</p>
         <p class="settings-copy">외부 공개 사진·효과음·폰트의 저작권은 각 원저작자와 소장 기관에 있으며, 각 자료의 공개 라이선스와 이용 조건을 따라요.</p>
@@ -130,6 +183,7 @@ export function openSettings(): void {
       { label: '닫기', kind: 'primary', onClick: (close) => close(), autofocus: true }
     ]
   });
+  void fillSourceList(body.querySelector<HTMLElement>('#settings-sources'));
   const teacherPassword = body.querySelector<HTMLInputElement>('#teacher-password');
   const teacherError = body.querySelector<HTMLElement>('#teacher-password-error');
   const teacherAuthPanel = body.querySelector<HTMLElement>('#teacher-auth-panel');

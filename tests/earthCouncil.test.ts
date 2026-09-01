@@ -94,6 +94,10 @@ describe('공동약속', () => {
     expect(lines[5]).toContain('월요일 아침');
     expect(personalActionIssue(content, '환경 보호')).not.toBeNull();
     expect(personalActionIssue(content, p.personalActionDraft)).toBeNull();
+    // 도배 글자와 육하 단서 없는 문장은 통과하지 못한다 (P1-11)
+    expect(personalActionIssue(content, 'ㅋㅋㅋㅋㅋㅋㅋㅋ')).not.toBeNull();
+    expect(personalActionIssue(content, '물병을 챙겨서 아껴 쓰겠다')).not.toBeNull();
+    expect(personalActionIssue(content, '매일 아침 물병을 챙겨서 아껴 쓰겠다')).toBeNull();
   });
 
   it('채워진 낱말의 받침에 맞게 조사를 고친다 — "쓰기을" 금지', () => {

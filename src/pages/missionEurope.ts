@@ -496,6 +496,7 @@ export function createPage(): Page {
         openCharacterDialogue({
           id: `europe-traveler-${country.id}-${visual.id}`,
           title: `${country.name} 여행가와 이야기하기`,
+          reactions: true,
           name: traveler.name,
           meta: `${country.name} 생활 사례를 들려주는 학습용 가상 친구`,
           assetId: traveler.assetId,

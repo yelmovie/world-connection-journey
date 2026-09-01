@@ -78,8 +78,12 @@ export function playJourneyTransition(opts: {
     const stampAssetId = missionId === newestMissionId && companionAssetId
       ? companionAssetId
       : PASSPORT_STAMP_ASSETS[missionId];
+    const stampTool = missionId === newestMissionId && hasAsset(assetId)
+      ? `<img class="journey-transition__stamp-tool" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">`
+      : '';
     return `<span class="journey-transition__stamp-slot${earned ? ' is-earned' : ''}${missionId === newestMissionId ? ' is-new' : ''}" data-stamp-slot="${index + 1}">
       ${earned && hasAsset(stampAssetId) ? `<img src="${assetUrl(stampAssetId)}" data-asset-id="${stampAssetId}" alt="">` : ''}
+      ${stampTool}
     </span>`;
   }).join('');
   const passportAssetId = hasAsset('prop.passport_builder') ? 'prop.passport_builder' : 'prop.passport';
@@ -104,7 +108,6 @@ export function playJourneyTransition(opts: {
           ${hasAsset(plane.assetId) ? `<img class="journey-transition__passport-plane" src="${assetUrl(plane.assetId)}" data-asset-id="${plane.assetId}" alt="">` : ''}
           <div class="journey-transition__stamp-grid">${stampSlots}</div>
           ${issueSeal}
-          ${hasAsset(assetId) ? `<img class="journey-transition__stamp-tool" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">` : ''}
         </div>`}
     <p class="journey-transition__label">${escapeHtml(opts.label)}</p>`;
   (document.getElementById('overlay-root') ?? document.body).appendChild(overlay);

@@ -2,6 +2,7 @@ import { assetUrl, hasAsset } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
+import { selectedAvatarSpeaker } from './avatarRoster';
 import { openModal } from './modal';
 
 export interface CharacterDialogueLine {
@@ -35,11 +36,42 @@ export interface CharacterDialogueOptions {
   lines: CharacterDialogueLine[];
   facts?: CharacterDialogueFact[];
   dismissible?: boolean;
+  /** true면 대화 중 두 지점에서 학생이 반응(더 물어보기·공감·내 얘기)을 고른다. 우열 없는 선택 + 1줄 분기. */
+  reactions?: boolean;
   onComplete?: () => void;
   onClose?: () => void;
 }
 
 const TYPE_MS = 25;
+
+/** 우열 없는 반응 3종 — 어떤 것을 골라도 대화는 이어지고, 고른 유형만 재플레이 배지 재료로 세어 둔다. */
+const DIALOGUE_REACTIONS = [
+  { type: 'ask', text: '더 듣고 싶어! 그때 기분이 어땠어?', reply: '물어봐 줘서 고마워. 그 마음까지 담아서 이야기해 줄게.' },
+  { type: 'empathy', text: '와, 정말 그렇겠다. 듣기만 해도 느껴져.', reply: '내 마음을 알아주니까 이야기할 힘이 나!' },
+  { type: 'share', text: '나도 비슷한 일이 있었어! 우리 쪽에서도 그래.', reply: '정말? 너희 이야기도 궁금하다. 이따 꼭 들려줘!' }
+] as const;
+
+const REACTION_COUNT_KEY = 'wcj.reactionCounts.v1';
+
+/** 반응 유형별 누적 횟수 — 배지·재플레이 훅(계획 16번)의 재료. */
+export function reactionCounts(): Record<string, number> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(REACTION_COUNT_KEY) ?? '{}') as Record<string, unknown>;
+    const out: Record<string, number> = {};
+    for (const [key, value] of Object.entries(raw)) if (typeof value === 'number') out[key] = value;
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function bumpReactionCount(type: string): void {
+  try {
+    const counts = reactionCounts();
+    counts[type] = (counts[type] ?? 0) + 1;
+    localStorage.setItem(REACTION_COUNT_KEY, JSON.stringify(counts));
+  } catch { /* 저장 불가 환경(시크릿 모드 등) 무시 */ }
+}
 
 /** 대사 속 {player}를 학생이 정한 여행 이름으로 바꾼다. 여권 전이면 '나'로 읽힌다. */
 function fillPlayerName(text: string): string {
@@ -69,6 +101,13 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
     .map((line) => ({ ...line, text: fillPlayerName(line.text.replace(/\s+/g, ' ').trim()) }))
     .filter((line) => line.text.length > 0);
   if (lines.length === 0) return () => undefined;
+  const savedPlayer = selectedAvatarSpeaker(saveRepo.get().profile);
+  const partner = opts.partner ?? (lines.some((line) => line.role === 'partner') ? {
+    name: savedPlayer.name,
+    meta: '나의 탐험가',
+    assetId: savedPlayer.assetId,
+    imageAlt: `${savedPlayer.name} 탐험가`
+  } : undefined);
 
   const portraitHtml = (
     role: 'character' | 'partner',
@@ -86,7 +125,7 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
     </section>`;
 
   const wrap = document.createElement('div');
-  wrap.className = `character-dialogue${opts.partner ? ' has-partner' : ''}`;
+  wrap.className = `character-dialogue${partner ? ' has-partner' : ''}`;
   wrap.innerHTML = `
     ${portraitHtml('character', opts.name, opts.assetId, opts.imageAlt, opts.meta, opts.flipX)}
     <section class="character-dialogue__conversation">
@@ -97,13 +136,14 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
         <span class="character-dialogue__line" aria-hidden="true"><span class="character-dialogue__text"></span><span class="character-dialogue__caret"></span></span>
       </button>
       <span class="visually-hidden character-dialogue__announcement" role="status" aria-live="polite" aria-atomic="true"></span>
+      <div class="character-dialogue__choices" hidden></div>
       <div class="character-dialogue__footer">
         <span class="character-dialogue__progress" aria-hidden="true"></span>
         <button type="button" class="btn btn-ghost character-dialogue__skip">대화 건너뛰기</button>
         <button type="button" class="btn btn-primary character-dialogue__next"></button>
       </div>
     </section>
-    ${opts.partner ? portraitHtml('partner', opts.partner.name, opts.partner.assetId, opts.partner.imageAlt, opts.partner.meta, opts.partner.flipX) : ''}`;
+    ${partner ? portraitHtml('partner', partner.name, partner.assetId, partner.imageAlt, partner.meta, partner.flipX) : ''}`;
 
   const facts = wrap.querySelector<HTMLElement>('.character-dialogue__facts');
   opts.facts?.forEach((fact) => {
@@ -119,6 +159,23 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
     });
     facts?.appendChild(group);
   });
+
+  // 반응 선택 지점 — 대화 앞·뒤 1/3 근처의 캐릭터 대사 앞에서 학생 차례를 만든다.
+  const reactionPoints = new Set<number>();
+  if (opts.reactions && lines.length >= 4) {
+    const candidates = lines.map((_, i) => i).filter((i) => i >= 2 && (lines[i]!.role ?? 'character') === 'character');
+    const nearest = (target: number): number =>
+      candidates.reduce((best, i) => (Math.abs(i - target) < Math.abs(best - target) ? i : best), candidates[0] ?? -1);
+    if (candidates.length > 0) {
+      const first = nearest(Math.round(lines.length / 3));
+      reactionPoints.add(first);
+      // 짧은 대화(5줄 이하)는 한 곳만 — 연달아 두 번 고르게 하면 흐름이 끊긴다
+      if (lines.length >= 6) {
+        const second = nearest(Math.round((lines.length * 2) / 3));
+        if (second > first + 1) reactionPoints.add(second);
+      }
+    }
+  }
 
   const bubble = wrap.querySelector<HTMLButtonElement>('.character-dialogue__bubble')!;
   const label = wrap.querySelector<HTMLElement>('.character-dialogue__label')!;
@@ -145,7 +202,7 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
   };
 
   const lineSpeaker = (line: CharacterDialogueLine): string => line.speaker
-    ?? (line.role === 'partner' ? opts.partner?.name : opts.name)
+    ?? (line.role === 'partner' ? partner?.name : opts.name)
     ?? opts.name;
 
   const syncNextLabel = () => {
@@ -212,6 +269,33 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
   bubble.addEventListener('click', () => {
     if (typing) finishLine();
   });
+  const choicesEl = wrap.querySelector<HTMLElement>('.character-dialogue__choices')!;
+  const showChoices = (at: number) => {
+    reactionPoints.delete(at);
+    next.hidden = true;
+    choicesEl.hidden = false;
+    choicesEl.innerHTML = `<p class="character-dialogue__choice-prompt">너라면 뭐라고 말할까?</p>
+      ${DIALOGUE_REACTIONS.map((r, i) => `<button type="button" class="card card-pick character-dialogue__choice" data-reaction="${i}">${r.text}</button>`).join('')}`;
+    choicesEl.querySelectorAll<HTMLButtonElement>('[data-reaction]').forEach((button) => button.addEventListener('click', () => {
+      const reaction = DIALOGUE_REACTIONS[Number(button.dataset.reaction)];
+      if (!reaction) return;
+      bumpReactionCount(reaction.type);
+      void audio.playSfx('tap');
+      // 학생의 말 + 친구의 1줄 대답을 대화 흐름에 끼워 넣는다
+      lines.splice(at, 0,
+        { label: '나의 반응', role: 'partner', text: reaction.text },
+        { label: '친구의 대답', role: 'character', text: reaction.reply });
+      const shifted = [...reactionPoints].map((point) => (point >= at ? point + 2 : point));
+      reactionPoints.clear();
+      shifted.forEach((point) => reactionPoints.add(point));
+      choicesEl.hidden = true;
+      choicesEl.innerHTML = '';
+      next.hidden = false;
+      lineIndex = at;
+      startLine();
+    }));
+  };
+
   next.addEventListener('click', () => {
     void audio.playSfx('tap');
     if (typing) {
@@ -219,6 +303,10 @@ export function openCharacterDialogue(opts: CharacterDialogueOptions): () => voi
       return;
     }
     if (lineIndex + 1 < lines.length) {
+      if (reactionPoints.has(lineIndex + 1)) {
+        showChoices(lineIndex + 1);
+        return;
+      }
       lineIndex += 1;
       startLine();
       return;

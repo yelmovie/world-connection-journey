@@ -283,7 +283,6 @@
 #scene-root .page .gauge-card,
 #scene-root .page .comparison-plan,
 #scene-root .page .plan-stop,
-#scene-root .page .learn-discovery,
 #scene-root .page .learn-card-row {
   background-color: #fffdf8;
   border-color: rgba(23, 50, 77, 0.16);
@@ -534,7 +533,7 @@
 
 /* 캐릭터 대화 팝업은 인물을 크게 유지하되 같은 팝업 프레임을 쓴다. */
 #overlay-root .modal:has(.character-dialogue) {
-  width: min(1040px, 95vw);
+  width: min(1280px, 96vw);
   background:
     linear-gradient(90deg, rgba(95, 70, 199, 0.14) 0 8px, transparent 8px),
     linear-gradient(145deg, rgba(255, 253, 247, 0.91), rgba(239, 247, 249, 0.84));

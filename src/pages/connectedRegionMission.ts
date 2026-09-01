@@ -45,6 +45,8 @@ type Signal = {
   title: string;
   prompt: string;
   connection: string;
+  /** 지구회의 주제(ocean·climate·ecosystem)와의 명시 연결 */
+  issueId: string;
   beforeAssetId: string;
   afterAssetId: string;
   sourceTitle: string;
@@ -260,6 +262,13 @@ function normalizeState(model: RegionalModel): RegionalState {
   };
 }
 
+/** 연결 유형(ocean·water·climate·ecosystem 등)에서 지구회의 주제 하나를 고른다. */
+function issueFromConnections(types: string[]): string {
+  if (types.includes('ocean')) return 'ocean';
+  if (types.includes('ecosystem')) return 'ecosystem';
+  return 'climate';
+}
+
 function asiaModel(content: AsiaSource): RegionalModel {
   return {
     learn: (content as { learn?: unknown }).learn,
@@ -269,7 +278,7 @@ function asiaModel(content: AsiaSource): RegionalModel {
     areas: content.regions.map((item, index) => ({ id: item.id, name: item.nameKo, short: item.silhouette, description: `${item.nameKo}의 자연과 생활 사례를 살펴봐.`, x: item.mapPosition.xPercent, y: item.mapPosition.yPercent, color: COLORS[index % COLORS.length] ?? COLORS[0]! })),
     examples: content.countryExamples.map((item) => ({ id: item.id, areaId: item.regionId, country: item.countryNameKo, place: item.placeNameKo, scope: item.scopeNoteKo, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: item.sceneIds })),
     scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.category === 'nature' ? '자연과 공간' : item.category === 'daily' ? '오늘날의 생활' : item.category === 'landmark' ? '대표 장소 관찰' : '문화와 표현', title: item.titleKo, assetId: item.imageAssetId, summary: item.summaryKo, detail: item.detailKo, discovery: item.discoveryKo, hotspots: item.hotspots.map((spot) => ({ id: spot.id, x: spot.x * 100, y: spot.y * 100, label: spot.labelKo })), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
-    signals: content.signals.map((item) => ({ id: item.id, title: item.titleKo, prompt: item.promptKo, connection: item.connectionTypes.join(' · '), beforeAssetId: item.beforeAssetId, afterAssetId: item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    signals: content.signals.map((item) => ({ id: item.id, title: item.titleKo, prompt: item.promptKo, connection: item.connectionTypes.join(' · '), issueId: issueFromConnections(item.connectionTypes), beforeAssetId: item.beforeAssetId, afterAssetId: item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     perspectives: content.perspectives.map((item) => ({ id: item.id, name: item.nameKo, role: item.labelKo, line: item.lineKo, worry: item.worryKo, assetId: item.assetId })),
     actions: content.actions.map((item) => ({ id: item.id, tier: item.tier, label: item.nameKo, detail: item.detailKo }))
   };
@@ -290,7 +299,7 @@ function oceaniaModel(content: OceaniaSource): RegionalModel {
       return { id: item.id, areaId: item.zoneId, country: item.country, place: item.place, scope: item.scopeNote, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: [...(scenesByZone.get(item.zoneId) ?? []), ...landmarkIds] };
     }),
     scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.categoryLabel, title: item.title, assetId: item.assetId, summary: item.summary, detail: item.detail, discovery: item.discovery, hotspots: item.hotspots, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
-    signals: content.signals.map((item) => ({ id: item.id, title: item.title, prompt: item.prompt, connection: `${item.connectionType} · ${item.connectionNote}`, beforeAssetId: item.beforeAssetId, afterAssetId: item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    signals: content.signals.map((item) => ({ id: item.id, title: item.title, prompt: item.prompt, connection: `${item.connectionType} · ${item.connectionNote}`, issueId: issueFromConnections([item.connectionType]), beforeAssetId: item.beforeAssetId, afterAssetId: item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     perspectives: content.perspectives.map((item) => ({ id: item.id, name: item.name, role: item.role, line: item.line, worry: '', assetId: item.imageId })),
     actions: content.actions.map((item) => ({ id: item.id, tier: item.tier, label: item.label, detail: '선택의 장단점을 다른 행동과 함께 비교해 봐.' }))
   };
@@ -473,7 +482,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             if (!finishReady()) return;
             const heard = model.perspectives.filter((item) => state.listenedPerspectiveIds.includes(item.id));
             writeMissionArtifact({ schemaVersion: 1, missionId: model.id, title: `${model.title.split(':')[0]} 권역 탐험 기록`, purpose: '여러 지역의 자연·생활·문화를 한 모습으로 단정하지 않고 비교해.', initialHypothesis: '지도에서 서로 다른 지역의 위치와 생활을 먼저 살펴봤어.', evidenceIds: [...state.viewedSceneIds, ...state.discoveredSignalIds], evidenceLabel: `${state.visitedAreaIds.length}개 ${model.areaLabel}, ${state.viewedExampleIds.length}개 나라·장소, ${state.viewedSceneIds.length}개 장면을 확인했어.`, voiceId: heard[0]?.id ?? `${model.id}-voices`, voiceName: heard.map((item) => item.name).join('·') || '지역의 친구들', voiceLine: heard.map((item) => item.line).join(' ') || '지역마다 필요한 방법이 다르니 먼저 사정을 들어야 해.', firstDecision: '한 장면을 지역 전체의 모습으로 단정하지 않기', observedConsequence: `${state.discoveredSignalIds.length}개의 연결된 환경 신호를 확인했어.`, revisedDecision: `${state.selectedActionIds.length}개의 행동을 여러 주체의 책임으로 골랐어.`, rationale: '생활 속 행동과 지역사회·정부·기업·국가 간 협력을 함께 골라야 오래 이어질 수 있어.', transferPrompt: '우리 동네 문제에서도 당사자의 말을 듣고 여러 주체의 행동을 함께 제안한다면 무엇이 달라질까?', earnedAt: new Date().toISOString() });
-            recordEarthSignals(model.id, model.signals.filter((item) => state.discoveredSignalIds.includes(item.id)).map((item) => item.title));
+            recordEarthSignals(model.id, model.signals.filter((item) => state.discoveredSignalIds.includes(item.id)).map((item) => ({ label: item.title, issueId: item.issueId })));
             const doComplete = (): void => completeMissionFlow(model.id, model.title.split(':')[0] ?? model.title);
             const learn = getLearn({ learn: model.learn });
             if (learn) showLearningWrap(model.id, learn, doComplete);

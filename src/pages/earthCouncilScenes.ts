@@ -16,6 +16,7 @@ import { burstConfetti, popBounce } from '../ui/fx';
 import type { GuideController, GuideSpeaker } from '../ui/guide';
 import { showFeedback } from '../ui/feedback';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
+import { withJosa } from '../core/josa';
 
 export interface EarthSceneHost {
   body: HTMLElement;
@@ -167,7 +168,7 @@ export const EARTH_CSS = `
 .ec-issue img { width:100%;height:clamp(72px,11vh,120px);object-fit:cover; }
 .ec-issue .ec-issue-body { padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px; }
 .ec-issue strong { font:900 max(20px,var(--fs-body))/1.2 var(--font-head);color:var(--c-navy); }
-.ec-issue .ec-issue-mine { display:block;padding:6px 9px;border-radius:10px;background:#eef6ee;border:1.5px dashed #7fae86;font-size:max(13px,calc(var(--fs-small) - 2px));font-weight:800;line-height:1.45;color:#2c5a38; }
+.ec-issue .ec-issue-mine { display:block;max-height:11.5em;overflow-y:auto;padding:6px 9px;border-radius:10px;background:#eef6ee;border:1.5px dashed #7fae86;font-size:max(13px,calc(var(--fs-small) - 2px));font-weight:800;line-height:1.45;color:#2c5a38; }
 .ec-issue-mine em { display:inline-block;margin-right:5px;padding:0 7px;border-radius:999px;background:#d9ecd9;color:#1e4e2a;font-style:normal;font-size:14px;font-weight:900; }
 .ec-issue-q { font-size:max(17px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.3; }
 
@@ -230,6 +231,8 @@ export const EARTH_CSS = `
 .ec-finale h2 { margin:0;font:900 clamp(26px,3vw,48px)/1.25 var(--font-head);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:22em;word-break:keep-all; }
 .ec-finale p { margin:0;font:700 max(20px,var(--fs-body))/1.4 var(--font-body);color:#f5f9ff;max-width:30em; }
 .ec-finale svg { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
+.ec-finale [data-act="finale-continue"] { margin-top:10px; }
+.ec-finale [data-act="finale-continue"][hidden] { display:none; }
 
 /* 압축 레이아웃은 진짜 낮은 화면(폴드 가로 등)에서만 — 1280×720·1366×768 전자칠판은 기본 레이아웃 유지 */
 @media (max-height:640px) {
@@ -641,10 +644,12 @@ function hashSeed(s: string): number {
 }
 
 /* ===== 장면 3 — 탐구할 환경문제 선택 ===== */
-/** 대륙에서 모은 신호를 회의 주제와 잇는 러프한 갈래 — 정확한 분류보다 '내 여행이 여기 쓰인다'는 연결이 목적이다. */
-function issueIdForSignal(label: string): string {
-  if (/바다|플라스틱|쓰레기|해안|섬/.test(label)) return 'ocean';
-  if (/숲|생물|서식지|나무|분지/.test(label)) return 'ecosystem';
+/** 대륙에서 모은 신호를 회의 주제와 잇는다 — 명시 issueId가 있으면 그걸 쓰고, 없으면(이전 저장·유럽 등) 키워드로 추정한다. */
+function issueIdForSignal(signal: { label: string; issueId?: string }): string {
+  if (signal.issueId) return signal.issueId;
+  const label = signal.label;
+  if (/바다|플라스틱|쓰레기|해안|섬|산호|염분|갯벌|바닷|항구/.test(label)) return 'ocean';
+  if (/숲|생물|서식지|나무|분지|초원|동물|습지|사파리|정원/.test(label)) return 'ecosystem';
   return 'climate';
 }
 
@@ -670,11 +675,12 @@ function renderIssue(host: EarthSceneHost): void {
     b.type = 'button';
     b.className = 'card card-pick ec-issue';
     b.setAttribute('aria-pressed', String(p.selectedIssueId === issue.id));
-    const mySignals = bag.filter((item) => issueIdForSignal(item.label) === issue.id);
+    const mySignals = bag.filter((item) => issueIdForSignal(item) === issue.id);
+    // 모은 신호는 다 보여 준다 — "내가 모은 게 여기 쓰인다"가 이 장면의 핵심이라 2개로 자르지 않는다.
     b.innerHTML = `${img(signalImageId(content, hero), '')}
       <div class="ec-issue-body"><strong>${esc(issue.title)}</strong>
-        <span class="chip">${icon('mail', 18)} 관련 친구 ${friendCountForIssue(content, issue.id)}명</span>
-        ${mySignals.length ? `<span class="ec-issue-mine">${mySignals.slice(0, 2).map((item) => `<em>${esc(continentLabel(item.missionId))}</em>${esc(item.label)}`).join('<br>')}${mySignals.length > 2 ? `<br>…외 ${mySignals.length - 2}개` : ''}</span>` : ''}
+        <span class="chip">${icon('mail', 18)} 관련 친구 ${friendCountForIssue(content, issue.id)}명${mySignals.length ? ` · 내 신호 ${mySignals.length}개` : ''}</span>
+        ${mySignals.length ? `<span class="ec-issue-mine">${mySignals.map((item) => `<em>${esc(continentLabel(item.missionId))}</em>${esc(item.label)}`).join('<br>')}</span>` : ''}
         <span class="ec-issue-q">${esc(issue.question)}</span></div>`;
     b.addEventListener('click', () => {
       if (host.isDisposed()) return;
@@ -724,6 +730,7 @@ function renderRoundtable(host: EarthSceneHost): void {
   let active = seats.find((s) => !p.listenedPerspectiveIds.includes(s.perspectiveId)) ?? seats[0]!;
   let phase: 'listen' | 'pick' = p.listenedPerspectiveIds.length >= MIN_PERSPECTIVES_LISTENED && p.selectedPerspectiveIds.length === 2 ? 'pick'
     : p.listenedPerspectiveIds.length >= seats.length ? 'pick' : 'listen';
+  let starterTexts: string[] = [];
 
   body.innerHTML = `
     <div class="ec" style="background:linear-gradient(rgba(10,25,45,.25),rgba(10,25,45,.45))${hasAsset('bg.spare') ? `,url('${assetUrl('bg.spare')}') center/cover` : ''};border-radius:var(--radius-l);padding:8px">
@@ -807,21 +814,36 @@ function renderRoundtable(host: EarthSceneHost): void {
 
   const renderPick = () => {
     const listened = content.perspectives.filter((x) => p.listenedPerspectiveIds.includes(x.id));
+    // 유럽에서 학생이 자필로 남긴 질문을 회의 발언 재료로 다시 꺼내 준다 — "내가 쓴 게 끝까지 쓰인다".
+    const europeRaw = saveRepo.get().missions.europe.data.europeProgress as { questionDraft?: unknown } | undefined;
+    const europeQuestion = typeof europeRaw?.questionDraft === 'string' ? europeRaw.questionDraft.replace(/\s+/g, ' ').trim() : '';
     talk.innerHTML = `
       <p class="ec-copy">해결안에 꼭 반영할 관점 두 개를 골라요.</p>
       <div class="ec-pick2">${listened.map((x) => `<button type="button" class="card card-pick ec-choice" data-pick="${x.id}" aria-pressed="${String(p.selectedPerspectiveIds.includes(x.id))}">${esc(x.label)}</button>`).join('')}</div>
       <p class="ec-copy">왜 이 두 관점이 함께 필요할까?</p>
+      ${europeQuestion ? `<p class="ec-copy" style="color:var(--c-sky-ink)">✉ 유럽에서 내가 남긴 질문: “${esc(europeQuestion.slice(0, 60))}”</p>` : ''}
       <div class="ec-starters" id="ec-starters"></div>
-      <textarea class="ec-input" id="ec-reason" rows="2" maxlength="120" placeholder="예: 효과도 크고 모두가 참여할 수 있어야 오래 가니까">${esc(p.perspectiveReason)}</textarea>`;
+      <textarea class="ec-input" id="ec-reason" rows="2" maxlength="120" placeholder="예: 효과도 크고 모두가 참여할 수 있어야 오래 가니까">${esc(p.perspectiveReason)}</textarea>
+      <p class="ec-scope" id="ec-reason-hint" hidden>시작 문장 뒤에 네 생각을 한 마디만 더 붙여 줘.</p>`;
     const reason = talk.querySelector<HTMLTextAreaElement>('#ec-reason')!;
     const starters = talk.querySelector<HTMLElement>('#ec-starters')!;
     const syncStarters = () => {
       const [a, b] = p.selectedPerspectiveIds.map((id) => perspectiveOf(id)?.label ?? '');
-      starters.innerHTML = a && b ? [
+      const options = a && b ? [
         `${a}도 중요하고 ${b}도 함께 봐야 하니까`,
-        `${a}만 생각하면 ${b}이(가) 빠질 수 있으니까`
-      ].map((s) => `<button type="button" class="btn btn-ghost" data-starter="${esc(s)}">${esc(s)}</button>`).join('') : '';
-      starters.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((s) => s.addEventListener('click', () => { reason.value = s.dataset.starter ?? ''; p.perspectiveReason = reason.value; host.save(); renderBottom(); }));
+        `${a}만 생각하면 ${withJosa(b, '이', '가')} 빠질 수 있으니까`,
+        ...(europeQuestion ? [`유럽에서 "${europeQuestion.slice(0, 40)}"라고 물었듯이`] : [])
+      ] : [];
+      starterTexts = options;
+      starters.innerHTML = options.map((s) => `<button type="button" class="btn btn-ghost" data-starter="${esc(s)}">${esc(s)}</button>`).join('');
+      starters.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((s) => s.addEventListener('click', () => {
+        // 스타터는 시작일 뿐 — 그대로는 통과되지 않고 학생이 이어 써야 한다(renderBottom에서 검사).
+        reason.value = `${s.dataset.starter ?? ''} `;
+        p.perspectiveReason = reason.value;
+        host.save();
+        reason.focus();
+        renderBottom();
+      }));
     };
     syncStarters();
     reason.addEventListener('input', () => { p.perspectiveReason = reason.value.slice(0, 120); host.save(); renderBottom(); });
@@ -844,7 +866,12 @@ function renderRoundtable(host: EarthSceneHost): void {
 
   const renderBottom = () => {
     const canPick = p.listenedPerspectiveIds.length >= MIN_PERSPECTIVES_LISTENED;
-    const ready = p.selectedPerspectiveIds.length === 2 && p.perspectiveReason.trim().length >= 6;
+    // 스타터를 탭만 하고 넘어갈 수 없다 — 스타터 문구 그대로면 학생 말이 최소 한 어절 더 필요하다.
+    const reasonText = p.perspectiveReason.trim();
+    const isStarterOnly = starterTexts.some((s) => reasonText === s.trim());
+    const ready = p.selectedPerspectiveIds.length === 2 && reasonText.length >= 6 && !isStarterOnly;
+    const hint = talk.querySelector<HTMLElement>('#ec-reason-hint');
+    if (hint) hint.hidden = !isStarterOnly;
     bottom.innerHTML = phase === 'listen'
       ? `<span class="ec-progress">${p.listenedPerspectiveIds.length >= seats.length ? '모두 들었어!' : '친구들의 이야기를 들어 봐'}</span>
          <button class="btn btn-primary btn-big" data-act="pick" ${canPick ? '' : 'disabled'}>관점 두 개 고르기</button>`
@@ -968,10 +995,15 @@ function renderPledge(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
   const lines = buildPledge(content, p);
   const done = p.missionCompleted;
+  // 약속의 근거로 학생이 대륙에서 모은 신호 이름을 그대로 인용한다 — 산출물이 마지막 장면까지 쓰인다.
+  const bag = collectedEarthSignals();
+  const related = bag.filter((signal) => issueIdForSignal(signal) === p.selectedIssueId);
+  const cited = (related.length ? related : bag).slice(0, 4);
   body.innerHTML = `
     <div class="ec">
       ${head('세계 친구 공동약속', content.titles.coreExpression)}
       <div class="ec-pledge" id="ec-pledge">
+        ${cited.length ? `<p class="ec-line" style="border-left-color:var(--c-turquoise)">이 약속의 근거 — 내가 여행에서 모은 신호: ${cited.map((signal) => `<em>${esc(continentLabel(signal.missionId))} ‘${esc(signal.label)}’</em>`).join(', ')}</p>` : ''}
         ${lines.slice(0, 5).map((l) => `<p class="ec-line">${highlight(l)}</p>`).join('')}
         <div class="ec-line" style="border-left-color:var(--c-coral)">
           <label for="ec-personal" style="display:block;margin-bottom:6px">내가 먼저 시작할 일은 …</label>
@@ -1043,6 +1075,7 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
       <h2>${esc(issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.')}</h2>
       <p>${esc(lines[5] ?? '')}</p>
       <p class="ec-note">여섯 친구의 약속이 하나의 지구로 이어졌어요 — 이제 여권에 도장이 찍혀요.</p>
+      <button type="button" class="btn btn-primary btn-big" data-act="finale-continue" hidden>도장 받으러 가기</button>
     </div>`;
   body.appendChild(overlay);
   void audio.playSfx('complete');
@@ -1059,8 +1092,17 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
       overlay.querySelectorAll<SVGPathElement>('path').forEach((path) => { path.style.opacity = '1'; });
     }, 350);
   }
-  // 연출을 정리한 뒤 다음 모달(배움 카드·도장)을 연다 — 남겨 두면 모달 뒤에 비쳐 겹쳐 보인다
-  window.setTimeout(() => { overlay.remove(); if (!host.isDisposed()) onDone(); }, total + (reduced ? 0 : 900));
+  // 자동 소멸 대신 학생이 자기 약속 문장을 읽고 직접 넘어간다 — 연출이 3.5초 만에 사라져 못 읽는 사고 방지.
+  // 연출을 정리한 뒤 다음 모달(배움 카드·도장)을 연다 — 남겨 두면 모달 뒤에 비쳐 겹쳐 보인다.
+  const continueBtn = overlay.querySelector<HTMLButtonElement>('[data-act="finale-continue"]')!;
+  continueBtn.addEventListener('click', () => {
+    overlay.remove();
+    if (!host.isDisposed()) onDone();
+  });
+  window.setTimeout(() => {
+    continueBtn.hidden = false;
+    continueBtn.focus();
+  }, total + (reduced ? 0 : 900));
 }
 
 export type { ActionTierId };
