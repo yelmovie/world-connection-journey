@@ -1,6 +1,7 @@
 import type { Page } from '../router';
 import { navigate } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
+import { loadContent } from '../core/ContentRepository';
 import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import { confirmDialog } from '../ui/modal';
@@ -13,7 +14,10 @@ const TITLE_RIGHT_PLANE = 'title.plane.pink.transparent';
 
 type TitleSpeaker = 'left' | 'right';
 
-const TITLE_CONVERSATIONS: Record<TitleSpeaker, { name: string; lines: string[] }> = {
+type TitleConversations = Record<TitleSpeaker, { name: string; lines: string[] }>;
+
+// common.json의 titleConversations가 우선 — 로드 실패·키 없음이면 이 폴백을 쓴다.
+const FALLBACK_TITLE_CONVERSATIONS: TitleConversations = {
   left: {
     name: '초록꼬리',
     lines: [
@@ -225,6 +229,15 @@ export function createPage(): Page {
   return {
     async mount(root: HTMLElement) {
       const hasSave = saveRepo.hasValidSave();
+      let titleConversations: TitleConversations = FALLBACK_TITLE_CONVERSATIONS;
+      try {
+        const common = await loadContent<{ titleConversations?: TitleConversations }>('common');
+        if (common.titleConversations?.left?.lines?.length && common.titleConversations?.right?.lines?.length) {
+          titleConversations = common.titleConversations;
+        }
+      } catch {
+        // 로드 실패 — TS 폴백 대화 그대로 쓴다.
+      }
       await preloadImages([
         'bg.title', 'title.logo', TITLE_LEFT_PLANE, TITLE_RIGHT_PLANE
       ]);
@@ -309,7 +322,7 @@ export function createPage(): Page {
       };
       const renderSpeech = () => {
         if (!speech || !speechName || !speechText) return;
-        const conversation = TITLE_CONVERSATIONS[activeSpeaker];
+        const conversation = titleConversations[activeSpeaker];
         const line = conversation.lines[speechIndex] ?? '';
         speech.dataset.side = activeSpeaker;
         speechName.textContent = conversation.name;
@@ -337,14 +350,14 @@ export function createPage(): Page {
 
       const advanceSpeech = () => {
         if (!speech || speech.hidden) return;
-        const line = TITLE_CONVERSATIONS[activeSpeaker].lines[speechIndex] ?? '';
+        const line = titleConversations[activeSpeaker].lines[speechIndex] ?? '';
         if (typingTimer !== undefined) {
           stopTyping();
           if (speechText) speechText.textContent = line;
           return;
         }
         void audio.playSfx('tap');
-        const lastIndex = TITLE_CONVERSATIONS[activeSpeaker].lines.length - 1;
+        const lastIndex = titleConversations[activeSpeaker].lines.length - 1;
         if (speechIndex >= lastIndex) {
           closeSpeech();
           page.querySelector<HTMLButtonElement>('[data-act="new"]')?.focus({ preventScroll: true });

@@ -14,7 +14,6 @@ import {
 } from '../core/europeMission';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
-import { computeScore } from '../core/scoring';
 import type { EuropeMissionProgress, EuropeMissionScreen } from '../types';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
@@ -905,17 +904,10 @@ export function createPage(): Page {
           transferPrompt: '마지막 세계 회의에서 다른 대륙의 환경 걱정과 어떤 공통점이 있는지 연결해 볼까?',
           earnedAt: new Date().toISOString()
         });
-        const progress = statusNow();
-        const result = computeScore({
-          evidence: Math.min(1, progress.readyCountryCount / content.requirements.minCountries),
-          perspective: Math.min(1, progress.savedCountryCount / content.requirements.minSavedCountries),
-          communication: 1,
-          revision: 1
-        }, { evidence: 30, perspective: 25, communication: 25, revision: 15 }, 5);
         burstConfetti(buttonEl);
         recordEarthSignals('europe', pair ? [`${pair.country.name} · ${pair.visual.title}`] : []);
         // 배움 카드 정리(예상/발견 비교) 뒤에 완료 연출로 넘어간다 — 아메리카 finish와 같은 패턴
-        const doComplete = (): void => { completeMissionFlow('europe', '유럽', result); };
+        const doComplete = (): void => { completeMissionFlow('europe', '유럽'); };
         const learn = getLearn(content);
         if (learn) showLearningWrap('europe', learn, doComplete);
         else doComplete();

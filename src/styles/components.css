@@ -1001,7 +1001,7 @@
   position: absolute; right: 12px; bottom: 12px; z-index: 6;
   padding: 6px 14px; border-radius: 999px;
   background: rgba(255, 253, 246, 0.9); color: var(--c-navy);
-  font-family: var(--font-head); font-size: max(15px, var(--fs-small));
+  font-family: var(--font-head); font-size: max(16px, var(--fs-small));
   pointer-events: none;
 }
 .is-zoomed .map-zoom-hint { display: none; }

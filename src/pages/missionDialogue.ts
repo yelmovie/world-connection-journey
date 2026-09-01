@@ -5,7 +5,6 @@ import { loadContent } from '../core/ContentRepository';
 import { withJosa } from '../core/josa';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
-import { computeScore } from '../core/scoring';
 import { buildTopBar } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
@@ -1189,16 +1188,8 @@ export function createPage(): Page {
         const evidence = 0.3 * (firstTryMatches / nGreet) + 0.4 * listeningEvidence + 0.3 * connections;
         // 관점: 고정관념 점검 정답 + 첫인상 수정
         const perspective = 0.5 * (oxFirstCorrect ? 1 : 0.4) + 0.5 * (betterCount / nNpc);
-        // 소통: 공감 누적
-        const communication = empathyMax > 0 ? empathySum / empathyMax : 0;
         // 수정: 경청 재선택으로 좋은 선택 도달(기본) + 첫인상 수정 선택
         const revision = 0.4 + 0.3 * (betterCount / nNpc) + (earthProgress.simulationAttempts > 1 ? 0.3 : 0.15);
-        const growthBonus = Math.round(5 * revision);
-        const result = computeScore(
-          { evidence, perspective, communication, revision },
-          { evidence: 30, perspective: 25, communication: 25, revision: 15 },
-          growthBonus
-        );
         // 배움 확인(③) — 마지막 대화 확정 직후 · 점수 모달 직전 한 곳만
         const conclude = (): void => {
           const learnRec = readLearnRecord('dialogue');
@@ -1222,7 +1213,7 @@ export function createPage(): Page {
           });
           earthProgress.stampAwarded = true;
           checkpoint('stage4');
-          completeMissionFlow('dialogue', earth.titles.council, result);
+          completeMissionFlow('dialogue', earth.titles.council);
           rememberCompletionModal();
         };
         if (learn) showLearningWrap('dialogue', learn, conclude);

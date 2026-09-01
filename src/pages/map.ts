@@ -102,6 +102,28 @@ function hasLearnCardFor(missionId: MissionId): boolean {
   return readLearnCard(missionId).earned;
 }
 
+/** 2회차 상황 덱(P2-16) — 완주한 대륙을 다시 열 이유. 목표는 전부 학습 행동이다. */
+const REPLAY_DECK: Record<MissionId, string> = {
+  americas: '2회차 도전 — 이번엔 네 나라의 장면에서 "물"과 관련된 모습만 찾아보며 탐험해 봐.',
+  europe: '2회차 도전 — 지난번과 다른 나라를 골라 새 회의 기록을 만들어 봐. 기록이 갱신돼!',
+  africa: '2회차 도전 — 리듬 규칙 3개를 전부 첫 시도에 통과하는 무결점 연주에 도전해 봐.',
+  asia: '2회차 도전 — 지난번에 못 들은 목소리를 모두 듣고 와 봐.',
+  oceania: '2회차 도전 — 숨은 변화를 한 번도 빗나가지 않고 찾아봐.',
+  dialogue: '2회차 도전 — 다른 환경 문제를 골라 회의를 다시 열어 봐. 이전 약속은 남아 있어.'
+};
+
+/** 완료한 미션의 2회차 도전 문구. 아시아는 저장된 heardPerspectiveIds로 완청 여부를 반영한다. */
+function replayDeckText(missionId: MissionId, missionData: unknown): string {
+  if (missionId === 'asia') {
+    const heard = (missionData as { regionalExploration?: { heardPerspectiveIds?: unknown } } | undefined)
+      ?.regionalExploration?.heardPerspectiveIds;
+    if (Array.isArray(heard) && heard.length >= 4) {
+      return '2회차 도전 — 목소리를 모두 들었어! 이번엔 장면 속 연결을 다시 살펴봐.';
+    }
+  }
+  return REPLAY_DECK[missionId];
+}
+
 /** 대화 반응 배지 4종(P2-16) — 빈 칸이 보여야 다시 하고 싶어진다. */
 function badgeShelf(): string {
   const counts = reactionCounts();
@@ -214,7 +236,7 @@ const MAP_CSS = `
 .map-hotspot[data-state="available"].is-selected .node-img,
 .map-hotspot[data-state="in_progress"].is-selected .node-img { filter:none; }
 /* 완료 대륙에 모은 환경 신호 개수 뱃지 */
-.map-node-signals { position:absolute;left:50%;top:-16px;transform:translateX(-50%);padding:2px 10px;border-radius:999px;background:var(--c-turquoise);color:#063c3e;border:2px solid #fff;font:900 14px/1.3 var(--font-head);white-space:nowrap;box-shadow:var(--shadow-card);z-index:4; }
+.map-node-signals { position:absolute;left:50%;top:-16px;transform:translateX(-50%);padding:2px 10px;border-radius:999px;background:var(--c-turquoise);color:#063c3e;border:2px solid #fff;font:900 16px/1.3 var(--font-head);white-space:nowrap;box-shadow:var(--shadow-card);z-index:4; }
 .map-hotspot[data-state="available"] .node-label { border-color:var(--c-coral); }
 .map-hotspot[data-state="in_progress"] .node-label { border-color:var(--c-violet); }
 .map-hotspot[data-state="completed"] .node-label { background:var(--c-success);color:#fff;border-color:#17633f; }
@@ -225,7 +247,7 @@ const MAP_CSS = `
 .map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--c-success);color:#fff;border:3px solid #fff;font-size:24px;font-weight:900;box-shadow:var(--shadow-card); }
 /* 완료 스테이지는 멀리서도 구분되게 — 초록 링 + 완료 리본 */
 .map-hotspot[data-state="completed"] .node-img { box-shadow:0 0 0 5px rgba(46,173,120,.85),0 0 0 9px rgba(46,173,120,.28),var(--shadow-card); }
-.map-hotspot[data-state="completed"]::after { content:'완료!'; position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);padding:3px 14px;border-radius:999px;background:var(--c-success);color:#fff;font:900 15px/1.2 var(--font-head);border:2px solid #fff;box-shadow:var(--shadow-card);white-space:nowrap;z-index:4; }
+.map-hotspot[data-state="completed"]::after { content:'완료!'; position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);padding:3px 14px;border-radius:999px;background:var(--c-success);color:#fff;font:900 16px/1.2 var(--font-head);border:2px solid #fff;box-shadow:var(--shadow-card);white-space:nowrap;z-index:4; }
 /* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
 .map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis; }
 .map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
@@ -233,19 +255,19 @@ const MAP_CSS = `
 .map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
 /* 대륙에서 모은 것이 마지막 회의로 이어진다는 걸 매 화면에서 보이게 한다 */
-.map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(15px,var(--fs-small));font-weight:850;line-height:1.4; }
+.map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(16px,var(--fs-small));font-weight:850;line-height:1.4; }
 .map-bag { margin-top:var(--sp-2);padding:10px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
 .map-bag strong { display:block;font-family:var(--font-head);font-size:max(17px,var(--fs-small));color:var(--c-navy); }
 .map-bag ul { margin:6px 0 0;padding:0;list-style:none;display:grid;gap:4px; }
-.map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(15px,var(--fs-small));font-weight:800;color:var(--c-ink); }
-.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:14px;font-weight:900; }
-.map-bag__more { color:var(--c-ink-soft);font-size:14px;font-weight:750; }
+.map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(16px,var(--fs-small));font-weight:800;color:var(--c-ink); }
+.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:16px;font-weight:900;white-space:nowrap; }
+.map-bag__more { color:var(--c-ink-soft);font-size:16px;font-weight:750; }
 /* 대화 배지 진열장(P2-16) — 빈 칸이 재플레이 이유가 된다 */
 .map-badges { margin-top:var(--sp-2);padding:9px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
 .map-badges strong { display:block;font-family:var(--font-head);font-size:max(16px,var(--fs-small));color:var(--c-navy); }
 .map-badges__row { margin-top:6px;display:flex;flex-wrap:wrap;gap:5px; }
-.map-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:2px dashed #b9cbd6;background:#fff;color:var(--c-ink-soft);font-size:13px;font-weight:850; }
-.map-badge i { display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#e8eef2;font-style:normal;font-size:11px; }
+.map-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:2px dashed #b9cbd6;background:#fff;color:var(--c-ink-soft);font-size:16px;font-weight:850;white-space:nowrap; }
+.map-badge i { display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#e8eef2;font-style:normal;font-size:16px; }
 .map-badge.is-earned { border-style:solid;border-color:var(--c-violet);background:#f3efff;color:var(--c-violet-ink); }
 .map-badge.is-earned i { background:var(--c-violet);color:#fff; }
 .map-badge--secret.is-earned { border-color:#c79a2c;background:linear-gradient(160deg,#fff6dc,#ffe9a8);color:#6f5514;box-shadow:0 0 0 2px rgba(242,193,78,.35); }
@@ -463,7 +485,7 @@ export function createPage(): Page {
           ${photosArrived ? '' : `<div class="map-brief__flow"><ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>`}
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
           ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
-          ${mission.status === 'completed' && spot.id === 'dialogue' ? '<p class="map-brief__replay">다른 환경 문제를 골라 회의를 다시 열 수 있어.</p>' : ''}
+          ${mission.status === 'completed' ? `<p class="map-brief__replay">${replayDeckText(spot.id, mission.data)}</p>` : ''}
           ${(() => {
             const bag = collectedEarthSignals();
             if (bag.length === 0) return '';

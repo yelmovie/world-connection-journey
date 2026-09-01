@@ -5,7 +5,6 @@ import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { recordEarthSignals } from '../core/earthSignals';
 import { saveRepo } from '../core/SaveRepository';
-import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { enablePickPlace, enableRangeDrag, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow } from '../ui/feedback';
@@ -1335,14 +1334,6 @@ export function createPage(): Page {
       const finish = (): void => {
         if (finished) return;
         finished = true;
-        const total = E.lenses.flatMap((l) => l.points).length;
-        const ratios = {
-          evidence: total ? Math.min(1, S.pointsSeen.length / total) : 1,
-          perspective: Math.min(1, Object.values(S.countries).filter((c) => c.met).length / E.countries.length),
-          communication: Math.min(1, S.daySolved.length / Math.max(1, E.day.slots.length)),
-          revision: Math.min(1, S.keywords.length / Math.max(1, E.note.keywordSlots))
-        };
-        const result = computeScore(ratios, { evidence: 25, perspective: 30, communication: 25, revision: 20 }, 5);
         const keeps = E.countries
           .map((c) => c.bag.find((b) => b.id === S.countries[c.id]?.keep))
           .filter((b): b is BagItemDef => Boolean(b));
@@ -1368,7 +1359,7 @@ export function createPage(): Page {
           });
           // 지구회의로 가져갈 신호 — 지도 화면과 마지막 회의가 이걸 읽는다
           recordEarthSignals('americas', E.signals.map((s) => s.label));
-          completeMissionFlow('americas', '아메리카', result, { directToStamp: true });
+          completeMissionFlow('americas', '아메리카', { directToStamp: true });
         };
         const learn = getLearn(content);
         if (learn) showLearningWrap('americas', learn, doComplete);

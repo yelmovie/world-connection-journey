@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager';
+import { loadContent } from '../core/ContentRepository';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
 import { navigate } from '../router';
@@ -28,7 +29,7 @@ export function showFeedback(
   if (missionId) bus.emit('MISSION_FEEDBACK', { missionId, kind, message });
 }
 
-const LEARNING_LINES: Record<MissionId, string> = {
+const FALLBACK_LEARNING_LINES: Record<MissionId, string> = {
   asia: '사실과 해석을 나누면 더 정확히 볼 수 있어요.',
   europe: '장면을 자세히 보고, 관심을 질문으로 이어 봐요.',
   africa: '서로 다른 지역의 삶을 살피고, 연결된 문제는 책임을 나눠 함께 풀 수 있어.',
@@ -36,6 +37,20 @@ const LEARNING_LINES: Record<MissionId, string> = {
   oceania: '한 선택도 사람과 자연에 다르게 닿아요.',
   dialogue: '보고 묻고 생각을 고치면 존중이 돼요.'
 };
+
+// 문구 교체가 코드 수정 없이 되도록 common.json에서 덮어쓴다. 실패하면 폴백 유지.
+let learningLines: Record<MissionId, string> = { ...FALLBACK_LEARNING_LINES };
+
+export async function preloadCommonText(): Promise<void> {
+  try {
+    const common = await loadContent<{ learningLines?: Partial<Record<MissionId, string>> }>('common');
+    if (common.learningLines) {
+      learningLines = { ...FALLBACK_LEARNING_LINES, ...common.learningLines };
+    }
+  } catch {
+    // 로드 실패 — TS 폴백 문구 그대로 쓴다.
+  }
+}
 
 const RESULT_SPEAKERS: Record<Exclude<MissionId, 'dialogue'>, { assetId: string; name: string }> = {
   asia: { assetId: 'asia.mina', name: '미나' },
@@ -49,7 +64,6 @@ const RESULT_SPEAKERS: Record<Exclude<MissionId, 'dialogue'>, { assetId: string;
 export function completeMissionFlow(
   missionId: MissionId,
   missionTitle: string,
-  _result?: { total: number; byDimension: Record<string, number> },
   options: { directToStamp?: boolean } = {}
 ): void {
   // 저장 형식의 하위 호환을 위해 0점/빈 차원을 넘기되 학생 UI와 보상에는 점수를 쓰지 않는다.
@@ -83,7 +97,7 @@ export function completeMissionFlow(
       ${hasAsset(speaker.assetId) ? `<img src="${assetUrl(speaker.assetId)}" data-asset-id="${speaker.assetId}" alt="" aria-hidden="true">` : ''}
       <div>
         <strong>${speaker.name}</strong>
-        <p class="feedback success"><span aria-hidden="true">✓</span><span data-result-line aria-hidden="true"></span><span class="visually-hidden" role="status">${LEARNING_LINES[missionId]}</span></p>
+        <p class="feedback success"><span aria-hidden="true">✓</span><span data-result-line aria-hidden="true"></span><span class="visually-hidden" role="status">${learningLines[missionId]}</span></p>
       </div>
     </div>`;
 
@@ -114,7 +128,7 @@ export function completeMissionFlow(
       }
     ]
   });
-  cancelTyping = typeResultLine(body.querySelector<HTMLElement>('[data-result-line]'), LEARNING_LINES[missionId]);
+  cancelTyping = typeResultLine(body.querySelector<HTMLElement>('[data-result-line]'), learningLines[missionId]);
   const earnedStamp = body.querySelector<HTMLElement>('[data-asset-id="prop.stamp"], .stamp');
   if (earnedStamp) {
     stampSlam(earnedStamp);
@@ -138,3 +152,6 @@ function typeResultLine(target: HTMLElement | null, text: string): () => void {
   }, 28);
   return () => window.clearInterval(timer);
 }
+
+// 모듈 로드 시점에 미리 받아 둔다 — 실패해도 폴백 문구가 있어 안전.
+void preloadCommonText();

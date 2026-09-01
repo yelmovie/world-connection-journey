@@ -149,11 +149,11 @@ const PAGE_CSS = `
 .regional-map::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(2,42,70,.05),rgba(2,42,70,.28));pointer-events:none}
 .regional-map-note{position:absolute;z-index:2;left:18px;bottom:18px;max-width:min(520px,72%);padding:10px 14px;border-radius:16px;background:rgba(255,253,246,.92);font-weight:800;line-height:1.4}
 .regional-pin{position:absolute;z-index:3;left:var(--x);top:var(--y);transform:translate(-50%,-50%);min-width:104px;min-height:62px;padding:7px 12px;border:3px solid #fff;border-radius:22px;background:var(--pin);color:#fff;font:800 18px/1.1 var(--font-head);box-shadow:0 7px 0 rgba(7,38,62,.28),0 12px 25px rgba(5,30,50,.28)}
-.regional-pin small{display:block;margin-top:4px;font:700 15px/1.1 var(--font-body)}
+.regional-pin small{display:block;margin-top:4px;font:700 16px/1.1 var(--font-body)}
 .regional-pin.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-pin.is-visited::after{content:"✓";position:absolute;right:-8px;top:-10px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#1b9b68;border:2px solid #fff}
 .regional-country-shortcut{position:absolute;z-index:4;left:84%;top:52%;transform:translate(-50%,-50%);padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
-.regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 14px/1.1 var(--font-body)}
+.regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 16px/1.1 var(--font-body)}
 .regional-country-shortcut.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-side{padding:18px;background:rgba(255,253,247,.96);display:flex;flex-direction:column;gap:12px;min-height:0}
 .regional-side h2,.regional-connections h2{font-family:var(--font-head);font-size:clamp(25px,2.2vw,34px);color:var(--c-navy)}
@@ -172,7 +172,7 @@ const PAGE_CSS = `
 .regional-connections{grid-column:1/-1;padding:0 18px 18px;background:rgba(255,253,247,.97);overflow:auto;overscroll-behavior:contain}
 /* 완료 조건 진행 띠 — 스크롤해도 항상 보인다 */
 .regional-progress-strip{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:8px;margin:0 -18px 12px;padding:12px 18px;background:rgba(255,253,247,.97);border-bottom:2px solid rgba(23,59,83,.12);box-shadow:0 6px 14px rgba(10,40,66,.08)}
-.regional-progress-goal{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:2px solid #b9cbd6;background:#fff;font-weight:900;font-size:max(15px,var(--fs-small));color:var(--c-ink-soft)}
+.regional-progress-goal{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:2px solid #b9cbd6;background:#fff;font-weight:900;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
 .regional-progress-goal b{color:inherit}
 .regional-progress-goal.is-done{border-color:#277147;background:#dff2df;color:#1d5c39}
 .regional-progress-goal.is-done::before{content:'✓';font-weight:900}
@@ -183,7 +183,7 @@ const PAGE_CSS = `
 .regional-choice{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px}
 .regional-choice img{width:54px;height:64px;object-fit:contain}
 /* 아직 못 들은 목소리(P2-16) — "…" 표시가 재방문 이유가 된다 */
-.regional-voice-dots{position:absolute;right:8px;top:6px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8eef2;color:#41627a;font:900 15px/1 var(--font-head);font-style:normal}
+.regional-voice-dots{position:absolute;right:8px;top:6px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8eef2;color:#41627a;font:900 16px/1 var(--font-head);font-style:normal}
 .regional-choice.is-unheard{border-style:dashed}
 .regional-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .regional-action{text-align:left;padding:10px;border-radius:16px;min-height:66px}
@@ -193,7 +193,7 @@ const PAGE_CSS = `
 .regional-goal .mark{width:24px;height:24px;border-radius:50%;border:3px solid #b9cbd6}
 .regional-goal.is-done{color:#277147}
 .regional-goal.is-done .mark{border-color:#277147;background:#dff2df}
-.regional-goal.is-done .mark::after{content:'✓';display:block;text-align:center;font-size:15px;line-height:18px;color:#277147}
+.regional-goal.is-done .mark::after{content:'✓';display:block;text-align:center;font-size:16px;line-height:18px;color:#277147}
 .regional-modal{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(330px,1fr);gap:20px;max-width:none}
 .regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:clamp(340px,58vh,660px)}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
@@ -204,7 +204,7 @@ const PAGE_CSS = `
 .regional-wipe-tag.is-before{left:10px}
 .regional-wipe-tag.is-after{right:10px}
 .regional-wipe{position:absolute;left:0;right:0;bottom:8px;width:calc(100% - 20px);margin:0 10px;height:44px;opacity:.92;accent-color:#f2c14e}
-.regional-wipe-hint{padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font-weight:900;color:#5b430a;font-size:max(15px,var(--fs-small))}
+.regional-wipe-hint{padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font-weight:900;color:#5b430a;font-size:max(16px,var(--fs-small))}
 /* 노란 원판이 그림을 가려서 속은 비우고 흰 테두리 + 퍼지는 물결만 남긴다 */
 .regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;padding:0;border-radius:50%;border:3px solid rgba(255,255,255,.98);background:rgba(13,53,76,.08);box-shadow:0 0 10px rgba(6,28,45,.5),inset 0 0 10px rgba(6,28,45,.35);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
 .regional-hotspot::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid rgba(255,255,255,.8);opacity:0;pointer-events:none}
@@ -222,10 +222,10 @@ const PAGE_CSS = `
 .regional-hotspot.is-hunt.is-revealed::after{animation:regional-ping 1.6s ease-out infinite;opacity:1}
 /* 오세아니아 바다 지킴 게이지 — 선택할 때마다 물이 차오른다 */
 .regional-gauge{display:flex;align-items:center;gap:9px;flex:1 1 220px;min-width:200px}
-.regional-gauge strong{flex:0 0 auto;font:900 max(14px,calc(var(--fs-small) - 2px))/1.2 var(--font-head);color:#0c4a63}
+.regional-gauge strong{flex:0 0 auto;font:900 max(16px,calc(var(--fs-small) - 2px))/1.2 var(--font-head);color:#0c4a63}
 .regional-gauge .bar{position:relative;flex:1;height:18px;border-radius:999px;background:#dceaf1;border:2px solid #9dc3d4;overflow:hidden}
 .regional-gauge .bar i{position:absolute;inset:0;width:var(--fill,0%);border-radius:999px;background:linear-gradient(90deg,#38b6d8,#1188b8);transition:width .5s ease}
-.regional-gauge b{flex:0 0 auto;font-size:13px;color:#0c4a63}
+.regional-gauge b{flex:0 0 auto;font-size:16px;color:#0c4a63}
 .regional-discovery.is-lit{outline:3px solid var(--c-turquoise);outline-offset:2px}
 .regional-modal-copy{display:grid;gap:11px;align-content:start;font-size:clamp(19px,1.4vw,24px);line-height:1.5}
 .regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
@@ -242,7 +242,7 @@ const PAGE_CSS = `
 .modal:has(.regional-modal){width:min(1320px,96vw);border-radius:28px;overflow:hidden}
 @media(min-width:941px){.regional-side{overflow:hidden;padding:14px;gap:9px}.regional-example-list{gap:6px}.regional-example{min-height:52px;padding:7px 12px}.regional-photo-grid{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}.regional-photo img{height:100%;min-height:0;aspect-ratio:auto}.regional-goals{gap:4px;padding-top:8px}.regional-goal{min-height:36px}}
 @media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-map{min-height:520px;aspect-ratio:auto;background-size:cover}.regional-photo-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}.regional-photo{height:auto}.regional-photo img{height:auto;aspect-ratio:4/3}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:clamp(300px,42vh,420px)}}
-@media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:15px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:14px}}
+@media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:16px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:16px}}
 `;
 
 function esc(value: string): string {
