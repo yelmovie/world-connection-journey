@@ -3,6 +3,7 @@ import { navigate } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
+import { withJosa } from '../core/josa';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { burstConfetti, popBounce } from '../ui/fx';
@@ -356,9 +357,20 @@ const PASSPORT_CSS = `
 .passport-nickname:focus { outline:4px solid rgba(71,119,217,.28); }
 .passport-nickname-meta { display:flex;justify-content:space-between;gap:12px;margin-top:10px;color:#516879;font-size:17px;font-weight:800; }
 #nick-msg { margin:10px 0 0; }
-.passport-cover-live { position:relative;display:grid;place-items:center;justify-self:center;width:min(255px,100%);aspect-ratio:.75; }
-.passport-cover-live img { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 16px 22px rgba(8,35,58,.28)); }
-.passport-cover-name { position:relative;z-index:1;width:58%;margin-top:27%;color:#f6d76f;text-align:center;font-family:var(--font-head);font-size:clamp(17px,1.35vw,24px);line-height:1.15;word-break:keep-all; }
+.passport-cover-live {
+  position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;place-items:center;justify-self:center;
+  width:min(285px,100%);gap:10px;padding:4px 10px 10px;
+}
+.passport-cover-art { position:relative;width:min(220px,90%);aspect-ratio:.75;display:grid;place-items:center; }
+.passport-cover-art::after { content:'';position:absolute;inset:8% 3% -2%;z-index:-1;border-radius:45%;background:rgba(28,107,123,.16);filter:blur(18px); }
+.passport-cover-art img { width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 16px 22px rgba(8,35,58,.28)); }
+.passport-cover-owner {
+  width:min(270px,100%);min-height:78px;padding:9px 16px 11px;display:grid;justify-items:center;align-content:center;gap:2px;
+  border:4px solid #173653;border-radius:20px;background:linear-gradient(145deg,#fffdf7,#fff3c8);
+  box-shadow:0 0 0 4px rgba(242,193,78,.88),0 12px 24px rgba(8,35,58,.2);transform:rotate(-1deg);
+}
+.passport-cover-owner span { color:#39706c;font-size:clamp(15px,1vw,18px);font-weight:950;letter-spacing:.06em; }
+.passport-cover-name { max-width:100%;color:#102f49;text-align:center;font-family:var(--font-head);font-size:clamp(24px,1.75vw,32px);font-weight:950;line-height:1.08;word-break:keep-all;overflow-wrap:anywhere; }
 
 .passport-selection-layout { min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 126px;gap:10px;touch-action:pan-y; }
 .passport-selector-stage { min-height:0;display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:12px;align-items:center; }
@@ -555,8 +567,13 @@ export function createPage(): Page {
                     <p id="nick-msg" class="feedback retry" role="alert" hidden></p>
                   </div>
                   <div class="passport-cover-live" aria-label="여권 표지 미리보기">
-                    <img src="${assetUrl('prop.passport')}" data-asset-id="prop.passport" alt="">
-                    <strong class="passport-cover-name" id="passport-cover-name">나의 여행 여권</strong>
+                    <div class="passport-cover-art">
+                      <img src="${assetUrl('prop.passport')}" data-asset-id="prop.passport" alt="">
+                    </div>
+                    <div class="passport-cover-owner" aria-live="polite">
+                      <span>여행 이름</span>
+                      <strong class="passport-cover-name" id="passport-cover-name">이름을 적어 줘</strong>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -724,7 +741,7 @@ export function createPage(): Page {
         const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
         const nickname = input?.value.trim() ?? '';
         if (cardTitle) cardTitle.textContent = nickname ? `${nickname}의 여행 여권` : '나의 여행 여권';
-        if (coverName) coverName.textContent = nickname ? `${nickname}의 여행 여권` : '나의 여행 여권';
+        if (coverName) coverName.textContent = nickname || '이름을 적어 줘';
         if (nicknameCount) nicknameCount.textContent = `${input?.value.length ?? 0} / ${maxLen}`;
         if (avatarName) avatarName.textContent = avatar.name;
         if (planeName) planeName.textContent = plane.name;
@@ -982,9 +999,3 @@ function choiceHtml(kind: 'avatar' | 'plane', saveId: string, assetId: string, l
     : button;
 }
 
-/** 한글 이름의 마지막 글자 받침에 맞는 조사를 붙인다. */
-function withJosa(word: string, consonantJosa: string, vowelJosa: string): string {
-  const last = word.charCodeAt(word.length - 1);
-  const hasFinalConsonant = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0;
-  return `${word}${hasFinalConsonant ? consonantJosa : vowelJosa}`;
-}

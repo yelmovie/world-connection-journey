@@ -12,6 +12,7 @@ import { openModal } from '../ui/modal';
 import { showKeyPoint } from '../ui/keyPoint';
 import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { enableMapZoom } from '../ui/mapZoom';
+import { enableRangeDrag } from '../ui/dnd';
 
 type Hotspot = { id: string; x: number; y: number; label: string };
 type Area = { id: string; name: string; short: string; description: string; x: number; y: number; color: string };
@@ -155,18 +156,22 @@ const PAGE_CSS = `
 .regional-side p{line-height:1.5}
 .regional-example-list{display:grid;gap:8px;max-height:210px;overflow:auto;padding:2px}
 .regional-example{justify-content:flex-start;text-align:left;min-height:58px;padding:9px 13px;border-radius:16px}
-.regional-example span{display:block;font:700 16px/1.3 var(--font-body);color:var(--c-ink-soft)}
-.regional-photo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.regional-photo{position:relative;min-width:0;padding:0;overflow:hidden;border:2px solid transparent;border-radius:18px;background:#d9edf2;box-shadow:var(--shadow-card);cursor:pointer}
+.regional-example span{display:block;font:700 clamp(16px,1.1vw,19px)/1.3 var(--font-body);color:var(--c-ink-soft)}
+.regional-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}
+.regional-photo{position:relative;min-width:0;height:100%;padding:0;overflow:hidden;display:grid;grid-template-rows:minmax(0,1fr) 66px;border:2px solid transparent;border-radius:18px;background:#d9edf2;box-shadow:var(--shadow-card);cursor:pointer}
 .regional-photo img{width:100%;aspect-ratio:4/3;display:block;object-fit:cover}
-.regional-photo strong{display:block;padding:8px 7px;font-size:16px;line-height:1.25}
+.regional-photo strong{min-height:66px;padding:8px;display:grid;place-items:center;text-align:center;font-size:clamp(17px,1.25vw,21px);line-height:1.25;word-break:keep-all;overflow-wrap:break-word}
 .regional-photo.is-viewed{border-color:var(--c-success)}
 .regional-photo.is-viewed::after{content:"✓";position:absolute;right:7px;top:7px;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;background:var(--c-success);color:#fff;font-weight:900}
-.regional-source{padding-top:10px;border-top:1px solid var(--c-line);font-size:14px;line-height:1.4}
-.regional-source a{color:#165ca9;font-weight:800}
 .regional-dock{background:rgba(10,42,68,.94);align-items:center}
 .regional-dock [data-next]{margin-left:auto}
-.regional-connections{grid-column:1/-1;padding:18px;background:rgba(255,253,247,.97);overflow:auto}
+.regional-connections{grid-column:1/-1;padding:0 18px 18px;background:rgba(255,253,247,.97);overflow:auto;overscroll-behavior:contain}
+/* 완료 조건 진행 띠 — 스크롤해도 항상 보인다 */
+.regional-progress-strip{position:sticky;top:0;z-index:6;display:flex;flex-wrap:wrap;gap:8px;margin:0 -18px 12px;padding:12px 18px;background:rgba(255,253,247,.97);border-bottom:2px solid rgba(23,59,83,.12);box-shadow:0 6px 14px rgba(10,40,66,.08)}
+.regional-progress-goal{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:2px solid #b9cbd6;background:#fff;font-weight:900;font-size:max(15px,var(--fs-small));color:var(--c-ink-soft)}
+.regional-progress-goal b{color:inherit}
+.regional-progress-goal.is-done{border-color:#277147;background:#dff2df;color:#1d5c39}
+.regional-progress-goal.is-done::before{content:'✓';font-weight:900}
 .regional-connection-layout{display:grid;grid-template-columns:1.12fr .88fr;gap:16px}
 .regional-section{display:grid;gap:10px;align-content:start}
 .regional-signal-grid,.regional-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -175,7 +180,6 @@ const PAGE_CSS = `
 .regional-choice img{width:54px;height:64px;object-fit:contain}
 .regional-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .regional-action{text-align:left;padding:10px;border-radius:16px;min-height:66px}
-.regional-media-note{font-size:15px;color:var(--c-ink-soft);font-weight:700}
 .regional-info{align-self:start;min-height:48px;padding:8px 16px;border-radius:999px;font-size:16px}
 .regional-goals{margin-top:auto;display:grid;gap:7px;padding-top:12px;border-top:1px solid var(--c-line)}
 .regional-goal{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:9px;min-height:42px;font-weight:850;font-size:max(16px,var(--fs-small));color:var(--c-ink-soft)}
@@ -183,27 +187,43 @@ const PAGE_CSS = `
 .regional-goal.is-done{color:#277147}
 .regional-goal.is-done .mark{border-color:#277147;background:#dff2df}
 .regional-goal.is-done .mark::after{content:'✓';display:block;text-align:center;font-size:15px;line-height:18px;color:#277147}
-.regional-modal{display:grid;grid-template-columns:minmax(220px,.9fr) minmax(270px,1.1fr);gap:18px;max-width:820px}
-.regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:300px}
+.regional-modal{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(330px,1fr);gap:20px;max-width:none}
+.regional-modal-visual{position:relative;overflow:hidden;border-radius:22px;background:#dceff4;min-height:clamp(340px,58vh,660px)}
 .regional-modal-visual img{width:100%;height:100%;object-fit:cover}
 .regional-modal-visual .regional-after{position:absolute;inset:0}
 .regional-wipe-bar{position:absolute;top:0;bottom:0;width:4px;transform:translateX(-50%);background:#fff;box-shadow:0 0 8px #0008;pointer-events:none}
 .regional-wipe-bar::after{content:'↔';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:#fff;color:#173b53;font-size:20px;font-weight:900;box-shadow:0 4px 12px #0006}
-.regional-wipe-tag{position:absolute;top:10px;padding:3px 12px;border-radius:999px;font:900 14px var(--font-head);color:#fff;background:rgba(10,35,58,.75);pointer-events:none}
+.regional-wipe-tag{position:absolute;top:10px;padding:5px 14px;border-radius:999px;font:900 clamp(16px,1.15vw,19px) var(--font-head);color:#fff;background:rgba(10,35,58,.75);pointer-events:none}
 .regional-wipe-tag.is-before{left:10px}
 .regional-wipe-tag.is-after{right:10px}
 .regional-wipe{position:absolute;left:0;right:0;bottom:8px;width:calc(100% - 20px);margin:0 10px;height:44px;opacity:.92;accent-color:#f2c14e}
 .regional-wipe-hint{padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;font-weight:900;color:#5b430a;font-size:max(15px,var(--fs-small))}
-.regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:32px;height:32px;padding:0;border-radius:50%;border:3px solid #fff;background:var(--c-gold);box-shadow:0 0 0 4px rgba(24,70,103,.45);cursor:pointer}
-.regional-hotspot:not(.is-found){animation:regional-ping 1.4s ease-out infinite}
-@keyframes regional-ping{0%{box-shadow:0 0 0 4px rgba(255,203,67,.75)}100%{box-shadow:0 0 0 16px rgba(255,203,67,0)}}
-.regional-hotspot.is-found{background:var(--c-success);cursor:default}
-.regional-hotspot-label{position:absolute;left:50%;top:100%;transform:translate(-50%,7px);white-space:nowrap;background:rgba(255,253,246,.96);color:#173b53;border-radius:999px;padding:4px 11px;font:800 14px/1.2 var(--font-body);box-shadow:0 4px 10px rgba(0,0,0,.35);pointer-events:none}
+/* 노란 원판이 그림을 가려서 속은 비우고 흰 테두리 + 퍼지는 물결만 남긴다 */
+.regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;padding:0;border-radius:50%;border:3px solid rgba(255,255,255,.98);background:rgba(13,53,76,.08);box-shadow:0 0 10px rgba(6,28,45,.5),inset 0 0 10px rgba(6,28,45,.35);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.regional-hotspot::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid rgba(255,255,255,.8);opacity:0;pointer-events:none}
+.regional-hotspot:not(.is-found)::after{animation:regional-ping 1.6s ease-out infinite}
+@keyframes regional-ping{0%{transform:scale(.8);opacity:.95}100%{transform:scale(1.7);opacity:0}}
+.regional-hotspot:hover,.regional-hotspot:focus-visible{transform:translate(-50%,-50%) scale(1.1);outline:none;border-color:#ffe077;background:rgba(255,224,119,.18)}
+.regional-hotspot.is-found{border-color:var(--c-success);background:rgba(36,151,100,.35);box-shadow:0 0 10px rgba(6,28,45,.45),inset 0 0 0 3px rgba(255,255,255,.68)}
+.regional-hotspot.is-found::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:950 25px/1 var(--font-head);text-shadow:0 2px 4px rgba(3,35,28,.75)}
+.regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
+@media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
 .regional-discovery.is-lit{outline:3px solid var(--c-turquoise);outline-offset:2px}
-.regional-modal-copy{display:grid;gap:10px;align-content:start;font-size:18px;line-height:1.55}
+.regional-modal-copy{display:grid;gap:11px;align-content:start;font-size:clamp(19px,1.4vw,24px);line-height:1.5}
+.regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
+.regional-scene-guide strong{font-size:clamp(17px,1.25vw,21px);line-height:1.25}
+.regional-scene-count{min-width:64px;padding:5px 10px;border-radius:999px;background:#173b53;color:#fff;text-align:center;font:900 clamp(16px,1.1vw,19px)/1.2 var(--font-head)}
+.regional-spot-detail{min-height:220px;padding:20px;display:grid;align-content:center;gap:10px;border:3px solid #b9d9dc;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(232,248,246,.96));box-shadow:0 10px 24px rgba(18,60,81,.12);transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.regional-spot-detail.is-empty{justify-items:center;text-align:center;border-style:dashed;background:rgba(246,251,250,.84);color:var(--c-ink-soft)}
+.regional-spot-detail.is-revealed{border-color:var(--c-turquoise);box-shadow:0 12px 28px rgba(18,128,123,.18);animation:regional-detail-in .28s ease-out}
+.regional-spot-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:#173b53;color:#ffd34f;font-size:28px;box-shadow:0 7px 16px rgba(12,47,71,.22)}
+.regional-spot-detail h4{font-family:var(--font-head);font-size:clamp(24px,1.9vw,31px);line-height:1.2;color:var(--c-navy)}
+.regional-spot-detail p{font-size:clamp(18px,1.35vw,23px);line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
+@keyframes regional-detail-in{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
-.modal:has(.regional-modal){width:min(900px,94vw);border-radius:28px;overflow:hidden}
-@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-map{min-height:520px;aspect-ratio:auto;background-size:cover}.regional-photo-grid{grid-template-columns:repeat(2,1fr)}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:260px}}
+.modal:has(.regional-modal){width:min(1320px,96vw);border-radius:28px;overflow:hidden}
+@media(min-width:941px){.regional-side{overflow:hidden;padding:14px;gap:9px}.regional-example-list{gap:6px}.regional-example{min-height:52px;padding:7px 12px}.regional-photo-grid{flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}.regional-photo img{height:100%;min-height:0;aspect-ratio:auto}.regional-goals{gap:4px;padding-top:8px}.regional-goal{min-height:36px}}
+@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-map{min-height:520px;aspect-ratio:auto;background-size:cover}.regional-photo-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}.regional-photo{height:auto}.regional-photo img{height:auto;aspect-ratio:4/3}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{min-height:clamp(300px,42vh,420px)}}
 @media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{min-width:86px;font-size:15px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:14px}}
 `;
 
@@ -327,38 +347,71 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const example = model.examples.find((item) => item.id === scene.exampleId);
         const modalBody = document.createElement('div');
         modalBody.className = 'regional-modal';
-        /** 핫스팟이 있는 장면은 점을 하나 이상 탭해야 '본 것'으로 기록한다 — 열자마자 닫는 클릭 러시 방지. */
+        /** 각 점의 설명을 하나씩 확인한 뒤에만 장면을 '본 것'으로 기록한다. */
         const markViewed = () => {
           if (state.viewedSceneIds.includes(scene.id)) return;
           add(state.viewedSceneIds, scene.id);
           void audio.playSfx('success');
           const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
-          if (hint) hint.textContent = '✓ 발견을 기록했어!';
+          if (hint) hint.textContent = '✓ 다 살펴봤어!';
           modalBody.querySelector<HTMLElement>('.regional-discovery')?.classList.add('is-lit');
           persist();
           render();
         };
         if (scene.hotspots.length === 0) markViewed();
         const viewed = state.viewedSceneIds.includes(scene.id);
+        const foundHotspotIds = new Set<string>(viewed ? scene.hotspots.map((spot) => spot.id) : []);
+        const scopeText = scene.category === 'landmark' && example
+          ? `${scene.title}은 ${example.country} 안의 특정 장소 사례이며, 이 한 장면이 나라 전체의 모습을 대표하지는 않아.`
+          : example?.scope ?? '';
+        const spotCopy = (index: number): string => index === 0
+          ? [scene.summary, scene.detail].filter(Boolean).join(' ')
+          : [scene.discovery, scopeText].filter(Boolean).join(' ');
         modalBody.innerHTML = `
           <div class="regional-modal-visual">
             <img src="${imageFor(model, scene.assetId)}" alt="${esc(scene.title)} 학습용 재현 이미지">
-            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot aria-label="${esc(spot.label)}"></button>`).join('')}
+            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
           </div>
           <div class="regional-modal-copy">
             <span class="chip">${esc(scene.categoryLabel)}</span>
             <h3>${esc(scene.title)}</h3>
-            ${scene.hotspots.length ? `<p class="regional-wipe-hint" data-scene-hint>${viewed ? '✓ 발견을 기록했어!' : '사진 속 반짝이는 점을 눌러 봐!'}</p>` : ''}
-            <p>${esc(scene.detail)}</p>
-            <p class="regional-discovery">발견: ${esc(scene.discovery)}</p>
-            <p>${esc(scene.category === 'landmark' && example ? `${scene.title}은 ${example.country} 안의 특정 장소 사례이며, 이 한 장면이 나라 전체의 모습을 대표하지는 않아.` : example?.scope ?? '')}</p>
-            <p class="regional-media-note">실제 현장 사진이 아닌 학습용 재현 이미지야. 사람·배치·날씨는 사실 근거로 쓰지 않아.</p>
-            ${scene.sourceUrl || example ? `<a href="${esc(scene.sourceUrl ?? example!.sourceUrl)}" target="_blank" rel="noreferrer">공식·공공 출처: ${esc(scene.sourceTitle ?? example!.sourceTitle)}</a>` : ''}
+            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : '사진 속 반짝이는 점을 하나씩 눌러 봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
+            <section class="regional-spot-detail is-empty" data-spot-detail aria-live="polite">
+              <span class="regional-spot-icon" aria-hidden="true">✦</span>
+              <h4 data-spot-title>${scene.hotspots.length ? '어느 점이 궁금해?' : esc(scene.title)}</h4>
+              <p data-spot-copy>${scene.hotspots.length ? '점을 누르면 그곳의 설명이 여기에 한 개씩 나타나.' : esc([scene.detail, scene.discovery, scopeText].filter(Boolean).join(' '))}</p>
+            </section>
           </div>`;
-        modalBody.querySelectorAll<HTMLElement>('[data-hotspot]').forEach((spot) => spot.addEventListener('click', () => {
-          spot.classList.add('is-found');
-          spot.innerHTML = `<span class="regional-hotspot-label">${esc(spot.getAttribute('aria-label') ?? '')}</span>`;
-          markViewed();
+        modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((button) => button.addEventListener('click', () => {
+          const hotspot = scene.hotspots.find((item) => item.id === button.dataset.hotspot);
+          if (!hotspot) return;
+          const index = scene.hotspots.indexOf(hotspot);
+          const wasFound = foundHotspotIds.has(hotspot.id);
+          foundHotspotIds.add(hotspot.id);
+          modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((item) => {
+            const active = item === button;
+            item.classList.toggle('is-active', active);
+            item.setAttribute('aria-pressed', String(active));
+          });
+          button.classList.add('is-found');
+          const detail = modalBody.querySelector<HTMLElement>('[data-spot-detail]');
+          const title = modalBody.querySelector<HTMLElement>('[data-spot-title]');
+          const copy = modalBody.querySelector<HTMLElement>('[data-spot-copy]');
+          const count = modalBody.querySelector<HTMLElement>('[data-scene-count]');
+          const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
+          if (detail) {
+            detail.classList.remove('is-empty', 'is-revealed');
+            void detail.offsetWidth;
+            detail.classList.add('is-revealed');
+          }
+          if (title) title.textContent = hotspot.label;
+          if (copy) copy.textContent = spotCopy(index);
+          if (count) count.textContent = `${foundHotspotIds.size} / ${scene.hotspots.length}`;
+          if (hint) hint.textContent = foundHotspotIds.size >= scene.hotspots.length
+            ? '✓ 두 점을 다 살펴봤어!'
+            : '좋아! 이제 다른 반짝이는 점도 눌러 봐.';
+          if (!wasFound) void audio.playSfx('pickup');
+          if (foundHotspotIds.size >= scene.hotspots.length) markViewed();
         }));
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
@@ -390,8 +443,9 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           </div>
           <div class="regional-modal-copy"><span class="chip">이어진 환경 신호</span><h3>${esc(signal.title)}</h3>
             ${hasBefore ? `<p class="regional-wipe-hint" data-signal-hint>${discovered ? '✓ 신호를 기록했어!' : '손잡이를 밀어서 두 모습을 비교하면 신호가 기록돼!'}</p>` : ''}
-            <p>${esc(signal.prompt)}</p><p class="regional-discovery">${esc(signal.connection)}</p><p class="regional-media-note">장면은 변화를 비교하는 학습용 재현 이미지이며 실제 미래를 예측하지 않아.</p><a href="${esc(signal.sourceUrl)}" target="_blank" rel="noreferrer">출처: ${esc(signal.sourceTitle)}</a></div>`;
+            <p>${esc(signal.prompt)}</p><p class="regional-discovery">${esc(signal.connection)}</p></div>`;
         const wipe = modalBody.querySelector<HTMLInputElement>('.regional-wipe');
+        if (wipe) enableRangeDrag(wipe);
         const after = modalBody.querySelector<HTMLElement>('.regional-after');
         const wipeBar = modalBody.querySelector<HTMLElement>('.regional-wipe-bar');
         let traveled = 0;
@@ -441,7 +495,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             ${koreaShortcut ? `<button type="button" class="regional-country-shortcut ${state.activeExampleId === koreaShortcut.id ? 'is-active' : ''}" data-country-shortcut="${koreaShortcut.id}">대한민국<small>서울 · 바로 보기</small></button>` : ''}
           </div><span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span></div>
           <aside class="regional-side">
-            ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><div class="regional-example-list">${examples.map((item) => `<button class="btn btn-ghost regional-example" data-example="${item.id}">${state.viewedExampleIds.includes(item.id) ? '✓ ' : ''}${esc(item.country)}<span>${esc(item.place)}</span></button>`).join('')}</div>${example ? `<h3>${model.id === 'oceania' ? `${esc(example.country)} · 지역과 대표 장소` : `${esc(example.country)} · ${esc(example.place)}`}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : '<p>이 장소와 연결된 장면을 준비하고 있어.</p>'}</div><p class="regional-source">${model.id === 'oceania' ? `앞의 세 장면은 ${esc(area.name)} 안 서로 다른 장소의 사례이고, 대표 장소 장면은 선택한 나라와 연결돼 있어. 장면을 열면 범위 안내와 출처를 확인할 수 있어.` : `${esc(example.scope)}<br><a href="${esc(example.sourceUrl)}" target="_blank" rel="noreferrer">${esc(example.sourceTitle)}</a>`}</p>` : ''}` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도에서 궁금한 ${model.areaLabel}을 눌러 봐.</p><button type="button" class="btn btn-ghost regional-info" data-map-info>이 지도는 어떤 그림이야?</button>`}
+            ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><div class="regional-example-list">${examples.map((item) => `<button class="btn btn-ghost regional-example" data-example="${item.id}">${state.viewedExampleIds.includes(item.id) ? '✓ ' : ''}${esc(item.country)}<span>${esc(item.place)}</span></button>`).join('')}</div>${example ? `<h3>${model.id === 'oceania' ? `${esc(example.country)} · 지역과 대표 장소` : `${esc(example.country)} · ${esc(example.place)}`}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : '<p>이 장소와 연결된 장면을 준비하고 있어.</p>'}</div>` : ''}` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도에서 궁금한 ${model.areaLabel}을 눌러 봐.</p><button type="button" class="btn btn-ghost regional-info" data-map-info>이 지도는 어떤 그림이야?</button>`}
             ${goalList()}
           </aside>
         </section>`;
@@ -466,9 +520,18 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       };
 
       const renderConnections = () => {
-        body.innerHTML = `<section class="regional-shell"><div class="regional-connections"><div class="regional-connection-layout">
-          <section class="regional-section"><span class="chip">1. 바다·물·기후의 연결</span><h2>멀리 떨어진 지역도 이어져 있어</h2><p>신호를 눌러 변화의 근거와 출처를 확인해 봐.</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}"><strong>${state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong><br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span></button>`).join('')}</div><span class="chip">2. 지역의 목소리</span><div class="regional-choice-grid">${model.perspectives.map((item) => `<button class="card card-pick regional-choice" data-voice="${item.id}" aria-pressed="${state.listenedPerspectiveIds.includes(item.id)}"><img src="${imageFor(model, item.assetId)}" alt=""><span><strong>${esc(item.name)} · ${esc(item.role)}</strong><br>${esc(item.line)}</span></button>`).join('')}</div></section>
-          <section class="regional-section"><span class="chip">3. 책임을 나누는 행동</span><h2>서로 다른 크기의 행동을 함께 골라 봐</h2><p>나·학교와 지역사회·정부와 기업·여러 나라의 행동 중 세 가지 이상을 골라.</p><div class="regional-action-grid">${model.actions.map((item) => `<button class="card card-pick regional-action" data-action="${item.id}" aria-pressed="${state.selectedActionIds.includes(item.id)}"><strong>${esc(item.label)}</strong><br><small>${esc(item.detail)}</small></button>`).join('')}</div><p class="regional-discovery">완료 조건: 환경 신호 ${model.requirements.minSignals}개, 친구 목소리 2개, 서로 다른 주체의 행동 3개.</p></section>
+        // 완료 조건을 스크롤 밖(맨 아래)에 두지 않는다 — 항상 보이는 상단 고정 진행 띠로 안내한다.
+        const goalChip = (label: string, got: number, need: number) =>
+          `<span class="regional-progress-goal ${got >= need ? 'is-done' : ''}">${label} <b>${Math.min(got, need)}/${need}</b></span>`;
+        const progressStrip = `<div class="regional-progress-strip" role="status" aria-label="환경 연결 완료 조건 진행">
+          ${goalChip('환경 신호', state.discoveredSignalIds.length, model.requirements.minSignals)}
+          ${goalChip('친구 목소리', state.listenedPerspectiveIds.length, 2)}
+          ${goalChip('행동 고르기', state.selectedActionIds.length, 3)}
+          ${goalChip('서로 다른 주체', chosenTierCount(), 2)}
+        </div>`;
+        body.innerHTML = `<section class="regional-shell"><div class="regional-connections">${progressStrip}<div class="regional-connection-layout">
+          <section class="regional-section"><span class="chip">1. 바다·물·기후의 연결</span><h2>멀리 떨어진 지역도 이어져 있어</h2><p>신호를 눌러 변화의 근거와 출처를 확인해 봐.</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}" aria-label="환경 신호: ${esc(item.title)}${state.discoveredSignalIds.includes(item.id) ? ', 기록함' : ''}"><strong>${state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong><br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span></button>`).join('')}</div><span class="chip">2. 지역의 목소리</span><div class="regional-choice-grid">${model.perspectives.map((item) => `<button class="card card-pick regional-choice" data-voice="${item.id}" aria-pressed="${state.listenedPerspectiveIds.includes(item.id)}" aria-label="목소리 듣기: ${esc(item.name)} ${esc(item.role)}${state.listenedPerspectiveIds.includes(item.id) ? ', 들음' : ''}"><img src="${imageFor(model, item.assetId)}" alt=""><span><strong>${esc(item.name)} · ${esc(item.role)}</strong><br>${esc(item.line)}</span></button>`).join('')}</div></section>
+          <section class="regional-section"><span class="chip">3. 책임을 나누는 행동</span><h2>서로 다른 크기의 행동을 함께 골라 봐</h2><p>나·학교와 지역사회·정부와 기업·여러 나라의 행동 중 세 가지 이상을 골라.</p><div class="regional-action-grid">${model.actions.map((item) => `<button class="card card-pick regional-action" data-action="${item.id}" aria-pressed="${state.selectedActionIds.includes(item.id)}" aria-label="행동 고르기: ${esc(item.label)}${state.selectedActionIds.includes(item.id) ? ', 고름' : ''}"><strong>${esc(item.label)}</strong><br><small>${esc(item.detail)}</small></button>`).join('')}</div></section>
         </div></div></section>`;
         const connectKeys = KEY_POINTS[model.id];
         if (connectKeys) showKeyPoint({ id: `${model.id}.connect`, lines: connectKeys.connect, onDone: () => undefined });
@@ -479,7 +542,11 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
 
       const render = () => {
         updateSteps(topBar, 2, state.screen === 'connections' ? 1 : 0, state.screen === 'connections' ? 1 : 0);
+        // 카드 선택마다 통재렌더된다 — 스크롤 위치를 보존하지 않으면 매번 맨 위로 튄다(B1)
+        const prevScroll = body.querySelector<HTMLElement>('.regional-connections')?.scrollTop ?? 0;
         if (state.screen === 'connections') renderConnections(); else renderExplore();
+        const scroller = body.querySelector<HTMLElement>('.regional-connections');
+        if (scroller && prevScroll > 0) scroller.scrollTop = prevScroll;
         renderDock();
       };
       render();

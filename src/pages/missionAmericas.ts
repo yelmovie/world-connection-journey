@@ -7,7 +7,7 @@ import { recordEarthSignals } from '../core/earthSignals';
 import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
 import { buildTopBar, updateSteps } from '../ui/chrome';
-import { enablePickPlace, type PickPlaceController } from '../ui/dnd';
+import { enablePickPlace, enableRangeDrag, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow } from '../ui/feedback';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
@@ -18,6 +18,7 @@ import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
 import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
+import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
 /* ================= 콘텐츠 타입 ================= */
 
@@ -79,7 +80,7 @@ function assertContent(content: AmericasContent): void {
   }
   const e = content.explore;
   if (!e || e.postcards?.length !== 4 || e.countries?.length !== 4 || e.lenses?.length !== 3) {
-    throw new Error('아메리카 콘텐츠 오류: explore 섹션(엽서 4·나라 4·렌즈 3)이 필요해요.');
+    throw new Error('아메리카 콘텐츠 오류: explore 섹션(대화창 4·나라 4·렌즈 3)이 필요해요.');
   }
   for (const c of e.countries) {
     if (c.stops.length < 3 || c.bag.length < 3) {
@@ -148,15 +149,16 @@ function restoreState(data: Record<string, unknown>, countryIds: string[]): ExpS
 /* ================= 스타일 ================= */
 
 const PAGE_CSS = `
-.am-scene { --am-copy:max(18px,var(--fs-body)); --am-label:max(18px,var(--fs-small)); }
+.am-scene { --am-copy:clamp(21px,1.32vw,27px); --am-label:clamp(19px,1.12vw,23px); }
 .am-scene .page-body { min-height:0; max-width:min(1840px,100%); padding:var(--sp-3) clamp(12px,1.5vw,28px) clamp(10px,1.5vh,18px); display:flex; }
 .am-stage { flex:1; min-height:0; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:var(--sp-3); }
-.am-scene .panel { background:var(--glass-panel); backdrop-filter:blur(9px) saturate(1.05); border:2px solid rgba(255,255,255,.72); border-radius:var(--radius-l); box-shadow:var(--shadow-card); padding:clamp(12px,1.2vw,20px); }
+.am-scene .panel { background:rgba(255,255,255,.62); backdrop-filter:blur(6px) saturate(1.05); border:2px solid rgba(255,255,255,.72); border-radius:var(--radius-l); box-shadow:var(--shadow-card); padding:clamp(12px,1.2vw,20px); }
 .am-scene .btn { color:#0F172A; text-shadow:none; }
 .am-scene > .top-bar, .am-scene > .bottom-bar { background:transparent !important; backdrop-filter:none !important; }
 .am-scene .bottom-bar { position:relative; z-index:var(--z-panel); flex-wrap:wrap; }
 .am-actions { display:flex; gap:10px; margin-left:auto; }
 .am-actions .btn { min-height:56px; font-size:max(20px,var(--am-label)); }
+.am-scene > .bottom-bar > .chip { font-size:clamp(18px,1.08vw,22px); font-weight:850; }
 
 /* ---- 대륙 지도 ---- */
 .exp-wrap { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.85fr) minmax(340px,.68fr); grid-template-rows:minmax(0,1fr); gap:clamp(12px,1.2vw,20px); }
@@ -164,6 +166,7 @@ const PAGE_CSS = `
 .exp-wrap > .exp-map-fit, .am-stage > .exp-map-fit { min-height:0; }
 .am-stage > .exp-map-fit { flex:1; }
 .exp-map-viewport { position:relative; overflow:hidden; border-radius:24px; border:3px solid rgba(255,255,255,.7); box-shadow:var(--shadow-card); background:#1c72ad; touch-action:none; }
+.exp-drop-hint { display:none; position:absolute; z-index:8; left:50%; top:14px; transform:translateX(-50%); padding:8px 18px; border-radius:999px; background:#fff8daf2; border:3px solid #f2c14e; color:#5b430a; box-shadow:var(--shadow-card); font:900 max(17px,var(--am-label)) var(--font-head); white-space:nowrap; pointer-events:none; }
 .exp-map { position:absolute; inset:0; background:linear-gradient(180deg,#3f9fd4,#1c72ad); transform-origin:50% 50%; transition:transform .12s ease-out; }
 /* 지도 이미지는 16:9다. 상자를 같은 비율로 고정해야 %로 찍은 나라·렌즈 좌표가 그림 위 실제 위치와 일치한다. */
 .exp-map::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; transition:background var(--t-med) ease; }
@@ -179,24 +182,58 @@ const PAGE_CSS = `
 .exp-map__ocean { position:absolute; padding:5px 11px; border-radius:999px; background:#0e405dcc; color:#fff; font-size:clamp(14px,1vw,18px); font-weight:850; pointer-events:none; }
 
 /* 나라 자리(놓는 곳)와 놓인 친구 */
-.exp-slot { position:absolute; transform:translate(-50%,-50%); width:clamp(96px,9vw,128px); height:clamp(96px,9vw,128px); border-radius:50%; border:4px dashed rgba(255,255,255,.85); background:rgba(255,255,255,.16); display:grid; place-items:center; color:#fff; font:900 clamp(15px,1.1vw,19px) var(--font-head); text-shadow:0 1px 4px #0009; }
+.exp-slot { position:absolute; transform:translate(-50%,-50%); width:clamp(96px,9vw,128px); height:clamp(96px,9vw,128px); border-radius:50%; border:4px dashed rgba(255,255,255,.9); background:rgba(255,255,255,.18); display:grid; place-items:center; color:#fff; font:900 clamp(15px,1.1vw,19px) var(--font-head); text-shadow:0 1px 4px #0009; cursor:copy; transition:border-color var(--t-fast),background var(--t-fast),box-shadow var(--t-fast),scale var(--t-fast); }
+.exp-slot.is-dnd-ready,.exp-wrap.has-pick .exp-slot:not(.is-filled) { border-color:#ffe276; background:rgba(255,226,118,.3); box-shadow:0 0 0 7px rgba(255,226,118,.2),0 8px 20px rgba(3,29,52,.35); animation:amDropTarget 1.05s ease-in-out infinite; }
+.exp-slot.is-over { border-style:solid; border-color:#fff; background:rgba(16,195,200,.62); box-shadow:0 0 0 10px rgba(16,195,200,.24),0 10px 26px rgba(3,29,52,.45); scale:1.08; animation:none; }
+@keyframes amDropTarget { 50% { box-shadow:0 0 0 12px rgba(255,226,118,0),0 8px 20px rgba(3,29,52,.35); } }
 .exp-slot.is-filled { border-style:solid; border-color:#ffd75e; background:rgba(255,255,255,.92); color:#14559c; text-shadow:none; }
 .exp-slot.is-filled img { width:70%; height:70%; object-fit:contain; border-radius:50%; }
 .exp-slot .slot-name { position:absolute; bottom:-30px; background:#fff; color:#14559c; border-radius:999px; padding:3px 12px; font-size:16px; box-shadow:var(--shadow-card); white-space:nowrap; }
 
-/* 엽서 */
+/* 친구 대화창 */
 .exp-cards { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; }
 #scene-root .am-scene .exp-cards.panel { align-self:start; max-height:100%; padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; box-shadow:none; }
 .exp-cards__title { margin:0 0 2px; padding:2px 6px; color:#fff; font:900 var(--fs-title) var(--font-head); text-shadow:0 3px 10px rgba(3,29,52,.88),0 1px 2px rgba(3,29,52,.95); }
-.postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 14px 10px 62px; min-height:76px; border:3px solid rgba(217,201,163,.85); border-radius:16px; background:rgba(255,252,240,.72); backdrop-filter:blur(6px); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; }
-.postcard::after { content:''; position:absolute; right:10px; top:10px; width:26px; height:32px; border:2px dashed #c9a86a; border-radius:4px; }
+.exp-dnd-guide { margin:0 0 4px; padding:8px 10px; border-radius:14px; background:rgba(255,248,218,.94); border:2px solid #f2c14e; color:#5b430a; font:850 clamp(14px,.94vw,18px)/1.2 var(--font-body); display:flex; align-items:center; justify-content:center; gap:6px; text-align:center; white-space:nowrap; }
+.exp-dnd-guide b { display:grid; place-items:center; width:26px; height:26px; flex:0 0 auto; border-radius:50%; background:#f2c14e; color:#4c3600; font-family:var(--font-head); }
+.exp-dnd-guide i { font-style:normal; color:#8a5a00; font-weight:950; }
+.postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 66px 10px 62px; min-height:76px; border:3px solid rgba(217,201,163,.85); border-radius:16px; background:rgba(255,252,240,.86); backdrop-filter:blur(6px); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; touch-action:none; transition:transform var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast); }
+.postcard-grip { position:absolute; right:10px; top:50%; transform:translateY(-50%); width:42px; height:44px; border:2px dashed #c9a86a; border-radius:9px; display:grid; place-items:center; background:rgba(255,255,255,.55); color:#8a5a00; font:900 25px/1 var(--font-head); pointer-events:none; }
 .postcard img { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:var(--shadow-card); }
-.postcard.is-selected { border-color:var(--c-gold); background:#fff6cf; }
+.postcard.is-selected { border-color:var(--c-gold); background:#fff6cf; transform:translateX(-5px); box-shadow:0 0 0 5px rgba(242,193,78,.25),var(--shadow-card); }
+.postcard.is-dragging { opacity:.35; }
 .postcard.is-wrong { animation:cardShake .4s; border-color:var(--c-coral); }
 .postcard.is-locked { opacity:.55; pointer-events:none; }
 .postcard.is-done { opacity:.4; pointer-events:none; border-color:var(--c-success); }
 @keyframes cardShake { 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
 .postcard .pc-extra { display:block; margin-top:6px; color:#8a5a00; font-weight:900; }
+
+/* 아메리카 전 화면: 가이드의 빈 행을 접고 비행기 왼쪽 안전 영역 + 확장 본문을 공유한다. */
+@media (min-width:1360px) {
+  .am-scene[data-screen=landing] .exp-wrap { grid-template-columns:clamp(230px,15vw,290px) minmax(0,1fr) clamp(320px,18vw,350px); }
+  .am-scene[data-screen=landing] .exp-map-fit { grid-column:2; }
+  .am-scene[data-screen=landing] .exp-cards { grid-column:3; }
+  .am-scene:not([data-screen=landing]) > .page-body > .am-stage { padding-left:clamp(230px,15vw,290px); }
+  .am-scene:not([data-screen=landing]) > .page-body > .am-stage:has(> .bag-stage) { padding-left:0; }
+}
+.am-scene { --guide-size:clamp(220px,15vw,280px); --guide-lane-h:0px; --bottom-bar-h:64px; --dock-baseline:8px; }
+.am-scene > .page-body { max-width:100%; padding:var(--sp-2) clamp(8px,1vw,16px); overflow:hidden; }
+.am-scene > .page-body > .am-stage { width:100%; max-width:none; }
+.am-scene .am-stage > .exp-map-fit > .aspect-fit { place-items:start center; }
+.am-scene[data-screen=landing] .exp-wrap { gap:clamp(8px,1vw,16px); }
+.am-scene[data-screen=landing] .exp-cards { align-self:stretch; height:100%; max-height:none; overflow:hidden; display:grid; grid-template-rows:auto auto repeat(4,minmax(0,1fr)); gap:clamp(5px,.65vh,8px); }
+#scene-root .am-scene[data-screen=landing] .exp-cards.panel { align-self:stretch; max-height:none; }
+.am-scene[data-screen=landing] .exp-cards__title { font-size:clamp(28px,2vw,40px); line-height:1; margin-bottom:2px; }
+.am-scene[data-screen=landing] .postcard { min-height:0; height:100%; padding-block:clamp(6px,.75vh,10px); font-size:clamp(16px,1.03vw,20px); line-height:1.3; overflow:hidden; }
+.am-scene[data-screen=landing] .postcard .pc-extra { margin-top:3px; }
+.am-scene > .guide-wrap { z-index:calc(var(--z-panel) + 2); }
+.am-scene > .guide-wrap .guide-bubble { left:var(--scene-safe); bottom:calc(var(--guide-size) - 18px); width:min(300px,calc(100vw - (var(--scene-safe) * 2))); max-width:300px; border-color:#f2c14e; background:rgba(255,253,241,.97); }
+.am-scene > .guide-wrap .guide-bubble::after { left:72px; right:auto; bottom:-13px; border:13px solid transparent; border-top-color:rgba(255,253,241,.97); border-bottom:0; filter:drop-shadow(0 2px 0 #f2c14e); }
+.am-scene > .guide-wrap .guide-mascot { filter:drop-shadow(0 12px 18px rgba(5,30,50,.42)); }
+.am-scene[data-screen=landing] .exp-wrap.is-dragging .exp-map-viewport,
+.am-scene[data-screen=landing] .exp-wrap.has-pick .exp-map-viewport { border-color:#ffe276; box-shadow:0 0 0 7px rgba(255,226,118,.22),var(--shadow-pop); }
+.am-scene[data-screen=landing] .exp-wrap.is-dragging .exp-drop-hint,
+.am-scene[data-screen=landing] .exp-wrap.has-pick .exp-drop-hint { display:block; }
 
 /* ---- 렌즈 ---- */
 .lens-tabs { display:flex; gap:10px; justify-content:center; flex-shrink:0; }
@@ -210,7 +247,6 @@ const PAGE_CSS = `
 .lens-point { position:absolute; transform:translate(-50%,-50%); min-width:84px; min-height:68px; border-radius:999px; border:3px solid #fff; background:#ffd75ed9; color:#5b430a; font:900 clamp(19px,1.5vw,25px)/1.2 var(--font-head); padding:10px 16px; box-shadow:0 0 0 0 rgba(255,215,94,.6); animation:lensPing 1.6s ease-out infinite; }
 .lens-point.is-seen { background:#e0f6ed; border-color:var(--c-success); color:#116d5b; animation:none; }
 @keyframes lensPing { 70%{box-shadow:0 0 0 18px rgba(255,215,94,0)} 100%{box-shadow:0 0 0 0 rgba(255,215,94,0)} }
-.lens-note { position:absolute; left:14px; right:14px; bottom:14px; padding:11px 16px; border-radius:14px; background:#fffdf2ee; color:#173b53; font-size:var(--am-label); font-weight:850; line-height:1.4; box-shadow:var(--shadow-card); }
 
 /* ---- 나라 허브 핀 ---- */
 .hub-pin { position:absolute; transform:translate(-50%,-50%); width:clamp(88px,8.4vw,120px); border:0; background:transparent; display:grid; justify-items:center; gap:4px; cursor:pointer; }
@@ -221,28 +257,70 @@ const PAGE_CSS = `
 .hub-pin:focus-visible { outline:5px solid #ffe052; outline-offset:4px; border-radius:20px; }
 
 /* ---- 나라 탐험 ---- */
-.country-stage { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(300px,.62fr); gap:var(--sp-3); }
+.country-stage { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1.65fr) minmax(390px,.75fr); gap:clamp(12px,1.1vw,18px); }
 .country-scene { position:relative; min-height:0; border-radius:24px; overflow:hidden; border:3px solid rgba(255,255,255,.7); box-shadow:var(--shadow-card); background:#8fc4de; touch-action:none; }
 .country-scene .scene-bg { position:absolute; inset:0; background-position:center; background-size:cover; transition:background .5s, background-position .5s; }
 .country-guide { position:absolute; left:14px; top:14px; right:14px; z-index:4; background:#fffdf1ee; border-left:7px solid #f3bf45; border-radius:14px; padding:10px 15px; font-size:var(--am-label); font-weight:850; color:#173b53; }
-.country-side { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.stop-card { padding:12px 14px; border-radius:14px; background:rgba(255,255,255,.6); backdrop-filter:blur(6px); border-left:6px solid rgba(205,216,222,.9); font-size:var(--am-label); line-height:1.4; }
-.stop-card.is-seen { border-left-color:var(--c-success); }
-.stop-card strong { display:block; color:#155b4c; }
-.stop-node { position:absolute; transform:translate(-50%,-50%); min-width:96px; min-height:64px; max-width:200px; border-radius:999px; border:3px solid #fff; background:#173e5ecc; backdrop-filter:blur(3px); color:#fff; font:900 clamp(19px,1.5vw,25px)/1.2 var(--font-head); padding:10px 16px; box-shadow:0 7px 18px #051e3266; z-index:3; word-break:keep-all; }
+.country-side { min-height:0; overflow:hidden; display:grid; grid-template-rows:auto repeat(4,minmax(0,1fr)); gap:clamp(8px,1vh,12px); }
+.country-head { padding:clamp(12px,1.2vw,18px) clamp(16px,1.4vw,22px); background:rgba(255,253,247,.7) !important; backdrop-filter:blur(5px) !important; }
+.country-head h2 { margin:0; color:var(--c-navy); font:900 clamp(32px,2.15vw,42px)/1.1 var(--font-head); word-break:keep-all; }
+.stop-card { min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; width:100%; padding:clamp(12px,1.15vw,20px); border:2px solid rgba(255,255,255,.58); border-left:7px solid rgba(205,216,222,.9); border-radius:18px; background:rgba(255,255,255,.55); backdrop-filter:blur(5px) saturate(1.04); box-shadow:0 8px 22px rgba(3,29,52,.12); color:#18384e; font:720 clamp(20px,1.18vw,25px)/1.42 var(--font-body); text-align:left; word-break:keep-all; }
+.stop-card.is-seen { border-left-color:var(--c-success); background:rgba(239,251,247,.62); }
+.stop-card strong { display:block; margin-bottom:4px; color:#155b4c; font:900 clamp(23px,1.38vw,29px)/1.16 var(--font-head); }
+.stop-card.route-card { position:relative; cursor:pointer; touch-action:manipulation; transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease; }
+.stop-card.route-card strong { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.stop-card.route-card > * { pointer-events:none; }
+.stop-card.route-card:hover { transform:translateX(-3px); }
+.stop-card.route-card:active { transform:translateX(-1px) scale(.99); }
+.stop-card.route-card:focus-visible { outline:5px solid #ffe052; outline-offset:2px; }
+.stop-card.route-card.is-next { border-color:#f2a13c; border-left-color:#df741e; background:rgba(255,244,207,.9); box-shadow:0 0 0 5px rgba(255,210,80,.28),0 12px 26px rgba(3,29,52,.18); }
+.stop-card.route-card.is-locked { opacity:.64; filter:saturate(.7); }
+.stop-card-step { flex:0 0 auto; display:inline-grid; place-items:center; width:40px; height:40px; border-radius:50%; background:#aebdc6; color:#fff; font:900 23px/1 var(--font-head); box-shadow:inset 0 -3px 0 rgba(0,0,0,.12); }
+.route-card.is-next .stop-card-step { background:#e27823; }
+.route-card.is-seen .stop-card-step { background:var(--c-success); }
+.route-card.is-seen .stop-card-step::after { content:'✓'; font-size:20px; }
+.route-card.is-seen .stop-card-step { font-size:0; }
+.country-route-line { position:absolute; inset:0; z-index:1; width:100%; height:100%; pointer-events:none; overflow:visible; transition:opacity .25s ease; }
+.country-route-line polyline:first-child { fill:none; stroke:rgba(5,39,61,.44); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.country-route-line polyline:last-child { fill:none; stroke:#ffe16b; stroke-width:.72; stroke-dasharray:2.2 2.4; stroke-linecap:round; stroke-linejoin:round; }
+.country-route-guide { position:absolute; left:50%; top:12px; transform:translateX(-50%); z-index:7; display:flex; align-items:center; gap:12px; width:max-content; max-width:calc(100% - 28px); min-height:64px; padding:8px 18px 8px 10px; border:3px solid #f2bf45; border-radius:999px; background:rgba(255,253,241,.94); backdrop-filter:blur(6px); box-shadow:0 9px 24px rgba(3,29,52,.22); color:#173b53; pointer-events:none; }
+.country-route-guide__icon { flex:0 0 auto; display:grid; place-items:center; width:46px; height:46px; border-radius:50%; background:#e27823; color:#fff; font-size:25px; }
+.country-route-guide__copy { display:grid; gap:1px; }
+.country-route-guide__copy small { color:#8a560d; font-size:clamp(14px,.82vw,17px); font-weight:900; }
+.country-route-guide__copy strong { font:900 clamp(18px,1.12vw,23px)/1.15 var(--font-head); white-space:nowrap; }
+.country-route-guide__steps { display:flex; gap:5px; }
+.country-route-guide__steps i { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#c5d0d6; color:#fff; font:900 16px/1 var(--font-head); font-style:normal; }
+.country-route-guide__steps i.is-current { background:#e27823; box-shadow:0 0 0 4px rgba(242,161,60,.2); }
+.country-route-guide__steps i.is-done { background:var(--c-success); }
+.country-route-guide.is-complete { border-color:var(--c-success); }
+.country-route-guide.is-complete .country-route-guide__icon { background:var(--c-success); }
+.stop-node { position:absolute; transform:translate(-50%,-50%); display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:9px; min-width:clamp(150px,11vw,210px); min-height:clamp(72px,6.4vw,90px); max-width:230px; border-radius:26px; border:4px solid #fff; background:#173e5edc; backdrop-filter:blur(4px); color:#fff; font:900 clamp(18px,1.28vw,24px)/1.16 var(--font-head); padding:9px 14px 9px 9px; box-shadow:0 9px 22px #051e3270; z-index:3; word-break:keep-all; cursor:pointer; touch-action:manipulation; transition:opacity .22s ease,filter .18s ease,background .18s ease,transform .22s ease; overflow:visible; }
+.stop-node > * { pointer-events:none; }
+.stop-node .stop-step { display:grid; place-items:center; width:46px; height:46px; border-radius:50%; background:#aebdc6; color:#fff; font:900 25px/1 var(--font-head); box-shadow:inset 0 -3px 0 rgba(0,0,0,.14); }
+.stop-node .stop-label { min-width:0; text-align:center; text-wrap:balance; }
 .stop-node.is-seen { background:#147b63; }
-.stop-node.is-next { animation:lensPing 1.4s ease-out infinite; background:#e2842d; }
+.stop-node.is-seen .stop-step { background:#0f624e; }
+.stop-node.is-seen .stop-step::after { content:'✓'; font-size:23px; }
+.stop-node.is-seen .stop-step { font-size:0; }
+.stop-node.is-locked { opacity:.62; filter:saturate(.55); }
+.stop-node.is-next { z-index:6; animation:routeNext 1.45s ease-in-out infinite; background:#e27823; border-color:#fff8d7; }
+.stop-node.is-next .stop-step { background:#fff; color:#b95d14; }
+.stop-node.is-next::after { content:'👆 여기를 눌러!'; position:absolute; left:50%; top:calc(100% + 7px); transform:translateX(-50%); padding:5px 12px; border-radius:999px; background:#fff9dd; border:2px solid #e6ad32; color:#754500; font:900 clamp(15px,.9vw,18px)/1.1 var(--font-head); box-shadow:0 6px 14px rgba(3,29,52,.2); white-space:nowrap; }
+.country-scene.route-complete .country-route-line { opacity:.12; }
+.country-scene.route-complete .stop-node { opacity:0; transform:translate(-50%,-50%) scale(.9); pointer-events:none; }
+.country-scene.route-complete .friend-meet { right:28px; bottom:24px; }
+@keyframes routeNext { 50%{ box-shadow:0 0 0 10px rgba(255,220,94,.28),0 13px 28px rgba(3,29,52,.34); } }
 .voyage-rail { position:absolute; left:10%; right:10%; bottom:14px; z-index:5; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; background:#fffdf2ee; box-shadow:var(--shadow-card); }
-.voyage-rail span { font:900 16px var(--font-head); color:#17506e; white-space:nowrap; }
+.voyage-rail span { font:900 clamp(18px,1vw,21px) var(--font-head); color:#17506e; white-space:nowrap; }
 .voyage-rail input { flex:1; min-width:0; height:34px; accent-color:#e2842d; }
-.voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-30px; transform:translateX(-50%); padding:3px 12px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 16px var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
+.voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-34px; transform:translateX(-50%); padding:4px 13px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 clamp(17px,.95vw,20px) var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
 .voyage-rail.is-used::after { display:none; }
 /* 친구가 나타나면 항해는 끝났다 — 만나기 버튼과 겹치지 않게 레일을 걷는다 */
 .country-scene:has(.friend-meet) .voyage-rail { display:none; }
 @keyframes railHint { 50% { transform:translateX(-50%) translateY(-5px); } }
 .alt-slider { position:absolute; right:18px; top:12%; bottom:12%; z-index:5; display:flex; flex-direction:column; align-items:center; gap:8px; }
 .alt-slider input { writing-mode:vertical-lr; direction:rtl; height:100%; width:46px; }
-.alt-slider span { background:#fff; border-radius:999px; padding:3px 10px; font-weight:900; font-size:15px; box-shadow:var(--shadow-card); }
+.alt-slider span { background:rgba(255,255,255,.86); border-radius:999px; padding:4px 11px; font-weight:900; font-size:clamp(17px,.95vw,20px); box-shadow:var(--shadow-card); }
 .friend-meet { position:absolute; right:16px; bottom:14px; z-index:6; border:0; background:transparent; display:grid; justify-items:center; gap:4px; cursor:pointer; animation:friendBob 2.2s ease-in-out infinite; }
 /* 캐릭터 주변에 노란 안내 박스(tap-cue 아웃라인)를 씌우지 않는다 — 캐릭터 자체가 행동 유도다 */
 .friend-meet.tap-cue, .hub-pin.tap-cue { outline:0 !important; animation:friendBob 2.2s ease-in-out infinite; }
@@ -251,60 +329,95 @@ const PAGE_CSS = `
 @keyframes friendBob { 50%{transform:translateY(-8px)} }
 
 /* 문화 가방 */
-.bag-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-.bag-item { min-height:110px; border:3px solid rgba(203,215,223,.85); border-radius:18px; background:rgba(255,255,255,.72); backdrop-filter:blur(6px); padding:12px; font:900 max(18px,var(--am-label)) var(--font-head); color:#173b53; display:grid; place-items:center; text-align:center; cursor:pointer; }
-.bag-item.is-open { border-color:var(--c-success); font:750 var(--am-label)/1.4 var(--font-body); place-items:start; text-align:left; background:#f4fbf8; }
-.bag-item.is-open strong { display:block; font-family:var(--font-head); margin-bottom:4px; color:#155b4c; }
-.bag-item.is-env.is-open { background:#fdf6e4; border-color:#e2b13c; }
+.bag-stage { align-self:center; justify-content:center; width:min(1280px,100%); max-width:1280px; height:100%; padding:clamp(14px,1.25vw,24px); gap:clamp(12px,1.3vh,18px); overflow:hidden; border:2px solid rgba(255,255,255,.58); border-radius:28px; background:rgba(8,71,102,.2); backdrop-filter:blur(3px) saturate(1.08); box-shadow:0 18px 48px rgba(3,29,52,.22); }
+.bag-head { flex:0 0 auto; text-align:center; padding:clamp(12px,1.3vh,18px) clamp(20px,2vw,34px); border-radius:22px; background:rgba(255,253,247,.78); border:2px solid rgba(255,255,255,.72); box-shadow:0 10px 28px rgba(3,29,52,.14); backdrop-filter:blur(6px); }
+.bag-head h2 { margin:0; color:var(--c-navy); font:900 clamp(32px,2.3vw,44px)/1.1 var(--font-head); word-break:keep-all; }
+.bag-head p { margin:8px 0 0; color:var(--c-ink-soft); font-size:clamp(20px,1.25vw,26px); font-weight:850; line-height:1.2; }
+.bag-grid { flex:1; min-height:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); gap:clamp(12px,1.1vw,18px); }
+.bag-item { min-height:0; overflow:auto; border:3px solid rgba(203,215,223,.82); border-radius:22px; background:rgba(255,255,255,.7); backdrop-filter:blur(7px); padding:clamp(16px,1.45vw,26px); font:900 clamp(24px,1.55vw,31px)/1.25 var(--font-head); color:#173b53; display:grid; place-items:center; text-align:center; cursor:pointer; word-break:keep-all; text-wrap:balance; }
+.bag-item.is-open { border-color:var(--c-success); font:750 clamp(21px,1.3vw,27px)/1.45 var(--font-body); place-items:center start; text-align:left; background:rgba(244,251,248,.82); }
+.bag-item.is-open strong { display:block; margin-bottom:8px; color:#155b4c; font:900 clamp(23px,1.45vw,30px)/1.2 var(--font-head); }
+.bag-item.is-env.is-open { background:rgba(253,246,228,.84); border-color:#e2b13c; }
 .bag-item.is-keep { outline:5px solid var(--c-gold); }
-.bag-pick-hint { padding:10px 14px; border-radius:12px; background:#fff3cf; border:2px solid #e8bf4e; font-weight:900; color:#5b430a; font-size:var(--am-label); }
+.bag-pick-hint { flex:0 0 auto; margin:0; padding:11px 18px; border-radius:14px; background:rgba(255,243,207,.88); border:2px solid #e8bf4e; font-weight:900; color:#5b430a; font-size:clamp(20px,1.25vw,25px); text-align:center; }
+
+@media (max-height:700px) {
+  .bag-stage { padding:8px 10px; gap:8px; }
+  .bag-head { padding:7px 16px; }
+  .bag-head h2 { font-size:clamp(27px,2.3vw,34px); }
+  .bag-head p { margin-top:3px; font-size:18px; }
+  .bag-grid { gap:8px; }
+  .bag-item { padding:10px 14px; font-size:clamp(20px,1.55vw,25px); }
+  .bag-item.is-open { font-size:clamp(18px,1.3vw,22px); line-height:1.35; }
+  .bag-item.is-open strong { margin-bottom:3px; font-size:clamp(20px,1.45vw,24px); }
+}
 
 /* ---- 하루 비교 ---- 시간대는 탭으로 하나씩. 가로 스크롤은 뒤쪽 시간대를 통째로 숨긴다. */
 .day-board { flex:1; min-height:0; display:flex; }
 .day-slot { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
 .day-cards { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
 .lens-tabs .btn.is-solved::after { content:' ✓'; color:#149067; }
-.day-card { position:relative; border:3px solid rgba(255,255,255,.65); border-radius:20px; background:rgba(255,255,255,.42); backdrop-filter:blur(7px) saturate(1.05); padding:clamp(10px,1.2vw,18px); display:grid; gap:clamp(8px,1.2vh,14px); justify-items:center; align-content:center; text-align:center; cursor:pointer; }
-.day-card strong { font:900 clamp(22px,1.8vw,30px)/1.1 var(--font-head); color:var(--c-navy); text-shadow:0 1px 3px rgba(255,255,255,.8); }
-.day-card span { font-size:clamp(19px,1.4vw,25px); font-weight:800; line-height:1.4; color:#12293d; word-break:keep-all; text-wrap:balance; }
+.day-card { position:relative; border:3px solid rgba(255,255,255,.68); border-radius:22px; background:rgba(255,255,255,.4); backdrop-filter:blur(5px) saturate(1.05); padding:clamp(12px,1.3vw,20px); display:grid; gap:clamp(8px,1.2vh,14px); justify-items:center; align-content:center; text-align:center; cursor:pointer; box-shadow:0 10px 28px rgba(3,29,52,.12); }
+.day-card strong { font:900 clamp(26px,1.85vw,34px)/1.1 var(--font-head); color:var(--c-navy); text-shadow:0 1px 3px rgba(255,255,255,.8); }
+.day-card span { font-size:clamp(22px,1.42vw,27px); font-weight:800; line-height:1.4; color:#12293d; word-break:keep-all; text-wrap:balance; }
 .day-card img { width:clamp(96px,10vw,150px); height:clamp(96px,10vw,150px); border-radius:50%; object-fit:cover; border:3px solid #fff; box-shadow:var(--shadow-card); background:rgba(255,255,255,.7); }
 .day-card.is-selected { border-color:var(--c-gold); background:#fff6cf; }
 .day-card.is-linked { border-color:var(--c-success); background:#f0fbf6; }
 /* 과제 배너 — 지금 해야 할 미션이 화면에서 가장 먼저 읽히게 */
-.am-task { display:flex; align-items:center; justify-content:center; gap:12px; margin:0 auto; max-width:min(920px,94%); padding:12px 24px; border-radius:999px; background:linear-gradient(180deg,#fff8e2f2,#ffedbdf2); border:3px solid #f3bf45; box-shadow:var(--shadow-card); color:#5b430a; font:900 clamp(21px,1.8vw,30px)/1.3 var(--font-head); text-align:center; word-break:keep-all; text-wrap:balance; }
+.am-task { display:flex; align-items:center; justify-content:center; gap:12px; margin:0 auto; max-width:min(1040px,94%); padding:12px 24px; border-radius:999px; background:linear-gradient(180deg,rgba(255,248,226,.88),rgba(255,237,189,.88)); backdrop-filter:blur(5px); border:3px solid #f3bf45; box-shadow:var(--shadow-card); color:#5b430a; font:900 clamp(23px,1.8vw,31px)/1.3 var(--font-head); text-align:center; word-break:keep-all; text-wrap:balance; }
 .am-task::before { content:'미션'; flex-shrink:0; padding:5px 14px; border-radius:999px; background:#f3bf45; color:#4c3600; font-size:.68em; }
-.day-common { min-height:60px; padding:12px 18px; border-radius:14px; background:rgba(224,246,237,.88); backdrop-filter:blur(4px); border:2px solid #18836a; color:#0d5a44; font-weight:900; font-size:clamp(19px,1.4vw,25px); text-align:center; word-break:keep-all; text-wrap:balance; display:none; }
+.day-common { min-height:64px; padding:13px 20px; border-radius:16px; background:rgba(224,246,237,.78); backdrop-filter:blur(4px); border:2px solid #18836a; color:#0d5a44; font-weight:900; font-size:clamp(21px,1.4vw,27px); text-align:center; word-break:keep-all; text-wrap:balance; display:none; }
 .day-slot.is-solved .day-common { display:block; }
 
 /* ---- 탐험 노트 ---- */
 .note-layout { flex:1; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); gap:var(--sp-3); }
 .note-pool:empty { display:none; }
-.note-pool { display:flex; gap:8px; flex-wrap:wrap; align-content:flex-start; padding:10px; max-height:34vh; overflow:auto; }
+.note-pool { display:flex; gap:10px; flex-wrap:wrap; align-content:flex-start; padding:12px; max-height:34vh; overflow:auto; background:rgba(255,255,255,.52) !important; }
 .note-zones { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); min-height:0; }
-.note-zone { min-height:0; overflow:auto; padding:12px; border-radius:18px; border:3px dashed rgba(255,255,255,.8); background:var(--glass-panel-soft); display:flex; flex-direction:column; gap:8px; }
-.note-zone h3 { margin:0; font:900 max(20px,var(--am-copy)) var(--font-head); color:var(--c-navy); }
-.note-zone small { color:var(--c-ink-soft); font-weight:800; }
-.note-chip { flex:0 0 auto; min-height:56px; padding:9px 15px; border-radius:999px; border:3px solid rgba(203,215,223,.85); background:rgba(255,255,255,.8); font-weight:900; font-size:max(16px,var(--am-label)); line-height:1.25; white-space:nowrap; cursor:pointer; }
+.note-zone { min-height:0; overflow:auto; padding:clamp(12px,1.1vw,18px); border-radius:20px; border:3px dashed rgba(255,255,255,.82); background:rgba(255,255,255,.48); backdrop-filter:blur(5px) saturate(1.04); display:flex; flex-direction:column; gap:10px; box-shadow:0 10px 28px rgba(3,29,52,.12); }
+.note-zone h3 { margin:0; font:900 clamp(25px,1.55vw,31px)/1.15 var(--font-head); color:var(--c-navy); }
+.note-zone small { color:#28475e; font-size:clamp(18px,1.05vw,22px); font-weight:800; line-height:1.35; word-break:keep-all; }
+.note-chip { flex:0 0 auto; min-height:58px; padding:10px 16px; border-radius:999px; border:3px solid rgba(203,215,223,.82); background:rgba(255,255,255,.72); font-weight:900; font-size:clamp(19px,1.12vw,23px); line-height:1.25; white-space:nowrap; cursor:pointer; }
 .note-zone .note-chip { min-height:48px; padding:7px 13px; white-space:normal; }
 .note-chip.is-selected { border-color:var(--c-gold); background:#fff6cf; }
 .keyword-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-.keyword-row .btn { min-height:56px; }
+.keyword-row .btn { min-height:58px; font-size:clamp(19px,1.12vw,23px); }
 .keyword-row .btn[aria-pressed=true] { background:var(--c-gold); }
 
 /* ---- 지구 신호 ---- */
-.signal-final { flex:1; min-height:0; display:grid; place-content:center; gap:14px; justify-items:center; }
-.signal-token { display:flex; align-items:center; gap:14px; width:min(680px,92vw); padding:14px 18px; border-radius:18px; border:3px solid rgba(203,215,223,.85); background:rgba(255,255,255,.78); backdrop-filter:blur(6px); text-align:left; font-size:var(--am-label); line-height:1.4; cursor:pointer; }
-.signal-token::before { content:''; width:52px; height:52px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 35% 30%,#9fdcff,#2b7fc0); box-shadow:0 4px 10px #0a304d55; }
+.signal-final { flex:1; min-height:0; display:grid; place-content:center; gap:clamp(14px,1.5vh,20px); justify-items:center; }
+.signal-title { margin:0; color:#fff; font:900 clamp(34px,2.35vw,46px)/1.15 var(--font-head); text-align:center; text-shadow:0 3px 12px rgba(0,0,0,.58); word-break:keep-all; }
+.signal-token { display:flex; align-items:center; gap:18px; width:min(920px,92vw); min-height:100px; padding:18px 24px; border-radius:22px; border:3px solid rgba(255,255,255,.66); background:rgba(255,255,255,.68); backdrop-filter:blur(5px); text-align:left; color:#173b53; font-size:clamp(21px,1.3vw,27px); line-height:1.42; cursor:pointer; box-shadow:0 10px 28px rgba(3,29,52,.14); }
+.signal-token::before { content:''; width:64px; height:64px; flex-shrink:0; border-radius:50%; background:radial-gradient(circle at 35% 30%,#9fdcff,#2b7fc0); box-shadow:0 4px 10px #0a304d55; }
 .signal-token[data-issue=forest]::before { background:radial-gradient(circle at 35% 30%,#bfe8a5,#3e8a4f); }
 .signal-token[data-issue=life]::before { background:radial-gradient(circle at 35% 30%,#ffe29f,#d99027); }
 .signal-token.is-lit { border-color:var(--c-gold); background:#fffbe8; box-shadow:0 0 0 4px rgba(242,193,78,.35); }
-.signal-token strong { display:block; font-family:var(--font-head); color:#173b53; }
+.signal-token strong { display:block; margin-bottom:3px; font:900 clamp(24px,1.48vw,30px)/1.15 var(--font-head); color:#173b53; }
 
-/* 1024x576(교실 최소 기준)에서도 지도와 엽서가 나란히 있어야 한다 —
+@media (max-height:700px) {
+  .country-side { gap:6px; }
+  .country-head { padding:8px 14px; }
+  .country-head h2 { font-size:clamp(28px,2.15vw,34px); }
+  .stop-card { padding:8px 11px; font-size:clamp(17px,1.18vw,21px); line-height:1.3; }
+  .stop-card strong { margin-bottom:2px; font-size:clamp(20px,1.38vw,24px); }
+  .country-route-guide { min-height:52px; top:7px; padding:5px 14px 5px 7px; gap:8px; }
+  .country-route-guide__icon { width:38px; height:38px; font-size:21px; }
+  .country-route-guide__copy strong { font-size:17px; }
+  .country-route-guide__steps i { width:24px; height:24px; font-size:14px; }
+  .stop-node { min-width:138px; min-height:62px; max-width:190px; padding:7px 11px 7px 7px; font-size:clamp(16px,1.28vw,20px); }
+  .stop-node .stop-step { width:38px; height:38px; font-size:21px; }
+  .stop-node.is-next::after { top:calc(100% + 4px); padding:3px 9px; font-size:14px; }
+  .day-card span { font-size:clamp(18px,1.42vw,22px); }
+  .note-zone small { font-size:17px; }
+  .signal-token { min-height:76px; padding:10px 16px; font-size:clamp(18px,1.3vw,22px); }
+  .signal-token::before { width:50px; height:50px; }
+}
+
+/* 1024x576(교실 최소 기준)에서도 지도와 대화창이 나란히 있어야 한다 —
    한 줄로 쌓으면 지도가 납작해지고 카드가 지도를 덮는다. */
 @media (max-width:1050px) {
   .exp-wrap { grid-template-columns:minmax(0,1.2fr) minmax(258px,.8fr); gap:var(--sp-2); }
-  .postcard { padding:8px 10px 8px 54px; min-height:66px; font-size:max(15px,var(--fs-small)); }
+  .postcard { padding:8px 56px 8px 54px; min-height:66px; font-size:max(15px,var(--fs-small)); }
   .postcard img { left:8px; width:38px; height:38px; }
   .day-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .note-zones { grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -312,10 +425,11 @@ const PAGE_CSS = `
 @media (max-width:900px) {
   .exp-wrap, .country-stage { grid-template-columns:1fr; }
   .country-scene { min-height:420px; }
+  .country-side { display:flex; overflow:auto; }
   .note-zones { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .lens-point, .stop-node.is-next, .friend-meet, .postcard.is-wrong, .voyage-rail::after { animation:none !important; }
+  .lens-point, .stop-node.is-next, .friend-meet, .postcard.is-wrong, .voyage-rail::after, .exp-slot { animation:none !important; }
 }
 :root[data-reduced-motion="true"] .lens-point,
 :root[data-reduced-motion="true"] .friend-meet { animation:none !important; }
@@ -378,9 +492,11 @@ export function createPage(): Page {
       const content = await loadContent<AmericasContent>('americas');
       assertContent(content);
       const E = content.explore;
+      const playerSpeaker = selectedAvatarSpeaker(saveRepo.get().profile);
       await preloadImages([
         'bg.americas',
         'americas.map',
+        playerSpeaker.assetId,
         ...content.students.map((_, i) => `americas.student${i + 1}`),
         ...AMERICAS_SCENE_ASSET_IDS
       ]);
@@ -422,6 +538,10 @@ export function createPage(): Page {
       const plane = airplaneChoice(saveRepo.get().profile?.airplaneId);
       guide = createGuide({ assetId: plane.assetId, speakerName: plane.name });
       page.insertBefore(guide.el, bottom);
+
+      const announceGuide = (text: string, cue: HTMLElement | null = null): void => {
+        guide?.say(text, { cue, autoStart: true, persist: true });
+      };
 
       const setBottom = (hint: string, ...actions: HTMLElement[]): void => {
         bottom.replaceChildren();
@@ -465,6 +585,7 @@ export function createPage(): Page {
         const viewport = document.createElement('div');
         viewport.className = 'exp-map-viewport';
         viewport.appendChild(map);
+        viewport.insertAdjacentHTML('beforeend', '<span class="exp-drop-hint">지도 속 점선 원에 놓아 줘!</span>');
         viewport.insertAdjacentHTML('beforeend', '<span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span>');
         const holder = document.createElement('div');
         holder.className = 'exp-map-fit';
@@ -488,12 +609,13 @@ export function createPage(): Page {
         return map;
       };
 
-      /* ===== 화면 1 — 착륙: 엽서를 지도에 놓기 ===== */
+      /* ===== 화면 1 — 착륙: 대화창을 지도에 놓기 ===== */
       const renderLanding = (): void => {
         const wrap = el('<div class="exp-wrap"></div>');
         const map = buildMap();
         const side = el('<div class="exp-cards panel"></div>');
-        side.appendChild(el('<h2 class="exp-cards__title">친구들의 엽서</h2>'));
+        side.appendChild(el('<h2 class="exp-cards__title">친구들의 대화창</h2>'));
+        side.appendChild(el('<p class="exp-dnd-guide" id="americas-dnd-guide"><b>1</b><span>대화창 잡기</span><i>→</i><b>2</b><span>지도에 놓기</span></p>'));
 
         const zones: HTMLElement[] = [];
         const items: HTMLElement[] = [];
@@ -504,8 +626,8 @@ export function createPage(): Page {
           slot.innerHTML = `<img src="${assetUrl(avatarAsset(content, pc?.studentId ?? ''))}" alt=""><span class="slot-name">${c?.name ?? ''}</span>`;
         };
 
-        E.countries.forEach((c) => {
-          const slot = el(`<div class="exp-slot" data-zone-id="${c.id}" style="left:${c.position.x}%;top:${c.position.y}%">여기?</div>`);
+        E.countries.forEach((c, index) => {
+          const slot = el(`<div class="exp-slot drop-zone" data-zone-id="${c.id}" role="button" aria-label="지도 놓기 영역 ${index + 1}" style="left:${c.position.x}%;top:${c.position.y}%">여기?</div>`);
           if (S.placed.includes(c.id)) fillSlot(slot, c.id);
           zones.push(slot);
           map.appendChild(slot);
@@ -516,7 +638,9 @@ export function createPage(): Page {
             <img src="${assetUrl(avatarAsset(content, pc.studentId))}" alt="">
             <strong>${student?.name ?? ''}</strong> · ${pc.hint}
             <span class="pc-extra" hidden>힌트: ${pc.extraHint}</span>
+            <span class="postcard-grip" aria-hidden="true">⠿</span>
           </button>`);
+          card.setAttribute('aria-describedby', 'americas-dnd-guide');
           if (S.placed.includes(pc.countryId)) card.classList.add('is-done');
           items.push(card);
           side.appendChild(card);
@@ -526,7 +650,7 @@ export function createPage(): Page {
         const refresh = (): void => {
           const all = E.countries.every((c) => S.placed.includes(c.id));
           next.disabled = !all;
-          setBottom(all ? '' : '엽서를 읽고 지도의 맞는 자리에 놓아 봐', next);
+          setBottom(all ? '' : `놓은 대화창 ${S.placed.length}/${E.countries.length}`, next);
           if (all) guide?.say('네 친구의 나라를 모두 찾았어!', {
             cue: next,
             autoStart: true,
@@ -536,6 +660,20 @@ export function createPage(): Page {
 
         dnd = enablePickPlace({
           items, zones,
+          onSelectionChange: (itemId) => {
+            wrap.classList.toggle('has-pick', itemId !== null);
+            if (itemId) {
+              guide?.say('좋아! 이제 지도 속 점선 원을 눌러서 대화창을 놓아 봐.', {
+                autoStart: true,
+                persist: true
+              });
+            }
+          },
+          onDragStateChange: (active) => wrap.classList.toggle('is-dragging', active),
+          onDropMiss: () => guide?.say('지도 안의 반짝이는 점선 원까지 옮겨서 놓아 줘!', {
+            autoStart: true,
+            persist: true
+          }),
           onPlace: (itemId, zoneId) => {
             const card = items.find((i) => i.dataset.itemId === itemId);
             if (!card || S.placed.includes(itemId)) return;
@@ -552,7 +690,7 @@ export function createPage(): Page {
               card.classList.add('is-wrong', 'is-locked');
               card.querySelector<HTMLElement>('.pc-extra')?.removeAttribute('hidden');
               later(() => card.classList.remove('is-wrong', 'is-locked'), 1200);
-              guide?.say('조금 다른 곳이야. 엽서의 힌트를 다시 읽어 볼까?');
+              announceGuide('조금 다른 곳이야. 대화창의 힌트를 다시 읽어 볼까?');
             }
           }
         });
@@ -567,7 +705,11 @@ export function createPage(): Page {
             '아메리카는 북아메리카와 남아메리카, 두 대륙이 길게 이어져 있어.',
             '적도는 남아메리카 북쪽을 지나가서, 그 근처는 일 년 내내 더워.'
           ],
-          onDone: () => guide?.say('친구들이 보낸 엽서를 읽고, 어느 나라에서 왔는지 지도에 놓아 보자.')
+          onDone: () => guide?.say('대화창을 읽고 지도 속 맞는 나라에 끌어 놓아 봐!', {
+            cue: items.find((item) => !item.classList.contains('is-done')) ?? null,
+            autoStart: true,
+            persist: true
+          })
         });
       };
 
@@ -576,8 +718,6 @@ export function createPage(): Page {
         const wrap = el('<div class="am-stage" style="gap:12px"></div>');
         const tabs = el('<div class="lens-tabs"></div>');
         const map = buildMap();
-        const note = el('<p class="lens-note" hidden></p>');
-        map.appendChild(note);
         let active = E.lenses.find((l) => l.id === S.lensVisited.at(-1)) ?? E.lenses[0]!;
 
         const next = nextButton('나라 속으로 들어가기', 'countries');
@@ -591,7 +731,6 @@ export function createPage(): Page {
         const draw = (): void => {
           map.dataset.lens = active.id;
           map.querySelectorAll('.lens-point').forEach((p) => p.remove());
-          note.hidden = true;
           if (!S.lensVisited.includes(active.id)) { S.lensVisited.push(active.id); persist(); }
           tabs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.id === active.id)));
           active.points.forEach((p) => {
@@ -600,8 +739,7 @@ export function createPage(): Page {
             dot.addEventListener('click', () => {
               if (!S.pointsSeen.includes(key)) { S.pointsSeen.push(key); persist(); }
               dot.classList.add('is-seen');
-              note.textContent = `${p.label} — ${p.note}`;
-              note.hidden = false;
+              announceGuide(`${p.label} — ${p.note}`, dot);
               popBounce(dot);
               void audio.playSfx('tap');
               refresh();
@@ -620,7 +758,7 @@ export function createPage(): Page {
         stage.replaceChildren(wrap);
         draw();
         refresh();
-        guide?.say('렌즈를 바꾸면 같은 대륙이 다르게 보여! 위치·자연·생활 렌즈로 반짝이는 곳을 살펴봐.');
+        announceGuide('렌즈를 바꾸면 같은 대륙이 다르게 보여! 위치·자연·생활 렌즈로 반짝이는 곳을 살펴봐.');
       };
 
       /* ===== 화면 3 — 나라 허브 + 마이크로 탐험 ===== */
@@ -639,7 +777,7 @@ export function createPage(): Page {
         next.disabled = !allDone;
         stage.replaceChildren(fitMap(map));
         setBottom(allDone ? '네 나라를 모두 탐험했어!' : '나라를 눌러 그 속으로 들어가 보자', next);
-        guide?.say(allDone
+        announceGuide(allDone
           ? '네 친구를 모두 만났어! 이제 친구들의 하루를 나란히 놓고 비교해 볼까?'
           : '이제 나라 속으로 들어가 보자. 나라마다 탐험하는 방법이 달라!');
       };
@@ -647,16 +785,20 @@ export function createPage(): Page {
       const renderCountry = (c: CountryDef): void => {
         const P = S.countries[c.id] ?? (S.countries[c.id] = emptyCountry());
         const student = content.students.find((s) => s.id === c.studentId);
+        const isOrderedRoute = c.mode === 'trail' || c.mode === 'river';
         const layout = el('<div class="country-stage"></div>');
         const scene = el('<div class="country-scene"></div>');
         const bg = el('<div class="scene-bg"></div>');
         scene.appendChild(bg);
-        scene.appendChild(el(`<p class="country-guide">${c.modeGuide}</p>`));
         const side = el('<div class="country-side"></div>');
-        side.appendChild(el(`<div class="panel"><h2 style="margin:0;font:900 var(--fs-title) var(--font-head);color:var(--c-navy)">${c.name}</h2></div>`));
-        const stopCards = c.stops.map((stop) => {
-          const card = el(`<div class="stop-card ${P.stopsSeen.includes(stop.id) ? 'is-seen' : ''}"><strong>${stop.label}</strong><span hidden>${stop.note}</span></div>`);
-          if (P.stopsSeen.includes(stop.id)) card.querySelector('span')?.removeAttribute('hidden');
+        side.appendChild(el(`<div class="panel country-head"><h2>${c.name}</h2></div>`));
+        const stopCards = c.stops.map((stop, index) => {
+          const tag = isOrderedRoute ? 'button type="button"' : 'div';
+          const card = el(`<${tag} class="stop-card ${isOrderedRoute ? 'route-card' : ''} ${P.stopsSeen.includes(stop.id) ? 'is-seen' : ''}" data-step="${index + 1}">
+            <strong>${isOrderedRoute ? `<b class="stop-card-step">${index + 1}</b>` : ''}${stop.label}</strong>
+            <span class="stop-card-copy" hidden>${stop.note}</span>
+          </${isOrderedRoute ? 'button' : 'div'}>`);
+          if (P.stopsSeen.includes(stop.id)) card.querySelector('.stop-card-copy')?.removeAttribute('hidden');
           side.appendChild(card);
           return card;
         });
@@ -686,7 +828,7 @@ export function createPage(): Page {
           if (!P.stopsSeen.includes(stop.id)) { P.stopsSeen.push(stop.id); persist(); }
           const card = stopCards[index];
           card?.classList.add('is-seen');
-          card?.querySelector('span')?.removeAttribute('hidden');
+          card?.querySelector('.stop-card-copy')?.removeAttribute('hidden');
           void audio.playSfx('tap');
           refresh();
         };
@@ -708,7 +850,7 @@ export function createPage(): Page {
               if (!stop || P.stopsSeen.includes(stop.id)) continue;
               P.stopsSeen.push(stop.id);
               stopCards[i]?.classList.add('is-seen');
-              stopCards[i]?.querySelector('span')?.removeAttribute('hidden');
+              stopCards[i]?.querySelector('.stop-card-copy')?.removeAttribute('hidden');
             }
             bgFor(idx);
             persist();
@@ -737,26 +879,66 @@ export function createPage(): Page {
           const positions = c.mode === 'trail'
             ? [{ x: 18, y: 76 }, { x: 39, y: 57 }, { x: 61, y: 39 }, { x: 82, y: 25 }]
             : [{ x: 18, y: 23 }, { x: 39, y: 42 }, { x: 61, y: 61 }, { x: 82, y: 77 }];
+          const routeLine = el(`<svg class="country-route-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="${positions.map((p) => `${p.x},${p.y}`).join(' ')}"></polyline>
+            <polyline points="${positions.map((p) => `${p.x},${p.y}`).join(' ')}"></polyline>
+          </svg>`);
+          const routeGuide = el(`<div class="country-route-guide" role="status" aria-live="polite">
+            <span class="country-route-guide__icon">${c.mode === 'river' ? '🚤' : '👣'}</span>
+            <span class="country-route-guide__copy"><small>탐험 순서</small><strong></strong></span>
+            <span class="country-route-guide__steps">${c.stops.map((_, i) => `<i>${i + 1}</i>`).join('')}</span>
+          </div>`);
+          scene.append(routeLine, routeGuide);
           const nodes = c.stops.map((stop, i) => {
             const pos = positions[i] ?? { x: 50, y: 50 };
-            const node = el(`<button type="button" class="stop-node ${P.stopsSeen.includes(stop.id) ? 'is-seen' : ''}" style="left:${pos.x}%;top:${pos.y}%">${stop.label}</button>`);
-            node.addEventListener('click', () => {
-              if (c.mode === 'river' && i > 0 && !P.stopsSeen.includes(c.stops[i - 1]?.id ?? '')) {
-                guide?.say('카누는 강을 따라 위에서 아래로 내려가! 앞 지점부터 들러 보자.');
-                return;
-              }
-              node.classList.add('is-seen');
-              seeStop(i);
-              markNext();
-            });
+            const node = el(`<button type="button" class="stop-node ${P.stopsSeen.includes(stop.id) ? 'is-seen' : ''}" style="left:${pos.x}%;top:${pos.y}%" data-step="${i + 1}">
+              <span class="stop-step">${i + 1}</span><span class="stop-label">${stop.label}</span>
+            </button>`);
             scene.appendChild(node);
             return node;
           });
-          const markNext = (): void => {
-            nodes.forEach((n) => n.classList.remove('is-next'));
-            const idx = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
-            if (idx >= 0) nodes[idx]?.classList.add('is-next');
+          const activateStop = (index: number): void => {
+            const nextIndex = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
+            if (nextIndex >= 0 && index > nextIndex) {
+              const nextNode = nodes[nextIndex];
+              void audio.playSfx('partial');
+              if (nextNode) popBounce(nextNode);
+              announceGuide(`지금은 ${nextIndex + 1}번이야! 주황색 ${nextIndex + 1}번 ${c.stops[nextIndex]?.label ?? '지점'}을 먼저 눌러 봐.`, nextNode ?? null);
+              return;
+            }
+            nodes[index]?.classList.add('is-seen');
+            seeStop(index);
+            markNext();
           };
+          const markNext = (): void => {
+            const idx = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
+            nodes.forEach((node, i) => {
+              const seen = P.stopsSeen.includes(c.stops[i]?.id ?? '');
+              const current = i === idx;
+              node.classList.toggle('is-seen', seen);
+              node.classList.toggle('is-next', current);
+              node.classList.toggle('is-locked', !seen && !current);
+              node.setAttribute('aria-label', `${i + 1}번 ${c.stops[i]?.label ?? ''}${seen ? ', 탐험 완료' : current ? ', 지금 누를 곳' : ', 아직 잠김'}`);
+              const card = stopCards[i];
+              card?.classList.toggle('is-seen', seen);
+              card?.classList.toggle('is-next', current);
+              card?.classList.toggle('is-locked', !seen && !current);
+              card?.setAttribute('aria-label', `${i + 1}번 ${c.stops[i]?.label ?? ''}${seen ? ', 다시 보기' : current ? ', 지금 누르기' : ', 앞 지점부터 탐험하기'}`);
+            });
+            const guideText = routeGuide.querySelector('.country-route-guide__copy strong');
+            if (guideText) guideText.textContent = idx >= 0
+              ? `주황색 ${idx + 1}번을 눌러 봐!`
+              : '모두 탐험했어! 친구를 만나자';
+            routeGuide.classList.toggle('is-complete', idx < 0);
+            scene.classList.toggle('route-complete', idx < 0);
+            routeGuide.querySelectorAll('.country-route-guide__steps i').forEach((step, i) => {
+              step.classList.toggle('is-done', idx < 0 || i < idx);
+              step.classList.toggle('is-current', i === idx);
+              step.textContent = idx < 0 || i < idx ? '✓' : String(i + 1);
+            });
+          };
+          nodes.forEach((node, i) => node.addEventListener('click', () => activateStop(i)));
+          stopCards.forEach((card, i) => card.addEventListener('click', () => activateStop(i)));
           markNext();
         } else {
           // 페루 — 해안에서 마추픽추까지 장면 슬라이더
@@ -764,6 +946,7 @@ export function createPage(): Page {
           const input = slider.querySelector('input')!;
           input.value = String(Math.max(0, ...P.stopsSeen.map((id) => c.stops.findIndex((stop) => stop.id === id))));
           input.addEventListener('input', () => seeStop(Number(input.value)));
+          enableRangeDrag(input);
           scene.appendChild(slider);
           if (!P.stopsSeen.length) seeStop(0);
         }
@@ -782,6 +965,12 @@ export function createPage(): Page {
                 name: student?.name ?? '친구',
                 meta: `${c.name}에서 만난 친구`,
                 assetId: avatarAsset(content, c.studentId),
+                partner: {
+                  name: playerSpeaker.name,
+                  meta: '나의 탐험가',
+                  assetId: playerSpeaker.assetId,
+                  imageAlt: `${playerSpeaker.name} 탐험가`
+                },
                 lines: (student?.dialogue ?? []).slice(0, 6).map((l) => ({
                   label: l.label,
                   text: l.text,
@@ -796,15 +985,18 @@ export function createPage(): Page {
             else startDialogue();
           });
           scene.appendChild(meet);
-          guide?.say(`저기 ${student?.name ?? '친구'}가 기다리고 있어! 만나러 가 보자.`);
+          announceGuide(`저기 ${student?.name ?? '친구'}가 기다리고 있어! 만나러 가 보자.`);
         }
 
         function refresh(): void {
           const allStops = c.stops.every((stop) => P.stopsSeen.includes(stop.id));
+          const nextStopIndex = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
           setBottom(
             P.done ? `${c.name} 탐험 완료!`
               : allStops ? '친구를 만나러 가 보자!'
-              : `탐험한 곳 ${P.stopsSeen.length} / ${c.stops.length}`,
+              : isOrderedRoute && nextStopIndex >= 0
+                ? `다음은 ${nextStopIndex + 1}번 · ${c.stops[nextStopIndex]?.label ?? '지점'}`
+                : `탐험한 곳 ${P.stopsSeen.length} / ${c.stops.length}`,
             back
           );
           if (allStops && !P.met) showFriend();
@@ -813,14 +1005,18 @@ export function createPage(): Page {
 
         layout.append(scene, side);
         stage.replaceChildren(layout);
+        const nextStopIndex = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
+        announceGuide(isOrderedRoute && nextStopIndex >= 0
+          ? `${c.mode === 'river' ? '카누를 타고 강을 내려가자!' : '발자국을 따라 고원으로 올라가자!'} 주황색 ${nextStopIndex + 1}번부터 차례로 눌러 봐.`
+          : c.modeGuide);
         refresh();
       };
 
       const renderBag = (c: CountryDef): void => {
         const P = S.countries[c.id] ?? (S.countries[c.id] = emptyCountry());
         const student = content.students.find((s) => s.id === c.studentId);
-        const wrap = el('<div class="am-stage" style="gap:12px;max-width:900px;margin:0 auto"></div>');
-        wrap.appendChild(el(`<div class="panel" style="text-align:center"><h2 style="margin:0;font:900 var(--fs-title) var(--font-head);color:var(--c-navy)">${student?.name ?? '친구'}의 문화 가방</h2><p style="margin:6px 0 0;font-weight:800;color:var(--c-ink-soft)">눌러서 하나씩 꺼내 봐!</p></div>`));
+        const wrap = el('<div class="am-stage bag-stage"></div>');
+        wrap.appendChild(el(`<div class="bag-head"><h2>${student?.name ?? '친구'}의 문화 가방</h2><p>눌러서 하나씩 꺼내 봐!</p></div>`));
         const grid = el('<div class="bag-grid"></div>');
         const pickHint = el('<p class="bag-pick-hint" hidden>다 꺼내 봤어! 지구회의에 가져가고 싶은 이야기 하나를 골라 봐.</p>');
 
@@ -873,6 +1069,7 @@ export function createPage(): Page {
         wrap.append(grid, pickHint);
         stage.replaceChildren(wrap);
         refresh();
+        announceGuide(`${student?.name ?? '친구'}의 가방을 열고 이야기를 하나씩 살펴봐!`);
       };
 
       /* ===== 화면 4 — 같은 대륙, 서로 다른 하루 ===== */
@@ -940,7 +1137,7 @@ export function createPage(): Page {
                 if (nextSlot) later(() => { active = nextSlot; drawSlot(); }, 1800);
               } else {
                 void audio.playSfx('partial');
-                guide?.say(`그 둘도 닮은 데가 있을 수 있어! 그런데 이번 미션은 이거야 — ${slot.prompt}`);
+                announceGuide(`그 둘도 닮은 데가 있을 수 있어! 그런데 이번 미션은 이거야 — ${slot.prompt}`);
                 cards.querySelectorAll('.day-card').forEach((b) => b.classList.remove('is-selected'));
                 picked = null;
               }
@@ -967,7 +1164,7 @@ export function createPage(): Page {
             '자연환경이 다르면 먹는 것도, 입는 옷도, 노는 곳도 달라져.',
             '그래도 아침·낮·저녁을 보내는 하루에는 닮은 점이 남아 있어.'
           ],
-          onDone: () => guide?.say(E.day.guide)
+          onDone: () => announceGuide(E.day.guide)
         });
       };
 
@@ -1014,7 +1211,7 @@ export function createPage(): Page {
           keywordRow.hidden = !allPlaced;
           next.disabled = !(allPlaced && S.keywords.length >= E.note.keywordSlots);
           task.textContent = next.disabled
-            ? allPlaced ? `우리 여행을 나타내는 말 ${E.note.keywordSlots}개를 골라 봐!` : '발견 스티커를 어울리는 칸으로 옮겨 봐!'
+            ? allPlaced ? `우리 여행을 나타내는 말 ${E.note.keywordSlots}개를 골라 봐!` : '모은 스티커를 어울리는 칸으로 옮겨 봐!'
             : '탐험 노트 완성! 지구 신호로 바꿔 보자.';
           setBottom('', next);
         };
@@ -1036,7 +1233,7 @@ export function createPage(): Page {
             if (!sticker || !chip) return;
             if (!sticker.cats.includes(zoneId)) {
               void audio.playSfx('partial');
-              guide?.say('음, 이건 자연 때문일까, 사람들이 만든 모습일까? 다시 생각해 보자.');
+              announceGuide('음, 이건 자연 때문일까, 사람들이 만든 모습일까? 다시 생각해 보자.');
               return;
             }
             S.notePlaced[itemId] = zoneId;
@@ -1056,7 +1253,7 @@ export function createPage(): Page {
               S.keywords = S.keywords.filter((k) => k !== kw);
             } else if (!good) {
               void audio.playSfx('partial');
-              guide?.say('우리가 만난 하루들이 정말 모두 똑같았을까? 노트를 다시 봐 줘.');
+              announceGuide('우리가 만난 하루들이 정말 모두 똑같았을까? 노트를 다시 봐 줘.');
               return;
             } else if (S.keywords.length < E.note.keywordSlots) {
               S.keywords.push(kw);
@@ -1072,14 +1269,14 @@ export function createPage(): Page {
         layout.append(pool, zonesWrap);
         stage.replaceChildren(task, layout, keywordRow);
         refresh();
-        guide?.say('여행에서 모은 발견이야! 자연환경, 생활과 문화, 여러 나라에서 함께 보인 것으로 나눠 보자.');
+        announceGuide('여행에서 모은 이야기야! 자연환경, 생활과 문화, 여러 나라에서 함께 보인 것으로 나눠 보자.');
       };
 
       /* ===== 화면 6 — 지구 신호 ===== */
       const lit = new Set<string>();
       const renderSignal = (): void => {
         const wrap = el('<div class="signal-final"></div>');
-        wrap.appendChild(el('<h2 style="margin:0;font:900 var(--fs-title) var(--font-head);color:#fff;text-shadow:0 2px 8px #0008">탐험 노트가 지구 신호가 되었어!</h2>'));
+        wrap.appendChild(el('<h2 class="signal-title">탐험 노트가 지구 신호가 되었어!</h2>'));
         const finishBtn = el('<button type="button" class="btn btn-primary btn-big">지구 신호 챙기고 도장 받기</button>') as HTMLButtonElement;
 
         const refresh = (): void => {
@@ -1102,7 +1299,7 @@ export function createPage(): Page {
         finishBtn.addEventListener('click', () => finish());
         stage.replaceChildren(wrap);
         refresh();
-        guide?.say('네 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');
+        announceGuide('네 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');
       };
 
       const finish = (): void => {
@@ -1125,7 +1322,7 @@ export function createPage(): Page {
             schemaVersion: 1,
             missionId: 'americas',
             title: '아메리카 탐험 기록',
-            purpose: '아메리카 대륙의 위치·자연환경·생활과 문화를 지도 위에서 직접 탐험하고 공통점과 다양성을 발견해요.',
+            purpose: '아메리카 대륙의 위치·자연환경·생활과 문화를 지도 위에서 직접 탐험하고 공통점과 다양성을 살펴봐요.',
             initialHypothesis: learnRec.initialHypothesis ?? '여행 전에 남긴 첫 생각이 없어요.',
             evidenceIds: [...S.pointsSeen, ...keeps.map((k) => k.id)],
             evidenceLabel: '렌즈로 살핀 대륙의 모습과 네 친구의 가방에서 고른 이야기를 모았어요.',
@@ -1151,6 +1348,7 @@ export function createPage(): Page {
       const render = (): void => {
         dnd?.dispose();
         dnd = null;
+        page.dataset.screen = S.screen;
         const idx = Math.max(0, SCREENS.indexOf(S.screen));
         updateSteps(topBar, SCREENS.length, idx, idx);
         switch (S.screen) {

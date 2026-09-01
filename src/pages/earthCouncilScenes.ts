@@ -33,7 +33,8 @@ export interface EarthSceneHost {
 
 export function earthPreloadIds(content: EarthContent): string[] {
   return [
-    'bg.map', 'bg.spare', 'prop.globe3d', 'prop.globe', 'reward.globe_puzzle',
+    'bg.map', 'bg.spare', 'earth.council.globe', 'earth.council.finale',
+    'prop.globe3d', 'prop.globe', 'reward.globe_puzzle',
     ...content.friends.map((f) => f.imageId),
     ...content.signals.map((s) => signalImageId(content, s))
   ].filter(hasAsset);
@@ -159,7 +160,7 @@ export const EARTH_CSS = `
 /* 장면 3 — 문제 고르기 */
 .ec-orbit { position:relative;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:var(--sp-3);align-items:start; }
 .ec-orbit .ec-globe { align-self:center; }
-.ec-orbit .ec-globe { width:min(34vh,320px);justify-self:center;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:ec-float 4s ease-in-out infinite; }
+.ec-orbit .ec-globe { width:min(44vh,420px);justify-self:center;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:ec-float 4s ease-in-out infinite; }
 @keyframes ec-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
 .ec-issues { display:flex;flex-direction:column;gap:var(--sp-2);min-height:0; }
 .ec-issue { display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:0;overflow:hidden;text-align:left;border-radius:var(--radius-l); }
@@ -218,6 +219,10 @@ export const EARTH_CSS = `
 
 /* 완료 연출 */
 .ec-finale { position:absolute;inset:0;z-index:var(--z-panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle at 50% 45%,rgba(10,40,80,.9),rgba(5,18,36,.97));text-align:center;padding:16px; }
+.ec-finale.has-earth-bg { background-size:cover;background-position:center;background-repeat:no-repeat;justify-content:flex-end;padding:clamp(18px,3vh,34px); }
+.ec-finale .ec-f-copy { position:relative;z-index:3;width:min(900px,88%);padding:12px 22px;border:2px solid rgba(255,255,255,.44);border-radius:24px;background:rgba(5,22,48,.78);backdrop-filter:blur(9px);box-shadow:0 16px 38px rgba(0,0,0,.38); }
+.ec-finale .ec-f-copy h2 { margin:0 0 5px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65); }
+.ec-finale .ec-f-copy p { margin:3px 0;color:#f7fbff;font-weight:800; }
 .ec-finale .ec-f-globe { width:min(30vh,280px);filter:drop-shadow(0 12px 30px rgba(120,220,255,.5)); }
 .ec-finale .ec-f-friends { position:absolute;inset:0;pointer-events:none; }
 .ec-finale .ec-f-friend { position:absolute;width:clamp(64px,8vw,120px);transform:translate(-50%,-50%);transition:left 900ms cubic-bezier(.2,.8,.3,1),top 900ms cubic-bezier(.2,.8,.3,1),opacity 600ms; }
@@ -359,7 +364,6 @@ function renderSignals(host: EarthSceneHost): void {
         <p class="ec-copy" style="color:var(--c-sky-ink)">${esc(s.reactionKo)}</p>
         ${listenButton(`${s.narrationKo} ${s.reactionKo}`)}
       </div>
-      <p class="ec-scope">${esc(t.scopeNote)} ${esc(s.scopeNoteKo)}</p>
       <div id="ec-fb"></div>`;
     bindSpeak(side);
     renderStrip();
@@ -409,7 +413,8 @@ function renderSignals(host: EarthSceneHost): void {
         }
       });
     });
-    photo.addEventListener('click', (ev) => {
+    // renderPhoto는 친구 탭마다 다시 불린다 — addEventListener면 리스너가 쌓여 안내가 N번 겹친다
+    photo.onclick = (ev) => {
       if (allFound || observed) return;
       const rect = photo.getBoundingClientRect();
       const r = document.createElement('span');
@@ -420,7 +425,7 @@ function renderSignals(host: EarthSceneHost): void {
       window.setTimeout(() => r.remove(), 520);
       const next = s.hotspots.find((x) => !found.has(x.id));
       host.guide?.say(`여기엔 변화가 안 보여. ${next ? `${next.label} 쪽을 자세히 봐.` : ''}`, { speaker: host.speaker });
-    });
+    };
 
     const revealNarration = () => {
       const sub = side.querySelector<HTMLElement>('#ec-sub');
@@ -653,7 +658,7 @@ function renderIssue(host: EarthSceneHost): void {
       <p class="ec-note">더 알아보고 싶은 환경문제 하나를 골라요. 정답은 없어요. 나중에 다른 문제로 다시 열 수 있어요.</p>
       <div class="ec-orbit">
         <div class="ec-issues" id="ec-issues-left"></div>
-        ${img(hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe', '지구본', 'ec-globe')}
+        ${img(hasAsset('earth.council.globe') ? 'earth.council.globe' : (hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe'), '환경 신호가 이어진 지구본', 'ec-globe')}
         <div class="ec-issues" id="ec-issues-right"></div>
       </div>
     </div>`;
@@ -1005,7 +1010,7 @@ function renderPledge(host: EarthSceneHost): void {
 
 function highlight(line: string): string {
   // 채워진 부분을 강조 — 콘텐츠 문장 틀의 고정 어미 앞 구간
-  const m = line.match(/^(.*?(?:문제는|이 문제는|생활에서는|지역사회에서는|여러 나라는)\s)(.+?)(입니다\.|을 통해 여러 지역과 연결되어 있습니다\.|을 실천할 수 있습니다\.|을 함께할 수 있습니다\.|을 위해 협력해야 합니다\.)$/);
+  const m = line.match(/^(.*?(?:문제는|이 문제는|생활에서는|지역사회에서는|여러 나라는)\s)(.+?)([을를] 통해 여러 지역과 연결되어 있습니다\.|[을를] 실천할 수 있습니다\.|[을를] 함께할 수 있습니다\.|[을를] 위해 협력해야 합니다\.|입니다\.)$/);
   return m ? `${esc(m[1]!)}<em>${esc(m[2]!)}</em>${esc(m[3]!)}` : esc(line);
 }
 
@@ -1017,6 +1022,12 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
   const lines = buildPledge(content, p);
   const overlay = document.createElement('div');
   overlay.className = 'ec-finale';
+  const finaleBackgroundId = 'earth.council.finale';
+  const hasFinaleBackground = hasAsset(finaleBackgroundId);
+  if (hasFinaleBackground) {
+    overlay.classList.add('has-earth-bg');
+    overlay.style.backgroundImage = `linear-gradient(180deg,rgba(2,12,30,.08),rgba(2,12,30,.24) 55%,rgba(2,12,30,.68)),url('${assetUrl(finaleBackgroundId)}')`;
+  }
   overlay.setAttribute('role', 'status');
   overlay.setAttribute('aria-live', 'polite');
   const n = content.friends.length;
@@ -1027,14 +1038,16 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
     <div class="ec-f-friends" aria-hidden="true">
       ${content.friends.map((f, i) => { const a = (i / n) * Math.PI * 2; return `<span class="ec-f-friend" data-i="${i}" style="left:${50 + Math.cos(a) * 42}%;top:${50 + Math.sin(a) * 40}%"><span class="ec-f-piece"></span>${img(f.imageId, '')}</span>`; }).join('')}
     </div>
-    ${img(hasAsset('reward.globe_puzzle') ? 'reward.globe_puzzle' : 'prop.globe', '완성된 지구본', 'ec-f-globe')}
-    <h2>${esc(issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.')}</h2>
-    <p>${esc(lines[5] ?? '')}</p>
-    <p class="ec-note">여섯 친구가 약속 조각을 모았어요 — 이제 여권에 도장이 찍혀요.</p>`;
+    ${hasFinaleBackground ? '' : img(hasAsset('reward.globe_puzzle') ? 'reward.globe_puzzle' : 'prop.globe', '완성된 지구본', 'ec-f-globe')}
+    <div class="ec-f-copy">
+      <h2>${esc(issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.')}</h2>
+      <p>${esc(lines[5] ?? '')}</p>
+      <p class="ec-note">여섯 친구의 약속이 하나의 지구로 이어졌어요 — 이제 여권에 도장이 찍혀요.</p>
+    </div>`;
   body.appendChild(overlay);
   void audio.playSfx('complete');
-  const globe = overlay.querySelector<HTMLElement>('.ec-f-globe');
-  if (globe) burstConfetti(globe, 10);
+  const celebrationAnchor = overlay.querySelector<HTMLElement>('.ec-f-globe') ?? overlay.querySelector<HTMLElement>('.ec-f-copy');
+  if (celebrationAnchor) burstConfetti(celebrationAnchor, 10);
   const total = reduced ? 300 : 2600;
   if (!reduced) {
     window.setTimeout(() => {

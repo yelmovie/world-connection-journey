@@ -4,6 +4,7 @@ import {
   buildPledge, canOpenCouncil, canRunSimulation, defaultEarthProgress, friendCountForIssue,
   personalActionIssue, simulate, validateEarthProgress, type EarthContent
 } from '../src/core/earthCouncil';
+import { fixJosa } from '../src/core/josa';
 
 const content = raw as unknown as EarthContent;
 
@@ -93,5 +94,21 @@ describe('공동약속', () => {
     expect(lines[5]).toContain('월요일 아침');
     expect(personalActionIssue(content, '환경 보호')).not.toBeNull();
     expect(personalActionIssue(content, p.personalActionDraft)).toBeNull();
+  });
+
+  it('채워진 낱말의 받침에 맞게 조사를 고친다 — "쓰기을" 금지', () => {
+    expect(fixJosa('물 아껴 쓰기', '을')).toBe('물 아껴 쓰기를');
+    expect(fixJosa('다회용 물병', '을')).toBe('다회용 물병을');
+    expect(fixJosa('바다', '과')).toBe('바다와');
+    const p = defaultEarthProgress();
+    p.selectedIssueId = 'ocean';
+    p.selectedActionIds = ['a_reuse', 'a_cleanup', 'a_rule'];
+    // 모든 약속 문장에서 받침 없는 글자 + '을' 조합이 남지 않아야 한다
+    for (const line of buildPledge(content, p)) {
+      for (const m of line.matchAll(/([가-힣])을 /g)) {
+        const code = m[1]!.charCodeAt(0);
+        expect((code - 0xac00) % 28, `잘못된 조사: "${m[0]}" in "${line}"`).not.toBe(0);
+      }
+    }
   });
 });

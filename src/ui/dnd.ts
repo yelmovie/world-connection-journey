@@ -17,6 +17,8 @@ export function enablePickPlace(opts: {
   touchDragThreshold?: number;
   dropHitSlop?: number;
   onSelectionChange?: (itemId: string | null) => void;
+  onDragStateChange?: (dragging: boolean, itemId: string | null) => void;
+  onDropMiss?: (itemId: string) => void;
   onPlace: (itemId: string, zoneId: string) => void;
 }): PickPlaceController {
   let items = opts.items;
@@ -33,6 +35,7 @@ export function enablePickPlace(opts: {
     const hadSelection = selected !== null;
     selected?.classList.remove('is-selected');
     selected?.setAttribute('aria-pressed', 'false');
+    selected?.setAttribute('aria-grabbed', 'false');
     selected = null;
     if (hadSelection) opts.onSelectionChange?.(null);
   };
@@ -42,6 +45,7 @@ export function enablePickPlace(opts: {
     selected = item;
     item.classList.add('is-selected');
     item.setAttribute('aria-pressed', 'true');
+    item.setAttribute('aria-grabbed', 'true');
     opts.onSelectionChange?.(item.dataset.itemId ?? null);
   };
 
@@ -93,6 +97,9 @@ export function enablePickPlace(opts: {
         moved = true;
         void audio.playSfx('pickup');
         item.classList.add('is-dragging');
+        item.setAttribute('aria-grabbed', 'true');
+        zones.forEach((z) => z.classList.add('is-dnd-ready'));
+        opts.onDragStateChange?.(true, item.dataset.itemId ?? null);
         ghost = item.cloneNode(true) as HTMLElement;
         ghost.style.cssText = `position:fixed;left:0;top:0;width:${item.offsetWidth}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.9;margin:0;`;
         document.body.appendChild(ghost);
@@ -113,7 +120,11 @@ export function enablePickPlace(opts: {
       cleanupDrag();
       if (moved) {
         if (zone) place(item, zone);
-        else selectItem(item);
+        else {
+          selectItem(item);
+          const itemId = item.dataset.itemId;
+          if (itemId) opts.onDropMiss?.(itemId);
+        }
       } else {
         if (selected === item) {
           clearSelection();
@@ -132,10 +143,12 @@ export function enablePickPlace(opts: {
         if (item.hasPointerCapture(e.pointerId)) item.releasePointerCapture(e.pointerId);
       } catch { /* 포인터가 이미 해제된 경우 */ }
       item.classList.remove('is-dragging');
-      zones.forEach((z) => z.classList.remove('is-over'));
+      item.setAttribute('aria-grabbed', selected === item ? 'true' : 'false');
+      zones.forEach((z) => z.classList.remove('is-over', 'is-dnd-ready'));
       ghost?.remove();
       ghost = null;
       dragging = null;
+      if (moved) opts.onDragStateChange?.(false, null);
       if (activeDragCleanup === cleanupDrag) activeDragCleanup = null;
     };
 
@@ -152,6 +165,7 @@ export function enablePickPlace(opts: {
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
     item.setAttribute('aria-pressed', 'false');
+    item.setAttribute('aria-grabbed', 'false');
     const down = onPointerDown(item);
     item.addEventListener('pointerdown', down);
     const key = (e: KeyboardEvent) => {
@@ -170,6 +184,7 @@ export function enablePickPlace(opts: {
   };
 
   const bindZone = (zone: HTMLElement) => {
+    zone.classList.add('dnd-zone');
     if (!zone.hasAttribute('tabindex')) zone.setAttribute('tabindex', '0');
     const click = () => {
       if (selected && !dragging) place(selected, zone);
@@ -185,6 +200,7 @@ export function enablePickPlace(opts: {
     cleanups.push(() => {
       zone.removeEventListener('click', click);
       zone.removeEventListener('keydown', key);
+      zone.classList.remove('dnd-zone', 'is-dnd-ready', 'is-over');
     });
   };
 
@@ -206,10 +222,52 @@ export function enablePickPlace(opts: {
     },
     dispose() {
       activeDragCleanup?.();
+      opts.onDragStateChange?.(false, null);
       cleanups.forEach((c) => c());
       cleanups.length = 0;
       ghost?.remove();
       clearSelection();
     }
   };
+}
+
+/**
+ * range input 드래그 보강 — 전자칠판 펜·마우스에서 손잡이(thumb)를 정확히 잡지 못해도
+ * 트랙 위 아무 곳이나 누르고 끌면 값이 따라온다. 키보드 조작은 그대로 유지된다.
+ * 세로 슬라이더(writing-mode:vertical-*)는 위쪽이 최댓값으로 계산한다.
+ */
+export function enableRangeDrag(input: HTMLInputElement): () => void {
+  const apply = (ev: PointerEvent): void => {
+    const rect = input.getBoundingClientRect();
+    const vertical = rect.height > rect.width;
+    const min = Number(input.min) || 0;
+    const max = Number(input.max) || 100;
+    const size = vertical ? rect.height : rect.width;
+    if (size <= 0 || max <= min) return;
+    const frac = vertical ? 1 - (ev.clientY - rect.top) / rect.height : (ev.clientX - rect.left) / rect.width;
+    const step = Number(input.step) || 1;
+    const raw = min + Math.max(0, Math.min(1, frac)) * (max - min);
+    const value = Math.max(min, Math.min(max, Math.round(raw / step) * step));
+    if (String(value) !== input.value) {
+      input.value = String(value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  };
+  const onDown = (ev: PointerEvent): void => {
+    ev.preventDefault();
+    try { input.setPointerCapture(ev.pointerId); } catch { /* 이미 해제된 포인터 무시 */ }
+    input.focus({ preventScroll: true });
+    apply(ev);
+    const onMove = (e: PointerEvent) => apply(e);
+    const stop = () => {
+      input.removeEventListener('pointermove', onMove);
+      input.removeEventListener('pointerup', stop);
+      input.removeEventListener('pointercancel', stop);
+    };
+    input.addEventListener('pointermove', onMove);
+    input.addEventListener('pointerup', stop);
+    input.addEventListener('pointercancel', stop);
+  };
+  input.addEventListener('pointerdown', onDown);
+  return () => input.removeEventListener('pointerdown', onDown);
 }

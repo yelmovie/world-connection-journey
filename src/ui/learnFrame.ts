@@ -59,6 +59,10 @@ function friendImg(learn: MissionLearn, size: string): string {
 export function showFriendIntro(missionId: MissionId, learn: MissionLearn, onBegin: () => void): void {
   const mode = learn.introMode ?? 'prediction';
   const asksQuestion = mode !== 'friend-only' && Boolean(learn.prediction?.question);
+  const options = asksQuestion && Array.isArray(learn.prediction.options)
+    ? learn.prediction.options.filter((option) => typeof option === 'string' && option.trim().length > 0)
+    : [];
+  const previous = readRecord(missionId).initialHypothesis;
 
   const body = document.createElement('div');
   body.className = 'learn-intro';
@@ -74,32 +78,45 @@ export function showFriendIntro(missionId: MissionId, learn: MissionLearn, onBeg
     ${asksQuestion ? `
       <section class="learn-prediction" aria-labelledby="learn-question-${missionId}">
         <h3 class="learn-question" id="learn-question-${missionId}">${learn.prediction.question}</h3>
+        ${options.length > 0 ? `<div class="learn-options" role="group" aria-label="내 예측 고르기">
+          ${options.map((option, index) => `<button type="button" class="card card-pick learn-option" data-option="${index}" aria-pressed="${option === previous}">${option === previous ? '✓ ' : ''}${option}</button>`).join('')}
+        </div><p class="learn-hint">정답 맞히기가 아니야 — 여행이 끝나면 내 예측과 비교해 볼 거야.</p>` : ''}
       </section>` : ''}`;
 
-  openModal({
+  // 예측 선택지가 있으면 하나를 골라야 출발한다 — 고른 예측은 배움 카드에서 발견과 비교된다.
+  const close = openModal({
     id: `learn-intro-${missionId}`,
     bodyEl: body,
     dismissible: false,
-    actions: [{
+    actions: options.length > 0 ? [] : [{
       label: asksQuestion ? '생각해 봤어' : '만나러 가기',
       kind: 'primary',
-      onClick: (close) => {
-        close();
+      onClick: (doClose) => {
+        doClose();
         onBegin();
       }
     }]
   });
+  body.querySelectorAll<HTMLButtonElement>('[data-option]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const chosen = options[Number(button.dataset.option)];
+      if (!chosen) return;
+      const record = readRecord(missionId);
+      writeRecord(missionId, {
+        initialHypothesis: chosen,
+        initialRecordedAt: record.initialRecordedAt ?? new Date().toISOString()
+      });
+      void audio.playSfx('tap');
+      close();
+      onBegin();
+    });
+  });
 }
 
-/** 미션 결과 뒤에 처음 예상과 발견을 비교하고, 가장 중요한 발견을 직접 고른다. */
+/** 미션 결과 뒤에 발견 내용을 짧게 확인하고 바로 다음 흐름으로 넘어간다. */
 export function showLearningWrap(missionId: MissionId, learn: MissionLearn, onDone: () => void): void {
-  const record = readRecord(missionId);
-  let selectedDiscovery = record.revisedThought && learn.discoveries.includes(record.revisedThought)
-    ? record.revisedThought
-    : '';
-  let activeIndex = 0;
-  const viewed = new Set<number>();
-  if (learn.discoveries.length > 0) viewed.add(0);
+  const discoveries = learn.discoveries.length > 0 ? learn.discoveries : [learn.goal];
+  const summaryLine = discoveries[0] ?? learn.goal;
 
   const body = document.createElement('div');
   body.className = 'learn-wrap';
@@ -107,86 +124,32 @@ export function showLearningWrap(missionId: MissionId, learn: MissionLearn, onDo
     <div class="learn-hero learn-hero--small">${friendImg(learn, 'clamp(82px,9vw,126px)')}
       <div><p class="learn-name">${learn.friend.name}</p><p class="learn-region">${learn.friend.region}</p></div>
     </div>
-    ${record.initialHypothesis ? `<p class="learn-first-thought"><strong>처음 예상</strong><span>${record.initialHypothesis}</span></p>` : ''}
-    <h3 class="learn-question">세 발견을 비교해 봐</h3>
-    <div class="learn-discovery-view" role="group" aria-label="미션에서 확인한 발견">
-      <button type="button" class="learn-discovery-nav" data-discovery-prev aria-label="이전 발견">‹</button>
-      <button type="button" class="learn-discovery" role="radio" aria-checked="false" data-discovery-current></button>
-      <button type="button" class="learn-discovery-nav" data-discovery-next aria-label="다음 발견">›</button>
-    </div>
-    <div class="learn-discovery-meta">
-      <span data-discovery-count></span>
-      <span data-discovery-status role="status" aria-live="polite"></span>
-    </div>
-    <p class="learn-hint">가장 중요한 발견을 카드로 골라.</p>`;
+    <div class="learn-confirm-list" role="list" aria-label="이번 여행에서 확인한 내용">
+      ${discoveries.map((discovery) => `<p class="learn-confirm-item" role="listitem"><span aria-hidden="true">✓</span><strong>${discovery}</strong></p>`).join('')}
+    </div>`;
 
-  let ready = learn.discoveries.length === 0;
   openModal({
     id: `learn-wrap-${missionId}`,
-    title: '생각이 어떻게 달라졌을까?',
+    title: '이번 여행에서 확인했어',
     bodyEl: body,
     dismissible: false,
     actions: [{
-      label: '배움 카드 받기',
+      label: '확인했어',
       kind: 'primary',
       onClick: (close) => {
-        if (!ready) return;
         writeRecord(missionId, {
           confirmedAt: new Date().toISOString(),
-          cardLine: selectedDiscovery || learn.goal,
+          cardLine: summaryLine,
           friendName: learn.friend.name,
           friendImageId: learn.friend.imageId,
-          revisedThought: selectedDiscovery || learn.goal
+          revisedThought: summaryLine
         });
-        void audio.playSfx('stamp');
+        void audio.playSfx('tap');
         close();
         onDone();
       }
     }]
   });
-
-  const card = body.querySelector<HTMLButtonElement>('[data-discovery-current]')!;
-  const prev = body.querySelector<HTMLButtonElement>('[data-discovery-prev]')!;
-  const next = body.querySelector<HTMLButtonElement>('[data-discovery-next]')!;
-  const count = body.querySelector<HTMLElement>('[data-discovery-count]')!;
-  const status = body.querySelector<HTMLElement>('[data-discovery-status]')!;
-  const actionButton = body.closest('.modal')?.querySelector<HTMLButtonElement>('.modal-actions .btn-primary') ?? null;
-
-  const paint = (): void => {
-    const discovery = learn.discoveries[activeIndex] ?? learn.goal;
-    const allViewed = viewed.size >= learn.discoveries.length;
-    card.textContent = discovery;
-    card.classList.toggle('is-selected', discovery === selectedDiscovery);
-    card.setAttribute('aria-checked', String(discovery === selectedDiscovery));
-    card.disabled = learn.discoveries.length === 0;
-    prev.disabled = activeIndex <= 0;
-    next.disabled = activeIndex >= learn.discoveries.length - 1;
-    count.textContent = learn.discoveries.length > 0 ? `${activeIndex + 1} / ${learn.discoveries.length}` : '';
-    status.textContent = allViewed ? '모두 확인했어' : '화살표로 하나씩 확인해 봐';
-    ready = learn.discoveries.length === 0 || (allViewed && Boolean(selectedDiscovery));
-    if (actionButton) {
-      actionButton.disabled = !ready;
-      actionButton.textContent = ready ? '배움 카드 받기' : allViewed ? '중요한 발견을 골라' : '세 발견을 먼저 확인해';
-    }
-  };
-
-  const move = (delta: number): void => {
-    const nextIndex = Math.max(0, Math.min(learn.discoveries.length - 1, activeIndex + delta));
-    if (nextIndex === activeIndex) return;
-    activeIndex = nextIndex;
-    viewed.add(activeIndex);
-    paint();
-    card.focus();
-    void audio.playSfx('tap');
-  };
-  prev.addEventListener('click', () => move(-1));
-  next.addEventListener('click', () => move(1));
-  card.addEventListener('click', () => {
-    selectedDiscovery = learn.discoveries[activeIndex] ?? '';
-    paint();
-    void audio.playSfx('tap');
-  });
-  paint();
 }
 
 /** 여권의 배움 카드 요약은 저장값만 읽으므로 콘텐츠 재로딩이 필요 없다. */

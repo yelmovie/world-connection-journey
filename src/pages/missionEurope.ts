@@ -3,6 +3,7 @@ import { navigate } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
+import { withJosa } from '../core/josa';
 import {
   europeExplorationStatus,
   guardEuropeScreen,
@@ -25,7 +26,6 @@ import { recordEarthSignals } from '../core/earthSignals';
 import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
 import { createGuide, type GuideController } from '../ui/guide';
-import { openModal } from '../ui/modal';
 import { showToast } from '../ui/toast';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
@@ -65,27 +65,32 @@ const EUROPE_TRAVELERS: Record<string, EuropeTraveler> = {
   france: {
     name: '카미유',
     bridge: '나도 강가를 걷고 시장에서 이웃을 만나는 시간을 좋아해. 그런데 요즘 여름에는 그 시간이 달라질 때가 있어.',
-    concern: '더운 날이 오래 이어져서 강가와 도시에서 그늘과 물을 찾는 사람이 많아졌어.'
+    concern: '더운 날이 오래 이어져서 강가와 도시에서 그늘과 물을 찾는 사람이 많아졌어.',
+    assetId: 'europe.traveler.france'
   },
   germany: {
     name: '리나',
     bridge: '강과 전차, 자전거 길이 이어진 도시 생활이 참 편리해. 그런데 어른들이 예전과 날씨가 다르다고 자주 말해.',
-    concern: '갑자기 큰비가 오거나 아주 더운 날이 늘어서 강 주변과 도시의 하루가 바뀌는 게 걱정돼.'
+    concern: '갑자기 큰비가 오거나 아주 더운 날이 늘어서 강 주변과 도시의 하루가 바뀌는 게 걱정돼.',
+    assetId: 'europe.traveler.germany'
   },
   poland: {
     name: '조피아',
     bridge: '숲길과 광장은 계절마다 모습이 달라서 산책할 때마다 새로워. 그런데 요즘 계절의 느낌이 예전 같지 않아.',
-    concern: '겨울은 덜 춥고 여름 더위는 길어져서 숲과 강이 달라질까 봐 걱정돼.'
+    concern: '겨울은 덜 춥고 여름 더위는 길어져서 숲과 강이 달라질까 봐 걱정돼.',
+    assetId: 'europe.traveler.poland'
   },
   czechia: {
     name: '아담',
     bridge: '오래된 다리와 트램을 지금도 함께 쓰는 게 우리 도시의 재미야. 그런데 도시를 지키는 방법도 달라지고 있어.',
-    concern: '도시가 더 뜨거워지고 비가 한꺼번에 올 때 광장과 집을 안전하게 지킬 수 있을지 걱정돼.'
+    concern: '도시가 더 뜨거워지고 비가 한꺼번에 올 때 광장과 집을 안전하게 지킬 수 있을지 걱정돼.',
+    assetId: 'europe.traveler.czechia'
   },
   italy: {
     name: '루카',
     bridge: '광장에서 만나고, 지역에서 난 재료로 음식을 만드는 시간이 좋아. 그런데 더운 날이 길어지면 생활도 달라져.',
-    concern: '심한 더위와 비가 오지 않는 날이 이어져서 물과 농사, 도시의 하루가 힘들어질까 걱정돼.'
+    concern: '심한 더위와 비가 오지 않는 날이 이어져서 물과 농사, 도시의 하루가 힘들어질까 걱정돼.',
+    assetId: 'europe.traveler.italy'
   },
   spain: {
     name: '소피아',
@@ -96,7 +101,8 @@ const EUROPE_TRAVELERS: Record<string, EuropeTraveler> = {
   greece: {
     name: '엘레니',
     bridge: '섬의 항구와 오래된 언덕은 오늘의 생활과 옛이야기가 만나는 곳이야. 그런데 바다와 산의 모습이 조금씩 달라지고 있어.',
-    concern: '바닷물이 더 따뜻해지고 산불 위험이 커져서 섬과 항구를 지키기 어려워질까 걱정돼.'
+    concern: '바닷물이 더 따뜻해지고 산불 위험이 커져서 섬과 항구를 지키기 어려워질까 걱정돼.',
+    assetId: 'europe.traveler.greece'
   }
 };
 
@@ -167,6 +173,7 @@ const PAGE_CSS = `
   --eu-copy:clamp(18px,1.3vw,22px);
   --eu-small:clamp(16px,1.05vw,19px);
   --eu-title:clamp(25px,2.15vw,35px);
+  --guide-lane-h:clamp(92px,10vh,112px);
   background-position:center;background-size:cover;
   --guide-size:clamp(180px,13vw,240px);
 }
@@ -176,6 +183,7 @@ const PAGE_CSS = `
   width:min(100%,1560px);margin-inline:auto;padding:clamp(7px,1.4vh,14px) clamp(10px,2vw,30px) 8px;
   display:flex;min-height:0;overflow-y:auto;overflow-x:hidden;
 }
+.europe-mission .page-body:has(.eu-window-layout) { overflow:hidden; }
 .europe-mission .eu-screen { flex:1;min-height:0;display:flex;flex-direction:column;gap:10px; }
 .europe-mission .eu-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;text-shadow:0 2px 8px rgba(7,24,42,.8); }
 .europe-mission .eu-heading h2 { margin:0;font:900 var(--eu-title)/1.08 var(--font-head);text-wrap:balance; }
@@ -221,7 +229,7 @@ const PAGE_CSS = `
 .europe-mission .eu-bag-thumb { aspect-ratio:1;border:2px solid #fff;border-radius:12px;overflow:hidden;background:#dce7e9;box-shadow:0 3px 8px rgba(25,50,77,.18); }
 .europe-mission .eu-bag-thumb img { width:100%;height:100%;object-fit:cover; }
 .europe-mission .eu-empty { padding:13px;border:2px dashed #aab7bd;border-radius:14px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35;text-align:center; }
-.europe-mission .eu-window-layout { flex:1;min-height:min(390px,58vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,24vw,360px);border-radius:26px; }
+.europe-mission .eu-window-layout { flex:1;height:100%;min-height:min(460px,66vh);display:grid;grid-template-columns:minmax(0,1fr) clamp(400px,29vw,470px);border-radius:26px; }
 .europe-mission .eu-stage { position:relative;min-height:min(390px,58vh);background:#d9e7e8;border-radius:22px 0 0 22px;overflow:hidden; }
 .europe-mission .eu-stage > img { width:100%;height:100%;position:absolute;inset:0;object-fit:cover; }
 .europe-mission .eu-stage > img.is-object { object-fit:contain;padding:5%;background:linear-gradient(145deg,#d8f0f1,#b5d5df); }
@@ -232,20 +240,46 @@ const PAGE_CSS = `
   display:grid;place-items:center;background:rgba(16,43,68,.82);color:#fff;cursor:pointer;
 }
 .europe-mission .eu-nav[data-dir="prev"] { left:12px; }.europe-mission .eu-nav[data-dir="next"] { right:12px; }
-.europe-mission .eu-window-panel { padding:15px;display:flex;flex-direction:column;gap:10px;overflow:auto;background:#f7f2df;border-radius:0 22px 22px 0; }
+.europe-mission .eu-window-panel {
+  min-width:0;min-height:0;padding:13px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;
+  overflow:hidden;background:#f7f2df;border-radius:0 22px 22px 0;
+}
 .europe-mission .eu-label { align-self:flex-start;padding:5px 11px;border-radius:999px;background:#e0e9f1;font-size:var(--eu-small);font-weight:900; }
 .europe-mission .eu-window-panel h3 { margin:0;font:900 var(--eu-title)/1.1 var(--font-head); }
 .europe-mission .eu-window-panel p { margin:0;font-size:var(--eu-copy);font-weight:750;line-height:1.42; }
 .europe-mission .eu-look { padding:11px 13px;border-left:6px solid #efbd45;border-radius:10px;background:#fff;font-size:var(--eu-small);font-weight:750;line-height:1.35; }
-.europe-mission .eu-tap-hint { margin:0;padding:8px 12px;border-radius:10px;background:rgba(243,191,69,.18);border:2px dashed rgba(214,157,32,.6);color:#6b4a00;font-size:var(--eu-small);font-weight:850;line-height:1.3;word-break:keep-all;text-wrap:balance; }
 .europe-mission .eu-look strong { display:block;color:#725600;font-weight:900; }
-.europe-mission .eu-thumbs { display:grid;grid-template-columns:repeat(3,1fr);gap:7px; }
-.europe-mission .eu-thumb { min-height:68px;padding:0;border:3px solid transparent;border-radius:13px;overflow:hidden;background:#cddde2;cursor:pointer; }
-.europe-mission .eu-thumb[aria-pressed="true"] { border-color:#5c43c3; }
-.europe-mission .eu-thumb.is-recorded { box-shadow:0 0 0 3px #2f8a65; }
-.europe-mission .eu-thumb img { width:100%;height:68px;object-fit:cover;display:block; }.europe-mission .eu-thumb img.is-object { object-fit:contain;padding:6px; }
-.europe-mission .eu-traveler-slot { margin-top:auto;padding:12px;border:2px solid #e4c064;border-radius:18px;background:#fff9e7;box-shadow:0 6px 15px rgba(43,55,74,.13); }
-.europe-mission .eu-traveler-slot .btn { width:100%;min-height:54px;border-radius:14px;font-size:var(--eu-small); }
+.europe-mission .eu-story-heading { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+.europe-mission .eu-story-heading strong { font:900 var(--eu-copy)/1.15 var(--font-head); }
+.europe-mission .eu-story-heading span { color:#53677c;font-size:var(--eu-small);font-weight:800;white-space:nowrap; }
+.europe-mission .eu-story-detail {
+  min-height:0;max-height:100%;padding:clamp(13px,1.25vw,18px);display:flex;flex-direction:column;gap:9px;
+  border:3px solid rgba(92,67,195,.42);border-radius:18px;background:rgba(255,255,255,.8);
+  box-shadow:0 6px 16px rgba(25,50,77,.12);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
+  animation:eu-story-in .24s ease both;
+}
+.europe-mission .eu-story-detail__top { display:flex;align-items:center;gap:9px; }
+.europe-mission .eu-story-detail__number { flex:0 0 auto;width:31px;height:31px;display:grid;place-items:center;border-radius:50%;background:#5c43c3;color:#fff;font:900 18px/1 var(--font-head); }
+.europe-mission .eu-story-detail__category { margin-left:auto;padding:5px 10px;border-radius:999px;background:#e1ebef;color:#38546b;font-size:var(--eu-small);font-weight:850;white-space:nowrap; }
+.europe-mission .eu-story-detail h3 { margin:0;font:900 clamp(24px,1.7vw,31px)/1.15 var(--font-head);word-break:keep-all; }
+.europe-mission .eu-story-detail__caption { padding:10px 12px;border-radius:12px;background:#eef4f6;font-size:var(--eu-small)!important;line-height:1.35!important; }
+.europe-mission .eu-story-detail__story { font-size:var(--eu-copy)!important;line-height:1.48!important;word-break:keep-all;overflow-wrap:break-word; }
+.europe-mission .eu-story-detail .eu-look { margin-top:auto; }
+@keyframes eu-story-in { from { opacity:.25;transform:translateX(8px); } to { opacity:1;transform:none; } }
+.europe-mission .eu-traveler-meet {
+  position:absolute;right:clamp(16px,1.5vw,24px);bottom:12px;z-index:6;width:clamp(126px,10.5vw,178px);min-height:44px;
+  padding:0;border:0;background:transparent;display:grid;justify-items:center;gap:4px;color:#173752;cursor:pointer;
+  filter:drop-shadow(0 7px 10px rgba(7,24,42,.35));animation:eu-traveler-bob 2.4s ease-in-out infinite;
+}
+.europe-mission .eu-traveler-meet img { width:clamp(92px,7.5vw,126px);height:clamp(104px,14vh,156px);object-fit:contain;display:block;pointer-events:none; }
+.europe-mission .eu-traveler-meet__label { min-height:34px;padding:7px 12px;border:2px solid #fff;border-radius:999px;background:#efbd45;display:flex;align-items:center;justify-content:center;font:900 clamp(14px,1vw,17px)/1.05 var(--font-head);white-space:nowrap;box-shadow:0 4px 0 #9a6d0d; }
+.europe-mission .eu-traveler-meet:hover,.europe-mission .eu-traveler-meet:focus-visible { scale:1.04;outline:none; }
+.europe-mission .eu-traveler-meet:focus-visible .eu-traveler-meet__label { outline:4px solid #fff;outline-offset:3px; }
+@keyframes eu-traveler-bob { 50% { transform:translateY(-6px); } }
+/* 마지막 사진에서 여행 친구가 '짠' 하고 등장 — 어디를 눌러야 할지 시선을 모은다 */
+.europe-mission .eu-traveler-meet.is-appear { animation:eu-traveler-in .55s cubic-bezier(.2,.9,.3,1.35) backwards,eu-traveler-bob 2.4s .55s ease-in-out infinite; }
+@keyframes eu-traveler-in { from { opacity:0;transform:translateY(26px) scale(.6); } to { opacity:1;transform:none; } }
+@media (prefers-reduced-motion: reduce) { .europe-mission .eu-traveler-meet,.europe-mission .eu-traveler-meet.is-appear { animation:none; } }
 .europe-mission .eu-gallery { flex:1;min-height:min(390px,58vh);padding:14px;display:flex;flex-direction:column;gap:10px; }
 .europe-mission .eu-gallery-tabs { display:flex;gap:7px;flex-wrap:wrap; }
 .europe-mission .eu-gallery-tab { min-height:48px;padding:8px 15px;border:2px solid #b8c7cf;border-radius:999px;background:#fff;font:850 var(--eu-small)/1 var(--font-body);cursor:pointer; }
@@ -287,39 +321,27 @@ const PAGE_CSS = `
 .europe-mission .guide-wrap .guide-bubble { background:#fffdf4;backdrop-filter:none; }
 .europe-mission .guide-wrap .guide-mascot { filter:drop-shadow(0 8px 13px rgba(6,24,42,.42)); }
 .europe-mission > .guide-wrap .guide-mascot-button { left:max(8px,env(safe-area-inset-left)); }
-.eu-culture-detail { display:grid;grid-template-columns:minmax(210px,.82fr) minmax(260px,1.18fr);gap:18px;align-items:stretch;max-width:820px; }
-.eu-culture-detail img { width:100%;height:100%;min-height:260px;max-height:430px;object-fit:cover;border-radius:18px;background:#dbe7e8; }
-.eu-culture-detail img.is-object { object-fit:contain;padding:18px; }
-.eu-culture-detail__copy { display:flex;flex-direction:column;gap:10px;justify-content:center; }
-.eu-culture-detail__copy p { margin:0;font-size:max(18px,var(--fs-body));font-weight:750;line-height:1.5;word-break:keep-all; }
-.eu-culture-detail__category { align-self:flex-start;padding:5px 11px;border-radius:999px;background:#e5edff;color:#3f3297;font-weight:900; }
-#overlay-root .modal:has(.eu-culture-detail) { width:min(700px,calc(100vw - 80px));border-radius:28px;overflow:hidden; }
-#overlay-root .modal:has(.eu-culture-detail) .modal-title { border-radius:28px 28px 0 0; }
-#overlay-root .modal:has(.eu-culture-detail) .modal-body { border-radius:0 0 28px 28px;background:#fffdf7; }
 @media (max-width:1050px) {
   .europe-mission .eu-map-layout { grid-template-columns:minmax(0,1fr) 235px; }
   .europe-mission .eu-country { min-width:82px;padding-inline:8px; }
-  .europe-mission .eu-window-layout { grid-template-columns:minmax(0,1fr) 285px; }
+  .europe-mission .eu-window-layout { grid-template-columns:minmax(0,1fr) 350px; }
 }
 @media (max-width:900px) and (min-width:781px) {
-  .eu-culture-detail { grid-template-columns:1fr; }
-  .eu-culture-detail img { min-height:220px;max-height:34dvh; }
-  #overlay-root .modal:has(.eu-culture-detail) { width:min(620px,calc(100vw - 80px)); }
 }
 @media (max-width:780px) {
   .europe-mission .page-body { overflow-y:auto; }
   .europe-mission .eu-screen { min-width:0; }
   .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout { grid-template-columns:1fr; }
   .europe-mission .eu-map { min-height:440px; }
-  .europe-mission .eu-window-panel { overflow:visible; }
+  .europe-mission .page-body:has(.eu-window-layout) { overflow-y:auto; }
+  .europe-mission .eu-window-layout { height:auto; }
+  .europe-mission .eu-window-panel { grid-template-rows:auto auto;overflow:visible; }
+  .europe-mission .eu-story-detail { max-height:none;overflow:visible; }
   .europe-mission .eu-stage,.europe-mission .eu-evidence { min-height:320px; }
   .europe-mission .eu-postcard { grid-template-columns:1fr; }
   .europe-mission .eu-postcard-photo { min-height:300px; }
   .europe-mission > .guide-wrap { display:none; }
   .europe-mission .eu-gallery-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .eu-culture-detail { grid-template-columns:1fr; }
-  .eu-culture-detail img { min-height:220px;max-height:34dvh; }
-  #overlay-root .modal:has(.eu-culture-detail) { width:min(700px,calc(100vw - 28px));overflow:hidden; }
 }
 @media (max-width:520px) {
   .europe-mission .eu-country { min-width:58px;min-height:48px;padding:5px 6px;border-width:2px;border-radius:13px;font-size:14px; }
@@ -329,9 +351,12 @@ const PAGE_CSS = `
 @media (max-height:650px) {
   .europe-mission .page-body { padding-block:5px; }
   .europe-mission .eu-heading p { display:none; }
-  .europe-mission .eu-map-layout,.europe-mission .eu-window-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:min(390px,58vh); }
+  .europe-mission .eu-map-layout,.europe-mission .eu-form-layout,.europe-mission .eu-postcard-wrap { min-height:min(390px,58vh); }
+  .europe-mission .eu-window-layout { min-height:min(420px,68vh); }
   .europe-mission .eu-gallery { min-height:min(390px,58vh); }
   .europe-mission .eu-window-panel { padding:11px;gap:7px; }
+  .europe-mission .eu-story-detail { padding:11px;gap:7px; }
+  .europe-mission .eu-story-detail__story { line-height:1.38!important; }
   .europe-mission textarea { min-height:96px; }
 }
 @media (prefers-reduced-motion:reduce) { .europe-mission * { transition:none!important;scroll-behavior:auto!important; } }
@@ -486,22 +511,6 @@ export function createPage(): Page {
         });
       };
 
-      const showCultureDetail = (country: EuropeCountry, visual: EuropeVisual): void => {
-        const detail = element(`<div class="eu-culture-detail">
-          <img class="${imageClass(visual)}" src="${assetUrl(visual.imageId)}" alt="${esc(visual.title)}" data-asset-id="${visual.imageId}">
-          <div class="eu-culture-detail__copy">
-            <span class="eu-culture-detail__category">${CATEGORY_LABEL[visual.category]}</span>
-            <p><strong>${esc(visual.title)}</strong></p>
-            <p>${esc(cultureExplanation(visual))}</p>
-          </div>
-        </div>`);
-        openModal({
-          id: `europe-culture-${visual.id}`,
-          title: `${country.name} 문화 더 알아보기`,
-          bodyEl: detail
-        });
-      };
-
       const renderMap = (): void => {
         const progress = statusNow();
         const viewedCount = (country: EuropeCountry) => country.visuals.filter((visual) => state.viewedVisualIds.includes(visual.id)).length;
@@ -585,13 +594,23 @@ export function createPage(): Page {
           renderMap();
           return;
         }
-        let visual: EuropeVisual = initialVisual;
+        const visual: EuropeVisual = initialVisual;
+        // 현재 큰 사진과 설명을 실제로 본 장면만 진행 기록에 남긴다.
+        if (!state.viewedVisualIds.includes(visual.id)) {
+          state.viewedVisualIds.push(visual.id);
+          persist();
+        }
         const currentIndex = country.visuals.findIndex((item) => item.id === visual.id);
         const saved = country.visuals.some((item) => state.savedVisualIds.includes(item.id));
         const traveler = EUROPE_TRAVELERS[country.id];
         const travelerName = traveler?.name ?? '여행 친구';
-        const meetLabel = saved ? `${travelerName}와 다시 이야기하기` : `${travelerName}와 이야기하기`;
-        const thumbnails = country.visuals.map((item) => `<button type="button" class="eu-thumb ${state.savedVisualIds.includes(item.id) ? 'is-recorded' : ''}" data-visual="${item.id}" aria-label="${esc(item.title)} 문화 설명과 여행가 이야기 열기" aria-pressed="${item.id === visual?.id}"><img class="${imageClass(item)}" src="${assetUrl(item.imageId)}" alt="" data-asset-id="${item.imageId}"></button>`).join('');
+        const meetLabel = `${withJosa(travelerName, '과', '와')} 대화하기`;
+        const travelerAssetId = traveler?.assetId && hasAsset(traveler.assetId) ? traveler.assetId : undefined;
+        const isFinalVisual = currentIndex === country.visuals.length - 1;
+        const travelerMeet = travelerAssetId && isFinalVisual ? `<button type="button" class="eu-traveler-meet is-appear" data-meet-traveler aria-label="${esc(meetLabel)}">
+          <img src="${assetUrl(travelerAssetId)}" alt="" aria-hidden="true">
+          <span class="eu-traveler-meet__label">${esc(meetLabel)}</span>
+        </button>` : '';
         const screen = element(`<section class="eu-screen">
           <div class="eu-heading"><h2>${esc(country.name)} 문화 창</h2></div>
           <div class="eu-board eu-window-layout">
@@ -600,16 +619,20 @@ export function createPage(): Page {
               <button type="button" class="eu-nav" data-dir="prev" aria-label="이전 장면">${ICON.left}</button>
               <button type="button" class="eu-nav" data-dir="next" aria-label="다음 장면">${ICON.right}</button>
               <div class="eu-stage-shade"><h2>${esc(visual.title)}</h2></div>
+              ${travelerMeet}
             </div>
             <aside class="eu-window-panel">
-              <span class="eu-label">${CATEGORY_LABEL[visual.category]}</span>
-              <p>${esc(visual.caption)}</p>
-              <div class="eu-look"><strong>찾아봐</strong>${esc(visual.lookFor)}</div>
-              <p class="eu-tap-hint">작은 사진을 누르면 문화 설명과 여행가 이야기가 열려.</p>
-              <div class="eu-thumbs" role="group" aria-label="${esc(country.name)} 장면 3개">${thumbnails}</div>
-              <div class="eu-traveler-slot">
-                <button type="button" class="btn btn-primary" data-meet-traveler>${esc(meetLabel)}</button>
-              </div>
+              <div class="eu-story-heading"><strong>사진 이야기</strong><span>${currentIndex + 1} / ${country.visuals.length} · 화살표로 넘겨 봐</span></div>
+              <article class="eu-story-detail" aria-live="polite">
+                <div class="eu-story-detail__top">
+                  <span class="eu-story-detail__number" aria-hidden="true">${currentIndex + 1}</span>
+                  <h3>${esc(visual.title)}</h3>
+                  <span class="eu-story-detail__category">${CATEGORY_LABEL[visual.category]}</span>
+                </div>
+                <p class="eu-story-detail__caption">${esc(visual.caption)}</p>
+                <p class="eu-story-detail__story">${esc(cultureExplanation(visual))}</p>
+                <div class="eu-look"><strong>사진에서 찾아봐</strong>${esc(visual.lookFor)}</div>
+              </article>
             </aside>
           </div>
         </section>`);
@@ -625,21 +648,18 @@ export function createPage(): Page {
         };
         screen.querySelector<HTMLButtonElement>('[data-dir="prev"]')?.addEventListener('click', () => showAt(currentIndex - 1));
         screen.querySelector<HTMLButtonElement>('[data-dir="next"]')?.addEventListener('click', () => showAt(currentIndex + 1));
-        screen.querySelectorAll<HTMLButtonElement>('[data-visual]').forEach((thumb) => {
-          thumb.addEventListener('click', () => {
-            const index = country.visuals.findIndex((item) => item.id === thumb.dataset.visual);
-            const picked = country.visuals[index];
-            if (!picked) return;
-            if (!state.viewedVisualIds.includes(picked.id)) state.viewedVisualIds.push(picked.id);
-            persist();
-            showCultureDetail(country, picked);
-          });
-        });
         screen.querySelector<HTMLButtonElement>('[data-meet-traveler]')?.addEventListener('click', () => openTravelerDialogue(country, visual));
         const back = button('지도', 'ghost');
         back.addEventListener('click', () => setScreen('map'));
-        setBottom(saved ? '친구 이야기 들음' : '문화 장면 살펴보기', [back]);
-        // 반복 말풍선 대신 패널에 상시 안내(아래 eu-tap-hint)로 보여 준다
+        // 1·2번째 사진에서 멈춘 학생이 길을 잃지 않게, 하단에 다음 사진 버튼을 항상 둔다.
+        if (!isFinalVisual) {
+          const nextPhoto = button(`다음 사진 보기 (${currentIndex + 2}/${country.visuals.length})`);
+          nextPhoto.addEventListener('click', () => showAt(currentIndex + 1));
+          setBottom('사진을 넘기다 보면 마지막 사진에서 여행 친구를 만나!', [back, nextPhoto]);
+        } else {
+          setBottom(saved ? '친구 이야기 들음' : travelerAssetId ? `${withJosa(travelerName, '이', '가')} 기다리고 있어! 사진 속 친구를 눌러 봐.` : '문화 장면 살펴보기', [back]);
+        }
+        // 큰 사진을 넘길 때 그 사진에 대응하는 설명 한 개만 함께 바뀐다.
       };
 
       const renderGallery = (): void => {

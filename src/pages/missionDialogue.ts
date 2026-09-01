@@ -2,6 +2,7 @@ import type { Page } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
+import { withJosa } from '../core/josa';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
 import { computeScore } from '../core/scoring';
@@ -75,6 +76,39 @@ interface DialogueContent {
   compass: { guide: string; npcs: Npc[] };
   feedback: { good: string; retry: string; stereotypeWarning: string };
 }
+
+interface VisualCompareScene {
+  id: string;
+  name: string;
+  from: string;
+  beforeAssetId: string;
+  afterAssetId: string;
+  mission: string;
+  discovery: string;
+  hotspot: { x: number; y: number; label: string };
+}
+
+/** 긴 말 선택을 대신하는 6단계 사진 탐정 장면. 한 장면당 비교 1회 + 변화 지점 1회만 수행한다. */
+const VISUAL_COMPARE_SCENES: VisualCompareScene[] = [
+  {
+    id: 'yusra', name: '유스라', from: '모로코',
+    beforeAssetId: 'stage6.yusra.before', afterAssetId: 'stage6.yusra.after',
+    mission: '말할 기회가 생긴 곳을 찾아!', discovery: '말할 차례 나누기',
+    hotspot: { x: 84, y: 51, label: '유스라의 발표 카드' }
+  },
+  {
+    id: 'kenji', name: '켄지', from: '일본',
+    beforeAssetId: 'stage6.kenji.before', afterAssetId: 'stage6.kenji.after',
+    mission: '억지 권유가 사라진 곳을 찾아!', discovery: '거절과 선택 존중하기',
+    hotspot: { x: 63, y: 73, label: '함께 고르는 간식' }
+  },
+  {
+    id: 'amara', name: '아마라', from: '탄자니아',
+    beforeAssetId: 'stage6.amara.before', afterAssetId: 'stage6.amara.after',
+    mission: '발표를 도와준 변화를 찾아!', discovery: '끝까지 듣고 응원하기',
+    hotspot: { x: 79, y: 61, label: '질문하는 손과 응원 카드' }
+  }
+];
 
 /** 인사 사례와 같은 지역의 가상 대화 인물 이미지. 실제 개인·지역 전체를 대표하지 않는다. */
 const NPC_COLOR: Record<string, string> = {
@@ -155,6 +189,39 @@ const DIALOGUE_CSS = `
 .dl-scenario img { width: 96px; height: 96px; object-fit: contain; }
 .dl-option-head { display: flex; align-items: center; gap: var(--sp-3); font-weight: 800; font-size: var(--dl-copy); }
 .dl-option-head img { width: 64px; height: 64px; object-fit: contain; }
+
+/* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
+.dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.62fr);gap:14px}
+.dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
+.dl-compare-photo{position:relative;flex:1;min-height:360px;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
+.dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.dl-compare-after{clip-path:inset(0 0 0 50%)}
+.dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none}
+.dl-compare-divider::after{content:'↔';position:absolute;left:50%;top:50%;width:52px;height:52px;display:grid;place-items:center;transform:translate(-50%,-50%);border:4px solid #fff;border-radius:50%;background:var(--c-navy);color:#fff;font:950 25px/1 var(--font-head);box-shadow:0 7px 18px rgba(5,34,55,.35)}
+.dl-compare-tag{position:absolute;z-index:4;top:14px;padding:6px 16px;border:3px solid #fff;border-radius:999px;color:#fff;font:950 clamp(17px,1.3vw,21px)/1 var(--font-head);text-shadow:0 2px 5px rgba(0,0,0,.55);box-shadow:0 5px 12px rgba(5,34,55,.25);pointer-events:none}
+.dl-compare-tag.is-before{left:14px;background:#d65b68}.dl-compare-tag.is-after{right:14px;background:#178b74}
+.dl-compare-range{width:100%;height:52px;appearance:none;-webkit-appearance:none;border:3px solid #fff;border-radius:999px;background:linear-gradient(90deg,#f2c344,#ffe58b);box-shadow:inset 0 2px 5px rgba(55,44,12,.2),0 5px 12px rgba(5,34,55,.14);cursor:ew-resize;touch-action:pan-x}
+.dl-compare-range::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;border:4px solid #fff;border-radius:50%;background:var(--c-navy);box-shadow:0 4px 12px rgba(4,31,51,.42);cursor:grab}
+.dl-compare-range::-moz-range-thumb{width:38px;height:38px;border:4px solid #fff;border-radius:50%;background:var(--c-navy);box-shadow:0 4px 12px rgba(4,31,51,.42);cursor:grab}
+.dl-compare-range:focus-visible{outline:5px solid rgba(255,207,62,.5);outline-offset:3px}
+.dl-change-hotspot{position:absolute;z-index:5;left:var(--x);top:var(--y);width:68px;height:68px;transform:translate(-50%,-50%) scale(.84);padding:0;border:5px solid #fff;border-radius:50%;background:rgba(255,207,62,.25);box-shadow:0 0 0 7px rgba(255,207,62,.24),0 8px 20px rgba(4,30,50,.4);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;cursor:pointer}
+.dl-change-hotspot.is-ready{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);animation:dl-hotspot-pulse 1.45s ease-out infinite}
+.dl-change-hotspot.is-found{background:var(--c-success);animation:none}
+.dl-change-hotspot.is-found::after{content:'✓';display:grid;place-items:center;color:#fff;font:950 32px/1 var(--font-head)}
+@keyframes dl-hotspot-pulse{0%{box-shadow:0 0 0 0 rgba(255,207,62,.82),0 8px 20px rgba(4,30,50,.4)}100%{box-shadow:0 0 0 18px rgba(255,207,62,0),0 8px 20px rgba(4,30,50,.4)}}
+.dl-compare-side{min-height:0;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
+.dl-compare-person{display:grid;grid-template-columns:58px 1fr;align-items:center;gap:10px;padding:10px 13px;border-radius:18px;background:#eef8fb;text-align:left}
+.dl-compare-person span:first-child{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:var(--c-navy);color:#fff;font:950 28px/1 var(--font-head)}
+.dl-compare-person strong{display:block;font:950 clamp(22px,1.8vw,29px)/1.15 var(--font-head)}
+.dl-compare-person small{font-size:clamp(15px,1vw,18px);font-weight:800;color:var(--c-ink-soft)}
+.dl-compare-mission{padding:14px;border:3px dashed #e4b633;border-radius:18px;background:#fff7d8;font:950 clamp(21px,1.6vw,27px)/1.35 var(--font-head);word-break:keep-all}
+.dl-compare-result{min-height:126px;padding:14px;display:grid;place-items:center;border-radius:18px;background:#e9f8f4;color:#176249;font:950 clamp(21px,1.55vw,26px)/1.35 var(--font-head)}
+.dl-compare-result[hidden]{display:none}
+.dl-photo-progress{margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
+.dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
+@media(max-width:940px){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-photo{min-height:330px}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
+@media(max-height:720px) and (min-width:941px){.dl-compare-photo{min-height:300px}.dl-compare-person span:first-child{width:48px;height:48px}.dl-compare-person{grid-template-columns:48px 1fr}.dl-compare-result{min-height:96px}}
 
 /* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
 .dl-talk { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px,0.72fr) minmax(0,1.55fr); gap: var(--sp-4); }
@@ -311,6 +378,7 @@ export function createPage(): Page {
         'icon.heart_speech',
         hostSpeaker.assetId,
         ...content.greetings.map(greetingImg).filter(hasAsset),
+        ...VISUAL_COMPARE_SCENES.flatMap((scene) => [scene.beforeAssetId, scene.afterAssetId]),
         ...earthPreloadIds(earth)
       ]);
       audio.playBgm('main');
@@ -328,6 +396,8 @@ export function createPage(): Page {
       let oxAttempted = false;
       let scenarioIndex = 0;
       let scenarioFirstGood = 0;
+      let visualCompareIndex = 0;
+      const visualCompareDone = new Set<string>();
       let npcIndex = 0;
       let empathySum = 0;
       let betterCount = 0;
@@ -365,6 +435,8 @@ export function createPage(): Page {
         oxAttempted = d.oxAttempted === true;
         scenarioIndex = Math.max(0, Math.min(content.listening.scenarios.length, Math.floor(num(d.scenarioIndex, 0))));
         scenarioFirstGood = Math.max(0, Math.min(content.listening.scenarios.length, Math.floor(num(d.scenarioFirstGood, 0))));
+        strArr(d.visualCompareDone).filter((id) => VISUAL_COMPARE_SCENES.some((scene) => scene.id === id)).forEach((id) => visualCompareDone.add(id));
+        visualCompareIndex = Math.max(0, Math.min(VISUAL_COMPARE_SCENES.length, Math.floor(num(d.visualCompareIndex, visualCompareDone.size))));
         npcIndex = Math.max(0, Math.min(content.compass.npcs.length, Math.floor(num(d.npcIndex, 0))));
         empathySum = Math.max(0, Math.min(empathyMax, Math.floor(num(d.empathySum, 0))));
         betterCount = Math.max(0, Math.min(content.compass.npcs.length, Math.floor(num(d.betterCount, 0))));
@@ -401,6 +473,8 @@ export function createPage(): Page {
           oxAttempted,
           scenarioIndex,
           scenarioFirstGood,
+          visualCompareIndex,
+          visualCompareDone: [...visualCompareDone],
           npcIndex,
           npcTurnIndex,
           npcPhase,
@@ -568,7 +642,7 @@ export function createPage(): Page {
           }
         }
 
-        bottom.innerHTML = `<button class="btn btn-primary btn-big" data-act="next" ${oxDone ? '' : 'disabled'}>경청 연습하기</button>`;
+        bottom.innerHTML = `<button class="btn btn-primary btn-big" data-act="next" ${oxDone ? '' : 'disabled'}>사진 변화 탐정 시작</button>`;
         bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
           if (!oxDone || busy || disposed) return;
           busy = true;
@@ -583,14 +657,135 @@ export function createPage(): Page {
         } else if (!oxDone) {
           guide?.say('정말 모두 같은 방법으로 인사할지 생각해요.', { cue: task, speaker: hostSpeaker });
         } else {
-          guide?.say('사람마다 다르다는 걸 기억하며 경청 연습으로 가요.', {
+          guide?.say('사람마다 다르다는 걸 기억하며 전과 후 사진을 비교해 봐.', {
             cue: bottom.querySelector<HTMLElement>('[data-act="next"]'), speaker: hostSpeaker
           });
         }
       }
 
-      /* ===== 2단계: 경청 ===== */
+      /* ===== 2단계: 전·후 사진 변화 탐정 ===== */
       function renderStage2(): void {
+        // 사진 비교가 끝나면 만점 대입 없이 경청 렌즈(선택지 게임)로 이어 간다.
+        if (visualCompareDone.size >= VISUAL_COMPARE_SCENES.length) {
+          renderListening();
+          return;
+        }
+
+        const firstUndone = VISUAL_COMPARE_SCENES.findIndex((scene, index) => (
+          index >= visualCompareIndex && !visualCompareDone.has(scene.id)
+        ));
+        const fallbackUndone = VISUAL_COMPARE_SCENES.findIndex((scene) => !visualCompareDone.has(scene.id));
+        const index = firstUndone >= 0 ? firstUndone : fallbackUndone;
+        const scene = VISUAL_COMPARE_SCENES[index];
+        if (!scene) {
+          renderListening();
+          return;
+        }
+        visualCompareIndex = index;
+        let traveled = 0;
+        let lastValue = 50;
+        let ready = false;
+        let resolved = false;
+
+        const progress = VISUAL_COMPARE_SCENES.map((item, itemIndex) => {
+          const state = visualCompareDone.has(item.id) ? 'is-done' : itemIndex === index ? 'is-now' : '';
+          return `<span class="${state}" aria-hidden="true"></span>`;
+        }).join('');
+
+        body.innerHTML = `
+          <div class="dl-stage">
+            <div class="dl-head">
+              <div class="ribbon-title"><span class="ribbon-main">사진 변화 탐정</span></div>
+            </div>
+            <section class="dl-visual-compare">
+              <div class="panel dl-compare-card">
+                <div class="dl-compare-photo">
+                  <img src="${assetUrl(scene.beforeAssetId)}" data-asset-id="${scene.beforeAssetId}" alt="${scene.name} 친구 교실의 바뀌기 전 모습">
+                  <img class="dl-compare-after" data-after src="${assetUrl(scene.afterAssetId)}" data-asset-id="${scene.afterAssetId}" alt="${scene.name} 친구 교실의 바뀐 뒤 모습">
+                  <span class="dl-compare-tag is-before">전</span>
+                  <span class="dl-compare-tag is-after">후</span>
+                  <span class="dl-compare-divider" data-divider aria-hidden="true"></span>
+                  <button type="button" class="dl-change-hotspot" data-change
+                    style="--x:${scene.hotspot.x}%;--y:${scene.hotspot.y}%" aria-label="달라진 곳: ${scene.hotspot.label}" disabled></button>
+                </div>
+                <input class="dl-compare-range" data-range type="range" min="0" max="100" value="50"
+                  aria-label="전과 후 사진 비교 손잡이">
+              </div>
+              <aside class="panel dl-compare-side">
+                <div class="dl-compare-person">
+                  <span aria-hidden="true">${scene.name.charAt(0)}</span>
+                  <div><strong>${scene.name}</strong><small>${scene.from} 친구</small></div>
+                </div>
+                <div class="dl-compare-mission" data-mission>${scene.mission}</div>
+                <div class="dl-compare-result" data-result hidden></div>
+                <div class="dl-photo-progress" aria-label="사진 ${index + 1} / ${VISUAL_COMPARE_SCENES.length}">${progress}</div>
+              </aside>
+            </section>
+          </div>`;
+
+        bottom.innerHTML = '<button class="btn btn-primary btn-big" data-act="next" disabled>손잡이를 먼저 밀어 봐</button>';
+        const range = body.querySelector<HTMLInputElement>('[data-range]');
+        const after = body.querySelector<HTMLElement>('[data-after]');
+        const divider = body.querySelector<HTMLElement>('[data-divider]');
+        const hotspot = body.querySelector<HTMLButtonElement>('[data-change]');
+        const mission = body.querySelector<HTMLElement>('[data-mission]');
+        const result = body.querySelector<HTMLElement>('[data-result]');
+        const nextBtn = bottom.querySelector<HTMLButtonElement>('[data-act="next"]');
+
+        range?.addEventListener('input', () => {
+          if (resolved || disposed) return;
+          const value = Number(range.value);
+          traveled += Math.abs(value - lastValue);
+          lastValue = value;
+          if (after) after.style.clipPath = `inset(0 0 0 ${value}%)`;
+          if (divider) divider.style.left = `${value}%`;
+          if (!ready && traveled >= 65) {
+            ready = true;
+            if (hotspot) {
+              hotspot.disabled = false;
+              hotspot.classList.add('is-ready');
+            }
+            if (mission) mission.textContent = '반짝이는 곳을 눌러 봐!';
+            if (nextBtn) nextBtn.textContent = '달라진 곳 찾기';
+            void audio.playSfx('pickup');
+            guide?.say(scene.mission, { cue: hotspot, speaker: hostSpeaker });
+          }
+        });
+
+        hotspot?.addEventListener('click', () => {
+          if (!ready || resolved || disposed) return;
+          resolved = true;
+          visualCompareDone.add(scene.id);
+          visualCompareIndex = index + 1;
+          hotspot.disabled = true;
+          hotspot.classList.add('is-found');
+          if (mission) mission.textContent = '찾았다!';
+          if (result) {
+            result.hidden = false;
+            result.textContent = `✓ ${scene.discovery}`;
+          }
+          if (nextBtn) {
+            nextBtn.disabled = false;
+            nextBtn.textContent = visualCompareDone.size >= VISUAL_COMPARE_SCENES.length ? '경청 렌즈 시작' : '다음 사진';
+          }
+          checkpoint('stage2');
+          void audio.playSfx('success');
+          popBounce(hotspot);
+          guide?.say(scene.discovery, { cue: nextBtn, speaker: hostSpeaker });
+        });
+
+        nextBtn?.addEventListener('click', () => {
+          if (!resolved || busy || disposed) return;
+          busy = true;
+          renderStage2();
+          busy = false;
+        });
+
+        guide?.say('손잡이를 좌우로 밀어서 전과 후를 비교해 봐.', { cue: range, speaker: hostSpeaker });
+      }
+
+      /* ===== 2단계 후반: 경청 렌즈 — 상황 단서 확인 뒤 존중하는 반응 고르기 ===== */
+      function renderListening(): void {
         const scenarios = content.listening.scenarios;
         if (scenarioIndex >= scenarios.length) {
           goStage3();
@@ -733,7 +928,7 @@ export function createPage(): Page {
           if (scenarioIndex >= scenarios.length) {
             goStage3();
           } else {
-            renderStage2();
+            renderListening();
           }
           busy = false;
         });
@@ -795,7 +990,7 @@ export function createPage(): Page {
           <div class="dl-stage">
             <div class="dl-head">
               <div class="ribbon-title">
-                <span class="ribbon-main">${npc.name}와 대화</span>
+                <span class="ribbon-main">${withJosa(npc.name, '과', '와')} 대화</span>
               </div>
             </div>
             <div class="dl-talk">
@@ -823,9 +1018,16 @@ export function createPage(): Page {
             meta: npc.from,
             assetId: imgId,
             imageAlt: `${npc.name} 학생 캐릭터`,
+            partner: {
+              name: hostSpeaker.name,
+              meta: '나의 탐험가',
+              assetId: hostSpeaker.assetId,
+              imageAlt: `${hostSpeaker.name} 탐험가`
+            },
             lines: splitDialogueSentences(sideText).map((text, lineIndex) => ({
               label: lineIndex === 0 ? sideTitle : '이야기 계속',
               speaker: npcPhase === 'revision' ? hostSpeaker.name : npc.name,
+              role: npcPhase === 'revision' ? 'partner' as const : 'character' as const,
               text
             }))
           });

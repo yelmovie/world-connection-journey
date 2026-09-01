@@ -3,6 +3,8 @@
  * DOM 없음. 화면은 pages/earthCouncilScenes.ts 가 맡는다.
  */
 
+import { fixJosa } from './josa';
+
 export type ConnectionType = 'ocean' | 'air' | 'climate' | 'ecosystem' | 'resource';
 export type ActionTierId = 'self' | 'community' | 'institution';
 export type EarthScene = 'signals' | 'connect' | 'issue' | 'roundtable' | 'actions' | 'pledge' | 'done';
@@ -237,5 +239,11 @@ export function buildPledge(content: EarthContent, p: GlobalEnvironmentProgress)
     institution: pick('institution'),
     personal: p.personalActionDraft.trim() || '내가 정한 실천'
   };
-  return content.pledge.frame.map((line) => line.replace(/\{(\w+)\}/g, (_, k: string) => fill[k] ?? ''));
+  // 틀 문장의 조사(예: "{self}을")는 채워진 낱말의 받침에 맞게 고친다 — "쓰기을" 방지
+  return content.pledge.frame.map((line) =>
+    line.replace(/\{(\w+)\}(을|를|이|가|은|는|과|와)?/g, (_, k: string, josa?: string) => {
+      const value = fill[k] ?? '';
+      return josa ? fixJosa(value, josa) : value;
+    })
+  );
 }
