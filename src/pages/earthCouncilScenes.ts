@@ -259,7 +259,7 @@ export const EARTH_CSS = `
 .ec-gauge .ec-level { min-width:3.2em;text-align:right; }
 
 /* 장면 6 — 약속 */
-.ec-pledge { flex:1;min-height:0;overflow-y:auto;display:grid;gap:8px;width:min(1100px,100%);margin:0 auto; }
+.ec-pledge { flex:1;min-height:0;overflow-y:auto;display:grid;gap:8px;width:min(1100px,calc(100% - var(--guide-size) - var(--scene-safe) * 2));margin:0 auto 0 max(calc((100% - 1100px) / 2), calc(var(--guide-size) + var(--scene-safe))); } /* 캐릭터가 레인 위로 솟아도 왼쪽 라벨을 덮지 않게 */
 .ec-line { padding:10px 14px;border-radius:var(--radius-m);background:rgba(255,255,255,.94);font-size:max(19px,var(--fs-body));line-height:1.45;font-weight:700;border-left:8px solid var(--c-turquoise); }
 .ec-line em { font-style:normal;color:var(--c-violet-ink);font-weight:900; }
 

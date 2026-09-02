@@ -233,9 +233,11 @@ const PAGE_CSS = `
   .am-scene[data-screen=landing] .exp-wrap { grid-template-columns:clamp(230px,15vw,290px) minmax(0,1fr) clamp(320px,18vw,350px); }
   .am-scene[data-screen=landing] .exp-map-fit { grid-column:2; }
   .am-scene[data-screen=landing] .exp-cards { grid-column:3; }
-  .am-scene:not([data-screen=landing]) > .page-body > .am-stage { padding-left:clamp(230px,15vw,290px); }
-  .am-scene:not([data-screen=landing]) > .page-body > .am-stage:has(> .bag-stage) { padding-left:0; }
 }
+/* 가이드(캐릭터+말풍선)가 서는 왼쪽 여백 — 말풍선 폭(300px)보다 항상 넓게 잡아 본문 글자를 덮지 않는다 */
+.am-scene { --am-gutter:calc(max(var(--guide-size), 300px) + var(--scene-safe) * 2); }
+.am-scene:not([data-screen=landing]) > .page-body > .am-stage { padding-left:var(--am-gutter); }
+.am-scene:not([data-screen=landing]) > .page-body > .bag-stage { padding-left:clamp(14px,1.25vw,24px); margin-left:var(--am-gutter); width:calc(100% - var(--am-gutter)); }
 .am-scene { --guide-size:clamp(220px,15vw,280px); --guide-lane-h:0px; --bottom-bar-h:64px; --dock-baseline:8px; }
 .am-scene > .page-body { max-width:100%; padding:var(--sp-2) clamp(8px,1vw,16px); overflow:hidden; }
 .am-scene > .page-body > .am-stage { width:100%; max-width:none; }

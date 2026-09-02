@@ -73,6 +73,11 @@ function buildScenes() {
   for (const screen of amScreens) {
     add(`아메리카·${screen}`, '#/mission/americas', (s) => { s.missions.americas = mission('in_progress', { exploreProgress: { screen } }, screen); });
   }
+  // 문화 가방 — 나라 화면에서 친구를 이미 만난 상태로 들어가 첫 나라 핀을 누르면 가방이 열린다
+  const am = content('americas'); const c0 = am.explore.countries[0];
+  scenes.push({ name: '아메리카·가방', route: '#/mission/americas',
+    patch: (s) => { s.missions.americas = mission('in_progress', { exploreProgress: { screen: 'countries', countries: { [c0.id]: { stopsSeen: c0.stops.map((x) => x.id), met: true, bagSeen: [], keep: null, done: false } } } }, 'countries'); },
+    after: async (page) => { await page.click('.hub-pin', { timeout: 5000 }); await page.waitForTimeout(700); } });
   // 유럽 — 지도 → 문화 창 → 갤러리 → 이유 → 질문 → 엽서
   const allVisuals = eu.countries.flatMap((c) => c.visuals.map((v) => v.id));
   const euBase = { visitedCountryIds: eu.countries.map((c) => c.id), viewedVisualIds: allVisuals, savedVisualIds: allVisuals, selectedCountryId: 'france', selectedEvidenceId: 'france_louvre', reasonPromptId: 'scene', reasonDraft: '루브르의 옛것과 새것의 모습이 오래 눈에 남았어.', questionStarterId: 'why', questionDraft: '루브르의 옛것과 새것을 소중히 지킬까?', postcardCompleted: false, stampAwarded: false };
@@ -167,6 +172,20 @@ function auditPage() {
     const hit = document.elementFromPoint(cx, cy);
     if (hit && hit !== el && !el.contains(hit) && !hit.contains(el)) issues.push({ kind: '버튼가려짐', detail: `${label(el)} ← ${hit.className.toString().slice(0, 30) || hit.tagName}` });
   });
+  // 5b) 말풍선·캐릭터 가림 — 본문 글자 위를 가이드(마스코트·말풍선)가 덮는가
+  document.querySelectorAll('p,h1,h2,h3,h4,li,label,button,span,strong,dt,dd').forEach((el) => {
+    if (el.closest('.guide-wrap') || !vis(el)) return;
+    const txt = (el.childNodes.length && [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) ? el.textContent.trim() : '';
+    if (!txt) return;
+    const r = el.getBoundingClientRect(); if (r.width < 8 || r.height < 8) return;
+    const pts = [[r.left + 6, r.top + r.height / 2], [r.left + r.width / 2, r.top + r.height / 2], [r.right - 6, r.top + r.height / 2], [r.left + r.width / 2, r.top + 6], [r.left + r.width / 2, r.bottom - 6]];
+    for (const [x, y] of pts) {
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+      const hit = document.elementFromPoint(x, y);
+      const g = hit && hit.closest && hit.closest('.guide-wrap');
+      if (g) { issues.push({ kind: hit.closest('.guide-bubble') ? '말풍선가림' : '캐릭터가림', detail: `${txt.slice(0, 26)} ← ${(hit.className || hit.tagName).toString().slice(0, 24)}` }); break; }
+    }
+  });
   // 6) 세로 스크롤
   const body = document.querySelector('.page-body');
   if (body && body.scrollHeight > body.clientHeight + 8) issues.push({ kind: '세로스크롤', detail: `${body.scrollHeight - body.clientHeight}px 넘침` });
@@ -228,6 +247,7 @@ async function dismissModals(page) {
         await page.goto(BASE + '/' + scene.route, { waitUntil: 'domcontentloaded', timeout: 20000 });
         await page.waitForTimeout(1600);
         await dismissModals(page);
+        if (scene.after) { await scene.after(page); await dismissModals(page); }
         await page.waitForTimeout(300);
         const hash = await page.evaluate(() => location.hash);
         if (hash !== scene.route) bounced.add(`${scene.name} → ${hash}`);
@@ -242,6 +262,8 @@ async function dismissModals(page) {
   await browser.close();
 
   const byKind = new Map();
+  fs.mkdirSync(path.join(__dirname, '..', '.tmp'), { recursive: true });
+  fs.writeFileSync(path.join(__dirname, '..', '.tmp', 'qa-sweep-last.json'), JSON.stringify(report, null, 1)); // 마지막 결과(상세 포함)
   report.forEach((r) => r.issues.forEach((i) => { if (!byKind.has(i.kind)) byKind.set(i.kind, []); byKind.get(i.kind).push(`${r.vp} · ${r.screen} · ${i.detail || ''}`); }));
   console.log(`===== QA 요약 (${scenes.length}화면 × ${VIEWPORTS.length}해상도) =====`);
   if (!byKind.size) console.log('발견된 문제 없음');
