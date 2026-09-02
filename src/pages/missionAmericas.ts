@@ -15,7 +15,6 @@ import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '..
 import { showToast } from '../ui/toast';
 import { airplaneChoice } from '../ui/airplaneFleet';
 import { fitAspect } from '../ui/aspectBox';
-import { showKeyPoint } from '../ui/keyPoint';
 import { enableMapZoom } from '../ui/mapZoom';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 
@@ -33,8 +32,15 @@ interface StudentDef {
 }
 
 interface PostcardDef { countryId: string; studentId: string; hint: string; extraHint: string }
-interface LensPointDef { id: string; x: number; y: number; label: string; note: string }
-interface LensDef { id: string; label: string; desc: string; points: LensPointDef[] }
+interface LensPointDef {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  note: string;
+  assetId?: string;
+}
+interface LensDef { id: string; label: string; desc: string; prompt: string; points: LensPointDef[] }
 interface StopDef { id: string; label: string; note: string }
 interface BagItemDef { id: string; label: string; line: string; kind?: string; needsReview?: boolean }
 interface CountryDef {
@@ -108,7 +114,21 @@ interface ExpState {
 
 const emptyCountry = (): CountryProgress => ({ stopsSeen: [], met: false, bagSeen: [], keep: null, done: false });
 
-function restoreState(data: Record<string, unknown>, countryIds: string[]): ExpState {
+export function isCountryJourneyComplete(
+  country: { stops: ReadonlyArray<{ id: string }>; bag: ReadonlyArray<{ id: string }> },
+  progress: Pick<CountryProgress, 'stopsSeen' | 'met' | 'bagSeen' | 'keep'>
+): boolean {
+  return country.stops.length > 0
+    && country.stops.every((stop) => progress.stopsSeen.includes(stop.id))
+    && progress.met
+    && country.bag.length > 0
+    && country.bag.every((item) => progress.bagSeen.includes(item.id))
+    && progress.keep !== null
+    && country.bag.some((item) => item.id === progress.keep);
+}
+
+function restoreState(data: Record<string, unknown>, countries: readonly CountryDef[]): ExpState {
+  const countryIds = countries.map((country) => country.id);
   const base: ExpState = {
     screen: 'landing', placed: [], lensVisited: [], pointsSeen: [],
     countries: Object.fromEntries(countryIds.map((id) => [id, emptyCountry()])),
@@ -134,11 +154,14 @@ function restoreState(data: Record<string, unknown>, countryIds: string[]): ExpS
       const c = (r.countries as Record<string, unknown>)[id];
       if (c && typeof c === 'object') {
         const cr = c as Record<string, unknown>;
-        base.countries[id] = {
+        const restored: CountryProgress = {
           stopsSeen: strArr(cr.stopsSeen), met: cr.met === true,
           bagSeen: strArr(cr.bagSeen), keep: typeof cr.keep === 'string' ? cr.keep : null,
-          done: cr.done === true
+          done: false
         };
+        const country = countries.find((item) => item.id === id);
+        restored.done = Boolean(country && isCountryJourneyComplete(country, restored));
+        base.countries[id] = restored;
       }
     }
   }
@@ -169,8 +192,6 @@ const PAGE_CSS = `
 .exp-map { position:absolute; inset:0; background:linear-gradient(180deg,#3f9fd4,#1c72ad); transform-origin:50% 50%; transition:transform .12s ease-out; }
 /* 지도 이미지는 16:9다. 상자를 같은 비율로 고정해야 %로 찍은 나라·렌즈 좌표가 그림 위 실제 위치와 일치한다. */
 .exp-map::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; transition:background var(--t-med) ease; }
-.exp-map[data-lens=nature]::before { background:linear-gradient(180deg,rgba(46,150,92,.26),rgba(24,104,74,.34)); }
-.exp-map[data-lens=life]::before { background:linear-gradient(180deg,rgba(255,196,86,.24),rgba(206,116,44,.32)); }
 .exp-map__land { position:absolute; inset:0; pointer-events:none; }
 .exp-map__land i { position:absolute; display:block; background:linear-gradient(160deg,#9ecf7f,#5ea45f); box-shadow:inset 0 -10px 24px #3d7442aa, 0 6px 18px #0a3a5544; }
 .exp-map__land .north { left:16%; top:6%; width:52%; height:42%; border-radius:58% 42% 46% 54%/55% 48% 52% 45%; }
@@ -238,14 +259,37 @@ const PAGE_CSS = `
 .lens-tabs { display:flex; gap:10px; justify-content:center; flex-shrink:0; }
 .lens-tabs .btn { min-height:58px; padding:10px 22px; font:900 max(19px,var(--am-label)) var(--font-head); }
 .lens-tabs .btn[aria-pressed=true] { background:var(--c-gold); }
-.exp-map[data-lens=position] .exp-map__land i { filter:none; }
-.exp-map[data-lens=nature] { background:linear-gradient(180deg,#2e86b8,#155f92); }
-.exp-map[data-lens=nature] .exp-map__land i { background:linear-gradient(160deg,#c9d98a,#7c9a52); }
-.exp-map[data-lens=life] { background:linear-gradient(180deg,#254b70,#122f4c); }
-.exp-map[data-lens=life] .exp-map__land i { background:linear-gradient(160deg,#5d7d68,#3c5a49); }
+.lens-stage { flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; }
+.lens-focus { flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:12px; min-height:56px; padding:8px 18px; border:2px solid rgba(255,255,255,.8); border-radius:18px; background:rgba(255,253,244,.9); box-shadow:var(--shadow-card); color:#173b53; text-align:center; }
+.lens-focus strong { font:900 clamp(21px,1.35vw,27px)/1.15 var(--font-head); }
+.lens-focus span { color:#426176; font-size:clamp(16px,.98vw,19px); font-weight:800; word-break:keep-all; }
+.lens-visual { flex:1; min-height:0; display:grid; }
+.lens-visual > .exp-map-fit { min-height:0; }
+.lens-scene-grid { min-height:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(12px,1.2vw,20px); }
+.lens-scene-card { min-width:0; min-height:0; overflow:hidden; display:grid; grid-template-rows:minmax(0,1fr) auto; padding:0; border:4px solid rgba(255,255,255,.9); border-radius:24px; background:rgba(255,253,247,.94); box-shadow:var(--shadow-card); color:#173b53; text-align:left; cursor:pointer; touch-action:manipulation; transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; }
+.lens-scene-card:hover { transform:translateY(-3px); }
+.lens-scene-card:focus-visible { outline:5px solid #ffe052; outline-offset:2px; }
+.lens-scene-card.is-seen { border-color:var(--c-success); box-shadow:0 0 0 5px rgba(20,144,103,.2),var(--shadow-card); }
+.lens-scene-media { position:relative; min-height:0; overflow:hidden; background:#d8e7ed; }
+.lens-scene-media img { width:100%; height:100%; min-height:250px; display:block; object-fit:cover; }
+.lens-scene-badge { position:absolute; left:14px; top:14px; padding:7px 14px; border:2px solid rgba(255,255,255,.92); border-radius:999px; background:rgba(8,55,83,.86); color:#fff; font:900 clamp(18px,1.15vw,22px)/1 var(--font-head); box-shadow:0 6px 16px rgba(2,25,40,.3); }
+.lens-scene-card.is-seen .lens-scene-badge::before { content:'✓ '; color:#9af0ce; }
+.lens-scene-copy { min-height:106px; display:grid; align-content:center; gap:5px; padding:12px 17px 14px; }
+.lens-scene-copy strong { font:900 clamp(22px,1.45vw,29px)/1.15 var(--font-head); word-break:keep-all; }
+.lens-scene-copy span { color:#466171; font-size:clamp(17px,1.05vw,21px); font-weight:780; line-height:1.3; word-break:keep-all; }
+.lens-scene-card:not(.is-seen) .lens-scene-copy span { color:#8a650e; }
 .lens-point { position:absolute; transform:translate(-50%,-50%); min-width:84px; min-height:68px; border-radius:999px; border:3px solid #fff; background:#ffd75ed9; color:#5b430a; font:900 clamp(19px,1.5vw,25px)/1.2 var(--font-head); padding:10px 16px; box-shadow:0 0 0 0 rgba(255,215,94,.6); animation:lensPing 1.6s ease-out infinite; }
 .lens-point.is-seen { background:#e0f6ed; border-color:var(--c-success); color:#116d5b; animation:none; }
 @keyframes lensPing { 70%{box-shadow:0 0 0 18px rgba(255,215,94,0)} 100%{box-shadow:0 0 0 0 rgba(255,215,94,0)} }
+
+@media (max-height:720px) {
+  .lens-tabs .btn { min-height:50px; padding-block:7px; }
+  .lens-focus { min-height:48px; padding-block:5px; }
+  .lens-scene-media img { min-height:205px; }
+  .lens-scene-copy { min-height:88px; padding:8px 14px 10px; }
+  .lens-scene-copy strong { font-size:clamp(20px,1.35vw,25px); }
+  .lens-scene-copy span { font-size:clamp(15px,.95vw,18px); }
+}
 
 /* ---- 나라 허브 핀 ---- */
 .hub-pin { position:absolute; transform:translate(-50%,-50%); width:clamp(88px,8.4vw,120px); border:0; background:transparent; display:grid; justify-items:center; gap:4px; cursor:pointer; }
@@ -354,7 +398,12 @@ const PAGE_CSS = `
 /* ---- 하루 비교 ---- 시간대는 탭으로 하나씩. 가로 스크롤은 뒤쪽 시간대를 통째로 숨긴다. */
 /* 초등 손가락 기준 — 어떤 화면에서도 조작 버튼은 44px 이상 */
 .am-scene button { min-height:44px; }
-@media (max-height:460px){ .am-scene .exp-map,.am-scene .country-scene{max-height:62vh} .am-scene .map-zoom-controls{top:auto!important;bottom:6px!important} .am-scene .map-zoom-hint{display:none} }
+/* 가이드 말풍선이 카드에 겹쳐도 카드가 눌리게 — 말풍선은 안내만, 클릭은 통과 */
+/* 가이드와 지도 줌 버튼이 둘 다 왼쪽 아래라 태블릿에서 겹친다 — 줌 버튼은 오른쪽 아래로 */
+.am-scene .map-zoom-controls { left:auto; right:12px; }
+/* 태블릿·웹앱 폭에서는 가이드를 줄여 말풍선이 카드 위로 올라오지 않게 */
+@media (max-width:1400px) { .am-scene { --guide-size:clamp(110px,9vw,150px); } .am-scene .guide-bubble { max-width:min(40vw,360px); } }
+@media (max-height:460px){ .am-scene .exp-map,.am-scene .country-scene{max-height:62vh} .am-scene .map-zoom-controls{top:auto!important;bottom:6px!important} }
 .day-board { flex:1; min-height:0; display:flex; align-items:center; }
 .day-slot { flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:10px; }
 /* 카드는 내용 높이만큼만 — 남은 세로를 카드가 먹으면 그림 위아래로 빈 여백만 커진다 */
@@ -491,7 +540,7 @@ export function createPage(): Page {
 
       const mission = saveRepo.get().missions.americas;
       const countryIds = E.countries.map((c) => c.id);
-      let S = restoreState(mission.data, countryIds);
+      let S = restoreState(mission.data, E.countries);
       // 구버전(어울림 학급) 저장은 새 탐험 흐름과 호환되지 않아 처음부터 시작한다(완료 도장은 그대로 유지됨).
       if (mission.data.exploreProgress && S.screen !== 'landing') showToast('저장한 탐험 지점에서 이어갈게.', 'info');
       let finished = false;
@@ -573,7 +622,6 @@ export function createPage(): Page {
         viewport.className = 'exp-map-viewport';
         viewport.appendChild(map);
         viewport.insertAdjacentHTML('beforeend', '<span class="exp-drop-hint">지도 속 점선 원에 놓아 줘!</span>');
-        viewport.insertAdjacentHTML('beforeend', '<span class="map-zoom-hint">두 손가락으로 크게 볼 수 있어</span>');
         const holder = document.createElement('div');
         holder.className = 'exp-map-fit';
         holder.appendChild(viewport);
@@ -685,26 +733,20 @@ export function createPage(): Page {
         wrap.append(fitMap(map), side);
         stage.replaceChildren(wrap);
         refresh();
-        showKeyPoint({
-          id: 'americas.geo',
-          imageId: 'americas.student1',
-          lines: [
-            '아메리카는 북아메리카와 남아메리카, 두 대륙이 길게 이어져 있어.',
-            '적도는 남아메리카 북쪽을 지나가서, 그 근처는 일 년 내내 더워.'
-          ],
-          onDone: () => guide?.say('대화창을 읽고 지도 속 맞는 나라에 끌어 놓아 봐!', {
-            cue: items.find((item) => !item.classList.contains('is-done')) ?? null,
-            autoStart: true,
-            persist: true
-          })
+        guide?.say('대화창을 읽고 지도 속 맞는 나라에 끌어 놓아 봐!', {
+          cue: items.find((item) => !item.classList.contains('is-done')) ?? null,
+          autoStart: true,
+          persist: true
         });
       };
 
       /* ===== 화면 2 — 탐험 렌즈 ===== */
       const renderLens = (): void => {
-        const wrap = el('<div class="am-stage" style="gap:12px"></div>');
+        const wrap = el('<div class="lens-stage"></div>');
         const tabs = el('<div class="lens-tabs"></div>');
         const map = buildMap();
+        const focus = el('<div class="lens-focus" role="status"></div>');
+        const visual = el('<div class="lens-visual"></div>');
         let active = E.lenses.find((l) => l.id === S.lensVisited.at(-1)) ?? E.lenses[0]!;
 
         const next = nextButton('나라 속으로 들어가기', 'countries');
@@ -712,27 +754,63 @@ export function createPage(): Page {
         const refresh = (): void => {
           const ok = allPoints.every((id) => S.pointsSeen.includes(id));
           next.disabled = !ok;
-          setBottom(ok ? '세 렌즈로 대륙을 모두 살펴봤어!' : '렌즈를 바꿔 가며 반짝이는 곳을 모두 눌러 봐', next);
+          E.lenses.forEach((lens) => {
+            const solved = lens.points.every((point) => S.pointsSeen.includes(`${lens.id}:${point.id}`));
+            tabs.querySelector<HTMLElement>(`[data-id="${lens.id}"]`)?.classList.toggle('is-solved', solved);
+          });
+          const activeSeen = active.points.filter((point) => S.pointsSeen.includes(`${active.id}:${point.id}`)).length;
+          setBottom(ok ? '위치·자연·생활의 차이를 모두 확인했어!' : `${active.label} ${activeSeen}/${active.points.length}`, next);
+        };
+
+        const markPoint = (point: LensPointDef, control: HTMLElement, note: HTMLElement | null = null): void => {
+          const key = `${active.id}:${point.id}`;
+          if (!S.pointsSeen.includes(key)) {
+            S.pointsSeen.push(key);
+            persist();
+          }
+          control.classList.add('is-seen');
+          control.setAttribute('aria-pressed', 'true');
+          if (note) note.textContent = point.note;
+          announceGuide(`${point.label} — ${point.note}`, control);
+          popBounce(control);
+          void audio.playSfx('tap');
+          refresh();
         };
 
         const draw = (): void => {
-          map.dataset.lens = active.id;
-          map.querySelectorAll('.lens-point').forEach((p) => p.remove());
+          clearMapFits();
+          visual.replaceChildren();
           if (!S.lensVisited.includes(active.id)) { S.lensVisited.push(active.id); persist(); }
           tabs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.id === active.id)));
-          active.points.forEach((p) => {
-            const key = `${active.id}:${p.id}`;
-            const dot = el(`<button type="button" class="lens-point ${S.pointsSeen.includes(key) ? 'is-seen' : ''}" style="left:${p.x}%;top:${p.y}%">${p.label}</button>`);
-            dot.addEventListener('click', () => {
-              if (!S.pointsSeen.includes(key)) { S.pointsSeen.push(key); persist(); }
-              dot.classList.add('is-seen');
-              announceGuide(`${p.label} — ${p.note}`, dot);
-              popBounce(dot);
-              void audio.playSfx('tap');
-              refresh();
+          focus.innerHTML = `<strong>${active.desc}</strong><span>${active.prompt}</span>`;
+
+          if (active.id === 'position') {
+            map.dataset.lens = 'position';
+            map.querySelectorAll('.lens-point').forEach((point) => point.remove());
+            active.points.forEach((point) => {
+              const key = `${active.id}:${point.id}`;
+              const dot = el(`<button type="button" class="lens-point ${S.pointsSeen.includes(key) ? 'is-seen' : ''}" style="left:${point.x}%;top:${point.y}%" aria-pressed="${S.pointsSeen.includes(key)}">${point.label}</button>`);
+              dot.addEventListener('click', () => markPoint(point, dot));
+              map.appendChild(dot);
             });
-            map.appendChild(dot);
-          });
+            visual.appendChild(fitMap(map));
+          } else {
+            const grid = el('<div class="lens-scene-grid"></div>');
+            active.points.forEach((point) => {
+              const key = `${active.id}:${point.id}`;
+              const seen = S.pointsSeen.includes(key);
+              const imageId = point.assetId ?? 'americas.map';
+              const card = el(`<button type="button" class="lens-scene-card ${seen ? 'is-seen' : ''}" aria-pressed="${seen}">
+                <span class="lens-scene-media"><img src="${assetUrl(imageId)}" alt="${point.label} 장면"><b class="lens-scene-badge">${point.label}</b></span>
+                <span class="lens-scene-copy"><strong>${point.label}</strong><span>${seen ? point.note : '그림을 눌러 무엇을 보여 주는지 확인해 봐.'}</span></span>
+              </button>`);
+              const note = card.querySelector<HTMLElement>('.lens-scene-copy span');
+              card.addEventListener('click', () => markPoint(point, card, note));
+              grid.appendChild(card);
+            });
+            visual.appendChild(grid);
+          }
+          refresh();
         };
 
         E.lenses.forEach((l) => {
@@ -741,11 +819,10 @@ export function createPage(): Page {
           tabs.appendChild(b);
         });
 
-        wrap.append(tabs, fitMap(map));
+        wrap.append(tabs, focus, visual);
         stage.replaceChildren(wrap);
         draw();
-        refresh();
-        announceGuide('렌즈를 바꾸면 같은 대륙이 다르게 보여! 위치·자연·생활 렌즈로 반짝이는 곳을 살펴봐.');
+        announceGuide('위치는 지도에서, 자연과 생활은 서로 다른 장면에서 비교해 봐. 렌즈마다 관찰할 자료가 달라져!');
       };
 
       /* ===== 화면 3 — 나라 허브 + 마이크로 탐험 ===== */
@@ -806,7 +883,13 @@ export function createPage(): Page {
 
         // seeStop이 나라별 상호작용 설정 중에 바로 호출되므로, refresh가 쓰는 것들을 먼저 만든다.
         const back = el('<button type="button" class="btn">대륙 지도로</button>') as HTMLButtonElement;
-        back.addEventListener('click', () => { if (P.met && P.keep) P.done = true; persist(); renderCountries(); });
+        back.addEventListener('click', () => {
+          const newlyCompleted = !P.done && isCountryJourneyComplete(c, P);
+          if (newlyCompleted) P.done = true;
+          persist();
+          renderCountries();
+          if (newlyCompleted) later(() => announceGuide(`${c.name}의 사진과 이야기를 모두 살펴봤어! 다른 나라도 둘러볼까?`), 120);
+        });
 
         const seeStop = (index: number): void => {
           const stop = c.stops[index];
@@ -1009,10 +1092,13 @@ export function createPage(): Page {
 
         const done = el('<button type="button" class="btn btn-primary">가방 닫고 탐험 계속하기</button>') as HTMLButtonElement;
         done.addEventListener('click', () => {
+          const newlyCompleted = !P.done && isCountryJourneyComplete(c, P);
+          if (!newlyCompleted && !P.done) return;
           P.done = true;
           persist();
           void audio.playSfx('stamp');
           renderCountries();
+          if (newlyCompleted) later(() => announceGuide(`${c.name}의 사진과 이야기를 모두 살펴봤어! 다른 나라도 둘러볼까?`), 120);
         });
 
         const refresh = (): void => {
@@ -1145,14 +1231,7 @@ export function createPage(): Page {
         wrap.append(tabs, task, board);
         stage.replaceChildren(wrap);
         drawSlot();
-        showKeyPoint({
-          id: 'americas.compare',
-          lines: [
-            '자연환경이 다르면 먹는 것도, 입는 옷도, 노는 곳도 달라져.',
-            '그래도 아침·낮·저녁을 보내는 하루에는 닮은 점이 남아 있어.'
-          ],
-          onDone: () => announceGuide(E.day.guide)
-        });
+        announceGuide(E.day.guide);
       };
 
       /* ===== 화면 5 — 지구 신호 ===== */

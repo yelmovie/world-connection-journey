@@ -37,7 +37,8 @@ export function earthPreloadIds(content: EarthContent): string[] {
     'bg.map', 'bg.spare', 'earth.council.globe', 'earth.council.finale',
     'prop.globe3d', 'prop.globe', 'reward.globe_puzzle',
     ...content.friends.map((f) => f.imageId),
-    ...content.signals.map((s) => signalImageId(content, s))
+    ...content.signals.map((s) => signalImageId(content, s)),
+    ...content.issues.map((issue) => issue.imageAssetId ?? '').filter(hasAsset)
   ].filter(hasAsset);
 }
 
@@ -130,7 +131,7 @@ export const EARTH_CSS = `
 .ec-lens { position:absolute;width:min(34%,260px);aspect-ratio:1;border-radius:50%;border:6px solid #fff;box-shadow:var(--shadow-pop);background-repeat:no-repeat;pointer-events:none;right:3%;top:5%;transition:opacity 220ms; }
 .ec-ripple { position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);pointer-events:none;animation:ec-ripple .5s ease-out forwards; }
 @keyframes ec-ripple { to { transform:translate(-50%,-50%) scale(2.4);opacity:0; } }
-.ec-photo-side { min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
+.ec-photo-side {align-self:start;max-height:100%;overflow:auto; min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
 .ec-photo-side .ec-portrait { width:clamp(96px,10vw,150px);height:clamp(96px,10vw,150px);object-fit:contain;align-self:center; }
 .ec-scope { font-size:max(16px,var(--fs-small));color:var(--c-ink-soft);font-weight:700;line-height:1.35; }
 .ec-progress { display:inline-flex;gap:6px;align-items:center;justify-content:center;font:900 max(20px,var(--fs-body)) var(--font-head);color:var(--c-violet-ink); }
@@ -149,7 +150,7 @@ export const EARTH_CSS = `
 .ec-pin.is-dim { opacity:.42;transform:translate(-50%,-50%) scale(.9); }
 .ec-pin.is-lit { transform:translate(-50%,-50%) scale(1.14);border-color:var(--c-gold);box-shadow:0 0 0 6px rgba(242,193,78,.45),var(--shadow-pop); }
 .ec-pin[aria-pressed="true"] { border-color:var(--c-violet);box-shadow:0 0 0 6px rgba(108,76,232,.4),var(--shadow-pop); }
-.ec-side { min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
+.ec-side {align-self:start;max-height:100%;overflow:auto; min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
 .ec-lenses { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px; }
 .ec-lens-btn { display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px;padding:6px 4px;border-radius:var(--radius-m);border:2px solid var(--c-line);background:#fff;font:800 max(16px,var(--fs-small))/1.1 var(--font-body);color:var(--c-ink);cursor:pointer; }
 .ec-lens-btn[aria-pressed="true"] { border-color:var(--c-violet);background:#f1ecff;box-shadow:0 0 0 3px rgba(108,76,232,.25); }
@@ -158,24 +159,41 @@ export const EARTH_CSS = `
 .ec-reasons { display:flex;flex-direction:column;gap:6px; }
 .ec-reason { text-align:left;font-size:max(18px,var(--fs-small));line-height:1.35;min-height:52px;padding:8px 12px; }
 
-/* 장면 3 — 문제 고르기 */
-.ec-orbit { position:relative;flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:var(--sp-3);align-items:start; }
-.ec-orbit .ec-globe { align-self:center; }
-.ec-orbit .ec-globe { width:min(44vh,420px);justify-self:center;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:ec-float 4s ease-in-out infinite; }
+/* 장면 3 — 네 환경문제를 차례로 지구본에 잇기 */
+.ec-orbit { position:relative;flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(210px,.62fr) minmax(0,1.18fr);gap:clamp(10px,1.2vw,18px);align-items:stretch; }
+.ec-globe-wrap { position:relative;z-index:2;display:flex;align-items:center;justify-content:center;min-width:0; }
+.ec-orbit .ec-globe { width:min(34vh,340px);max-width:100%;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));animation:ec-float 4s ease-in-out infinite;transition:filter 300ms,transform 300ms; }
+.ec-orbit .ec-globe.is-receiving { animation:ec-globe-receive 720ms cubic-bezier(.2,.8,.25,1);filter:drop-shadow(0 0 34px rgba(92,224,255,.95)); }
+.ec-globe-count { position:absolute;left:50%;bottom:15%;transform:translateX(-50%);z-index:3;min-width:94px;padding:7px 14px;border:2px solid #fff;border-radius:999px;background:rgba(9,39,70,.9);color:#fff;text-align:center;font:900 clamp(15px,1vw,19px)/1 var(--font-body);box-shadow:var(--shadow-pop);white-space:nowrap; }
 @keyframes ec-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-.ec-issues { display:flex;flex-direction:column;gap:var(--sp-2);min-height:0; }
-.ec-issue { display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:0;overflow:hidden;text-align:left;border-radius:var(--radius-l); }
-.ec-issue img { width:100%;height:clamp(72px,11vh,120px);object-fit:cover; }
-.ec-issue .ec-issue-body { padding:8px 12px 12px;display:flex;flex-direction:column;gap:4px; }
-.ec-issue strong { font:900 max(20px,var(--fs-body))/1.2 var(--font-head);color:var(--c-navy); }
-.ec-issue .ec-issue-mine { display:block;max-height:11.5em;overflow-y:auto;padding:6px 9px;border-radius:10px;background:#eef6ee;border:1.5px dashed #7fae86;font-size:max(13px,calc(var(--fs-small) - 2px));font-weight:800;line-height:1.45;color:#2c5a38; }
-.ec-issue-mine em { display:inline-block;margin-right:5px;padding:0 7px;border-radius:999px;background:#d9ecd9;color:#1e4e2a;font-style:normal;font-size:14px;font-weight:900; }
-.ec-issue-q { font-size:max(17px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.3; }
+@keyframes ec-globe-receive { 0%{transform:scale(1)} 45%{transform:scale(1.17) rotate(5deg)} 100%{transform:scale(1)} }
+.ec-issues { display:grid;grid-auto-rows:minmax(0,1fr);gap:clamp(8px,1vh,12px);min-height:0;overflow:hidden; }
+.ec-issues:has(> .ec-issue:only-child) { align-items:center; }
+.ec-issue { position:relative;z-index:2;height:100%;min-height:0;display:block;padding:0;overflow:hidden;text-align:left;border-radius:var(--radius-l);border:3px solid rgba(255,255,255,.92);background:#0b2946;box-shadow:0 9px 24px rgba(0,0,0,.3); }
+.ec-issues > .ec-issue:only-child { height:min(280px,76%);min-height:190px; }
+.ec-issue::after { content:'';position:absolute;inset:38% 0 0;background:linear-gradient(180deg,transparent,rgba(2,14,29,.88));pointer-events:none; }
+.ec-issue img { width:100%;height:100%;min-height:0;object-fit:cover;display:block;transition:transform 450ms ease,filter 300ms; }
+.ec-issue:hover img,.ec-issue:focus-visible img { transform:scale(1.045); }
+.ec-issue-title { position:absolute;z-index:2;left:clamp(14px,1.4vw,24px);right:14px;bottom:clamp(14px,2vh,24px);font:900 clamp(23px,1.7vw,34px)/1.12 var(--font-head);color:#fff;letter-spacing:-.02em;-webkit-text-stroke:clamp(1px,.08vw,2px) rgba(4,25,49,.92);paint-order:stroke fill;text-shadow:0 3px 8px #00152d,0 0 4px #00152d;word-break:keep-all; }
+.ec-issue-check { position:absolute;z-index:3;right:12px;top:12px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(9,45,76,.82);border:2px solid #fff;color:#fff;opacity:0;transform:scale(.55);transition:opacity 240ms,transform 320ms; }
+.ec-issue.is-inspected { border-color:#79f0bd;box-shadow:0 0 0 4px rgba(34,190,132,.35),0 10px 28px rgba(0,0,0,.32); }
+.ec-issue.is-inspected .ec-issue-check { opacity:1;transform:scale(1); }
+.ec-orbit-lines { position:absolute;inset:0;z-index:1;width:100%;height:100%;pointer-events:none;overflow:visible; }
+.ec-orbit-line { stroke:#65e5ff;stroke-width:4;stroke-linecap:round;stroke-dasharray:12 10;filter:drop-shadow(0 0 6px rgba(65,218,255,.95));animation:ec-line-draw 760ms ease-out both; }
+@keyframes ec-line-draw { from{stroke-dashoffset:220;opacity:0} to{stroke-dashoffset:0;opacity:.9} }
+.ec-flight-copy { position:fixed;z-index:calc(var(--z-modal) - 1);border-radius:18px;overflow:hidden;border:4px solid #fff;box-shadow:0 16px 38px rgba(0,0,0,.48);pointer-events:none;will-change:transform,opacity; }
+.ec-flight-copy img { width:100%;height:100%;object-fit:cover;display:block; }
 
 /* 장면 4 — 원탁 */
 .ec-table { position:relative;flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:var(--sp-2); }
-/* 지구회의 장면은 정보가 많다 — 가이드 레인을 줄여 대화 패널이 잘리지 않게 한다 */
-.dialogue-scene:has(.ec) { --guide-lane-h: 84px; }
+/* 지구회의 장면은 정보가 많다 — 본문·가이드·버튼이 한 화면 안에서 끝나게 한다. */
+.dialogue-scene:has(.ec) { --guide-lane-h:clamp(56px,7vh,72px);--bottom-bar-h:clamp(64px,8vh,76px); }
+.dialogue-scene:has(.ec) .page-body { padding:clamp(8px,1.2vh,14px) clamp(14px,2.5vw,40px) 4px;overflow:hidden; }
+/* 문제 선택 안내는 화면 안에 이미 있으므로 캐릭터가 카드를 가리지 않게 한다. */
+.dialogue-scene:has(.ec-issue-screen) { --guide-lane-h:0px; }
+.dialogue-scene:has(.ec-issue-screen) > .guide-wrap { display:none; }
+.dialogue-scene:has(.ec-council-screen) { --guide-lane-h:0px; }
+.dialogue-scene:has(.ec-council-screen) > .guide-wrap { display:none; }
 .ec-head-compact { display:flex;align-items:baseline;justify-content:center;gap:12px;padding:2px 0; }
 .ec-head-compact strong { font:900 clamp(21px,1.9vw,28px) var(--font-head);color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65); }
 .ec-head-compact span { font:800 max(15px,var(--fs-small)) var(--font-body);color:#ffe9a8;text-shadow:0 1px 6px rgba(0,0,0,.6); }
@@ -197,10 +215,37 @@ export const EARTH_CSS = `
 .ec-starters { display:flex;flex-wrap:wrap;gap:6px; }
 .ec-starters .btn { min-height:44px;font-size:max(16px,var(--fs-small)); }
 
+/* 새 공동회의 — 여섯 친구가 한 원을 만들고 문제·해결책·약속을 차례로 말한다. */
+.ec-council-screen { padding:6px;border-radius:var(--radius-l);background:linear-gradient(rgba(5,24,46,.3),rgba(4,19,38,.55));overflow:hidden; }
+.ec-council-stage { position:relative;flex:1;min-height:0;overflow:hidden;border-radius:var(--radius-l);background:radial-gradient(circle at 50% 48%,rgba(43,161,192,.28),rgba(4,26,50,.18) 43%,rgba(2,15,33,.5) 100%); }
+.ec-council-world { position:absolute;left:50%;top:50%;width:min(24vh,230px);transform:translate(-50%,-50%);filter:drop-shadow(0 12px 28px rgba(56,206,246,.5));opacity:.88;animation:ec-float 4s ease-in-out infinite; }
+.ec-council-friend { position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px;border:0;background:transparent;pointer-events:none;animation:ec-friend-arrive 620ms cubic-bezier(.2,.8,.3,1) both; }
+.ec-council-friend img { width:clamp(58px,8.5vh,108px);height:clamp(58px,8.5vh,108px);object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.52));transition:transform 320ms,filter 320ms; }
+.ec-council-friend span { padding:2px 9px;border-radius:999px;background:rgba(255,253,244,.94);font:900 clamp(13px,.9vw,17px)/1.15 var(--font-body);color:var(--c-navy);box-shadow:var(--shadow-card);white-space:nowrap; }
+.ec-council-friend.is-speaking img { transform:scale(1.2) translateY(-4px);filter:drop-shadow(0 0 16px rgba(255,223,92,.95)); }
+.ec-council-friend.is-speaking span { background:#fff0a8; }
+@keyframes ec-friend-arrive { from{opacity:0;transform:translate(-50%,-50%) scale(.55)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+.ec-council-core { position:absolute;z-index:4;left:50%;top:50%;width:min(650px,58%);transform:translate(-50%,-50%); }
+.ec-council-bubble { position:relative;padding:clamp(14px,2vh,22px) clamp(18px,2vw,28px);border:4px solid #fff;border-radius:30px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(242,249,255,.96));box-shadow:0 18px 42px rgba(0,0,0,.38),0 0 0 6px rgba(75,208,242,.22);text-align:center;animation:ec-bubble-in 430ms cubic-bezier(.2,.85,.25,1); }
+.ec-council-bubble::after { content:'';position:absolute;left:50%;bottom:-18px;transform:translateX(-50%) rotate(45deg);width:30px;height:30px;background:#f2f9ff;border-right:4px solid #fff;border-bottom:4px solid #fff; }
+.ec-council-bubble h2 { margin:5px 0 7px;font:900 clamp(20px,1.65vw,30px)/1.15 var(--font-head);color:var(--c-navy); }
+.ec-council-bubble p { margin:0;font:800 clamp(17px,1.25vw,23px)/1.42 var(--font-body);color:var(--c-ink);word-break:keep-all; }
+.ec-council-phase { display:inline-flex;padding:4px 14px;border-radius:999px;background:#e8efff;color:#274f8c;font:900 clamp(14px,1vw,18px)/1.15 var(--font-body); }
+.ec-council-phase[data-phase="해결책"] { background:#dcf8e9;color:#17653f; }
+.ec-council-phase[data-phase="약속"] { background:#fff1b8;color:#775000; }
+@keyframes ec-bubble-in { from{opacity:0;transform:translateY(18px) scale(.92)} to{opacity:1;transform:translateY(0) scale(1)} }
+.ec-council-dots { position:absolute;z-index:5;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:8px; }
+.ec-council-dot { width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.8); }
+.ec-council-dot.is-on { background:var(--c-gold);box-shadow:0 0 10px rgba(255,213,70,.9); }
+.ec-player-bubble { text-align:left; }
+.ec-player-bubble label { display:block;margin-bottom:8px;font:900 clamp(20px,1.6vw,29px)/1.2 var(--font-head);color:var(--c-navy); }
+.ec-player-bubble .ec-input { min-height:84px;background:#fff; }
+.ec-player-hint { min-height:1.5em;margin-top:6px!important;font-size:clamp(14px,1vw,17px)!important;color:var(--c-coral-ink)!important; }
+
 /* 장면 5 — 해결안 궤도 */
 .ec-actions { flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);grid-template-rows:minmax(0,1fr);gap:var(--sp-3); }
 .ec-rings { position:relative;min-height:0;display:flex;flex-direction:column;gap:6px;justify-content:center; }
-.ec-ring { display:grid;grid-template-columns:minmax(120px,.7fr) repeat(3,minmax(0,1fr));gap:6px;align-items:stretch;padding:6px 8px;border-radius:var(--radius-l);background:rgba(255,252,240,.78);border:2px solid rgba(255,255,255,.7); }
+.ec-ring { display:grid;grid-template-columns:minmax(120px,.7fr) repeat(4,minmax(0,1fr));gap:6px;align-items:stretch;padding:6px 8px;border-radius:var(--radius-l);background:rgba(255,252,240,.78);border:2px solid rgba(255,255,255,.7); }
 .ec-ring-name { display:flex;align-items:center;font:900 max(18px,var(--fs-small))/1.2 var(--font-head);color:var(--c-navy);padding-left:6px; }
 .ec-act { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:82px;padding:6px;border-radius:var(--radius-m);border:2px solid var(--c-line);background:#fff;font:800 max(16px,var(--fs-small))/1.15 var(--font-body);color:var(--c-ink);text-align:center;cursor:pointer;word-break:keep-all; }
 .ec-act .ec-act-ico { color:var(--c-sky-ink); }
@@ -220,6 +265,9 @@ export const EARTH_CSS = `
 
 /* 완료 연출 */
 .ec-finale { position:absolute;inset:0;z-index:var(--z-panel);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle at 50% 45%,rgba(10,40,80,.9),rgba(5,18,36,.97));text-align:center;padding:16px; }
+.ec-finale::before,.ec-finale::after { content:'';position:absolute;left:50%;top:48%;width:min(46vh,460px);aspect-ratio:1;border:5px solid rgba(99,230,255,.55);border-radius:50%;transform:translate(-50%,-50%) scale(.25);opacity:0;animation:ec-finale-wave 2.4s ease-out 700ms infinite;pointer-events:none; }
+.ec-finale::after { animation-delay:1.5s;border-color:rgba(255,215,76,.62); }
+@keyframes ec-finale-wave { 0%{transform:translate(-50%,-50%) scale(.25);opacity:.9} 80%,100%{transform:translate(-50%,-50%) scale(1.55);opacity:0} }
 .ec-finale.has-earth-bg { background-size:cover;background-position:center;background-repeat:no-repeat;justify-content:flex-end;padding:clamp(18px,3vh,34px); }
 .ec-finale .ec-f-copy { position:relative;z-index:3;width:min(900px,88%);padding:12px 22px;border:2px solid rgba(255,255,255,.44);border-radius:24px;background:rgba(5,22,48,.78);backdrop-filter:blur(9px);box-shadow:0 16px 38px rgba(0,0,0,.38); }
 .ec-finale .ec-f-copy h2 { margin:0 0 5px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65); }
@@ -233,6 +281,13 @@ export const EARTH_CSS = `
 .ec-finale svg { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
 .ec-finale [data-act="finale-continue"] { margin-top:10px; }
 .ec-finale [data-act="finale-continue"][hidden] { display:none; }
+.ec-f-topics { position:absolute;z-index:2;left:50%;top:48%;width:min(82vw,1080px);height:min(62vh,620px);transform:translate(-50%,-50%);pointer-events:none; }
+.ec-f-topics span { position:absolute;left:50%;top:50%;max-width:230px;padding:7px 13px;border:2px solid #fff;border-radius:999px;background:rgba(7,43,72,.88);color:#fff;font:900 clamp(13px,1vw,18px)/1.15 var(--font-body);box-shadow:0 0 18px rgba(88,221,255,.6);transform:translate(-50%,-50%);opacity:0;animation:ec-topic-join 1.25s cubic-bezier(.2,.82,.25,1) calc(350ms + var(--topic-i) * 180ms) both;white-space:nowrap; }
+.ec-f-topics span:nth-child(1) { --tx:-205%;--ty:-185%; }
+.ec-f-topics span:nth-child(2) { --tx:120%;--ty:-185%; }
+.ec-f-topics span:nth-child(3) { --tx:-205%;--ty:100%; }
+.ec-f-topics span:nth-child(4) { --tx:120%;--ty:100%; }
+@keyframes ec-topic-join { 0%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.55)} 55%{opacity:1;transform:translate(-50%,-50%) scale(1.08)} 100%{opacity:0;transform:translate(-50%,-50%) scale(.25)} }
 
 /* 압축 레이아웃은 진짜 낮은 화면(폴드 가로 등)에서만 — 1280×720·1366×768 전자칠판은 기본 레이아웃 유지 */
 @media (max-height:640px) {
@@ -246,17 +301,26 @@ export const EARTH_CSS = `
   .ec-note { font-size:16px; }
   .ec-rings { gap:4px; } .ec-ring { padding:4px 6px; } .ec-act { min-height:60px;font-size:max(16px,var(--fs-small)); }
 }
+@media (max-height:760px) {
+  .ec-head .ribbon-sub { display:none; }
+  .ec-note { font-size:16px; }
+  .ec-orbit .ec-globe { width:min(29vh,250px); }
+  .ec-issue-title { font-size:clamp(19px,1.45vw,27px);bottom:12px; }
+  .ec-council-core { width:min(610px,57%); }
+}
 @media (max-height:640px) {
   .ec-photo-row,.ec-connect,.ec-actions { grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr); }
   .ec-seat img { width:clamp(70px,9vw,110px);height:clamp(70px,9vw,110px); }
   .ec-orbit .ec-globe { width:min(24vh,200px); }
-  .ec-issue img { height:clamp(64px,12vh,110px); }
+  .ec-issue-title { font-size:clamp(17px,1.25vw,23px); }
   .ec-act { min-height:64px; }
 }
 @media (max-width:900px) {
   .ec-photo-row,.ec-connect,.ec-actions { grid-template-columns:1fr;grid-template-rows:minmax(220px,1fr) auto;overflow-y:auto; }
   .ec-orbit { grid-template-columns:1fr;overflow-y:auto; }
   .ec-orbit .ec-globe { display:none; }
+  .ec-issues { overflow:visible;grid-auto-rows:auto; }
+  .ec-issue,.ec-issues > .ec-issue:only-child { height:auto;min-height:160px; }
   .ec-choices { grid-template-columns:1fr; }
 }
 `;
@@ -655,10 +719,274 @@ function issueIdForSignal(signal: { label: string; issueId?: string }): string {
 
 function renderIssue(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
+  const globeId = hasAsset('earth.council.globe')
+    ? 'earth.council.globe'
+    : (hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe');
+
+  body.innerHTML = `
+    <div class="ec ec-issue-screen">
+      ${head(content.titles.council, content.titles.councilSub)}
+      <div class="ec-orbit" id="ec-orbit">
+        <svg class="ec-orbit-lines" id="ec-orbit-lines" aria-hidden="true"></svg>
+        <div class="ec-issues" id="ec-issues-left"></div>
+        <div class="ec-globe-wrap">
+          ${img(globeId, '네 가지 환경문제를 잇는 지구본', 'ec-globe')}
+          <span class="ec-globe-count" id="ec-globe-count"></span>
+        </div>
+        <div class="ec-issues" id="ec-issues-right"></div>
+      </div>
+    </div>`;
+
+  const orbit = body.querySelector<HTMLElement>('#ec-orbit')!;
+  const lines = body.querySelector<SVGSVGElement>('#ec-orbit-lines')!;
+  const globe = body.querySelector<HTMLElement>('.ec-globe')!;
+  const count = body.querySelector<HTMLElement>('#ec-globe-count')!;
+  const left = body.querySelector<HTMLElement>('#ec-issues-left')!;
+  const right = body.querySelector<HTMLElement>('#ec-issues-right')!;
+  let transitioning = false;
+
+  const inspectedCount = () => p.inspectedIssueIds.filter((id) => content.issues.some((issue) => issue.id === id)).length;
+  const drawLinks = () => {
+    if (!orbit.isConnected) return;
+    const orbitRect = orbit.getBoundingClientRect();
+    const globeRect = globe.getBoundingClientRect();
+    const globeX = globeRect.left + globeRect.width / 2 - orbitRect.left;
+    const globeY = globeRect.top + globeRect.height / 2 - orbitRect.top;
+    lines.setAttribute('viewBox', `0 0 ${Math.max(1, orbitRect.width)} ${Math.max(1, orbitRect.height)}`);
+    lines.innerHTML = p.inspectedIssueIds.map((id) => {
+      const card = orbit.querySelector<HTMLElement>(`[data-issue-id="${id}"]`);
+      if (!card) return '';
+      const cardRect = card.getBoundingClientRect();
+      const cardX = cardRect.left + cardRect.width / 2 - orbitRect.left;
+      const cardY = cardRect.top + cardRect.height / 2 - orbitRect.top;
+      return `<line class="ec-orbit-line" x1="${cardX}" y1="${cardY}" x2="${globeX}" y2="${globeY}"></line>`;
+    }).join('');
+  };
+
+  const openCouncil = () => {
+    if (transitioning || inspectedCount() < content.issues.length) return;
+    transitioning = true;
+    p.councilTurnIndex = 0;
+    host.save();
+    window.setTimeout(() => { if (!host.isDisposed()) goto(host, 'roundtable'); }, 420);
+  };
+
+  const renderBottom = () => {
+    const total = content.issues.length;
+    const done = inspectedCount();
+    count.textContent = `${done}/${total} 연결`;
+    bottom.innerHTML = `
+      <button class="btn btn-ghost" data-act="back">지도로</button>
+      <button class="btn btn-primary btn-big" data-act="go" ${done >= total ? '' : 'disabled'}>
+        ${done >= total ? '세계 친구 회의 열기' : `문제를 살펴봐요 ${done}/${total}`}
+      </button>`;
+    bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => goto(host, 'connect'));
+    bottom.querySelector('[data-act="go"]')?.addEventListener('click', openCouncil);
+  };
+
+  const animateToGlobe = async (card: HTMLElement) => {
+    const source = card.querySelector<HTMLImageElement>('img');
+    if (!source) return;
+    const from = card.getBoundingClientRect();
+    const to = globe.getBoundingClientRect();
+    const width = Math.min(150, Math.max(96, from.width * .38));
+    const height = width * Math.max(.62, Math.min(1, from.height / Math.max(1, from.width)));
+    const copy = document.createElement('span');
+    copy.className = 'ec-flight-copy';
+    copy.style.left = `${from.left + from.width / 2 - width / 2}px`;
+    copy.style.top = `${from.top + from.height / 2 - height / 2}px`;
+    copy.style.width = `${width}px`;
+    copy.style.height = `${height}px`;
+    copy.innerHTML = `<img src="${source.src}" alt="">`;
+    document.body.appendChild(copy);
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    const animation = copy.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1 },
+      { transform: `translate(${dx}px,${dy}px) scale(.22) rotate(10deg)`, opacity: .08 }
+    ], { duration: 720, easing: 'cubic-bezier(.22,.82,.28,1)', fill: 'forwards' });
+    try { await animation.finished; } catch { /* 장면 전환 중 취소될 수 있음 */ }
+    copy.remove();
+    if (!globe.isConnected) return;
+    globe.classList.remove('is-receiving');
+    void globe.offsetWidth;
+    globe.classList.add('is-receiving');
+    window.setTimeout(() => globe.classList.remove('is-receiving'), 740);
+  };
+
+  content.issues.forEach((issue, index) => {
+    const hero = content.signals.find((signal) => signal.id === issue.heroSignalId) ?? content.signals[0]!;
+    const issueImageId = issue.imageAssetId && hasAsset(issue.imageAssetId)
+      ? issue.imageAssetId
+      : signalImageId(content, hero);
+    const card = document.createElement('button');
+    const inspected = p.inspectedIssueIds.includes(issue.id);
+    card.type = 'button';
+    card.className = `ec-issue${inspected ? ' is-inspected' : ''}`;
+    card.dataset.issueId = issue.id;
+    card.setAttribute('aria-pressed', String(inspected));
+    card.setAttribute('aria-label', `${issue.title}${inspected ? ', 살펴봄' : ', 살펴보기'}`);
+    card.innerHTML = `${img(issueImageId, '')}<span class="ec-issue-title">${esc(issue.title)}</span><span class="ec-issue-check">${icon('check', 24)}</span>`;
+    card.addEventListener('click', async () => {
+      if (host.isDisposed() || transitioning || p.inspectedIssueIds.includes(issue.id)) return;
+      void audio.playSfx('tap');
+      await animateToGlobe(card);
+      if (host.isDisposed()) return;
+      p.inspectedIssueIds.push(issue.id);
+      card.classList.add('is-inspected');
+      card.setAttribute('aria-pressed', 'true');
+      card.setAttribute('aria-label', `${issue.title}, 살펴봄`);
+      host.save();
+      renderBottom();
+      drawLinks();
+      speak(issue.title);
+      if (inspectedCount() >= content.issues.length) {
+        burstConfetti(globe, 12);
+        void audio.playSfx('complete');
+        window.setTimeout(openCouncil, 950);
+      }
+    });
+    (index % 2 === 0 ? left : right).appendChild(card);
+  });
+
+  const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(drawLinks);
+  resizeObserver?.observe(orbit);
+  requestAnimationFrame(drawLinks);
+  renderBottom();
+}
+
+function renderRoundtable(host: EarthSceneHost): void {
+  const { content, progress: p, body, bottom } = host;
+  const turns = content.councilTurns;
+  const globeId = hasAsset('earth.council.globe')
+    ? 'earth.council.globe'
+    : (hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe');
+  let timer: number | null = null;
+
+  body.innerHTML = `
+    <div class="ec ec-council-screen">
+      <div class="ec-head-compact"><strong>세계 친구 지구회의</strong><span>문제에서 해결책과 약속으로 이어 가요</span></div>
+      <div class="ec-council-stage" id="ec-council-stage">
+        ${img(globeId, '세계 친구 회의의 지구본', 'ec-council-world')}
+        <div id="ec-council-friends"></div>
+        <div class="ec-council-core" id="ec-council-core"></div>
+        <div class="ec-council-dots" id="ec-council-dots" aria-hidden="true"></div>
+      </div>
+    </div>`;
+
+  const stage = body.querySelector<HTMLElement>('#ec-council-stage')!;
+  const friendsEl = body.querySelector<HTMLElement>('#ec-council-friends')!;
+  const core = body.querySelector<HTMLElement>('#ec-council-core')!;
+  const dots = body.querySelector<HTMLElement>('#ec-council-dots')!;
+  const clearTimer = () => { if (timer !== null) window.clearTimeout(timer); timer = null; };
+
+  content.friends.forEach((friend, index) => {
+    const angle = -Math.PI / 2 + index * Math.PI * 2 / Math.max(1, content.friends.length);
+    const seat = document.createElement('div');
+    seat.className = 'ec-council-friend';
+    seat.dataset.friendId = friend.id;
+    seat.style.left = `${50 + Math.cos(angle) * 42}%`;
+    seat.style.top = `${50 + Math.sin(angle) * 35}%`;
+    seat.style.animationDelay = `${index * 90}ms`;
+    seat.innerHTML = `${img(friend.imageId, '')}<span>${esc(friend.name)} · ${esc(friend.country)}</span>`;
+    friendsEl.appendChild(seat);
+  });
+
+  const renderDots = (active: number) => {
+    dots.innerHTML = turns.map((_, index) => `<span class="ec-council-dot${index === active ? ' is-on' : ''}"></span>`).join('');
+  };
+
+  const showPlayerTurn = () => {
+    clearTimer();
+    p.councilTurnIndex = turns.length;
+    host.save();
+    friendsEl.querySelectorAll('.ec-council-friend').forEach((friend) => friend.classList.remove('is-speaking'));
+    renderDots(-1);
+    core.innerHTML = `
+      <div class="ec-council-bubble ec-player-bubble">
+        <span class="ec-council-phase" data-phase="약속">이제 내 차례</span>
+        <label for="ec-player-pledge">친구들에게 내가 할 약속을 말해 봐</label>
+        <textarea class="ec-input" id="ec-player-pledge" rows="3" maxlength="120" placeholder="예: 금요일 학교에서 친구와 물병을 쓰고 쓰레기를 줄일래.">${esc(p.personalActionDraft)}</textarea>
+        <p class="ec-player-hint" id="ec-player-hint">언제·어디서·누구와 할지 넣으면 더 좋아.</p>
+      </div>`;
+    const input = core.querySelector<HTMLTextAreaElement>('#ec-player-pledge')!;
+    const hint = core.querySelector<HTMLElement>('#ec-player-hint')!;
+    const validate = () => {
+      const issue = personalActionIssue(content, input.value);
+      hint.textContent = issue ?? '좋아! 친구들과 지킬 수 있는 약속이 되었어.';
+      hint.style.color = issue ? '' : 'var(--c-success-ink)';
+      return issue;
+    };
+    input.addEventListener('input', () => {
+      p.personalActionDraft = input.value.slice(0, 120);
+      host.save();
+      validate();
+    });
+    bottom.innerHTML = `
+      <button class="btn btn-ghost" data-act="replay">친구 이야기 다시 듣기</button>
+      <button class="btn btn-primary btn-big" data-act="finish">내 약속으로 회의 마치기</button>`;
+    bottom.querySelector('[data-act="replay"]')?.addEventListener('click', () => { p.councilTurnIndex = 0; host.save(); showTurn(0); });
+    bottom.querySelector('[data-act="finish"]')?.addEventListener('click', () => {
+      p.personalActionDraft = input.value.slice(0, 120);
+      const issue = validate();
+      if (issue) { input.focus(); void audio.playSfx('tap'); return; }
+      p.jointPledgeDraft = [...turns.map((turn) => `${friendOf(content, turn.friendId).name}: ${turn.line}`), `나: ${p.personalActionDraft}`].join('\n');
+      p.missionCompleted = true;
+      p.scene = 'done';
+      host.save();
+      playFinale(host, () => host.onFinish());
+    });
+    input.focus();
+  };
+
+  const scheduleNext = (index: number) => {
+    clearTimer();
+    timer = window.setTimeout(() => {
+      if (!stage.isConnected || host.isDisposed()) return;
+      if (index + 1 < turns.length) showTurn(index + 1);
+      else showPlayerTurn();
+    }, 6500);
+  };
+
+  const showTurn = (index: number) => {
+    clearTimer();
+    const turn = turns[index];
+    if (!turn) { showPlayerTurn(); return; }
+    p.councilTurnIndex = index;
+    host.save();
+    const friend = friendOf(content, turn.friendId);
+    friendsEl.querySelectorAll<HTMLElement>('.ec-council-friend').forEach((el) => el.classList.toggle('is-speaking', el.dataset.friendId === friend.id));
+    core.innerHTML = `
+      <div class="ec-council-bubble">
+        <span class="ec-council-phase" data-phase="${esc(turn.phase)}">${esc(turn.phase)}</span>
+        <h2>${esc(friend.name)} · ${esc(friend.country)}</h2>
+        <p>${esc(turn.line)}</p>
+      </div>`;
+    renderDots(index);
+    bottom.innerHTML = `
+      <button class="btn btn-ghost" data-act="back">문제 다시 보기</button>
+      <button class="btn btn-primary btn-big" data-act="next">${index + 1 < turns.length ? '다음 이야기' : '내 약속 말하기'}</button>`;
+    bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => { clearTimer(); goto(host, 'issue'); });
+    bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
+      if (index + 1 < turns.length) showTurn(index + 1);
+      else showPlayerTurn();
+    });
+    speak(turn.line);
+    scheduleNext(index);
+  };
+
+  showTurn(Math.min(Math.max(0, p.councilTurnIndex), turns.length));
+}
+
+void renderIssueLegacy;
+void renderRoundtableLegacy;
+
+function renderIssueLegacy(host: EarthSceneHost): void {
+  const { content, progress: p, body, bottom } = host;
   const t = content.titles;
   const bag = collectedEarthSignals();
   body.innerHTML = `
-    <div class="ec">
+    <div class="ec ec-issue-screen">
       ${head(t.council, t.councilSub)}
       <p class="ec-note">더 알아보고 싶은 환경문제 하나를 골라요. 정답은 없어요. 나중에 다른 문제로 다시 열 수 있어요.</p>
       <div class="ec-orbit">
@@ -677,7 +1005,8 @@ function renderIssue(host: EarthSceneHost): void {
     b.setAttribute('aria-pressed', String(p.selectedIssueId === issue.id));
     const mySignals = bag.filter((item) => issueIdForSignal(item) === issue.id);
     // 모은 신호는 다 보여 준다 — "내가 모은 게 여기 쓰인다"가 이 장면의 핵심이라 2개로 자르지 않는다.
-    b.innerHTML = `${img(signalImageId(content, hero), '')}
+    const issueImageId = issue.imageAssetId && hasAsset(issue.imageAssetId) ? issue.imageAssetId : signalImageId(content, hero);
+    b.innerHTML = `${img(issueImageId, '')}
       <div class="ec-issue-body"><strong>${esc(issue.title)}</strong>
         <span class="chip">${icon('mail', 18)} 관련 친구 ${friendCountForIssue(content, issue.id)}명${mySignals.length ? ` · 내 신호 ${mySignals.length}개` : ''}</span>
         ${mySignals.length ? `<span class="ec-issue-mine">${mySignals.map((item) => `<em>${esc(continentLabel(item.missionId))}</em>${esc(item.label)}`).join('<br>')}</span>` : ''}
@@ -720,7 +1049,7 @@ function renderIssue(host: EarthSceneHost): void {
 }
 
 /* ===== 장면 4 — 세계 친구 원탁회의 ===== */
-function renderRoundtable(host: EarthSceneHost): void {
+function renderRoundtableLegacy(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
   const t = content.titles;
   const issue = content.issues.find((i) => i.id === p.selectedIssueId);
@@ -814,14 +1143,10 @@ function renderRoundtable(host: EarthSceneHost): void {
 
   const renderPick = () => {
     const listened = content.perspectives.filter((x) => p.listenedPerspectiveIds.includes(x.id));
-    // 유럽에서 학생이 자필로 남긴 질문을 회의 발언 재료로 다시 꺼내 준다 — "내가 쓴 게 끝까지 쓰인다".
-    const europeRaw = saveRepo.get().missions.europe.data.europeProgress as { questionDraft?: unknown } | undefined;
-    const europeQuestion = typeof europeRaw?.questionDraft === 'string' ? europeRaw.questionDraft.replace(/\s+/g, ' ').trim() : '';
     talk.innerHTML = `
       <p class="ec-copy">해결안에 꼭 반영할 관점 두 개를 골라요.</p>
       <div class="ec-pick2">${listened.map((x) => `<button type="button" class="card card-pick ec-choice" data-pick="${x.id}" aria-pressed="${String(p.selectedPerspectiveIds.includes(x.id))}">${esc(x.label)}</button>`).join('')}</div>
       <p class="ec-copy">왜 이 두 관점이 함께 필요할까?</p>
-      ${europeQuestion ? `<p class="ec-copy" style="color:var(--c-sky-ink)">✉ 유럽에서 내가 남긴 질문: “${esc(europeQuestion.slice(0, 60))}”</p>` : ''}
       <div class="ec-starters" id="ec-starters"></div>
       <textarea class="ec-input" id="ec-reason" rows="2" maxlength="120" placeholder="예: 효과도 크고 모두가 참여할 수 있어야 오래 가니까">${esc(p.perspectiveReason)}</textarea>
       <p class="ec-scope" id="ec-reason-hint" hidden>시작 문장 뒤에 네 생각을 한 마디만 더 붙여 줘.</p>`;
@@ -831,8 +1156,7 @@ function renderRoundtable(host: EarthSceneHost): void {
       const [a, b] = p.selectedPerspectiveIds.map((id) => perspectiveOf(id)?.label ?? '');
       const options = a && b ? [
         `${a}도 중요하고 ${b}도 함께 봐야 하니까`,
-        `${a}만 생각하면 ${withJosa(b, '이', '가')} 빠질 수 있으니까`,
-        ...(europeQuestion ? [`유럽에서 "${europeQuestion.slice(0, 40)}"라고 물었듯이`] : [])
+        `${a}만 생각하면 ${withJosa(b, '이', '가')} 빠질 수 있으니까`
       ] : [];
       starterTexts = options;
       starters.innerHTML = options.map((s) => `<button type="button" class="btn btn-ghost" data-starter="${esc(s)}">${esc(s)}</button>`).join('');
@@ -1052,6 +1376,7 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
   const reduced = saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const issue = content.issues.find((i) => i.id === p.selectedIssueId);
   const lines = buildPledge(content, p);
+  const completedGlobalCouncil = p.inspectedIssueIds.length >= content.issues.length && Boolean(p.personalActionDraft.trim());
   const overlay = document.createElement('div');
   overlay.className = 'ec-finale';
   const finaleBackgroundId = 'earth.council.finale';
@@ -1071,10 +1396,11 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
       ${content.friends.map((f, i) => { const a = (i / n) * Math.PI * 2; return `<span class="ec-f-friend" data-i="${i}" style="left:${50 + Math.cos(a) * 42}%;top:${50 + Math.sin(a) * 40}%"><span class="ec-f-piece"></span>${img(f.imageId, '')}</span>`; }).join('')}
     </div>
     ${hasFinaleBackground ? '' : img(hasAsset('reward.globe_puzzle') ? 'reward.globe_puzzle' : 'prop.globe', '완성된 지구본', 'ec-f-globe')}
+    ${completedGlobalCouncil ? `<div class="ec-f-topics" aria-hidden="true">${content.issues.map((item, index) => `<span style="--topic-i:${index}">${esc(item.title)}</span>`).join('')}</div>` : ''}
     <div class="ec-f-copy">
-      <h2>${esc(issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.')}</h2>
-      <p>${esc(lines[5] ?? '')}</p>
-      <p class="ec-note">여섯 친구의 약속이 하나의 지구로 이어졌어요 — 이제 여권에 도장이 찍혀요.</p>
+      <h2>${esc(completedGlobalCouncil ? '네 가지 환경문제를 하나의 약속으로 이었어요!' : (issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.'))}</h2>
+      <p>${esc(completedGlobalCouncil ? `나의 약속 — ${p.personalActionDraft}` : (lines[5] ?? ''))}</p>
+      <p class="ec-note">${completedGlobalCouncil ? '여섯 친구의 문제·해결책·약속이 지구를 한 바퀴 돌고, 나의 약속으로 완성됐어요.' : '여섯 친구의 약속이 하나의 지구로 이어졌어요 — 이제 여권에 도장이 찍혀요.'}</p>
       <button type="button" class="btn btn-primary btn-big" data-act="finale-continue" hidden>도장 받으러 가기</button>
     </div>`;
   body.appendChild(overlay);

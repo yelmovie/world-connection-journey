@@ -12,7 +12,6 @@ import { openCharacterDialogue, splitDialogueSentences } from '../ui/characterDi
 import { createGuide, type GuideController } from '../ui/guide';
 import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
 import { openModal } from '../ui/modal';
-import { showKeyPoint } from '../ui/keyPoint';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 import { queueMissionReturn } from '../ui/journeyTransition';
@@ -181,7 +180,7 @@ const DIALOGUE_CSS = `
 .dl-ox .btn { flex: 1; min-height: 58px; font-size: var(--dl-copy); }
 
 /* 2단계 — 상황 + 단서 + 반응 */
-.dl-listen { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.dl-listen { flex: 0 1 auto; align-self: stretch; max-height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
 .dl-cues { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-2); }
 .dl-opt { text-align: left; min-height: 58px; font-size: var(--dl-copy); padding: 11px 14px; }
 .dl-scenario { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: var(--sp-4); align-items: center; }
@@ -192,7 +191,7 @@ const DIALOGUE_CSS = `
 /* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
 .dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.62fr);gap:14px}
 .dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
-.dl-compare-photo{position:relative;flex:1;min-height:360px;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
+.dl-compare-photo{position:relative;flex:1;min-height:clamp(220px,34vh,420px);overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
 .dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .dl-compare-after{clip-path:inset(0 0 0 50%)}
 .dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none}
@@ -208,15 +207,15 @@ const DIALOGUE_CSS = `
 .dl-change-hotspot.is-found{background:var(--c-success);animation:none}
 .dl-change-hotspot.is-found::after{content:'✓';display:grid;place-items:center;color:#fff;font:950 32px/1 var(--font-head)}
 @keyframes dl-hotspot-pulse{0%{box-shadow:0 0 0 0 rgba(255,207,62,.82),0 8px 20px rgba(4,30,50,.4)}100%{box-shadow:0 0 0 18px rgba(255,207,62,0),0 8px 20px rgba(4,30,50,.4)}}
-.dl-compare-side{min-height:0;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
+.dl-compare-side{align-self:start;max-height:100%;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
 .dl-compare-person{display:grid;grid-template-columns:58px 1fr;align-items:center;gap:10px;padding:10px 13px;border-radius:18px;background:#eef8fb;text-align:left}
 .dl-compare-person span:first-child{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:var(--c-navy);color:#fff;font:950 28px/1 var(--font-head)}
 .dl-compare-person strong{display:block;font:950 clamp(22px,1.8vw,29px)/1.15 var(--font-head)}
 .dl-compare-person small{font-size:clamp(15px,1vw,18px);font-weight:800;color:var(--c-ink-soft)}
 .dl-compare-mission{padding:14px;border:3px dashed #e4b633;border-radius:18px;background:#fff7d8;font:950 clamp(21px,1.6vw,27px)/1.35 var(--font-head);word-break:keep-all}
-.dl-compare-result{min-height:126px;padding:14px;display:grid;place-items:center;border-radius:18px;background:#e9f8f4;color:#176249;font:950 clamp(21px,1.55vw,26px)/1.35 var(--font-head)}
+.dl-compare-result{min-height:clamp(80px,11vh,126px);padding:14px;display:grid;place-items:center;border-radius:18px;background:#e9f8f4;color:#176249;font:950 clamp(21px,1.55vw,26px)/1.35 var(--font-head)}
 .dl-compare-result[hidden]{display:none}
-.dl-photo-progress{margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
 .dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
 @media(max-width:940px){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-photo{min-height:330px}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
@@ -226,7 +225,7 @@ const DIALOGUE_CSS = `
 .dl-talk { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px,0.72fr) minmax(0,1.55fr); gap: var(--sp-4); }
 .dl-who { min-height: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); overflow-y: auto; }
 .dl-portrait { width: clamp(164px, 15vw, 240px); height: clamp(164px, 15vw, 240px); border-radius: 50%; object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow-pop); }
-.dl-chat { min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.dl-chat { align-self: start; max-height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
 .dl-council { width:min(1180px,100%);margin:auto;display:grid;gap:var(--sp-3);align-content:center; }
 .dl-council__intro { padding:14px 18px;border-radius:18px;background:rgba(245,251,255,.72);backdrop-filter:blur(6px); }
 .dl-council__issues { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3); }
@@ -468,7 +467,8 @@ export function createPage(): Page {
         earthProgress = validateEarthProgress(saved.data.earth, earth);
         earthProgress = {
           ...earthProgress,
-          scene: 'issue', missionCompleted: false, selectedIssueId: null, listenedPerspectiveIds: [], selectedPerspectiveIds: [],
+          scene: 'issue', missionCompleted: false, inspectedIssueIds: [], councilTurnIndex: 0,
+          selectedIssueId: null, listenedPerspectiveIds: [], selectedPerspectiveIds: [],
           perspectiveReason: '', selectedActionIds: [], simulationAttempts: 0
         };
         stage = 4;
@@ -516,17 +516,6 @@ export function createPage(): Page {
       const body = document.createElement('div');
       body.className = 'page-body dialogue-body';
       page.appendChild(body);
-      // 장식 — 흐름 밖(.page-deco)이라 겹침을 만들지 않는다
-      const deco = document.createElement('div');
-      deco.className = 'page-deco';
-      deco.setAttribute('aria-hidden', 'true');
-      deco.innerHTML = [
-        hasAsset('deco.portal_globe')
-          ? `<img src="${assetUrl('deco.portal_globe')}" alt="" style="position:absolute;right:1.5%;bottom:0;width:clamp(80px,9vw,150px);opacity:0.85">`
-          : ''
-      ].join('');
-      page.appendChild(deco);
-
       const bottom = document.createElement('div');
       bottom.className = 'bottom-bar';
       page.appendChild(bottom);
@@ -575,14 +564,6 @@ export function createPage(): Page {
             actions: [{ label: '가방 챙겼어!', kind: 'primary', autofocus: true, onClick: (close) => close() }]
           });
         }
-        showKeyPoint({
-          id: 'dialogue.listen',
-          lines: [
-            '나라가 달라도 물, 숲, 바다처럼 함께 풀어야 하는 문제가 있어.',
-            '함께 풀려면 상대의 말을 끝까지 듣는 것부터 시작해야 해.'
-          ],
-          onDone: () => undefined
-        });
         const grid = body.querySelector<HTMLElement>('#greet-grid');
         const fb = body.querySelector<HTMLElement>('#stage1-fb');
         if (grid) {
@@ -1211,7 +1192,7 @@ export function createPage(): Page {
             missionId: 'dialogue',
             title: earth.titles.council,
             purpose: '여섯 친구의 환경 신호가 국경을 넘어 이어져 있음을 확인하고, 서로 다른 관점과 여러 수준의 해결안으로 공동약속을 만들어요.',
-            initialHypothesis: learnRec.initialHypothesis ?? '대화 전에 남긴 첫 생각이 없어요.',
+            initialHypothesis: learnRec.initialHypothesis ?? learn?.prediction.question ?? '여행을 시작하며 질문을 떠올렸어요.',
             evidenceIds: [...matched, ...scenarioIds, ...content.compass.npcs.map((npc) => npc.id), ...earthProgress.signalObservedIds, ...earthProgress.exploredConnectionTypes, ...earthProgress.selectedPerspectiveIds, ...earthProgress.selectedActionIds],
             evidenceLabel: `환경 신호 ${earthProgress.signalObservedIds.length}개를 관찰하고 ${earthProgress.exploredConnectionTypes.length}개 렌즈로 연결을 확인했어.`,
             voiceId: content.compass.npcs[0]?.id ?? 'dialogue-friends',
