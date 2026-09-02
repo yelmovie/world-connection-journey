@@ -218,9 +218,13 @@ const PAGE_CSS = `
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-face{position:absolute;inset:0;display:grid;align-items:center;min-width:0;padding:10px 14px;border-radius:13px;background:#fffdf9;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-front{grid-template-columns:58px minmax(0,1fr);gap:12px;text-align:left}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-front img{width:58px;height:68px;object-fit:contain}
-:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity{display:flex;flex-direction:column;gap:4px;min-width:0}
-:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity strong{font-size:clamp(18px,1.15vw,21px);line-height:1.1;word-break:keep-all}
-:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity span{font-size:clamp(15px,.94vw,17px);font-weight:800;line-height:1.15;color:#436073;word-break:keep-all}
+/* 이름·역할 글자는 카드 높이에 비례(cqh) — 창이 작거나 확대해도 두 줄이 카드 안에 들어간다 */
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice{container-type:size}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-face{padding:clamp(4px,7cqh,10px) 14px}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice img{height:min(48px,72cqh);width:auto}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity{display:flex;flex-direction:column;gap:2px;min-width:0}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity strong{font-size:clamp(14px,21cqh,20px);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-identity span{font-size:clamp(12px,17cqh,16px);font-weight:800;line-height:1.15;color:#436073;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-back{place-items:center;padding:13px 18px;transform:rotateY(180deg);background:#eaf8f7;text-align:center}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-line{font-size:clamp(16px,1vw,18px);font-weight:800;line-height:1.35;word-break:keep-all;overflow-wrap:break-word}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice:focus-visible{outline:4px solid #f5bd32;outline-offset:2px}

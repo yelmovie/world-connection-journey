@@ -326,9 +326,6 @@ export function createPage(): Page {
             addUnique(P.visitedCountries,current.caseId);addUnique(P.discoveredGeographyClues,current.caseId);addUnique(P.discoveredCultureExamples,current.caseId);
             mapStage.querySelector(`[data-case="${current.caseId}"]`)?.classList.add('is-viewed');
             persist();
-            // 나라 하나 열 때마다가 아니라, 이 지역 나라를 전부 봤을 때 한 번만 알린다
-            const allSeen=pages.every((pg)=>!pg.caseId||P.visitedCountries.includes(pg.caseId));
-            if(firstLook&&allSeen)showToast('이 지역 나라를 모두 살펴봤어! 다른 지역도 둘러볼까?','success');
           }
           refresh();
         };
