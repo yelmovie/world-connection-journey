@@ -556,7 +556,6 @@ export function createPage(): Page {
       audio.playBgm('americas');
 
       const mission = saveRepo.get().missions.americas;
-      const countryIds = E.countries.map((c) => c.id);
       let S = restoreState(mission.data, E.countries);
       // 구버전(어울림 학급) 저장은 새 탐험 흐름과 호환되지 않아 처음부터 시작한다(완료 도장은 그대로 유지됨).
       if (mission.data.exploreProgress && S.screen !== 'landing') showToast('저장한 탐험 지점에서 이어갈게.', 'info');

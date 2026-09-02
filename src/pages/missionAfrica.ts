@@ -1,6 +1,6 @@
 import type { Page } from '../router';
 import type { AfricaMissionProgress } from '../types';
-import { assetUrl, hasAsset, preloadImages } from '../core/assets';
+import { assetUrl, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { fitAspect } from '../ui/aspectBox';
 import { recordEarthSignals } from '../core/earthSignals';
@@ -9,11 +9,11 @@ import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
-import { AFRICA_REGION_IDS, calculateAfricaMetrics, canCompleteAfrica, normalizeAfricaProgress } from '../core/africaMission';
+import { AFRICA_REGION_IDS, canCompleteAfrica, normalizeAfricaProgress } from '../core/africaMission';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
 import { keepFitted } from '../ui/fitText';
-import { burstConfetti, popBounce } from '../ui/fx';
+import { popBounce } from '../ui/fx';
 import { showToast } from '../ui/toast';
 import { createGateNote, updateGate, type GateRequirement } from '../ui/gateNote';
 import { AFRICA_INSTRUMENTS, type AfricaInstrument } from '../content/africaInstruments';
@@ -325,7 +325,6 @@ export function createPage(): Page {
           facts.innerHTML=current.facts.map(([label,text])=>`<p><b>${safe(label)}</b>${safe(text)}</p>`).join('');
           requestAnimationFrame(refit);
           if(current.caseId){
-            const firstLook=!P.visitedCountries.includes(current.caseId);
             addUnique(P.visitedCountries,current.caseId);addUnique(P.discoveredGeographyClues,current.caseId);addUnique(P.discoveredCultureExamples,current.caseId);
             mapStage.querySelector(`[data-case="${current.caseId}"]`)?.classList.add('is-viewed');
             persist();
@@ -381,7 +380,7 @@ export function createPage(): Page {
         page.style.backgroundImage=`linear-gradient(#063a5966,#063a5999),url('${assetUrl('africa.map')}')`;
         const layout=document.createElement('div');layout.className='env-layout';const map=document.createElement('section');map.className='env-map';const detail=document.createElement('aside');detail.className='signal-detail';detail.innerHTML='<h2>환경 신호를 눌러 봐</h2><p>물음표 3개를 모두 살펴보자!</p>';
         // 신호 표식은 그 신호가 온 권역 위에 선다 — 좌표를 따로 관리하면 지도가 바뀔 때 어긋난다
-        const spotOf=(regionId:string)=>content.regions.find((r)=>r.id===regionId)?.position??{x:50,y:50};const viewed=()=>content.environmentSignals.every((s)=>P.environmentInvestigation.inspectedSignalIds.includes(s.id));
+        const spotOf=(regionId:string)=>content.regions.find((r)=>r.id===regionId)?.position??{x:50,y:50};
         content.environmentSignals.forEach((signal,i)=>{const pin=button('','signal-pin');pin.innerHTML=`<span class="sp-num">${i+1}</span><span class="sp-tag">신호</span>`;const spot=spotOf(signal.regionId);pin.style.left=`${spot.x}%`;pin.style.top=`${spot.y}%`;pin.classList.toggle('is-viewed',P.environmentInvestigation.inspectedSignalIds.includes(signal.id));pin.setAttribute('aria-label',`${signal.title} 살펴보기`);pin.addEventListener('click',()=>{
           addUnique(P.environmentInvestigation.inspectedSignalIds,signal.id);if(!P.environmentInvestigation.selectedIssueId)P.environmentInvestigation.selectedIssueId=signal.issueId;pin.classList.add('is-viewed');persist();const sceneId=content.regions.find((r)=>r.id===signal.regionId)?.sceneAssetId??'africa.map';detail.innerHTML=`<h2>${safe(signal.title)}</h2><div class="detail-photo" style="background-image:url('${assetUrl(sceneId)}')"></div><p><strong>어디에서?</strong> ${safe(signal.where)}</p><p><strong>자연의 변화</strong> ${safe(signal.nature)}</p><p><strong>생활의 영향</strong> ${safe(signal.life)}</p><p><strong>서로 연결된 까닭</strong> ${safe(signal.world)}</p>`;refresh()});map.appendChild(pin)});
         layout.append(map,detail);stopMapFit?.();stopMapFit=fitAspect(map,1672/941);const next=button('환경 협력 회의 열기');const signalReqs=()=>[{ label:'환경 신호', got:P.environmentInvestigation.inspectedSignalIds.length, need:content.environmentSignals.length }];const gate=gated(next,signalReqs());const refresh=()=>updateGate(next,gate[0]!,signalReqs());next.addEventListener('click',()=>go('council'));panel('여러 지역에서 온 환경 신호','환경 신호 3개를 눌러 살펴봐!',layout,actionBar(...gate));refresh();

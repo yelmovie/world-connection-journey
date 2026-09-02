@@ -874,11 +874,6 @@ export function createPage(): Page {
         }
       }
 
-      const showNicknameError = (error: string) => {
-        if (msg) { msg.hidden = false; msg.innerHTML = `<span aria-hidden="true">×</span><span>${error}</span>`; }
-        input?.focus();
-      };
-
       const setStep = (step: number) => {
         currentStep = Math.max(FIRST_STEP, Math.min(maxReached, step));
         page.classList.remove('passport-step-1', 'passport-step-2', 'passport-step-3');

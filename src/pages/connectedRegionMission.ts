@@ -600,7 +600,6 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       };
       // 나라·장소 선택 버튼을 없앴으므로 탐험 완료 조건은 화면에서 직접 수행할 수 있는
       // 구역 방문과 장면 관찰만으로 판단한다.
-      const exploreReady = () => teacherUnlocked || (state.visitedAreaIds.length >= model.requirements.minAreas && state.viewedSceneIds.length >= model.requirements.minDiscoveries);
       const chosenTierCount = () => new Set(model.actions.filter((item) => state.selectedActionIds.includes(item.id)).map((item) => item.tier)).size;
       const finishReady = () => teacherUnlocked || (state.discoveredSignalIds.length >= model.requirements.minSignals && state.listenedPerspectiveIds.length >= 2 && state.selectedActionIds.length >= 3 && chosenTierCount() >= 2);
 

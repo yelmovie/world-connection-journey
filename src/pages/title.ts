@@ -6,7 +6,6 @@ import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import { confirmDialog } from '../ui/modal';
 import { buildTopBar, describeSavedRoute } from '../ui/chrome';
-import { openCharacterDialogue } from '../ui/characterDialogue';
 import { closeActiveVideoOverlay, playVideoOverlay } from '../ui/videoOverlay';
 
 const TITLE_LEFT_PLANE = 'title.plane.green.transparent';

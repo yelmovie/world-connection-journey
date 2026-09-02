@@ -7,7 +7,7 @@ import { writeMissionArtifact } from '../core/missionArtifacts';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { completeMissionFlow, showFeedback } from '../ui/feedback';
-import { burstConfetti, popBounce } from '../ui/fx';
+import { popBounce } from '../ui/fx';
 import { openCharacterDialogue, splitDialogueSentences } from '../ui/characterDialogue';
 import { createGuide, type GuideController } from '../ui/guide';
 import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '../ui/learnFrame';
@@ -18,7 +18,6 @@ import { keepFitted } from '../ui/fitText';
 import { queueMissionReturn } from '../ui/journeyTransition';
 import { validateEarthProgress, type EarthContent, type GlobalEnvironmentProgress } from '../core/earthCouncil';
 import { EARTH_CSS, earthPreloadIds, renderEarthScene } from './earthCouncilScenes';
-import type { MissionId } from '../types';
 
 /* ===== 콘텐츠 스키마 (public/content/v1/ko/dialogue.json 기준) ===== */
 interface Greeting {
@@ -588,7 +587,7 @@ export function createPage(): Page {
         const grid = body.querySelector<HTMLElement>('#greet-grid');
         const fb = body.querySelector<HTMLElement>('#stage1-fb');
         if (grid) {
-          for (const [index, g] of content.greetings.entries()) {
+          for (const g of content.greetings) {
             const isMatched = matched.has(g.id);
             const card = document.createElement('button');
             card.type = 'button';

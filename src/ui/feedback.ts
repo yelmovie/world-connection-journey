@@ -3,12 +3,8 @@ import { loadContent } from '../core/ContentRepository';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
 import { navigate } from '../router';
-import { openModal } from './modal';
-import { assetUrl, hasAsset } from '../core/assets';
 import { PASSPORT_STAMP_ASSETS, playJourneyTransition, queueMissionReturn } from './journeyTransition';
-import { burstConfetti, stampSlam } from './fx';
 import { MISSION_IDS, type MissionId } from '../types';
-import { selectedAvatarSpeaker } from './avatarRoster';
 import { playEndingVideo } from './endingVideo';
 
 const KIND_ICON = { success: '✓', partial: '◐', retry: '↻' } as const;
@@ -53,14 +49,6 @@ export async function preloadCommonText(): Promise<void> {
   }
 }
 
-const RESULT_SPEAKERS: Record<Exclude<MissionId, 'dialogue'>, { assetId: string; name: string }> = {
-  asia: { assetId: 'asia.mina', name: '미나' },
-  europe: { assetId: 'europe.guide', name: '레나' },
-  africa: { assetId: 'plane.africa', name: '리듬 우편기' },
-  americas: { assetId: 'americas.student1', name: '노아' },
-  oceania: { assetId: 'oceania.youth', name: '카일라' }
-};
-
 /** 미션 완료 공통 처리: 점수 경쟁 없이 완료·도장·핵심 배움만 남긴다. */
 export function completeMissionFlow(
   missionId: MissionId,
@@ -87,23 +75,6 @@ export function completeMissionFlow(
     companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
   });
   void transition.finished.then(goHome);
-}
-
-function typeResultLine(target: HTMLElement | null, text: string): () => void {
-  if (!target) return () => undefined;
-  const reduced = saveRepo.get().settings.reducedMotion
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) {
-    target.textContent = text;
-    return () => undefined;
-  }
-  let index = 0;
-  const timer = window.setInterval(() => {
-    index += 1;
-    target.textContent = text.slice(0, index);
-    if (index >= text.length) window.clearInterval(timer);
-  }, 28);
-  return () => window.clearInterval(timer);
 }
 
 // 모듈 로드 시점에 미리 받아 둔다 — 실패해도 폴백 문구가 있어 안전.

@@ -1,6 +1,5 @@
 import type { Page } from '../router';
 import { navigate } from '../router';
-import { collectedEarthSignals } from '../core/earthSignals';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { saveRepo, recomputeUnlocks } from '../core/SaveRepository';
@@ -525,7 +524,7 @@ export function createPage(): Page {
         const planeUrl = assetUrl(planeId);
         host = await createPhaserHost(canvasWrap, (Phaser) => {
           class MapScene extends Phaser.Scene {
-            private plane?: Phaser.GameObjects.Image;
+  private plane?: Phaser.GameObjects.Image; // 쓰기만 하지만 Phaser 씬 수명 동안 참조를 붙잡아 둔다
             constructor() { super('map'); }
             preload() { this.load.image('bg', backgroundUrl); this.load.image('planeSource', planeUrl); }
             create() {
