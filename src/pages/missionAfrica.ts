@@ -12,6 +12,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { AFRICA_REGION_IDS, calculateAfricaMetrics, canCompleteAfrica, normalizeAfricaProgress } from '../core/africaMission';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { completeMissionFlow } from '../ui/feedback';
+import { keepFitted } from '../ui/fitText';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { showToast } from '../ui/toast';
 import { createGateNote, updateGate, type GateRequirement } from '../ui/gateNote';
@@ -112,7 +113,7 @@ const CSS = `
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
 .country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(11px,1.2vw,16px);display:flex;flex-direction:column;gap:8px;overflow:hidden;container-type:size}
 /* 사진은 16:9를 지킨다 — 글 아래 남는 높이(약 250px 제외)에 맞춰 폭을 정하고 가운데 둔다 */
-.country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - 250px) * 16 / 9));min-width:min(100%,360px);aspect-ratio:16/9;min-height:0}
+.country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - 300px) * 16 / 9));min-width:min(100%,360px);aspect-ratio:16/9;min-height:0}
 .country-detail:has(.detail-caption[hidden]) .detail-photo{width:min(100%,calc((100cqh - 70px) * 16 / 9));min-height:0}
 .detail-photo{position:relative;flex:1 1 auto;width:100%;min-height:clamp(150px,20vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;overflow:hidden;touch-action:pan-y;user-select:none;cursor:grab}
 .detail-photo:active{cursor:grabbing}
@@ -143,8 +144,8 @@ const CSS = `
 .signal-pin .sp-tag{margin-top:3px;font:800 13px/1 var(--font-body);letter-spacing:.08em;opacity:.92}
 .signal-pin.is-viewed{background:radial-gradient(circle at 35% 30%,#3fd3a6,#128a6a 70%)}.signal-pin.is-viewed::before{animation:none;opacity:0}.signal-pin.is-viewed .sp-num::before{content:'✓ ';font-size:.75em}
 @keyframes sig-halo{0%{transform:scale(.72);opacity:.9}100%{transform:scale(1.28);opacity:0}}:root[data-reduced-motion="true"] .signal-pin::before{animation:none}.signal-detail{background:#fff;border-radius:20px;padding:18px;overflow:auto;display:grid;align-content:start;gap:12px}.signal-detail h2{font:900 var(--section-title)/1.15 var(--font-head);margin:0;color:#173b53}.signal-detail p{font-size:var(--body-text);line-height:1.45;margin:0}.signal-detail{display:flex;flex-direction:column;gap:12px}.signal-detail .detail-photo{flex:none;aspect-ratio:16/9;min-height:0;height:auto} /* 그리드 행이 사진 비율 높이를 못 따라와 글을 덮던 문제 */
-.council-layout{height:100%;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.7fr);gap:18px}.council-ring{position:relative;border-radius:50%;background:radial-gradient(circle,#fff8d6 0 28%,#a5dfe7 29% 58%,#eaf6f1 59%);min-height:470px}
-.council-ring::before{content:'';position:absolute;left:50%;top:50%;width:clamp(120px,14vw,180px);height:clamp(120px,14vw,180px);transform:translate(-50%,-50%);background:url('${assetUrl('africa.host')}') center/contain no-repeat;filter:drop-shadow(0 8px 14px #0a304d55);pointer-events:none}.person-button{position:absolute;transform:translate(-50%,-50%);width:clamp(122px,12vw,158px);height:clamp(122px,12vw,158px);border-radius:50%;border:4px solid white;background:#173e5ee8;color:white;padding:10px;display:grid;place-items:center;text-align:center}.person-button .p-name{display:block;font:900 clamp(17px,1.3vw,21px)/1.15 var(--font-head)}.person-button .p-role{display:block;margin-top:3px;font:800 clamp(14px,1.1vw,16px)/1.3 var(--font-body);color:#cfe8ff;word-break:keep-all}.person-button.is-heard{background:#157c64}.council-speech{align-self:center;background:white;border:3px solid #e5ba45;border-radius:22px;padding:22px;min-height:250px;display:grid;align-content:center;gap:12px}.council-speech h2{font:900 var(--section-title) var(--font-head);margin:0;color:#173b53}.council-speech p{font-size:var(--body-text);line-height:1.5;margin:0}
+.council-layout{height:100%;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.7fr);gap:18px}.council-ring{position:relative;border-radius:50%;background:radial-gradient(circle,#fff8d6 0 28%,#a5dfe7 29% 58%,#eaf6f1 59%);min-height:0} /* 고정 최소 높이(470px)가 낮은 창에서 세로 스크롤을 만들던 원인 */
+.council-ring::before{content:'';position:absolute;left:50%;top:50%;width:clamp(120px,14vw,180px);height:clamp(120px,14vw,180px);transform:translate(-50%,-50%);background:url('${assetUrl('africa.host')}') center/contain no-repeat;filter:drop-shadow(0 8px 14px #0a304d55);pointer-events:none}.person-button{position:absolute;transform:translate(-50%,-50%);width:clamp(96px,min(12vw,22vh),158px);height:clamp(96px,min(12vw,22vh),158px);border-radius:50%;border:4px solid white;background:#173e5ee8;color:white;padding:10px;display:grid;place-items:center;text-align:center}.person-button .p-name{display:block;font:900 clamp(17px,1.3vw,21px)/1.15 var(--font-head)}.person-button .p-role{display:block;margin-top:3px;font:800 clamp(14px,1.1vw,16px)/1.3 var(--font-body);color:#cfe8ff;word-break:keep-all}.person-button.is-heard{background:#157c64}.council-speech{align-self:center;background:white;border:3px solid #e5ba45;border-radius:22px;padding:22px;min-height:250px;display:grid;align-content:center;gap:12px}.council-speech h2{font:900 var(--section-title) var(--font-head);margin:0;color:#173b53}.council-speech p{font-size:var(--body-text);line-height:1.5;margin:0}
 @media(max-width:1050px){.africa-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - 16px)}.region-layout,.lab-layout,.env-layout,.council-layout{grid-template-columns:1fr}.region-visual,.env-map,.council-ring{min-height:430px}.country-detail,.instrument-copy,.signal-detail{max-height:none}.africa-mission .page-body{place-items:start center}}
 @media(max-height:700px) and (min-width:1051px){.africa-shell{height:calc(100dvh - var(--top-bar-h) - 14px)}.africa-main{padding:10px}.africa-map,.region-visual,.env-map,.council-ring{min-height:380px}.instrument-photo img{min-height:220px}.africa-head{padding:8px 18px}.africa-actions{padding:7px 12px}}
 @media(prefers-reduced-motion:reduce){.intro-card,.signal-wave,.connection-node.is-on,.instrument-photo.is-playing .wave i{animation:none!important}.map-plane{transition:none}}
@@ -302,6 +303,7 @@ export function createPage(): Page {
         pager.innerHTML='<h3></h3>';
         const caption=document.createElement('p');caption.className='detail-caption';
         const facts=document.createElement('div');facts.className='detail-facts';
+        const refit=keepFitted(detail,()=>[caption,facts,...Array.from(pager.querySelectorAll<HTMLElement>('h3,.sub'))],14); // 글이 패널을 넘치면 글자를 줄인다
         detail.append(photo,pager,caption,facts);
         let sceneCount=0;
         const refresh=()=>{
@@ -321,6 +323,7 @@ export function createPage(): Page {
           if(head)head.innerHTML=`${safe(current.title)}${current.sub?`<span class="sub">${safe(current.sub)}</span>`:''}`;
           caption.textContent=current.caption;caption.hidden=!current.caption;
           facts.innerHTML=current.facts.map(([label,text])=>`<p><b>${safe(label)}</b>${safe(text)}</p>`).join('');
+          requestAnimationFrame(refit);
           if(current.caseId){
             const firstLook=!P.visitedCountries.includes(current.caseId);
             addUnique(P.visitedCountries,current.caseId);addUnique(P.discoveredGeographyClues,current.caseId);addUnique(P.discoveredCultureExamples,current.caseId);

@@ -21,7 +21,8 @@ const content = (name) => require(path.join(__dirname, '..', 'public', 'content'
 const routerSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'router.ts'), 'utf8');
 const hasRoute = (route) => routerSrc.includes(`'${route}'`);
 
-const VIEWPORTS = [
+const VP_ARG = (args.find((a) => a.startsWith('--vp=')) || '').slice(5); // 예: --vp=1860x800 (그 크기 하나만)
+const VIEWPORTS = VP_ARG ? [{ name: `지정창 ${VP_ARG}`, width: Number(VP_ARG.split('x')[0]), height: Number(VP_ARG.split('x')[1]) }] : [
   { name: '전자칠판 1920x1080', width: 1920, height: 1080 },
   { name: '웹앱 1366x768', width: 1366, height: 768 },
   { name: '태블릿가로 1280x800', width: 1280, height: 800 },
