@@ -3779,104 +3779,104 @@
     },
     "europe.uk.dover": {
       "type": "image",
-      "src": "assets/europe_uk_dover.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/europe_uk_dover.webp",
+      "original": "assets/generated/uk-usa/uk_dover_imagegen_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "영국 도버 흰 절벽 해안 관찰 그림"
     },
     "europe.uk.thames": {
       "type": "image",
-      "src": "assets/europe_uk_thames.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/europe_uk_thames.webp",
+      "original": "assets/generated/uk-usa/uk_thames_imagegen_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "영국 런던 템스강 곁 등굣길 관찰 그림"
     },
     "europe.uk.edinburgh": {
       "type": "image",
-      "src": "assets/europe_uk_edinburgh.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/europe_uk_edinburgh.webp",
+      "original": "assets/generated/uk-usa/uk_edinburgh_imagegen_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "영국 에든버러 성과 도시 관찰 그림"
     },
     "americas.scene.usa.west": {
       "type": "image",
-      "src": "assets/americas_scene_usa_west.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/americas_scene_usa_west.webp",
+      "original": "assets/generated/uk-usa/americas_scene_usa_west_source.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "미국 서부 해안 장면"
     },
     "americas.scene.usa.plains": {
       "type": "image",
-      "src": "assets/americas_scene_usa_plains.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/americas_scene_usa_plains.webp",
+      "original": "assets/generated/uk-usa/americas_scene_usa_plains_source.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "미국 중부 대평원 장면"
     },
     "americas.scene.usa.east": {
       "type": "image",
-      "src": "assets/americas_scene_usa_east.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/americas_scene_usa_east.webp",
+      "original": "assets/generated/uk-usa/americas_scene_usa_east_source.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "미국 동부 도시 장면"
     },
     "americas.scene.usa.landmark": {
       "type": "image",
-      "src": "assets/americas_scene_usa_landmark.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/americas_scene_usa_landmark.webp",
+      "original": "assets/generated/uk-usa/americas_scene_usa_landmark_source.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "미국 뉴욕 자유의 여신상"
     },
     "americas.student5": {
       "type": "image",
-      "src": "assets/americas_student5.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/americas_student5.webp",
+      "original": "assets/generated/uk-usa/americas_student5_liam_imagegen_raw.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
-      "license": "placeholder (교체 예정)",
+      "license": "AI-generated (project original)",
       "note": "미국 친구 리암 전신(투명 배경)",
       "alpha": true
     },
     "stamp.americas_south": {
       "type": "image",
-      "src": "assets/stamp_americas_south.png",
-      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "src": "assets/stamp_americas_south.webp",
+      "original": "assets/generated/uk-usa/stamp_americas_south_imagegen_raw.png",
       "pages": [
         "p07"
       ],
       "preload": "page",
       "alpha": true,
-      "license": "placeholder (교체 예정)",
-      "note": "남아메리카 도장(마추픽추) — 사진 준비 중"
+      "license": "AI-generated (project original)",
+      "note": "남아메리카 도장(마추픽추)"
     }
   }
 }
