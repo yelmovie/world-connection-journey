@@ -824,7 +824,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const example = model.examples.find((item) => item.id === state.activeExampleId && item.areaId === area?.id) ?? examples[0] ?? null;
         // 동아시아 나라 바로가기 핀 — 지도 위 위치(%)는 권역 핀과 겹치지 않게 서로 어긋나게 둔다
         const countryShortcuts = model.id === 'asia'
-          ? [{ country: '중국', place: '베이징', x: 62, y: 44 }, { country: '대한민국', place: '서울', x: 86, y: 57 }, { country: '일본', place: '도쿄', x: 90, y: 34 }]
+          ? [{ country: '중국', place: '베이징', x: 62, y: 44 }, { country: '대한민국', place: '서울', x: 86, y: 57 }, { country: '일본', place: '도쿄', x: 90, y: 39 }]
             .map((spot) => ({ ...spot, example: model.examples.find((item) => item.country === spot.country) }))
             .filter((spot): spot is typeof spot & { example: NonNullable<typeof spot.example> } => Boolean(spot.example))
           : [];
