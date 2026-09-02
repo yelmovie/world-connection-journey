@@ -185,13 +185,14 @@ const PASSPORT_CSS = `
   filter:drop-shadow(0 5px 8px rgba(25,50,77,.24));
   animation:passport-arrive .42s cubic-bezier(.2,.85,.35,1.2) both;
 }
+/* 여권 종이 위에 바로 적힌 듯한 이름표 — 상자 없이, 작은 항목명 + 점선 + 이름 */
 .passport-book-label {
-  position:absolute;z-index:2;margin:0;display:grid;justify-items:center;align-content:center;min-width:0;
-  padding:3px 8px;border-radius:12px;background:rgba(255,253,245,.91);border:1px solid rgba(29,74,111,.16);
-  box-shadow:0 3px 9px rgba(25,50,77,.12);color:var(--c-navy);text-align:center;line-height:1.08;
+  position:absolute;z-index:2;margin:0;display:grid;justify-items:center;align-content:center;min-width:0;gap:2px;
+  padding:0;background:transparent;border:0;box-shadow:none;color:var(--c-navy);text-align:center;line-height:1.1;
+  text-shadow:0 0 6px rgba(255,255,255,.95),0 0 2px rgba(255,255,255,.9);
 }
-.passport-book-label span { font-size:18px;font-weight:800;color:#397277; }
-.passport-book-label strong { max-width:100%;font-size:clamp(18px,1.15vw,20px);font-weight:950;white-space:normal;word-break:keep-all; }
+.passport-book-label span { font-size:13px;font-weight:800;letter-spacing:.22em;color:#3d7a80;text-transform:uppercase; }
+.passport-book-label strong { max-width:100%;padding-top:3px;border-top:1.5px dotted rgba(29,74,111,.45);font:950 clamp(19px,1.2vw,22px)/1.1 var(--font-head);white-space:normal;word-break:keep-all;letter-spacing:.02em; }
 .passport-avatar-label { left:16%;bottom:19.2%;width:27%; }
 .passport-plane-label { left:57%;top:58.5%;width:24%; }
 .passport-owner-mark {
@@ -543,9 +544,8 @@ export function createPage(): Page {
         <div class="passport-shell">
           <section class="passport-form" aria-label="여권 만들기">
             <nav class="passport-stepper" aria-label="여권 만들기 진행 경로">
-              <button type="button" class="passport-step-chip" data-step-jump="1">1 이름</button>
-              <button type="button" class="passport-step-chip" data-step-jump="2">2 탐험가</button>
-              <button type="button" class="passport-step-chip" data-step-jump="3">3 비행기</button>
+              <button type="button" class="passport-step-chip" data-step-jump="2">1 탐험가</button>
+              <button type="button" class="passport-step-chip" data-step-jump="3">2 비행기</button>
             </nav>
 
             <div class="passport-scenes">
@@ -580,7 +580,7 @@ export function createPage(): Page {
 
               <section class="passport-section" data-passport-step="2" hidden aria-labelledby="passport-avatar-heading">
                 <header class="passport-scene-heading">
-                  <h1 id="passport-avatar-heading">함께 떠날 탐험가는 누구?</h1>
+                  <h1 id="passport-avatar-heading">어떤 탐험가로 떠날까?</h1>
                 </header>
                 <div class="passport-selection-layout" data-swipe-kind="avatar">
                   <div class="passport-selector-stage">
@@ -739,24 +739,25 @@ export function createPage(): Page {
       const updateSelectionLabel = () => {
         const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
         const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
-        const nickname = input?.value.trim() ?? '';
-        if (cardTitle) cardTitle.textContent = nickname ? `${nickname}의 여행 여권` : '나의 여행 여권';
-        if (coverName) coverName.textContent = nickname || '이름을 적어 줘';
-        if (nicknameCount) nicknameCount.textContent = `${input?.value.length ?? 0} / ${maxLen}`;
-        if (avatarName) avatarName.textContent = avatar.name;
+        // 이름을 따로 적지 않는다 — 고른 캐릭터가 곧 '나'이고, 그 이름을 끝까지 쓴다
+        const myName = avatar.name;
+        if (cardTitle) cardTitle.textContent = `${myName}의 여행 여권`;
+        if (coverName) coverName.textContent = myName;
+        if (nicknameCount) nicknameCount.textContent = '';
+        if (avatarName) avatarName.textContent = myName;
         if (planeName) planeName.textContent = plane.name;
-        if (ownerMark) ownerMark.textContent = nickname ? `${nickname}가 직접 만든 여권` : '이름을 쓰면 나만의 서명이 생겨요';
-        if (hero) hero.alt = `${avatar.role} ${avatar.name} 모습`;
+        if (ownerMark) ownerMark.textContent = `${myName}가 직접 만든 여권`;
+        if (hero) hero.alt = `${avatar.role} ${myName} 모습`;
         if (planePreview) planePreview.alt = `${plane.name} 비행기`;
         if (avatarStageRole) avatarStageRole.textContent = avatar.role;
-        if (avatarStageName) avatarStageName.textContent = avatar.name;
+        if (avatarStageName) avatarStageName.textContent = myName;
         if (avatarStageLine) avatarStageLine.textContent = avatar.sampleLine;
-        if (avatarStageImage) avatarStageImage.alt = `${avatar.name}, ${avatar.role}`;
+        if (avatarStageImage) avatarStageImage.alt = `${myName}, ${avatar.role}`;
         if (planeStageName) planeStageName.textContent = plane.name;
         if (planeStageLine) planeStageLine.textContent = plane.label;
         if (planeStageImage) planeStageImage.alt = `${plane.name} 비행기`;
         if (selectedLabel) {
-          selectedLabel.textContent = `${withJosa(avatar.name, '과', '와')} ${withJosa(plane.name, '이', '가')} 함께 여행해요`;
+          selectedLabel.textContent = `${withJosa(myName, '과', '와')} ${withJosa(plane.name, '이', '가')} 함께 여행해요`;
         }
       };
       const showHero = (value: string) => {
@@ -799,17 +800,11 @@ export function createPage(): Page {
       };
 
       const finishPassport = () => {
-        const error = validate();
-        if (error) {
-          if (msg) { msg.hidden = false; msg.innerHTML = `<span aria-hidden="true">×</span><span>${error}</span>`; }
-          setStep(1);
-          input?.focus();
-          return;
-        }
         if (msg) msg.hidden = true;
+        const chosen = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
         saveRepo.update((state) => {
           state.profile = {
-            nickname: input?.value.trim() ?? '',
+            nickname: chosen.name, // 이름 입력 단계는 없다 — 캐릭터 이름이 곧 내 이름
             createdAt: state.profile?.createdAt ?? new Date().toISOString(),
             avatarId,
             airplaneId
@@ -835,9 +830,10 @@ export function createPage(): Page {
         '다음 · 비행기 고르기',
         '여권 완성하고 출발하기'
       ];
-      const statusLabels = ['1 / 3', '2 / 3', '3 / 3'];
-      let maxReached = profile ? 3 : Math.max(1, Math.min(3, Number(draft?.maxReached) || 1));
-      let currentStep = Math.min(maxReached, Math.max(1, Math.min(3, Number(draft?.step) || 1)));
+      const statusLabels = ['', '1 / 2', '2 / 2']; // 이름 단계를 뺀 두 단계
+      const FIRST_STEP = 2; // 1단계(이름 입력)는 뺐다
+      let maxReached = profile ? 3 : Math.max(FIRST_STEP, Math.min(3, Number(draft?.maxReached) || FIRST_STEP));
+      let currentStep = Math.min(maxReached, Math.max(FIRST_STEP, Math.min(3, Number(draft?.step) || FIRST_STEP)));
       let transitionLocked = false;
       let composingNickname = false;
 
@@ -862,7 +858,7 @@ export function createPage(): Page {
       };
 
       const setStep = (step: number) => {
-        currentStep = Math.max(1, Math.min(maxReached, step));
+        currentStep = Math.max(FIRST_STEP, Math.min(maxReached, step));
         page.classList.remove('passport-step-1', 'passport-step-2', 'passport-step-3');
         page.classList.add(`passport-step-${currentStep}`);
         panels.forEach((panel) => { panel.hidden = Number(panel.dataset.passportStep) !== currentStep; });
@@ -874,7 +870,7 @@ export function createPage(): Page {
           else button.removeAttribute('aria-current');
         });
         if (actionButton) actionButton.textContent = advanceLabels[currentStep - 1] ?? advanceLabels[2]!;
-        if (previousButton) previousButton.hidden = currentStep === 1;
+        if (previousButton) previousButton.hidden = currentStep === FIRST_STEP;
         if (stepStatus) stepStatus.textContent = statusLabels[currentStep - 1] ?? statusLabels[0]!;
         page.querySelector<HTMLElement>(currentStep === 2 ? '.passport-avatar[aria-checked="true"]' : currentStep === 3 ? '.passport-plane[aria-checked="true"]' : '#nickname')
           ?.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -950,7 +946,7 @@ export function createPage(): Page {
         });
       });
       previousButton?.addEventListener('click', () => {
-        if (transitionLocked || currentStep <= 1) return;
+        if (transitionLocked || currentStep <= FIRST_STEP) return;
         transitionLocked = true;
         void audio.playSfx('tap');
         setStep(currentStep - 1);
@@ -958,11 +954,6 @@ export function createPage(): Page {
       });
       actionButton?.addEventListener('click', () => {
         if (transitionLocked) return;
-        if (currentStep === 1) {
-          const error = validate();
-          if (error) { showNicknameError(error); return; }
-          if (msg) msg.hidden = true;
-        }
         transitionLocked = true;
         if (currentStep < 3) {
           maxReached = Math.max(maxReached, currentStep + 1);

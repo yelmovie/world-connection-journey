@@ -33,9 +33,9 @@ describe('탐험가 아바타 매핑', () => {
     expect(selectedAvatarAssetId('unknown')).toBe('player.avatar.maya');
   });
 
-  it('여권 별명과 탐험가 이미지를 모든 화면용 플레이어 화자로 묶는다', () => {
+  it('고른 탐험가의 이름·이미지를 모든 화면용 플레이어 화자로 묶는다(이름 입력 단계 없음, 예전 별명은 무시)', () => {
     const speaker = selectedAvatarSpeaker({ avatarId: 'a4', nickname: '햇살빛' });
-    expect(speaker.name).toBe('햇살빛');
+    expect(speaker.name).toBe('유세프');
     expect(speaker.assetId).toBe('player.avatar.yusef');
     expect(speaker.avatar.name).toBe('유세프');
   });

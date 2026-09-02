@@ -45,8 +45,8 @@ const TYPE_MS = 25;
 /** 대사 속 {player}를 학생이 정한 여행 이름으로 바꾼다. 여권 전이면 '나'로 읽힌다. */
 function fillPlayerName(text: string): string {
   if (!text.includes('{player}')) return text;
-  const nickname = saveRepo.get().profile?.nickname.trim();
-  return text.replaceAll('{player}', nickname || '나');
+  const player = selectedAvatarSpeaker(saveRepo.get().profile).name;
+  return text.replaceAll('{player}', player || '나');
 }
 
 function reducedMotion(): boolean {

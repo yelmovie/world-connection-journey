@@ -68,7 +68,7 @@ export function playJourneyTransition(opts: {
     : undefined;
   const save = saveRepo.get();
   const avatar = avatarChoice(save.profile?.avatarId);
-  const passportOwner = save.profile?.nickname.trim() || avatar.name;
+  const passportOwner = avatar.name;
   const newestMissionId = companionAssetId
     ? MISSION_IDS.find((missionId) => PASSPORT_STAMP_ASSETS[missionId] === companionAssetId)
     : undefined;

@@ -317,14 +317,14 @@ export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: s
   const ticket = save.profile && opts.showPassport
     ? `<button type="button" class="journey-ticket" data-act="passport"
         data-selected-avatar="${escapeHtml(selectedAvatar.saveId)}" data-selected-airplane="${escapeHtml(selectedPlane.saveId)}"
-        title="${escapeHtml(selectedAvatar.name)}와 ${escapeHtml(selectedPlane.name)}의 여행 여권"
-        aria-label="${escapeHtml(save.profile.nickname)}의 여권 보기. 탐험가 ${escapeHtml(selectedAvatar.name)}, 비행기 ${escapeHtml(selectedPlane.name)}, 도장 ${save.stamps.length}개">
+        title="${escapeHtml(selectedAvatar.name)}의 여행 여권"
+        aria-label="${escapeHtml(selectedAvatar.name)}의 여권 보기. 비행기 ${escapeHtml(selectedPlane.name)}, 도장 ${save.stamps.length}개">
         <span class="journey-ticket__crew" aria-hidden="true">
           ${hasAsset(selectedAvatar.assetId) ? `<img class="journey-ticket__avatar" src="${assetUrl(selectedAvatar.assetId)}" data-asset-id="${selectedAvatar.assetId}" alt="">` : ''}
           ${hasAsset(selectedPlane.assetId) ? `<img class="journey-ticket__plane" src="${assetUrl(selectedPlane.assetId)}" data-asset-id="${selectedPlane.assetId}" alt="">` : ''}
         </span>
-        <span class="journey-ticket__name">${escapeHtml(save.profile.nickname)}</span>
-        <span class="journey-ticket__meta">${escapeHtml(selectedAvatar.name)} · ${escapeHtml(selectedPlane.name)} · 도장 ${save.stamps.length}개</span>
+        <span class="journey-ticket__name">${escapeHtml(selectedAvatar.name)}</span>
+        <span class="journey-ticket__meta">${escapeHtml(selectedPlane.name)} · 도장 ${save.stamps.length}개</span>
       </button>`
     : '';
   const backAria = isHome

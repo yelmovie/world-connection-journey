@@ -68,7 +68,7 @@ export function selectedAvatarSpeaker(profile: Pick<Profile, 'avatarId' | 'nickn
   const avatar = avatarChoice(profile?.avatarId);
   return {
     assetId: avatar.assetId,
-    name: profile?.nickname.trim() || avatar.name,
+    name: avatar.name, // 이름 입력 단계가 없어졌다 — 캐릭터 이름을 끝까지 쓴다(예전 저장의 별명은 무시)
     avatar
   };
 }
