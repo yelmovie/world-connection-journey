@@ -384,8 +384,8 @@
     },
     "plane.portrait.peach.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_peach_transparent.webp",
-      "original": "assets/plane_portrait_peach.webp",
+      "src": "assets/plane_portrait_peach_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_peach_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -453,6 +453,23 @@
       "alpha": true,
       "license": "AI-generated (project original)",
       "note": "선택한 탐험가와 비행기를 끼워 넣는 어린이 수제 여권 프레임"
+    },
+    "prop.passport_stampbook": {
+      "type": "image",
+      "src": "assets/prop_passport_stampbook_v1.webp",
+      "original": "generated_images/exec-f7a5d12e-9741-447e-9874-39ff3062f038.png",
+      "pages": [
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08"
+      ],
+      "preload": "core",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "여섯 미션의 도장을 한 칸씩 모으는 2열 3행 빈 여행 여권"
     },
     "prop.passport": {
       "type": "image",
@@ -770,15 +787,15 @@
     },
     "europe.heritage": {
       "type": "image",
-      "src": "assets/europe_heritage.webp",
-      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (1).png",
+      "src": "assets/europe_heritage_v2.webp",
+      "original": "assets/generated/europe_colosseum_full_v2_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "alpha": true,
+      "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "콜로세움 미니어처"
+      "note": "콜로세움 전체 외관과 기단이 안전 여백 안에 보이는 16:9 관찰 그림"
     },
     "africa.host": {
       "type": "image",
@@ -1621,27 +1638,27 @@
     },
     "europe.heritage2": {
       "type": "image",
-      "src": "assets/europe_heritage2.webp",
-      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_04 (2).png",
+      "src": "assets/europe_heritage2_v2.webp",
+      "original": "assets/generated/europe_sagrada_full_v2_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "alpha": true,
+      "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "사그라다 파밀리아 미니어처 — 유럽 문화유산 카드"
+      "note": "사그라다 파밀리아의 탑 끝과 광장까지 모두 보이는 16:9 관찰 그림"
     },
     "europe.heritage3": {
       "type": "image",
-      "src": "assets/europe_heritage3.webp",
-      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 03_24_05 (3).png",
+      "src": "assets/europe_heritage3_v2.webp",
+      "original": "assets/generated/europe_neuschwanstein_full_v2_source.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
-      "alpha": true,
+      "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "노이슈반슈타인 성 미니어처 — 유럽 문화유산 카드"
+      "note": "노이슈반슈타인 성의 탑과 산기슭까지 모두 보이는 16:9 관찰 그림"
     },
     "europe.heritage4": {
       "type": "image",
@@ -2185,8 +2202,8 @@
     },
     "plane.portrait.classic.transparent": {
       "type": "image",
-      "src": "assets/plane_guide_clean_v2.webp",
-      "original": "assets/plane_guide_clean_v2.png",
+      "src": "assets/plane_portrait_classic_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_classic_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2197,8 +2214,8 @@
     },
     "plane.portrait.flower.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_flower_transparent.webp",
-      "original": "assets/plane_portrait_flower.webp",
+      "src": "assets/plane_portrait_flower_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_flower_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2209,8 +2226,8 @@
     },
     "plane.portrait.violet.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_violet_transparent.webp",
-      "original": "assets/plane_portrait_violet.webp",
+      "src": "assets/plane_portrait_violet_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_violet_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2221,8 +2238,8 @@
     },
     "plane.portrait.coral.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_coral_transparent.webp",
-      "original": "assets/plane_portrait_coral.webp",
+      "src": "assets/plane_portrait_coral_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_coral_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2233,8 +2250,8 @@
     },
     "plane.portrait.mint.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_mint_transparent.webp",
-      "original": "assets/plane_portrait_mint.webp",
+      "src": "assets/plane_portrait_mint_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_mint_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2245,20 +2262,20 @@
     },
     "plane.portrait.navy.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_navy_transparent.webp",
-      "original": "assets/plane_portrait_navy.webp",
+      "src": "assets/plane_portrait_navy_restored_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_navy_transparent_v3.png",
       "pages": [
         "p03"
       ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "별밤슝슝 투명 배경 선택 이미지"
+      "note": "별밤슝슝 투명 배경 선택 이미지 v3 — 양쪽 날개·꼬리·추진기·가방을 온전히 포함해 재생성"
     },
     "plane.portrait.rose.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_rose_transparent.webp",
-      "original": "assets/plane_portrait_rose.webp",
+      "src": "assets/plane_portrait_rose_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_rose_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2269,8 +2286,8 @@
     },
     "plane.portrait.ice.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_ice_transparent.webp",
-      "original": "assets/plane_portrait_ice.webp",
+      "src": "assets/plane_portrait_ice_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_ice_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2281,8 +2298,8 @@
     },
     "plane.portrait.forest.transparent": {
       "type": "image",
-      "src": "assets/plane_portrait_forest_transparent.webp",
-      "original": "assets/plane_portrait_forest.webp",
+      "src": "assets/plane_portrait_forest_transparent_v2.webp",
+      "original": "assets/generated/plane_portrait_forest_transparent_v2.png",
       "pages": [
         "p03"
       ],
@@ -2437,39 +2454,39 @@
     },
     "asia.nepal.1": {
       "type": "image",
-      "src": "assets/asia_nepal_1.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "src": "assets/asia_nepal_1_v2.webp",
+      "original": "generated_images/exec-7bcd5702-bdcc-48cd-b2f4-47eeb4d81afe.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "네팔 카트만두 공동체 생활 관찰 장면"
+      "note": "상단 잘림 없이 다시 제작한 네팔 카트만두 공동체 생활 관찰 장면"
     },
     "asia.nepal.2": {
       "type": "image",
-      "src": "assets/asia_nepal_2.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "src": "assets/asia_nepal_2_v2.webp",
+      "original": "generated_images/exec-0f2de0f1-be7a-4071-9736-55e45cfcf0f9.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "네팔 산촌 길과 계단식 밭 관찰 장면"
+      "note": "상단 잘림 없이 다시 제작한 네팔 산촌 길과 계단식 밭 관찰 장면"
     },
     "asia.nepal.3": {
       "type": "image",
-      "src": "assets/asia_nepal_3.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "src": "assets/asia_nepal_3_v2.webp",
+      "original": "generated_images/exec-5b759995-017a-4fc8-b68a-94ad78fa3857.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "네팔 빙하와 계곡물 변화 관찰 장면"
+      "note": "상단 잘림 없이 다시 제작한 네팔 빙하와 계곡물 변화 관찰 장면"
     },
     "asia.map.regional": { "type": "image", "src": "assets/asia_map_regional_v2.webp", "original": "generated_images/exec-79ad3592-105b-4e52-a17a-2172e3ab7831.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "아시아의 실제 윤곽과 지형 관계를 단순화한 3D 페인터리 권역 지도" },
     "asia.vietnam.1": { "type": "image", "src": "assets/asia_vietnam_1_v2.webp", "original": "generated_images/exec-2d693634-28a6-4303-9d3d-5075c5db980d.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "베트남 메콩강 삼각주의 수로와 과수원 관찰 일러스트" },
@@ -2567,6 +2584,30 @@
       "license": "AI-generated (project original)",
       "note": "탄자니아 북부 초원 — 작아진 물웅덩이와 이동하는 동물 (환경 신호 현장 사진, 개념 일러스트)"
     },
+    "earth.issue.water_sharing": {
+      "type": "image",
+      "src": "assets/env_issue_water_sharing.webp",
+      "original": "generated_images/exec-8d2e2408-b6d0-4c45-b5af-661745ed8cff.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "물 부족 지역의 저수지·마을·농장이 제한된 물을 공평하게 나누는 방법을 생각하는 환경문제 선택 카드"
+    },
+    "earth.issue.climate_glacier": {
+      "type": "image",
+      "src": "assets/env_issue_climate_glacier.webp",
+      "original": "generated_images/exec-ab42cd59-ae3e-4ea7-8617-21276b4cfd94.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "산 정상과 빙하가 잘리지 않도록 상단 안전 여백을 확보한 기후 변화 환경문제 선택 카드"
+    },
     "stage6.yusra.before": {
       "type": "image", "src": "assets/stage6_yusra_before.webp", "original": "assets/stage6/stage6_yusra_before.png",
       "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
@@ -2602,10 +2643,135 @@
       "pages": ["p09"], "preload": "page", "alpha": true, "license": "AI-generated (project original)",
       "note": "한반도·동아시아 중심의 세계 친구 지구회의 문제 선택 화면 전용 연결 지구본"
     },
+    "earth.signal.map": {
+      "type": "image", "src": "assets/earth_signal_map_v2.webp", "original": "assets/earth-council/earth_signal_map_v2.png",
+      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "여섯 환경 신호의 실제 지역과 클릭 지점을 맞춘 최종 단계 전용 세계지도"
+    },
     "earth.council.finale": {
       "type": "image", "src": "assets/earth_council_finale_korea_v3.webp", "original": "assets/earth-council/earth_council_finale_korea_v3.png",
       "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
       "note": "한반도·동아시아 중심의 세계 친구 지구회의 공동약속 완성 화면 전용 우주 속 지구"
+    },
+    "oceania.signal.coral.before": {
+      "type": "image", "src": "assets/oceania-signals/coral-before.webp", "original": "generated_images/exec-b2442174-956f-40a3-b570-ec7c5f935c06.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "따뜻해진 바다와 산호 변화 비교 전 — 건강한 산호초"
+    },
+    "oceania.signal.coral.after": {
+      "type": "image", "src": "assets/oceania-signals/coral-after.webp", "original": "generated_images/exec-02a4b530-f2e5-40d0-8df0-1cf11ff4e4eb.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "따뜻해진 바다와 산호 변화 비교 후 — 백화된 산호초"
+    },
+    "oceania.signal.debris.before": {
+      "type": "image", "src": "assets/oceania-signals/debris-before.webp", "original": "generated_images/exec-957ac920-8644-43ea-bd49-e6cddd10c38d.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "바다를 건너온 쓰레기 비교 전 — 깨끗한 석호"
+    },
+    "oceania.signal.debris.after": {
+      "type": "image", "src": "assets/oceania-signals/debris-after.webp", "original": "generated_images/exec-19f5f435-71b9-477e-8bfe-0bd9fed75d8b.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "바다를 건너온 쓰레기 비교 후 — 해류로 모인 해양 쓰레기"
+    },
+    "oceania.signal.water.before": {
+      "type": "image", "src": "assets/oceania-signals/water-before.webp", "original": "generated_images/exec-3b9962a5-2828-4f9d-9240-7b3fe33761c2.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "높아진 물과 거센 날씨 비교 전 — 잔잔한 해안 마을"
+    },
+    "oceania.signal.water.after": {
+      "type": "image", "src": "assets/oceania-signals/water-after.webp", "original": "generated_images/exec-f9c1382c-8489-4fe6-825c-3e40a556bcac.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "높아진 물과 거센 날씨 비교 후 — 높은 파도와 폭풍"
+    },
+    "oceania.signal.weather.before": {
+      "type": "image", "src": "assets/oceania-signals/weather-before.webp", "original": "generated_images/exec-35727b6f-bd67-4dcb-a3c6-0790c126bf94.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "바람과 날씨가 바꾼 이동 비교 전 — 잔잔한 섬 항구"
+    },
+    "oceania.signal.weather.after": {
+      "type": "image", "src": "assets/oceania-signals/weather-after.webp", "original": "generated_images/exec-6e65f14d-60fe-4ae9-ab8d-2c3abb749195.png",
+      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "바람과 날씨가 바꾼 이동 비교 후 — 강풍으로 멈춘 항로"
+    },
+    "asia.signal.mongolia.before": {
+      "type": "image", "src": "assets/asia-signals/mongolia-before-v1.webp", "original": "generated_images/exec-544eebc5-aaf4-4aa1-8b78-8154a82a0e4b.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "몽골 초원의 물 변화 비교 전 — 풀이 자라고 우물에 물이 있는 때"
+    },
+    "asia.signal.mongolia.after": {
+      "type": "image", "src": "assets/asia-signals/mongolia-after-v1.webp", "original": "generated_images/exec-7547bfd5-56a3-43ba-b186-edf4e85d37cc.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "몽골 초원의 물 변화 비교 후 — 긴 건조기로 풀이 마르고 물이 줄어든 때"
+    },
+    "asia.signal.japan.before": {
+      "type": "image", "src": "assets/asia-signals/japan-before-v1.webp", "original": "generated_images/exec-9e35c1e6-c58c-4de9-a7f5-616713303a39.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "일본 해안 공원의 더위 비교 전 — 온화한 날의 산책 공간"
+    },
+    "asia.signal.japan.after": {
+      "type": "image", "src": "assets/asia-signals/japan-after-v3.webp", "original": "generated_images/exec-3b288a4b-10e8-4815-b867-d5c8b015a3a7.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "일본 해안 공원의 폭염 비교 후 — 나무가 거의 사라지고 포장면이 넓어져 그늘이 부족한 모습"
+    },
+    "asia.signal.vietnam.before": {
+      "type": "image", "src": "assets/asia-signals/vietnam-before-v1.webp", "original": "generated_images/exec-45bd26b8-0448-454b-b256-952971578a91.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "메콩강 삼각주 염분 변화 비교 전 — 담수 운하와 푸른 논"
+    },
+    "asia.signal.vietnam.after": {
+      "type": "image", "src": "assets/asia-signals/vietnam-after-v1.webp", "original": "generated_images/exec-18e9776e-4078-4492-996a-9ce902c03d0a.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "메콩강 삼각주 염분 변화 비교 후 — 염수 유입과 농업 적응"
+    },
+    "asia.signal.nepal.before": {
+      "type": "image", "src": "assets/asia-signals/nepal-before-v1.webp", "original": "generated_images/exec-a0232fa7-8fe4-47c9-8e78-52ed10f54862.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "네팔 빙하와 계곡물 비교 전 — 넓은 빙하와 풍부한 물길"
+    },
+    "asia.signal.nepal.after": {
+      "type": "image", "src": "assets/asia-signals/nepal-after-v1.webp", "original": "generated_images/exec-5eae94e0-0b19-4785-a25c-9f50db49f347.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "네팔 빙하와 계곡물 비교 후 — 줄어든 빙하와 가늘어진 물길"
+    },
+    "asia.signal.kazakhstan.before": {
+      "type": "image", "src": "assets/asia-signals/kazakhstan-before-v1.webp", "original": "generated_images/exec-356223cd-fda8-4fc2-ac53-80e21bad6fd0.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "카자흐스탄 공간 비교 첫 장면 — 사르아르카 초원과 습지"
+    },
+    "asia.signal.kazakhstan.after": {
+      "type": "image", "src": "assets/asia-signals/kazakhstan-after-v2.webp", "original": "generated_images/exec-99dc9db1-6320-441b-983e-1119ae2908b4.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "카자흐스탄 환경 변화 후 — 도시 확장으로 줄고 끊어진 초원 습지"
+    },
+    "asia.signal.jordan.before": {
+      "type": "image", "src": "assets/asia-signals/jordan-before-v1.webp", "original": "generated_images/exec-0643b82b-314c-4ece-835b-d52ea903d293.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "요르단 물 관리 비교 전 — 비가 적은 사막의 자연 물길"
+    },
+    "asia.signal.jordan.after": {
+      "type": "image", "src": "assets/asia-signals/jordan-after-v2.webp", "original": "generated_images/exec-1f7f12b9-a4db-45ba-9c0a-48afd7a90f04.png",
+      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "요르단 가뭄 비교 후 — 오래된 폭염과 적은 비로 거의 마른 물웅덩이"
+    },
+    "europe.signal.france_heat.after": {
+      "type": "image", "src": "assets/europe-signals/france-heat-after-v1.webp", "original": "generated_images/exec-67d7e0b3-fc42-4dbc-827f-b5b1fda95cee.png",
+      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "파리 센강 비교 후 — 폭염과 줄어든 나무 그늘"
+    },
+    "europe.signal.germany_flood.after": {
+      "type": "image", "src": "assets/europe-signals/germany-flood-after-v1.webp", "original": "generated_images/exec-e543086a-be1d-4609-be53-166250d60821.png",
+      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "라인강 비교 후 — 큰비로 높아진 강물과 안전 대비"
+    },
+    "europe.signal.italy_drought.after": {
+      "type": "image", "src": "assets/europe-signals/italy-drought-after-v2.webp", "original": "assets/generated/europe_italy_drought_after_v2_source.png",
+      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "돌로미티 비교 후 — 죽은 나무, 갈라진 흙, 마른 물길로 가뭄 피해가 분명한 장면"
+    },
+    "europe.signal.greece_heat.after": {
+      "type": "image", "src": "assets/europe-signals/greece-heat-after-v2.webp", "original": "assets/generated/europe_greece_heat_after_v2_source.png",
+      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "note": "그리스 섬마을 비교 후 — 마른 식물, 빈 급수대, 물통 줄과 지친 표정으로 물 부족이 분명한 장면"
     },
     "earth.completion.globe": {
       "type": "image", "src": "assets/earth_completion_globe_korea_v3.webp", "original": "assets/earth-council/earth_completion_globe_korea_v3.png",

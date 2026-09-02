@@ -7,7 +7,7 @@
     "status": "공식 자료 대조 완료",
     "verifiedAt": "2026-08-31",
     "scope": "일곱 나라의 상대 위치, 도시·유산·생활 공간의 기본 사실, 사그라다 파밀리아 공사 상태",
-    "peopleNote": "카밀라·리나·조피아·아담·루카·소피아·엘레니는 여러 사례를 바탕으로 만든 학습용 가상 친구이며 실제 여행자가 아니다.",
+    "peopleNote": "카미유·리나·조피아·아담·루카·소피아·엘레니는 여러 사례를 바탕으로 만든 학습용 가상 친구이며 실제 여행자가 아니다.",
     "mediaNote": "21개 이미지는 실제 현장 사진이 아니라 학습용 재현 이미지다. 이미지 속 사람·배치·날씨는 사실 근거로 사용하지 않는다.",
     "sources": [
       {
@@ -50,30 +50,31 @@
       "alignmentLevel": "부분 연계",
       "activityEvidence": [
         "유럽 여러 나라의 환경·생활·문화 장면을 직접 비교한다.",
-        "각 나라의 문화 장면을 살피고 여행가와 나눈 대화에서 공통된 걱정을 발견한다."
+        "환경 변화 그림과 여러 친구의 목소리를 연결해 함께할 일을 고른다."
       ],
       "assessmentEvidence": [
-        "두 나라 이상에서 사진 근거를 모았는지 확인한다.",
-        "선택 이유와 궁금한 점이 고른 장면과 연결되는지 확인한다."
+        "다섯 나라 이상에서 서로 다른 장면을 살폈는지 확인한다.",
+        "환경 신호·지역의 목소리·함께할 일을 연결했는지 확인한다."
       ],
       "scopeNote": "이 미션만으로 유럽 전체 지역의 특성을 일반화하지 않는다. 장면은 특정 도시·공간의 관찰 자료로 다룬다."
     }
   ],
   "learningObjectives": [
     "유럽 여러 나라의 환경·생활·문화 장면을 비교한다.",
-    "각 나라의 여행가와 자연스럽게 대화하며 문화와 생활의 변화를 이해한다.",
-    "사진과 대화를 근거로 더 알아볼 질문을 만든다."
+    "폭염·큰비·가뭄처럼 여러 지역에 이어진 환경 변화를 그림으로 이해한다.",
+    "친구들의 목소리를 듣고 나와 우리가 함께할 일을 자유롭게 고른다."
   ],
   "intro": {
-    "title": "유럽: 여러 나라를 만나는 창",
-    "subtitle": "사진처럼 만든 학습용 장면을 살펴보고 그 나라 사례 친구와 이야기해 봐.",
-    "guide": "일곱 나라의 출처를 바탕으로 만든 학습용 재현 장면을 자세히 보고 가상 친구를 만나 봐. 장면 하나나 친구 한 명을 그 나라 전체의 모습으로 단정하지 말자."
+    "title": "유럽: 이어진 강과 도시, 함께 지키는 삶",
+    "subtitle": "여러 나라의 생활과 환경 변화를 비교하고 함께할 일을 찾아봐.",
+    "guide": "일곱 나라의 학습용 장면을 살펴보고 폭염·큰비·가뭄처럼 국경을 넘어 이어지는 환경 변화를 비교해 봐."
   },
   "requirements": {
     "minCountries": 5,
     "minVisualsPerVisitedCountry": 3,
     "minSavedVisuals": 5,
-    "minSavedCountries": 5
+    "minSavedCountries": 5,
+    "minSignals": 3
   },
   "countries": [
     {
@@ -165,12 +166,12 @@
         },
         {
           "id": "germany_castle",
-          "title": "산 위의 성",
+          "title": "노이슈반슈타인 성",
           "category": "heritage",
           "imageId": "europe.heritage3",
-          "caption": "산과 숲 사이에 높은 탑이 있는 성이 보여.",
-          "lookFor": "산 · 숲 · 성의 모양",
-          "sourceTitle": "프로젝트 원본 미니어처",
+          "caption": "바이에른의 산과 숲 사이에 하얀 성과 높은 탑이 보여.",
+          "lookFor": "하얀 성 · 높은 탑 · 숲",
+          "sourceTitle": "프로젝트 생성 노이슈반슈타인 성 관찰 그림",
           "sourceUrl": "project:europe-heritage-3",
           "license": "AI-generated project original",
           "verifiedAt": "",
@@ -321,9 +322,9 @@
           "title": "콜로세움",
           "category": "heritage",
           "imageId": "europe.heritage",
-          "caption": "둥근 벽에 아치 모양의 문이 여러 층으로 이어져.",
-          "lookFor": "둥근 벽 · 아치 · 여러 층",
-          "sourceTitle": "프로젝트 원본 미니어처",
+          "caption": "둥근 벽을 따라 아치 문이 여러 층으로 이어져.",
+          "lookFor": "둥근 벽 · 아치 문 · 층",
+          "sourceTitle": "프로젝트 생성 콜로세움 관찰 그림",
           "sourceUrl": "project:europe-heritage-1",
           "license": "AI-generated project original",
           "verifiedAt": "",
@@ -335,7 +336,7 @@
       "id": "spain",
       "name": "스페인",
       "map": {
-        "x": 14,
+        "x": 18,
         "y": 82
       },
       "accent": "#dd9a3d",
@@ -374,7 +375,7 @@
           "imageId": "europe.heritage2",
           "caption": "높고 가느다란 탑과 여러 무늬가 눈에 띄어.",
           "lookFor": "높은 탑 · 무늬 · 빛",
-          "sourceTitle": "프로젝트 원본 미니어처",
+          "sourceTitle": "프로젝트 생성 사그라다 파밀리아 관찰 그림",
           "sourceUrl": "project:europe-heritage-2",
           "license": "AI-generated project original",
           "verifiedAt": "",
@@ -434,47 +435,132 @@
       ]
     }
   ],
-  "reasonPrompts": [
+  "signals": [
     {
-      "id": "scene",
-      "label": "풍경",
-      "prompt": "어떤 모습이 눈에 남았어?"
+      "id": "france_city_heat",
+      "title": "도시 폭염과 부족한 그늘",
+      "prompt": "폭염이 길어진 뒤 센강 길의 나무와 사람들의 모습이 어떻게 달라졌는지 비교해 봐.",
+      "connection": "폭염이 길어짐 → 나무와 그늘이 줄어듦 → 밖에서 쉬고 이동하기 어려워짐",
+      "issueId": "climate",
+      "beforeAssetId": "europe.france.seine",
+      "afterAssetId": "europe.signal.france_heat.after",
+      "sourceTitle": "프로젝트 생성 환경 비교 그림",
+      "sourceUrl": "project:europe-france-heat-comparison"
     },
     {
-      "id": "life",
-      "label": "생활",
-      "prompt": "사람들의 어떤 생활이 궁금해?"
+      "id": "germany_rhine_flood",
+      "title": "큰비로 높아진 라인강",
+      "prompt": "큰비가 이어진 뒤 강물과 강가 길, 배의 모습이 어떻게 달라졌는지 비교해 봐.",
+      "connection": "큰비가 이어짐 → 강물이 빠르게 높아짐 → 강가 길과 마을의 안전을 함께 준비해야 함",
+      "issueId": "climate",
+      "beforeAssetId": "europe.germany.rhine",
+      "afterAssetId": "europe.signal.germany_flood.after",
+      "sourceTitle": "프로젝트 생성 환경 비교 그림",
+      "sourceUrl": "project:europe-germany-flood-comparison"
     },
     {
-      "id": "story",
-      "label": "이야기",
-      "prompt": "무엇을 더 알고 싶어?"
+      "id": "italy_mountain_drought",
+      "title": "산의 가뭄과 마른 숲",
+      "prompt": "덥고 비가 적은 여름이 길어진 뒤 풀밭과 숲이 어떻게 달라졌는지 비교해 봐.",
+      "connection": "덥고 건조한 날이 길어짐 → 풀과 나무가 마름 → 산의 물과 동식물 터전이 줄어듦",
+      "issueId": "ecosystem",
+      "beforeAssetId": "europe.italy.dolomites",
+      "afterAssetId": "europe.signal.italy_drought.after",
+      "sourceTitle": "프로젝트 생성 환경 비교 그림",
+      "sourceUrl": "project:europe-italy-drought-comparison"
+    },
+    {
+      "id": "greece_island_heat",
+      "title": "섬의 폭염과 물 부족",
+      "prompt": "오래 덥고 비가 적게 온 뒤 섬마을의 식물과 물 사용이 어떻게 달라졌는지 비교해 봐.",
+      "connection": "폭염과 가뭄이 이어짐 → 식물과 물이 줄어듦 → 주민과 항구 생활에 필요한 물이 부족해짐",
+      "issueId": "climate",
+      "beforeAssetId": "europe.greece.island_harbor",
+      "afterAssetId": "europe.signal.greece_heat.after",
+      "sourceTitle": "프로젝트 생성 환경 비교 그림",
+      "sourceUrl": "project:europe-greece-heat-comparison"
     }
   ],
-  "questionStarters": [
+  "perspectives": [
     {
-      "id": "why",
-      "label": "왜",
-      "text": "이곳에서 사람들은 왜"
+      "id": "camille",
+      "name": "카미유",
+      "role": "파리 강가를 이용하는 친구",
+      "line": "더운 날에도 안전하게 걷고 쉴 수 있게 나무와 물 쉼터가 더 필요해.",
+      "assetId": "europe.traveler.france"
     },
     {
-      "id": "how",
-      "label": "어떻게",
-      "text": "이곳 사람들은 어떻게"
+      "id": "lina",
+      "name": "리나",
+      "role": "라인강 마을의 친구",
+      "line": "큰비가 오기 전 강물 높이를 살피고 안전한 길을 미리 알려야 해.",
+      "assetId": "europe.traveler.germany"
     },
     {
-      "id": "change",
-      "label": "변화",
-      "text": "옛 모습과 오늘 모습은"
+      "id": "luca",
+      "name": "루카",
+      "role": "산길을 자주 걷는 친구",
+      "line": "마른 숲을 지키려면 물을 아끼고 숲의 변화를 꾸준히 살펴야 해.",
+      "assetId": "europe.traveler.italy"
+    },
+    {
+      "id": "eleni",
+      "name": "엘레니",
+      "role": "그리스 섬마을의 친구",
+      "line": "섬의 물이 부족하지 않게 주민과 여행자가 함께 아껴야 해.",
+      "assetId": "europe.traveler.greece"
     }
   ],
-  "postcard": {
-    "title": "유럽 환경 대화 기록",
-    "finishLabel": "세계 회의 준비 마치기"
-  },
-  "feedback": {
-    "reflection": "사진에서 찾은 변화와 여행가의 걱정을 연결하면 세계 문제를 더 구체적으로 이야기할 수 있어."
-  },
+  "actions": [
+    {
+      "id": "europe_action_water",
+      "tier": "self",
+      "label": "물과 전기 아껴 쓰기",
+      "detail": "생활 속 자원을 아껴 써."
+    },
+    {
+      "id": "europe_action_transport",
+      "tier": "self",
+      "label": "걷기·자전거·대중교통 이용하기",
+      "detail": "이동할 때 온실가스를 줄여."
+    },
+    {
+      "id": "europe_action_shade_map",
+      "tier": "community",
+      "label": "동네 그늘·물 쉼터 지도 만들기",
+      "detail": "더운 날 쉬어 갈 곳을 함께 찾아."
+    },
+    {
+      "id": "europe_action_rain_ready",
+      "tier": "community",
+      "label": "강 주변 안전 안내 확인하기",
+      "detail": "큰비가 오기 전 안전한 길을 익혀."
+    },
+    {
+      "id": "europe_action_city_trees",
+      "tier": "government",
+      "label": "도시 나무와 쉼터 늘리기",
+      "detail": "폭염에 안전한 공공 공간을 만들어."
+    },
+    {
+      "id": "europe_action_emissions",
+      "tier": "government",
+      "label": "건물·교통 온실가스 줄이기",
+      "detail": "도시 전체의 배출을 줄여."
+    },
+    {
+      "id": "europe_action_shared_data",
+      "tier": "international",
+      "label": "여러 나라 관찰 자료 나누기",
+      "detail": "국경을 넘는 변화를 함께 살펴."
+    },
+    {
+      "id": "europe_action_shared_response",
+      "tier": "international",
+      "label": "가뭄·홍수 대응 경험 나누기",
+      "detail": "잘된 방법을 여러 나라가 함께 써."
+    }
+  ],
   "learn": {
     "introMode": "friend-only",
     "friend": {
@@ -482,19 +568,19 @@
       "imageId": "europe.guide",
       "region": "유럽 여러 나라"
     },
-    "goal": "여러 나라의 모습을 비교하고, 가장 궁금한 나라를 사진 근거와 질문으로 남겨 보자.",
+    "goal": "여러 나라의 환경 변화를 비교하고, 친구들의 목소리와 함께할 일을 연결해 보자.",
     "prediction": {
-      "question": "나라를 더 알고 싶어지는 순간은 언제일까?",
+      "question": "유럽 여러 나라의 환경문제는 어떻게 이어져 있을까?",
       "options": [
-        "사진을 자세히 볼 때",
-        "내 질문을 만들 때",
-        "정답을 빨리 찾을 때"
+        "강·산·바다와 날씨로 이어져 있어",
+        "나라별로 완전히 따로 떨어져 있어",
+        "한 사람의 행동만으로 모두 해결돼"
       ]
     },
     "discoveries": [
       "같은 나라 안에도 자연환경, 오늘의 생활, 오래된 문화 공간이 함께 있어.",
-      "한 장면을 보고 생긴 관심은 다른 장면과 비교할수록 더 구체적으로 바뀔 수 있어.",
-      "궁금한 점을 질문으로 남기면 다음 조사에서 무엇을 찾아볼지 분명해져."
+      "폭염·큰비·가뭄은 강과 산, 도시와 섬의 생활을 함께 바꿀 수 있어.",
+      "나의 실천과 지역·정부·여러 나라의 행동이 함께 이어져야 해."
     ]
   }
 }

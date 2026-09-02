@@ -42,12 +42,13 @@ _unused/duplicates/       MD5 동일 중복 원본 23장 (삭제 아님, 이동 
 
 해시 라우터(`#/map` 등) — 정적 호스팅에서 리라이트 불필요.
 - 전환 가드: `isTransitioning` + 300ms 디바운스 (빠른 연속 클릭에 화면 중복 열림 방지)
-- 접근 가드(`guard()`): 프로필 없으면 여권으로, 대화는 5대륙 완료 시, `#/completion`은 `recomputeUnlocks()` 재계산 통과 시만. 저장값의 unlocked를 신뢰하지 않는다 (2차 방어는 completion 페이지 mount에서 재검사).
+- 접근 가드(`guard()`): 프로필 없으면 여권으로, 대화는 5대륙 완료 시. 저장값의 unlocked를 신뢰하지 않고 매 이동마다 `recomputeUnlocks()`로 재계산한다.
+- 완주 화면(`#/completion`)은 엔딩 영상(`playEndingVideo`, public/video/final.mp4)으로 대체됐다. 옛 해시·저장된 `lastRoute`는 가드가 `#/map`으로 보낸다.
 
 ## 저장 스키마 (v1)
 
 키 `world_connection_journey.save.v1`. 타입은 `src/types.ts`의 `GameSaveV1`:
-profile(별명·아바타·비행기·탐험질문) / missions(미션ID별 status·checkpointId·bestScore·attempts·scoreDimensions·data) /
+profile(별명·아바타·비행기) / missions(미션ID별 status·checkpointId·bestScore·attempts·scoreDimensions·data) /
 stamps / settings(bgm·sfx·reducedMotion) / completion(unlocked·reflection·actionPrinciples·certificateIssued·placedPuzzlePieceIds·reflectionDrafts) /
 rewardClaimedById(보상 중복 방지) / lastRoute / updatedAt
 

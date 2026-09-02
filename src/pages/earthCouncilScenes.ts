@@ -1,22 +1,21 @@
 /**
  * 최종 단계 "하나의 지구, 여섯 개의 신호" — 장면 렌더러.
- * 신호 발견 → 지도 연결 → 문제 선택 → 원탁회의 → 해결안 실험 → 공동약속 → 완료 연출.
+ * 신호 클릭 → 지도에서 다시 확인 → 문제 살펴보기 → 친구 약속 읽기 → 내 약속 → 완료 연출.
  * 상태·판정은 core/earthCouncil.ts, 저장은 host.save()가 맡는다.
  */
 import { assetUrl, hasAsset } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import {
-  buildPledge, canOpenCouncil, canRunSimulation, friendCountForIssue, MIN_CONNECTIONS, MIN_PERSPECTIVES_LISTENED,
-  MIN_SIGNALS_TO_CONNECT, personalActionIssue, signalsForLens, simulate,
-  type ActionTierId, type ConnectionType, type EarthContent, type EarthFriend, type EnvironmentalSignal,
+  buildPledge, canOpenCouncil, canRunSimulation, MIN_CONNECTIONS,
+  MIN_SIGNALS_TO_CONNECT, personalActionIssue, simulate,
+  type ActionTierId, type EarthContent, type EarthFriend, type EnvironmentalSignal,
   type GlobalEnvironmentProgress, type Level
 } from '../core/earthCouncil';
 import { burstConfetti, popBounce } from '../ui/fx';
 import type { GuideController, GuideSpeaker } from '../ui/guide';
 import { showFeedback } from '../ui/feedback';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
-import { withJosa } from '../core/josa';
 
 export interface EarthSceneHost {
   body: HTMLElement;
@@ -34,7 +33,7 @@ export interface EarthSceneHost {
 
 export function earthPreloadIds(content: EarthContent): string[] {
   return [
-    'bg.map', 'bg.spare', 'earth.council.globe', 'earth.council.finale',
+    'bg.map', 'bg.spare', 'earth.signal.map', 'earth.council.globe', 'earth.council.finale',
     'prop.globe3d', 'prop.globe', 'reward.globe_puzzle',
     ...content.friends.map((f) => f.imageId),
     ...content.signals.map((s) => signalImageId(content, s)),
@@ -52,29 +51,25 @@ export function signalImageId(content: EarthContent, s: EnvironmentalSignal): st
   return CONTINENT_BG[friend?.continent ?? ''] ?? 'bg.map';
 }
 
-/* ===== 음성 — 기기 내장 합성. 없으면 자막만. ===== */
-let speakingUtterance: SpeechSynthesisUtterance | null = null;
-export function speak(text: string): boolean {
-  if (typeof speechSynthesis === 'undefined' || !saveRepo.get().settings.sfx) return false;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ko-KR';
-    u.rate = 0.95;
-    speakingUtterance = u;
-    speechSynthesis.speak(u);
-    return true;
-  } catch {
-    return false;
-  }
-}
-export function stopSpeaking(): void {
-  if (typeof speechSynthesis === 'undefined') return;
-  try { speechSynthesis.cancel(); } catch { /* 무시 */ }
-  speakingUtterance = null;
-}
-
 const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] ?? c));
+
+/** 음성 대신 화면에서 한 글자씩 보여 주는 짧은 안내. */
+function typeText(target: HTMLElement, text: string, speed = 24): void {
+  const runId = `${Date.now()}-${Math.random()}`;
+  target.dataset.typeRun = runId;
+  target.setAttribute('aria-label', text);
+  const reduced = saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || !text) { target.textContent = text; return; }
+  target.textContent = '';
+  let index = 0;
+  const tick = () => {
+    if (!target.isConnected || target.dataset.typeRun !== runId) return;
+    index += 1;
+    target.textContent = text.slice(0, index);
+    if (index < text.length) window.setTimeout(tick, speed);
+  };
+  tick();
+}
 
 const ICONS: Record<string, string> = {
   bottle: '<path d="M9 2h6v3l1.5 2v13a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2V7L9 5z"/><path d="M8 11h8"/>',
@@ -97,7 +92,6 @@ const ICONS: Record<string, string> = {
 };
 export const icon = (key: string, size = 26): string =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[key] ?? ICONS.globe}</svg>`;
-const LENS_ICON: Record<ConnectionType, string> = { ocean: 'wave', air: 'wind', climate: 'sun', ecosystem: 'paw', resource: 'box' };
 
 export const EARTH_CSS = `
 .ec { flex:1;min-height:0;width:min(1560px,100%);margin:0 auto;display:flex;flex-direction:column;gap:var(--sp-2); }
@@ -118,38 +112,43 @@ export const EARTH_CSS = `
 .ec-friend .ec-mark.is-new { background:var(--c-coral);animation:ec-ping 1.1s ease-out infinite; }
 @keyframes ec-ping { 0%{box-shadow:0 0 0 0 rgba(242,109,109,.6)} 100%{box-shadow:0 0 0 14px rgba(242,109,109,0)} }
 
-/* 장면 1 — 사진 */
-.ec-photo-row { flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.9fr) minmax(300px,1fr);grid-template-rows:minmax(0,1fr);gap:var(--sp-3); }
+/* 장면 1 — 사진: 그림을 크게 보고, 설명은 클릭 뒤 바로 아래에서 읽는다. */
+.ec-photo-row { flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px; }
 .ec-photo { position:relative;min-height:160px;height:100%;border-radius:var(--radius-l);overflow:hidden;background:#0d2238;box-shadow:var(--shadow-pop);cursor:crosshair;touch-action:manipulation; }
 .ec-photo img { width:100%;height:100%;object-fit:cover;display:block; }
 .ec-spot { position:absolute;transform:translate(-50%,-50%);width:max(64px,6vw);height:max(64px,6vw);border-radius:50%;border:0;background:transparent;cursor:pointer;padding:0; }
 .ec-spot:focus-visible { outline:4px solid var(--c-gold);outline-offset:2px; }
-.ec-spot.is-hint::after { content:'';position:absolute;inset:6px;border-radius:50%;border:3px solid rgba(255,255,255,.9);animation:ec-ping 1.4s ease-out infinite; }
+.ec-spot.is-hint::after { content:'';position:absolute;inset:5px;border-radius:50%;border:5px solid #fff;box-shadow:0 0 0 5px rgba(255,203,70,.72),0 0 26px 12px rgba(255,244,156,.82);animation:ec-click-glow 1.15s ease-in-out infinite; }
+.ec-spot.is-hint::before { content:'✦';position:absolute;right:-2px;top:-12px;color:#fff3a8;font-size:28px;filter:drop-shadow(0 0 6px #fff);animation:ec-spark 900ms ease-in-out infinite alternate; }
 .ec-spot.is-found { cursor:default; }
-.ec-spot.is-found::before { content:'';position:absolute;inset:0;border-radius:50%;border:5px solid var(--c-gold);box-shadow:0 0 0 4px rgba(0,0,0,.35),inset 0 0 0 3px rgba(0,0,0,.25); }
-.ec-spot-label { position:absolute;left:50%;top:100%;transform:translate(-50%,6px);white-space:nowrap;background:rgba(255,252,240,.95);color:var(--c-ink);border-radius:999px;padding:4px 12px;font:800 max(16px,var(--fs-small))/1.2 var(--font-body);box-shadow:var(--shadow-card);pointer-events:none; }
+.ec-spot.is-found::before { content:'✓';position:absolute;inset:0;border-radius:50%;border:5px solid var(--c-gold);background:rgba(20,99,78,.25);box-shadow:0 0 0 4px rgba(0,0,0,.28),inset 0 0 0 3px rgba(255,255,255,.6);display:grid;place-items:center;color:#fff;font:900 30px/1 var(--font-body);text-shadow:0 2px 5px rgba(0,0,0,.6); }
+@keyframes ec-click-glow { 0%,100%{transform:scale(.9);opacity:.72} 50%{transform:scale(1.12);opacity:1} }
+@keyframes ec-spark { to{transform:scale(1.35) rotate(18deg);opacity:.65} }
 .ec-lens { position:absolute;width:min(34%,260px);aspect-ratio:1;border-radius:50%;border:6px solid #fff;box-shadow:var(--shadow-pop);background-repeat:no-repeat;pointer-events:none;right:3%;top:5%;transition:opacity 220ms; }
 .ec-ripple { position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);pointer-events:none;animation:ec-ripple .5s ease-out forwards; }
 @keyframes ec-ripple { to { transform:translate(-50%,-50%) scale(2.4);opacity:0; } }
-.ec-photo-side {align-self:start;max-height:100%;overflow:auto; min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
+.ec-photo-side { min-height:72px;display:flex;align-items:center;justify-content:center;padding:10px 18px;text-align:center;overflow:hidden; }
 .ec-photo-side .ec-portrait { width:clamp(96px,10vw,150px);height:clamp(96px,10vw,150px);object-fit:contain;align-self:center; }
+.ec-click-copy { margin:0;min-height:1.5em;font:900 clamp(18px,1.35vw,24px)/1.4 var(--font-body);color:var(--c-ink);word-break:keep-all; }
 .ec-scope { font-size:max(16px,var(--fs-small));color:var(--c-ink-soft);font-weight:700;line-height:1.35; }
 .ec-progress { display:inline-flex;gap:6px;align-items:center;justify-content:center;font:900 max(20px,var(--fs-body)) var(--font-head);color:var(--c-violet-ink); }
 
-/* 장면 2 — 지도 연결 */
-.ec-connect { flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);grid-template-rows:minmax(0,1fr);gap:var(--sp-3); }
-.ec-map { position:relative;min-height:160px;height:100%;border-radius:var(--radius-l);overflow:hidden;background:#69b9dc center/cover no-repeat;box-shadow:var(--shadow-pop); }
+/* 장면 2 — 지도 연결: 지도의 반짝이는 신호만 누르는 단순한 흐름. */
+.ec-connect { flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px; }
+.ec-map { position:relative;min-height:160px;height:100%;border-radius:var(--radius-l);overflow:hidden;background:#69b9dc center/100% 100% no-repeat;box-shadow:var(--shadow-pop); }
 .ec-map svg.ec-flows { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
 .ec-flow { fill:none;stroke-width:6;stroke-linecap:round;stroke:rgba(255,255,255,.95);stroke-dasharray:14 14;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));animation:ec-dash 1.6s linear infinite; }
 .ec-flow[data-lens="ocean"] { stroke:#7fe3ff; } .ec-flow[data-lens="air"] { stroke:#e6f4ff;stroke-dasharray:4 16; }
 .ec-flow[data-lens="climate"] { stroke:#ffd46b; } .ec-flow[data-lens="ecosystem"] { stroke:#9ff59b; } .ec-flow[data-lens="resource"] { stroke:#ffb3a1; }
 @keyframes ec-dash { to { stroke-dashoffset:-56; } }
-.ec-pin { position:absolute;transform:translate(-50%,-50%);width:var(--hotspot-min);height:var(--hotspot-min);min-width:var(--hotspot-min);border-radius:50%;border:4px solid #fff;background:rgba(255,252,240,.95);padding:0;cursor:pointer;box-shadow:var(--shadow-pop);display:flex;align-items:center;justify-content:center;transition:transform 200ms,opacity 200ms; }
-.ec-pin img { width:88%;height:88%;object-fit:contain;border-radius:50%; }
-.ec-pin .ec-pin-name { position:absolute;top:100%;left:50%;transform:translate(-50%,4px);white-space:nowrap;background:rgba(255,252,240,.95);border-radius:999px;padding:2px 10px;font:800 max(16px,var(--fs-small))/1.2 var(--font-body);color:var(--c-ink);box-shadow:var(--shadow-card);pointer-events:none; }
-.ec-pin.is-dim { opacity:.42;transform:translate(-50%,-50%) scale(.9); }
-.ec-pin.is-lit { transform:translate(-50%,-50%) scale(1.14);border-color:var(--c-gold);box-shadow:0 0 0 6px rgba(242,193,78,.45),var(--shadow-pop); }
-.ec-pin[aria-pressed="true"] { border-color:var(--c-violet);box-shadow:0 0 0 6px rgba(108,76,232,.4),var(--shadow-pop); }
+.ec-pin { position:absolute;transform:translate(-50%,-50%);width:clamp(62px,6vw,92px);height:clamp(62px,6vw,92px);min-width:var(--hotspot-min);border-radius:50%;border:5px solid #fff;background:rgba(255,224,83,.14);padding:0;cursor:pointer;box-shadow:0 0 0 6px rgba(255,195,45,.68),0 0 28px 12px rgba(255,247,166,.9),var(--shadow-pop);animation:ec-map-pulse 1.2s ease-in-out infinite; }
+.ec-pin::after { content:'✦';position:absolute;right:-8px;top:-18px;color:#fff7bd;font-size:32px;filter:drop-shadow(0 0 7px #fff);animation:ec-spark 800ms ease-in-out infinite alternate; }
+.ec-pin:hover,.ec-pin:focus-visible { transform:translate(-50%,-50%) scale(1.12); }
+.ec-pin.is-found { animation:none;border-color:#ffe06c;background:rgba(31,143,98,.36);box-shadow:0 0 0 5px rgba(255,224,108,.5),var(--shadow-pop); }
+.ec-pin.is-found::before { content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:900 30px/1 var(--font-body);text-shadow:0 2px 5px rgba(0,0,0,.65); }
+.ec-pin.is-found::after { display:none; }
+@keyframes ec-map-pulse { 0%,100%{box-shadow:0 0 0 3px rgba(255,195,45,.55),0 0 18px 7px rgba(255,247,166,.65),var(--shadow-pop)} 50%{box-shadow:0 0 0 9px rgba(255,195,45,.78),0 0 34px 16px rgba(255,247,166,.95),var(--shadow-pop)} }
+.ec-map-copy { min-height:72px;padding:10px 18px;border:3px solid rgba(255,255,255,.9);border-radius:var(--radius-l);background:rgba(255,252,240,.96);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;text-align:center; }
 .ec-side {align-self:start;max-height:100%;overflow:auto; min-height:0;display:flex;flex-direction:column;gap:var(--sp-2);overflow-y:auto; }
 .ec-lenses { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px; }
 .ec-lens-btn { display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px;padding:6px 4px;border-radius:var(--radius-m);border:2px solid var(--c-line);background:#fff;font:800 max(16px,var(--fs-small))/1.1 var(--font-body);color:var(--c-ink);cursor:pointer; }
@@ -216,18 +215,26 @@ export const EARTH_CSS = `
 .ec-starters .btn { min-height:44px;font-size:max(16px,var(--fs-small)); }
 
 /* 새 공동회의 — 여섯 친구가 한 원을 만들고 문제·해결책·약속을 차례로 말한다. */
-.ec-council-screen { padding:6px;border-radius:var(--radius-l);background:linear-gradient(rgba(5,24,46,.3),rgba(4,19,38,.55));overflow:hidden; }
-.ec-council-stage { position:relative;flex:1;min-height:0;overflow:hidden;border-radius:var(--radius-l);background:radial-gradient(circle at 50% 48%,rgba(43,161,192,.28),rgba(4,26,50,.18) 43%,rgba(2,15,33,.5) 100%); }
-.ec-council-world { position:absolute;left:50%;top:50%;width:min(24vh,230px);transform:translate(-50%,-50%);filter:drop-shadow(0 12px 28px rgba(56,206,246,.5));opacity:.88;animation:ec-float 4s ease-in-out infinite; }
-.ec-council-friend { position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px;border:0;background:transparent;pointer-events:none;animation:ec-friend-arrive 620ms cubic-bezier(.2,.8,.3,1) both; }
-.ec-council-friend img { width:clamp(58px,8.5vh,108px);height:clamp(58px,8.5vh,108px);object-fit:contain;filter:drop-shadow(0 8px 12px rgba(0,0,0,.52));transition:transform 320ms,filter 320ms; }
-.ec-council-friend span { padding:2px 9px;border-radius:999px;background:rgba(255,253,244,.94);font:900 clamp(13px,.9vw,17px)/1.15 var(--font-body);color:var(--c-navy);box-shadow:var(--shadow-card);white-space:nowrap; }
-.ec-council-friend.is-speaking img { transform:scale(1.2) translateY(-4px);filter:drop-shadow(0 0 16px rgba(255,223,92,.95)); }
+.ec.ec-council-screen { padding:0;border:0;box-shadow:none;background:transparent;overflow:hidden; } /* 남색 테두리 창이 겹쳐 보이던 문제 — 무대 하나만 남긴다 */
+.ec-council-stage { position:relative;flex:1;min-height:0;overflow:hidden;border-radius:var(--radius-l);background:transparent; }
+.ec-council-world { position:absolute;left:50%;top:50%;width:min(26vh,260px);transform:translate(-50%,-50%);filter:drop-shadow(0 12px 28px rgba(56,206,246,.5));opacity:.55;animation:ec-float 4s ease-in-out infinite; }
+.ec-council-friend { position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:0;background:transparent;pointer-events:none;animation:ec-friend-arrive 620ms cubic-bezier(.2,.8,.3,1) both; }
+/* 캐릭터는 예전의 2배 — 여섯 자리를 육각형으로 벌려 서로 겹치지 않게 */
+.ec-council-friend img { width:auto;height:clamp(116px,19vh,220px);max-width:clamp(120px,12vw,220px);object-fit:contain;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55));transition:transform 320ms,filter 320ms; }
+.ec-council-friend span { padding:3px 12px;border-radius:999px;background:rgba(255,253,244,.94);font:900 clamp(15px,1.05vw,20px)/1.15 var(--font-body);color:var(--c-navy);box-shadow:var(--shadow-card);white-space:nowrap; }
+.ec-council-friend.is-speaking img { transform:scale(1.08) translateY(-6px);filter:drop-shadow(0 0 18px rgba(255,223,92,.95)); }
 .ec-council-friend.is-speaking span { background:#fff0a8; }
+.ec-council-friend:not(.is-speaking) img { filter:drop-shadow(0 10px 16px rgba(0,0,0,.55)) saturate(.85); }
 @keyframes ec-friend-arrive { from{opacity:0;transform:translate(-50%,-50%) scale(.55)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
-.ec-council-core { position:absolute;z-index:4;left:50%;top:50%;width:min(650px,58%);transform:translate(-50%,-50%); }
-.ec-council-bubble { position:relative;padding:clamp(14px,2vh,22px) clamp(18px,2vw,28px);border:4px solid #fff;border-radius:30px;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(242,249,255,.96));box-shadow:0 18px 42px rgba(0,0,0,.38),0 0 0 6px rgba(75,208,242,.22);text-align:center;animation:ec-bubble-in 430ms cubic-bezier(.2,.85,.25,1); }
-.ec-council-bubble::after { content:'';position:absolute;left:50%;bottom:-18px;transform:translateX(-50%) rotate(45deg);width:30px;height:30px;background:#f2f9ff;border-right:4px solid #fff;border-bottom:4px solid #fff; }
+/* 말풍선은 말하는 친구 바로 옆(안쪽)에 뜨고 꼬리가 그 친구를 가리킨다 */
+.ec-council-core { position:absolute;z-index:4;left:50%;top:50%;width:min(560px,36%);transform:translate(-50%,-50%);transition:left 360ms cubic-bezier(.2,.8,.3,1),top 360ms cubic-bezier(.2,.8,.3,1); }
+.ec-council-core.is-player { width:min(640px,38%); }
+.ec-council-bubble { position:relative;padding:clamp(14px,2vh,22px) clamp(18px,2vw,28px);border:2px solid rgba(255,255,255,.85);border-radius:26px;background:rgba(255,255,255,.72);backdrop-filter:blur(12px) saturate(1.1);box-shadow:0 14px 34px rgba(0,0,0,.28);text-align:center;animation:ec-bubble-in 430ms cubic-bezier(.2,.85,.25,1); }
+.ec-council-bubble::after { content:'';position:absolute;width:26px;height:26px;background:rgba(255,255,255,.78);backdrop-filter:blur(12px);border:2px solid rgba(255,255,255,.85);border-top:0;border-left:0;transform:rotate(45deg); }
+.ec-council-core[data-dir="left"] .ec-council-bubble::after { left:-15px;top:50%;transform:translateY(-50%) rotate(135deg); }
+.ec-council-core[data-dir="right"] .ec-council-bubble::after { right:-15px;top:50%;transform:translateY(-50%) rotate(-45deg); }
+.ec-council-core[data-dir="top"] .ec-council-bubble::after { top:-15px;left:50%;transform:translateX(-50%) rotate(-135deg); }
+.ec-council-core[data-dir="bottom"] .ec-council-bubble::after,.ec-council-core:not([data-dir]) .ec-council-bubble::after { bottom:-15px;left:50%;transform:translateX(-50%) rotate(45deg); }
 .ec-council-bubble h2 { margin:5px 0 7px;font:900 clamp(20px,1.65vw,30px)/1.15 var(--font-head);color:var(--c-navy); }
 .ec-council-bubble p { margin:0;font:800 clamp(17px,1.25vw,23px)/1.42 var(--font-body);color:var(--c-ink);word-break:keep-all; }
 .ec-council-phase { display:inline-flex;padding:4px 14px;border-radius:999px;background:#e8efff;color:#274f8c;font:900 clamp(14px,1vw,18px)/1.15 var(--font-body); }
@@ -241,6 +248,7 @@ export const EARTH_CSS = `
 .ec-player-bubble label { display:block;margin-bottom:8px;font:900 clamp(20px,1.6vw,29px)/1.2 var(--font-head);color:var(--c-navy); }
 .ec-player-bubble .ec-input { min-height:84px;background:#fff; }
 .ec-player-hint { min-height:1.5em;margin-top:6px!important;font-size:clamp(14px,1vw,17px)!important;color:var(--c-coral-ink)!important; }
+.ec-player-preview { min-height:2.7em;margin:6px 0 0!important;padding:7px 10px;border-radius:12px;background:#e8f8ef;color:var(--c-success-ink)!important;font-size:clamp(15px,1.05vw,18px)!important; }
 
 /* 장면 5 — 해결안 궤도 */
 .ec-actions { flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);grid-template-rows:minmax(0,1fr);gap:var(--sp-3); }
@@ -309,7 +317,7 @@ export const EARTH_CSS = `
   .ec-council-core { width:min(610px,57%); }
 }
 @media (max-height:640px) {
-  .ec-photo-row,.ec-connect,.ec-actions { grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr); }
+  .ec-actions { grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr); }
   .ec-seat img { width:clamp(70px,9vw,110px);height:clamp(70px,9vw,110px); }
   .ec-orbit .ec-globe { width:min(24vh,200px); }
   .ec-issue-title { font-size:clamp(17px,1.25vw,23px); }
@@ -335,19 +343,7 @@ function friendOf(content: EarthContent, id: string): EarthFriend {
 function img(id: string, alt: string, cls = ''): string {
   return hasAsset(id) ? `<img src="${assetUrl(id)}" data-asset-id="${id}" alt="${esc(alt)}" class="${cls}">` : '';
 }
-function listenButton(text: string): string {
-  return `<button type="button" class="btn btn-ghost ec-btn-icon" data-speak="${esc(text)}">${icon('mail', 22)} 듣기</button>`;
-}
-function bindSpeak(root: HTMLElement): void {
-  root.querySelectorAll<HTMLButtonElement>('[data-speak]').forEach((b) => {
-    b.addEventListener('click', () => {
-      if (!speak(b.dataset.speak ?? '')) b.textContent = '이 기기에서는 음성을 지원하지 않아요. 자막을 읽어 주세요.';
-    });
-  });
-}
-
 export function renderEarthScene(host: EarthSceneHost): void {
-  stopSpeaking();
   const p = host.progress;
   switch (p.scene) {
     case 'signals': return renderSignals(host);
@@ -366,6 +362,28 @@ function goto(host: EarthSceneHost, scene: GlobalEnvironmentProgress['scene']): 
   renderEarthScene(host);
 }
 
+const SHORT_SIGNAL_COPY: Record<string, string> = {
+  sig_nepal_glacier: '빙하가 줄면 계곡을 흐르는 물의 양도 달라져.',
+  sig_japan_heat: '기온이 오르면 바닷가의 더위도 더 오래 이어져.',
+  sig_morocco_water: '비가 적게 오면 밭과 마을이 쓸 물도 줄어.',
+  sig_tanzania_habitat: '물웅덩이가 작아지면 동물의 이동길도 달라져.',
+  sig_australia_reef: '바닷물이 너무 따뜻해지면 산호가 하얗게 변할 수 있어.',
+  sig_colombia_plastic: '해안 쓰레기는 파도와 해류를 따라 멀리 이동해.'
+};
+
+const SIGNAL_MAP_SPOTS: Record<string, { x: number; y: number }> = {
+  sig_morocco_water: { x: .105, y: .48 },
+  sig_tanzania_habitat: { x: .16, y: .62 },
+  sig_nepal_glacier: { x: .34, y: .40 },
+  sig_japan_heat: { x: .525, y: .36 },
+  sig_australia_reef: { x: .59, y: .80 },
+  sig_colombia_plastic: { x: .84, y: .60 }
+};
+
+function shortSignalCopy(signal: EnvironmentalSignal): string {
+  return SHORT_SIGNAL_COPY[signal.id] ?? signal.titleKo;
+}
+
 /* ===== 장면 1 — 여섯 개의 환경 신호 발견 ===== */
 function renderSignals(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
@@ -377,7 +395,7 @@ function renderSignals(host: EarthSceneHost): void {
 
   body.innerHTML = `
     <div class="ec">
-      ${head(t.mission, '친구들의 마지막 사진')}
+      ${head(t.mission, '반짝이는 동그라미를 눌러 변화를 찾아봐')}
       <div class="ec-friends" role="tablist" aria-label="사진을 보낸 친구"></div>
       <div class="ec-photo-row">
         <div class="ec-photo" id="ec-photo"></div>
@@ -417,23 +435,14 @@ function renderSignals(host: EarthSceneHost): void {
     photo.innerHTML = `
       ${img(imageId, `${f.country} ${f.name}이 보낸 현장 사진`)}
       ${s.hotspots.map((h) => `
-        <button type="button" class="ec-spot${observed || found.has(h.id) ? ' is-found' : ''}" data-spot="${h.id}"
+        <button type="button" class="ec-spot${observed || found.has(h.id) ? ' is-found' : ' is-hint'}" data-spot="${h.id}"
           style="left:${h.x * 100}%;top:${h.y * 100}%" aria-label="관찰 지점: ${esc(h.label)}">
-          ${observed || found.has(h.id) ? `<span class="ec-spot-label">${esc(h.label)}</span>` : ''}
         </button>`).join('')}
       <div class="ec-lens" id="ec-lens" style="opacity:0" aria-hidden="true"></div>`;
     side.innerHTML = `
-      ${img(f.imageId, `${f.name} 캐릭터`, 'ec-portrait')}
-      <div style="text-align:center"><span class="chip">${esc(f.country)} · ${esc(f.name)}</span></div>
-      <p class="ec-copy" id="ec-prompt">${esc(allFound ? s.titleKo : s.observationPromptKo)}</p>
-      <p class="ec-sub" id="ec-sub" ${allFound ? '' : 'hidden'}>${esc(s.narrationKo)}</p>
-      <div id="ec-react" ${allFound ? '' : 'hidden'} style="display:${allFound ? 'grid' : 'none'};gap:6px">
-        <p class="ec-copy" style="color:var(--c-sky-ink)">${esc(s.reactionKo)}</p>
-        ${listenButton(`${s.narrationKo} ${s.reactionKo}`)}
-      </div>
-      <div id="ec-fb"></div>`;
-    bindSpeak(side);
+      <p class="ec-click-copy" id="ec-click-copy">${allFound ? '' : '그림 속 반짝이는 동그라미를 눌러 봐.'}</p>`;
     renderStrip();
+    if (allFound) typeText(side.querySelector<HTMLElement>('#ec-click-copy')!, shortSignalCopy(s));
 
     const spots = Array.from(photo.querySelectorAll<HTMLButtonElement>('.ec-spot'));
     const lens = photo.querySelector<HTMLElement>('#ec-lens')!;
@@ -467,7 +476,7 @@ function renderSignals(host: EarthSceneHost): void {
         void audio.playSfx('pickup');
         b.classList.add('is-found');
         b.classList.remove('is-hint');
-        b.innerHTML = `<span class="ec-spot-label">${esc(h.label)}</span>`;
+        b.innerHTML = '';
         popBounce(b);
         showLens(h);
         const remaining = s.hotspots.filter((x) => !found.has(x.id));
@@ -482,7 +491,7 @@ function renderSignals(host: EarthSceneHost): void {
     });
     // renderPhoto는 친구 탭마다 다시 불린다 — addEventListener면 리스너가 쌓여 안내가 N번 겹친다
     photo.onclick = (ev) => {
-      if (allFound || observed) return;
+      if (observed || s.hotspots.every((h) => found.has(h.id))) return;
       const rect = photo.getBoundingClientRect();
       const r = document.createElement('span');
       r.className = 'ec-ripple';
@@ -495,18 +504,21 @@ function renderSignals(host: EarthSceneHost): void {
     };
 
     const revealNarration = () => {
-      const sub = side.querySelector<HTMLElement>('#ec-sub');
-      const react = side.querySelector<HTMLElement>('#ec-react');
-      const prompt = side.querySelector<HTMLElement>('#ec-prompt');
-      if (prompt) prompt.textContent = s.titleKo;
-      if (sub) sub.hidden = false;
-      if (react) { react.hidden = false; react.style.display = 'grid'; }
-      speak(s.narrationKo);
-      host.guide?.say(`${f.name}의 설명을 보고 지도에 신호를 남겨.`, { speaker: { assetId: f.imageId, name: f.name }, cue: bottom.querySelector<HTMLElement>('[data-act="record"]') });
-      renderBottom(true);
+      const copy = side.querySelector<HTMLElement>('#ec-click-copy');
+      if (copy) typeText(copy, shortSignalCopy(s));
+      if (!p.signalObservedIds.includes(s.id)) {
+        p.signalObservedIds.push(s.id);
+        host.save();
+        void audio.playSfx('success');
+        const tab = strip.querySelector<HTMLElement>('[aria-pressed="true"]');
+        if (tab) burstConfetti(tab, 6);
+      }
+      renderStrip();
+      renderBottom();
+      host.guide?.say('찾았어! 아래 설명을 보고 다음 사진으로 가자.', { speaker: { assetId: f.imageId, name: f.name }, cue: bottom.querySelector<HTMLElement>('[data-act="next-photo"]') });
     };
 
-    renderBottom(allFound);
+    renderBottom();
     if (!allFound) {
       host.guide?.say(s.observationPromptKo, { speaker: { assetId: f.imageId, name: f.name }, cue: photo });
     } else if (!firstUnobserved) {
@@ -514,31 +526,17 @@ function renderSignals(host: EarthSceneHost): void {
     }
   };
 
-  const renderBottom = (recordable: boolean) => {
+  const renderBottom = () => {
     const observed = p.signalObservedIds.includes(current.id);
     const n = p.signalObservedIds.length;
     const hasNext = content.signals.some((s) => !p.signalObservedIds.includes(s.id));
     const canConnect = n >= MIN_SIGNALS_TO_CONNECT;
     bottom.innerHTML = `
-      <span class="ec-progress" aria-live="polite">${n >= content.signals.length ? '신호를 모두 기록했어!' : '신호를 눌러 기록해 봐'}</span>
+      <span class="ec-progress" aria-live="polite">${n >= content.signals.length ? '여섯 신호를 모두 찾았어!' : `찾은 신호 ${n}/${content.signals.length}`}</span>
       <span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-      ${observed
-        ? `${hasNext ? `<button class="btn btn-primary btn-big" data-act="next-photo">다음 사진 보기</button>` : ''}
-           ${canConnect ? `<button class="btn ${hasNext ? 'btn-ghost' : 'btn-primary'} btn-big" data-act="connect">지도에서 연결 확인하기</button>` : ''}`
-        : `<button class="btn btn-primary btn-big" data-act="record" ${recordable ? '' : 'disabled'}>지도에 신호 남기기</button>`}
+      ${observed ? `${hasNext ? `<button class="btn btn-primary btn-big" data-act="next-photo">다음 사진</button>` : ''}
+        ${canConnect ? `<button class="btn ${hasNext ? 'btn-ghost' : 'btn-primary'} btn-big" data-act="connect">한눈에 보기</button>` : ''}` : ''}
       </span>`;
-    bottom.querySelector('[data-act="record"]')?.addEventListener('click', () => {
-      if (host.isDisposed() || p.signalObservedIds.includes(current.id)) return;
-      p.signalObservedIds.push(current.id);
-      host.save();
-      void audio.playSfx('success');
-      const fb = side.querySelector<HTMLElement>('#ec-fb');
-      if (fb) showFeedback(fb, 'success', '지도에 신호를 남겼어요.', 'dialogue');
-      const tab = strip.querySelector<HTMLElement>('[aria-pressed="true"]');
-      if (tab) burstConfetti(tab, 6);
-      renderStrip();
-      renderBottom(true);
-    });
     bottom.querySelector('[data-act="next-photo"]')?.addEventListener('click', () => {
       const next = content.signals.find((s) => !p.signalObservedIds.includes(s.id));
       if (!next) return;
@@ -552,159 +550,61 @@ function renderSignals(host: EarthSceneHost): void {
 /* ===== 장면 2 — 세계지도에서 연결 발견 ===== */
 function renderConnect(host: EarthSceneHost): void {
   const { content, progress: p, body, bottom } = host;
-  const t = content.titles;
-  let anchor: EnvironmentalSignal | null = null;
-  let lens: ConnectionType | null = null;
   const observed = content.signals.filter((s) => p.signalObservedIds.includes(s.id));
+  const clicked = new Set<string>();
+  const mapAssetId = hasAsset('earth.signal.map') ? 'earth.signal.map' : 'bg.map';
 
   body.innerHTML = `
     <div class="ec">
-      ${head('국경을 넘는 신호', '지구 연결 렌즈로 보기')}
+      ${head('국경을 넘는 신호', '반짝이는 동그라미를 눌러 봐')}
       <div class="ec-connect">
-        <div class="ec-map" id="ec-map" style="background-image:url('${assetUrl('bg.map')}')" aria-label="세계지도 위 환경 신호">
-          <svg class="ec-flows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
-        </div>
-        <section class="panel ec-side" id="ec-side"></section>
+        <div class="ec-map" id="ec-map" style="background-image:url('${assetUrl(mapAssetId)}')" aria-label="세계지도에 표시된 여섯 환경 신호"></div>
+        <section class="ec-map-copy" aria-live="polite"><p class="ec-click-copy" id="ec-map-copy">지도 속 반짝이는 동그라미를 눌러 봐.</p></section>
       </div>
-      <p class="ec-note">${esc(t.connectionNote)}</p>
     </div>`;
   const map = body.querySelector<HTMLElement>('#ec-map')!;
-  const flows = map.querySelector<SVGSVGElement>('svg')!;
-  const side = body.querySelector<HTMLElement>('#ec-side')!;
-  const pins = new Map<string, HTMLButtonElement>();
+  const copy = body.querySelector<HTMLElement>('#ec-map-copy')!;
 
   observed.forEach((s) => {
     const f = friendOf(content, s.friendId);
+    const spot = SIGNAL_MAP_SPOTS[s.id] ?? { x: f.mapX, y: f.mapY };
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'ec-pin';
-    b.style.left = `${f.mapX * 100}%`;
-    b.style.top = `${f.mapY * 100}%`;
+    b.style.left = `${spot.x * 100}%`;
+    b.style.top = `${spot.y * 100}%`;
     b.setAttribute('aria-pressed', 'false');
-    b.setAttribute('aria-label', `${f.country} ${f.name}의 신호: ${s.titleKo}`);
-    b.innerHTML = `${img(f.imageId, '')}<span class="ec-pin-name">${esc(s.titleKo)}</span>`;
-    b.addEventListener('click', () => { if (host.isDisposed()) return; void audio.playSfx('tap'); anchor = s; lens = null; sync(); });
-    pins.set(s.id, b);
+    b.setAttribute('aria-label', `${f.country}의 환경 신호 살펴보기`);
+    b.addEventListener('click', () => {
+      if (host.isDisposed()) return;
+      clicked.add(s.id);
+      b.classList.add('is-found');
+      b.setAttribute('aria-pressed', 'true');
+      b.setAttribute('aria-label', `${f.country}의 환경 신호, 살펴봄`);
+      const nextType = s.connectionTypes.find((type) => !p.exploredConnectionTypes.includes(type)) ?? s.connectionTypes[0];
+      if (nextType && !p.exploredConnectionTypes.includes(nextType)) p.exploredConnectionTypes.push(nextType);
+      host.save();
+      void audio.playSfx('pickup');
+      popBounce(b);
+      typeText(copy, shortSignalCopy(s));
+      renderBottom();
+      if (canOpenCouncil(p) && clicked.size >= MIN_CONNECTIONS) burstConfetti(copy, 8);
+    });
     map.appendChild(b);
   });
 
-  const drawFlows = () => {
-    flows.innerHTML = '';
-    if (!anchor || !lens) return;
-    const a = friendOf(content, anchor.friendId);
-    signalsForLens(content, lens, anchor.id).filter((s) => s.id !== anchor!.id && p.signalObservedIds.includes(s.id)).forEach((s) => {
-      const f = friendOf(content, s.friendId);
-      const x1 = a.mapX * 100, y1 = a.mapY * 100, x2 = f.mapX * 100, y2 = f.mapY * 100;
-      const cx = (x1 + x2) / 2, cy = Math.max(6, Math.min(y1, y2) - 14);
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
-      path.setAttribute('class', 'ec-flow');
-      path.dataset.lens = lens!;
-      path.setAttribute('vector-effect', 'non-scaling-stroke');
-      flows.appendChild(path);
-    });
-  };
-
-  const sync = () => {
-    const lit = anchor && lens ? new Set(signalsForLens(content, lens, anchor.id).map((s) => s.id)) : null;
-    pins.forEach((b, id) => {
-      b.setAttribute('aria-pressed', String(anchor?.id === id));
-      b.classList.toggle('is-lit', !!lit && lit.has(id) && anchor?.id !== id);
-      b.classList.toggle('is-dim', !!lit && !lit.has(id));
-    });
-    drawFlows();
-    renderSide();
-    renderBottom();
-  };
-
-  const renderSide = () => {
-    const done = p.exploredConnectionTypes;
-    side.innerHTML = `
-      <p class="ec-copy" id="ec-step">${anchor ? `${esc(anchor.titleKo)} — 어떤 렌즈로 볼까?` : '지도에서 신호 하나를 골라요.'}</p>
-      <div class="ec-lenses" role="group" aria-label="지구 연결 렌즈">
-        ${content.lenses.map((l) => `
-          <button type="button" class="ec-lens-btn${done.includes(l.id) ? ' is-done' : ''}" data-lens="${l.id}"
-            aria-pressed="${String(lens === l.id)}" ${anchor ? '' : 'disabled'} aria-label="${esc(l.name)} 렌즈${done.includes(l.id) ? ', 확인함' : ''}">
-            ${icon(LENS_ICON[l.id], 28)}<span>${esc(l.name)}</span></button>`).join('')}
-      </div>
-      <div id="ec-reasons" class="ec-reasons"></div>
-      <div id="ec-fb"></div>
-      <p class="ec-progress">${done.length >= MIN_CONNECTIONS ? '국경을 넘는 신호 연결 완료 ✓' : '국경을 넘는 신호를 이어 봐'}</p>`;
-    side.querySelectorAll<HTMLButtonElement>('[data-lens]').forEach((b) => {
-      b.addEventListener('click', () => {
-        if (host.isDisposed() || !anchor) return;
-        void audio.playSfx('whoosh');
-        lens = b.dataset.lens as ConnectionType;
-        sync();
-      });
-    });
-    if (anchor && lens) {
-      const l = content.lenses.find((x) => x.id === lens)!;
-      const linked = signalsForLens(content, lens, anchor.id).filter((s) => s.id !== anchor!.id && p.signalObservedIds.includes(s.id));
-      const reasonsEl = side.querySelector<HTMLElement>('#ec-reasons')!;
-      const fb = side.querySelector<HTMLElement>('#ec-fb')!;
-      const explored = p.exploredConnectionTypes.includes(lens);
-      if (!anchor.connectionTypes.includes(lens)) {
-        reasonsEl.innerHTML = `<p class="ec-copy" style="color:var(--c-ink-soft)">${esc(anchor.titleKo)}은(는) ${esc(l.name)} 렌즈로는 잘 이어지지 않아요. 다른 렌즈나 다른 신호를 골라 봐요.</p>`;
-        host.guide?.say(`이 신호는 ${l.name}보다 다른 렌즈가 맞아.`, { speaker: host.speaker, cue: side.querySelector<HTMLElement>('.ec-lenses') });
-        return;
-      }
-      const linkedNames = linked.map((s) => friendOf(content, s.friendId).name).join(', ');
-      reasonsEl.innerHTML = `
-        <p class="ec-copy">${esc(l.name)} 렌즈: ${linked.length ? `${esc(linkedNames)}의 신호와 이어져요.` : '다른 신호가 더 기록되면 연결이 보여요.'}</p>
-        <p class="ec-copy" style="color:var(--c-ink-soft)">왜 이어질까?</p>
-        ${content.connectionReasons[lens].map((r) => `<button type="button" class="card card-pick ec-reason" data-reason="${r.id}" ${explored ? 'disabled' : ''}>${esc(r.text)}</button>`).join('')}`;
-      if (explored) showFeedback(fb, 'success', l.hint, 'dialogue');
-      const options = Array.from(reasonsEl.querySelectorAll<HTMLButtonElement>('[data-reason]'));
-      const shuffled = options.slice().sort(() => (hashSeed(lens!) % 2 === 0 ? 1 : -1));
-      shuffled.forEach((b) => reasonsEl.appendChild(b));
-      options.forEach((b) => {
-        b.addEventListener('click', () => {
-          if (host.isDisposed() || !lens) return;
-          const r = content.connectionReasons[lens].find((x) => x.id === b.dataset.reason);
-          if (!r) return;
-          if (r.fits) {
-            options.forEach((o) => (o.disabled = true));
-            b.classList.add('is-selected');
-            if (!p.exploredConnectionTypes.includes(lens)) p.exploredConnectionTypes.push(lens);
-            host.save();
-            showFeedback(fb, 'success', t.connectionFeedback, 'dialogue');
-            burstConfetti(b, 8);
-            host.guide?.say(l.hint, { speaker: host.speaker });
-            renderSide();
-            renderBottom();
-          } else {
-            b.disabled = true;
-            b.classList.add('is-wrong');
-            showFeedback(fb, 'partial', '지도의 흐름을 다시 봐요. 어디로 이어지고 있나요?', 'dialogue');
-            host.guide?.say(l.hint, { speaker: host.speaker, cue: map });
-          }
-        });
-      });
-      host.guide?.say(`${l.name} 렌즈로 보면 어떤 신호가 함께 빛나는지 봐.`, { speaker: host.speaker, cue: reasonsEl });
-    } else if (anchor) {
-      host.guide?.say('렌즈 하나를 골라 어떤 지역과 이어지는지 확인해.', { speaker: host.speaker, cue: side.querySelector<HTMLElement>('.ec-lenses') });
-    } else {
-      host.guide?.say('지도의 친구 신호를 하나 눌러 봐.', { speaker: host.speaker, cue: map });
-    }
-  };
-
   const renderBottom = () => {
-    const ready = canOpenCouncil(p);
+    const ready = canOpenCouncil(p) && (clicked.size >= MIN_CONNECTIONS || p.exploredConnectionTypes.length > MIN_CONNECTIONS);
     bottom.innerHTML = `
       <button class="btn btn-ghost" data-act="back">사진 다시 보기</button>
-      <button class="btn btn-primary btn-big" data-act="council" ${ready ? '' : 'disabled'}>${esc(t.council)} 열기</button>`;
+      <span class="ec-progress">${ready ? '신호를 찾았어!' : `서로 다른 동그라미 ${Math.min(clicked.size, MIN_CONNECTIONS)}/${MIN_CONNECTIONS}`}</span>
+      <button class="btn btn-primary btn-big" data-act="council" ${ready ? '' : 'disabled'}>환경문제 보기</button>`;
     bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => goto(host, 'signals'));
     bottom.querySelector('[data-act="council"]')?.addEventListener('click', () => { if (ready) goto(host, 'issue'); });
   };
 
-  sync();
-}
-
-function hashSeed(s: string): number {
-  let h = 0;
-  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return h;
+  renderBottom();
+  host.guide?.say('지도에서 반짝이는 동그라미를 눌러 봐.', { speaker: host.speaker, cue: map });
 }
 
 /* ===== 장면 3 — 탐구할 환경문제 선택 ===== */
@@ -839,7 +739,6 @@ function renderIssue(host: EarthSceneHost): void {
       host.save();
       renderBottom();
       drawLinks();
-      speak(issue.title);
       if (inspectedCount() >= content.issues.length) {
         burstConfetti(globe, 12);
         void audio.playSfx('complete');
@@ -861,7 +760,6 @@ function renderRoundtable(host: EarthSceneHost): void {
   const globeId = hasAsset('earth.council.globe')
     ? 'earth.council.globe'
     : (hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe');
-  let timer: number | null = null;
 
   body.innerHTML = `
     <div class="ec ec-council-screen">
@@ -874,34 +772,53 @@ function renderRoundtable(host: EarthSceneHost): void {
       </div>
     </div>`;
 
-  const stage = body.querySelector<HTMLElement>('#ec-council-stage')!;
   const friendsEl = body.querySelector<HTMLElement>('#ec-council-friends')!;
   const core = body.querySelector<HTMLElement>('#ec-council-core')!;
   const dots = body.querySelector<HTMLElement>('#ec-council-dots')!;
-  const clearTimer = () => { if (timer !== null) window.clearTimeout(timer); timer = null; };
 
+  // 육각형 자리(위 2·양옆 2·아래 2). row: 말풍선을 어디에 둘지 — 위·아래 줄은 두 친구 사이, 양옆은 안쪽
+  const SEATS = [
+    { x: 76, y: 17, row: 'top' }, { x: 92, y: 50, row: 'side' }, { x: 76, y: 80, row: 'bottom' },
+    { x: 24, y: 80, row: 'bottom' }, { x: 8, y: 50, row: 'side' }, { x: 24, y: 17, row: 'top' }
+  ] as const;
   content.friends.forEach((friend, index) => {
-    const angle = -Math.PI / 2 + index * Math.PI * 2 / Math.max(1, content.friends.length);
+    const pos = SEATS[index % SEATS.length]!;
     const seat = document.createElement('div');
     seat.className = 'ec-council-friend';
     seat.dataset.friendId = friend.id;
-    seat.style.left = `${50 + Math.cos(angle) * 42}%`;
-    seat.style.top = `${50 + Math.sin(angle) * 35}%`;
+    seat.dataset.row = pos.row;
+    seat.dataset.x = String(pos.x);
+    seat.dataset.y = String(pos.y);
+    seat.style.left = `${pos.x}%`;
+    seat.style.top = `${pos.y}%`;
     seat.style.animationDelay = `${index * 90}ms`;
     seat.innerHTML = `${img(friend.imageId, '')}<span>${esc(friend.name)} · ${esc(friend.country)}</span>`;
     friendsEl.appendChild(seat);
   });
+
+  /** 말풍선을 말하는 친구의 안쪽 옆자리로 옮기고, 꼬리 방향을 그 친구 쪽으로 둔다 */
+  const placeBubbleBy = (friendId: string | null) => {
+    const seat = friendId ? friendsEl.querySelector<HTMLElement>(`[data-friend-id="${friendId}"]`) : null;
+    core.classList.toggle('is-player', !seat);
+    if (!seat) { core.style.left = '50%'; core.style.top = '50%'; core.removeAttribute('data-dir'); return; }
+    const x = Number(seat.dataset.x ?? 50), y = Number(seat.dataset.y ?? 50);
+    const onRight = x > 50;
+    // 위·아래 줄: 두 친구 사이 가운데에서 말하는 친구 쪽으로 꼬리. 양옆: 그 친구 바로 안쪽 옆.
+    core.style.left = seat.dataset.row === 'side' ? `${onRight ? 66 : 34}%` : '50%';
+    core.style.top = `${seat.dataset.row === 'side' ? 52 : y + (y < 50 ? 3 : -3)}%`;
+    core.dataset.dir = onRight ? 'right' : 'left';
+  };
 
   const renderDots = (active: number) => {
     dots.innerHTML = turns.map((_, index) => `<span class="ec-council-dot${index === active ? ' is-on' : ''}"></span>`).join('');
   };
 
   const showPlayerTurn = () => {
-    clearTimer();
     p.councilTurnIndex = turns.length;
     host.save();
     friendsEl.querySelectorAll('.ec-council-friend').forEach((friend) => friend.classList.remove('is-speaking'));
     renderDots(-1);
+    placeBubbleBy(null);
     core.innerHTML = `
       <div class="ec-council-bubble ec-player-bubble">
         <span class="ec-council-phase" data-phase="약속">이제 내 차례</span>
@@ -911,21 +828,22 @@ function renderRoundtable(host: EarthSceneHost): void {
       </div>`;
     const input = core.querySelector<HTMLTextAreaElement>('#ec-player-pledge')!;
     const hint = core.querySelector<HTMLElement>('#ec-player-hint')!;
+    // 고칠 점이 있을 때만 알려 주고, 됐으면 조용히 비운다(초록 확인 문구 없음)
     const validate = () => {
       const issue = personalActionIssue(content, input.value);
-      hint.textContent = issue ?? '좋아! 친구들과 지킬 수 있는 약속이 되었어.';
-      hint.style.color = issue ? '' : 'var(--c-success-ink)';
+      hint.textContent = issue ?? '';
+      hint.hidden = !issue;
       return issue;
     };
     input.addEventListener('input', () => {
       p.personalActionDraft = input.value.slice(0, 120);
       host.save();
-      validate();
+      const issue = validate();
+      const finish = bottom.querySelector<HTMLButtonElement>('[data-act="finish"]');
+      if (finish) finish.disabled = Boolean(issue);
     });
     bottom.innerHTML = `
-      <button class="btn btn-ghost" data-act="replay">친구 이야기 다시 듣기</button>
-      <button class="btn btn-primary btn-big" data-act="finish">내 약속으로 회의 마치기</button>`;
-    bottom.querySelector('[data-act="replay"]')?.addEventListener('click', () => { p.councilTurnIndex = 0; host.save(); showTurn(0); });
+      <button class="btn btn-primary btn-big" data-act="finish" ${personalActionIssue(content, input.value) ? 'disabled' : ''}>내 약속으로 회의 마치기</button>`;
     bottom.querySelector('[data-act="finish"]')?.addEventListener('click', () => {
       p.personalActionDraft = input.value.slice(0, 120);
       const issue = validate();
@@ -936,278 +854,37 @@ function renderRoundtable(host: EarthSceneHost): void {
       host.save();
       playFinale(host, () => host.onFinish());
     });
+    validate();
     input.focus();
   };
 
-  const scheduleNext = (index: number) => {
-    clearTimer();
-    timer = window.setTimeout(() => {
-      if (!stage.isConnected || host.isDisposed()) return;
-      if (index + 1 < turns.length) showTurn(index + 1);
-      else showPlayerTurn();
-    }, 6500);
-  };
-
   const showTurn = (index: number) => {
-    clearTimer();
     const turn = turns[index];
     if (!turn) { showPlayerTurn(); return; }
     p.councilTurnIndex = index;
     host.save();
     const friend = friendOf(content, turn.friendId);
     friendsEl.querySelectorAll<HTMLElement>('.ec-council-friend').forEach((el) => el.classList.toggle('is-speaking', el.dataset.friendId === friend.id));
+    placeBubbleBy(friend.id);
     core.innerHTML = `
       <div class="ec-council-bubble">
         <span class="ec-council-phase" data-phase="${esc(turn.phase)}">${esc(turn.phase)}</span>
         <h2>${esc(friend.name)} · ${esc(friend.country)}</h2>
-        <p>${esc(turn.line)}</p>
+        <p id="ec-turn-copy"></p>
       </div>`;
+    typeText(core.querySelector<HTMLElement>('#ec-turn-copy')!, turn.line);
     renderDots(index);
     bottom.innerHTML = `
       <button class="btn btn-ghost" data-act="back">문제 다시 보기</button>
-      <button class="btn btn-primary btn-big" data-act="next">${index + 1 < turns.length ? '다음 이야기' : '내 약속 말하기'}</button>`;
-    bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => { clearTimer(); goto(host, 'issue'); });
+      <button class="btn btn-primary btn-big" data-act="next">${index + 1 < turns.length ? '다음 이야기' : '내 약속 쓰기'}</button>`;
+    bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => goto(host, 'issue'));
     bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
       if (index + 1 < turns.length) showTurn(index + 1);
       else showPlayerTurn();
     });
-    speak(turn.line);
-    scheduleNext(index);
   };
 
   showTurn(Math.min(Math.max(0, p.councilTurnIndex), turns.length));
-}
-
-void renderIssueLegacy;
-void renderRoundtableLegacy;
-
-function renderIssueLegacy(host: EarthSceneHost): void {
-  const { content, progress: p, body, bottom } = host;
-  const t = content.titles;
-  const bag = collectedEarthSignals();
-  body.innerHTML = `
-    <div class="ec ec-issue-screen">
-      ${head(t.council, t.councilSub)}
-      <p class="ec-note">더 알아보고 싶은 환경문제 하나를 골라요. 정답은 없어요. 나중에 다른 문제로 다시 열 수 있어요.</p>
-      <div class="ec-orbit">
-        <div class="ec-issues" id="ec-issues-left"></div>
-        ${img(hasAsset('earth.council.globe') ? 'earth.council.globe' : (hasAsset('prop.globe3d') ? 'prop.globe3d' : 'prop.globe'), '환경 신호가 이어진 지구본', 'ec-globe')}
-        <div class="ec-issues" id="ec-issues-right"></div>
-      </div>
-    </div>`;
-  const left = body.querySelector<HTMLElement>('#ec-issues-left')!;
-  const right = body.querySelector<HTMLElement>('#ec-issues-right')!;
-  content.issues.forEach((issue, i) => {
-    const hero = content.signals.find((s) => s.id === issue.heroSignalId) ?? content.signals[0]!;
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'card card-pick ec-issue';
-    b.setAttribute('aria-pressed', String(p.selectedIssueId === issue.id));
-    const mySignals = bag.filter((item) => issueIdForSignal(item) === issue.id);
-    // 모은 신호는 다 보여 준다 — "내가 모은 게 여기 쓰인다"가 이 장면의 핵심이라 2개로 자르지 않는다.
-    const issueImageId = issue.imageAssetId && hasAsset(issue.imageAssetId) ? issue.imageAssetId : signalImageId(content, hero);
-    b.innerHTML = `${img(issueImageId, '')}
-      <div class="ec-issue-body"><strong>${esc(issue.title)}</strong>
-        <span class="chip">${icon('mail', 18)} 관련 친구 ${friendCountForIssue(content, issue.id)}명${mySignals.length ? ` · 내 신호 ${mySignals.length}개` : ''}</span>
-        ${mySignals.length ? `<span class="ec-issue-mine">${mySignals.map((item) => `<em>${esc(continentLabel(item.missionId))}</em>${esc(item.label)}`).join('<br>')}</span>` : ''}
-        <span class="ec-issue-q">${esc(issue.question)}</span></div>`;
-    b.addEventListener('click', () => {
-      if (host.isDisposed()) return;
-      void audio.playSfx('tap');
-      body.querySelectorAll('.ec-issue').forEach((x) => x.setAttribute('aria-pressed', 'false'));
-      b.setAttribute('aria-pressed', 'true');
-      if (p.selectedIssueId !== issue.id) {
-        p.selectedIssueId = issue.id;
-        p.listenedPerspectiveIds = [];
-        p.selectedPerspectiveIds = [];
-        p.perspectiveReason = '';
-        p.selectedActionIds = [];
-        p.simulationAttempts = 0;
-        host.save();
-      }
-      speak(issue.question);
-      renderBottom();
-      host.guide?.say(issue.question, { speaker: host.speaker, cue: bottom.querySelector<HTMLElement>('[data-act="go"]') });
-    });
-    (i % 2 === 0 ? left : right).appendChild(b);
-  });
-  const renderBottom = () => {
-    const issue = content.issues.find((i) => i.id === p.selectedIssueId);
-    bottom.innerHTML = `
-      <button class="btn btn-ghost" data-act="back">지도로</button>
-      <button class="btn btn-primary btn-big" data-act="go" ${issue ? '' : 'disabled'}>${issue ? `“${esc(issue.title)}” 회의 열기` : '문제를 골라요'}</button>`;
-    bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => goto(host, 'connect'));
-    bottom.querySelector('[data-act="go"]')?.addEventListener('click', () => { if (p.selectedIssueId) goto(host, 'roundtable'); });
-  };
-  renderBottom();
-  host.guide?.say(
-    bag.length
-      ? '네가 여행에서 모은 신호가 어느 문제와 이어지는지 보여. 더 알아보고 싶은 문제를 골라!'
-      : '지구본 옆의 문제 중 하나를 골라.',
-    { speaker: host.speaker, cue: left }
-  );
-}
-
-/* ===== 장면 4 — 세계 친구 원탁회의 ===== */
-function renderRoundtableLegacy(host: EarthSceneHost): void {
-  const { content, progress: p, body, bottom } = host;
-  const t = content.titles;
-  const issue = content.issues.find((i) => i.id === p.selectedIssueId);
-  if (!issue) { goto(host, 'issue'); return; }
-  const seats = content.roundtable[issue.id] ?? [];
-  const perspectiveOf = (id: string) => content.perspectives.find((x) => x.id === id)!;
-  let active = seats.find((s) => !p.listenedPerspectiveIds.includes(s.perspectiveId)) ?? seats[0]!;
-  let phase: 'listen' | 'pick' = p.listenedPerspectiveIds.length >= MIN_PERSPECTIVES_LISTENED && p.selectedPerspectiveIds.length === 2 ? 'pick'
-    : p.listenedPerspectiveIds.length >= seats.length ? 'pick' : 'listen';
-  let starterTexts: string[] = [];
-
-  body.innerHTML = `
-    <div class="ec" style="background:linear-gradient(rgba(10,25,45,.25),rgba(10,25,45,.45))${hasAsset('bg.spare') ? `,url('${assetUrl('bg.spare')}') center/cover` : ''};border-radius:var(--radius-l);padding:8px">
-      <div class="ec-head-compact"><strong>${esc(t.council)}</strong><span>${esc(issue.title)}</span></div>
-      <div class="ec-table">
-        <div class="ec-seats" id="ec-seats" role="group" aria-label="회의에 모인 친구들"></div>
-        <section class="panel" id="ec-talk" style="display:grid;gap:6px;min-height:0;overflow-y:auto;padding:10px 14px"></section>
-      </div>
-    </div>`;
-  const seatsEl = body.querySelector<HTMLElement>('#ec-seats')!;
-  const talk = body.querySelector<HTMLElement>('#ec-talk')!;
-
-  const renderSeats = () => {
-    seatsEl.innerHTML = '';
-    seats.forEach((seat) => {
-      const f = friendOf(content, seat.friendId);
-      const heard = p.listenedPerspectiveIds.includes(seat.perspectiveId);
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = `ec-seat${seat === active && phase === 'listen' ? ' is-active' : ''}${heard ? ' is-heard' : ''}`;
-      b.setAttribute('aria-label', `${f.country} ${f.name}${heard ? ', 들었음' : ''}`);
-      b.innerHTML = `${img(f.imageId, '')}<span class="ec-seat-name">${esc(f.name)}</span>`;
-      b.addEventListener('click', () => { if (host.isDisposed()) return; void audio.playSfx('tap'); active = seat; phase = 'listen'; renderSeats(); renderTalk(); });
-      seatsEl.appendChild(b);
-    });
-  };
-
-  const renderTalk = () => {
-    if (phase === 'pick') { renderPick(); return; }
-    const f = friendOf(content, active.friendId);
-    const persp = perspectiveOf(active.perspectiveId);
-    const heard = p.listenedPerspectiveIds.includes(persp.id);
-    const distractors = content.perspectives.filter((x) => x.id !== persp.id).sort((a, b) => hashSeed(a.id + f.id) - hashSeed(b.id + f.id)).slice(0, 2);
-    const choices = [persp, ...distractors].sort((a, b) => hashSeed(a.id + issue.id) - hashSeed(b.id + issue.id));
-    talk.innerHTML = `
-      <div class="ec-bubble">
-        <span class="ec-p-icon" aria-hidden="true">${icon('mail', 28)}</span>
-        <div><strong>${esc(f.name)} (${esc(f.country)})</strong><p class="ec-sub" style="min-height:0">${esc(persp.line)}</p></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        ${listenButton(persp.line)}
-        <button type="button" class="btn btn-ghost" data-act="worry">무엇이 걱정돼?</button>
-      </div>
-      <p class="ec-copy" id="ec-worry" hidden style="color:var(--c-sky-ink)">${esc(persp.worry)}</p>
-      <p class="ec-copy">${esc(f.name)}이(가) 가장 중요하게 생각하는 것은?</p>
-      <div class="ec-choices">${choices.map((c) => `<button type="button" class="card card-pick ec-choice" data-choice="${c.id}" ${heard ? 'disabled' : ''} aria-pressed="${String(heard && c.id === persp.id)}">${esc(c.label)}</button>`).join('')}</div>
-      <div id="ec-fb"></div>`;
-    bindSpeak(talk);
-    speak(persp.line);
-    talk.querySelector('[data-act="worry"]')?.addEventListener('click', () => {
-      const w = talk.querySelector<HTMLElement>('#ec-worry');
-      if (w) { w.hidden = false; speak(persp.worry); }
-    });
-    const fb = talk.querySelector<HTMLElement>('#ec-fb')!;
-    talk.querySelectorAll<HTMLButtonElement>('[data-choice]').forEach((b) => {
-      b.addEventListener('click', () => {
-        if (host.isDisposed()) return;
-        if (b.dataset.choice === persp.id) {
-          talk.querySelectorAll<HTMLButtonElement>('[data-choice]').forEach((x) => (x.disabled = true));
-          b.setAttribute('aria-pressed', 'true');
-          if (!p.listenedPerspectiveIds.includes(persp.id)) p.listenedPerspectiveIds.push(persp.id);
-          host.save();
-          showFeedback(fb, 'success', `${f.name}의 관점: ${persp.label}`, 'dialogue');
-          burstConfetti(b, 6);
-          renderSeats();
-          renderBottom();
-          const next = seats.find((s) => !p.listenedPerspectiveIds.includes(s.perspectiveId));
-          host.guide?.say(next ? `${friendOf(content, next.friendId).name}의 말도 들어 보자.` : '이제 해결안에 꼭 넣을 관점 두 개를 고르자.', {
-            speaker: host.speaker, cue: next ? seatsEl : bottom.querySelector<HTMLElement>('[data-act="pick"]')
-          });
-        } else {
-          b.disabled = true;
-          b.classList.add('is-wrong');
-          showFeedback(fb, 'partial', '다시 들어 봐요. 무엇을 걱정한다고 했나요?', 'dialogue');
-          speak(persp.line);
-        }
-      });
-    });
-    renderBottom();
-  };
-
-  const renderPick = () => {
-    const listened = content.perspectives.filter((x) => p.listenedPerspectiveIds.includes(x.id));
-    talk.innerHTML = `
-      <p class="ec-copy">해결안에 꼭 반영할 관점 두 개를 골라요.</p>
-      <div class="ec-pick2">${listened.map((x) => `<button type="button" class="card card-pick ec-choice" data-pick="${x.id}" aria-pressed="${String(p.selectedPerspectiveIds.includes(x.id))}">${esc(x.label)}</button>`).join('')}</div>
-      <p class="ec-copy">왜 이 두 관점이 함께 필요할까?</p>
-      <div class="ec-starters" id="ec-starters"></div>
-      <textarea class="ec-input" id="ec-reason" rows="2" maxlength="120" placeholder="예: 효과도 크고 모두가 참여할 수 있어야 오래 가니까">${esc(p.perspectiveReason)}</textarea>
-      <p class="ec-scope" id="ec-reason-hint" hidden>시작 문장 뒤에 네 생각을 한 마디만 더 붙여 줘.</p>`;
-    const reason = talk.querySelector<HTMLTextAreaElement>('#ec-reason')!;
-    const starters = talk.querySelector<HTMLElement>('#ec-starters')!;
-    const syncStarters = () => {
-      const [a, b] = p.selectedPerspectiveIds.map((id) => perspectiveOf(id)?.label ?? '');
-      const options = a && b ? [
-        `${a}도 중요하고 ${b}도 함께 봐야 하니까`,
-        `${a}만 생각하면 ${withJosa(b, '이', '가')} 빠질 수 있으니까`
-      ] : [];
-      starterTexts = options;
-      starters.innerHTML = options.map((s) => `<button type="button" class="btn btn-ghost" data-starter="${esc(s)}">${esc(s)}</button>`).join('');
-      starters.querySelectorAll<HTMLButtonElement>('[data-starter]').forEach((s) => s.addEventListener('click', () => {
-        // 스타터는 시작일 뿐 — 그대로는 통과되지 않고 학생이 이어 써야 한다(renderBottom에서 검사).
-        reason.value = `${s.dataset.starter ?? ''} `;
-        p.perspectiveReason = reason.value;
-        host.save();
-        reason.focus();
-        renderBottom();
-      }));
-    };
-    syncStarters();
-    reason.addEventListener('input', () => { p.perspectiveReason = reason.value.slice(0, 120); host.save(); renderBottom(); });
-    talk.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) => {
-      b.addEventListener('click', () => {
-        const id = b.dataset.pick ?? '';
-        if (p.selectedPerspectiveIds.includes(id)) p.selectedPerspectiveIds = p.selectedPerspectiveIds.filter((x) => x !== id);
-        else if (p.selectedPerspectiveIds.length < 2) p.selectedPerspectiveIds.push(id);
-        else { host.guide?.say('두 개만 고를 수 있어. 하나를 풀고 다시 골라.', { speaker: host.speaker }); return; }
-        void audio.playSfx('tap');
-        talk.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((x) => x.setAttribute('aria-pressed', String(p.selectedPerspectiveIds.includes(x.dataset.pick ?? ''))));
-        host.save();
-        syncStarters();
-        renderBottom();
-      });
-    });
-    renderBottom();
-    host.guide?.say('서로 다른 관점 두 개를 고르고 이유를 짧게 써 봐.', { speaker: host.speaker, cue: talk });
-  };
-
-  const renderBottom = () => {
-    const canPick = p.listenedPerspectiveIds.length >= MIN_PERSPECTIVES_LISTENED;
-    // 스타터를 탭만 하고 넘어갈 수 없다 — 스타터 문구 그대로면 학생 말이 최소 한 어절 더 필요하다.
-    const reasonText = p.perspectiveReason.trim();
-    const isStarterOnly = starterTexts.some((s) => reasonText === s.trim());
-    const ready = p.selectedPerspectiveIds.length === 2 && reasonText.length >= 6 && !isStarterOnly;
-    const hint = talk.querySelector<HTMLElement>('#ec-reason-hint');
-    if (hint) hint.hidden = !isStarterOnly;
-    bottom.innerHTML = phase === 'listen'
-      ? `<span class="ec-progress">${p.listenedPerspectiveIds.length >= seats.length ? '모두 들었어!' : '친구들의 이야기를 들어 봐'}</span>
-         <button class="btn btn-primary btn-big" data-act="pick" ${canPick ? '' : 'disabled'}>관점 두 개 고르기</button>`
-      : `<button class="btn btn-ghost" data-act="relisten">친구 말 다시 듣기</button>
-         <button class="btn btn-primary btn-big" data-act="actions" ${ready ? '' : 'disabled'}>해결안 조합하기</button>`;
-    bottom.querySelector('[data-act="pick"]')?.addEventListener('click', () => { if (canPick) { phase = 'pick'; renderSeats(); renderTalk(); } });
-    bottom.querySelector('[data-act="relisten"]')?.addEventListener('click', () => { phase = 'listen'; renderSeats(); renderTalk(); });
-    bottom.querySelector('[data-act="actions"]')?.addEventListener('click', () => { if (ready) goto(host, 'actions'); });
-  };
-
-  renderSeats();
-  renderTalk();
 }
 
 /* ===== 장면 5 — 해결안 조합 실험 ===== */
@@ -1227,6 +904,7 @@ function renderActions(host: EarthSceneHost): void {
         <section class="panel ec-side" id="ec-result">
           <p class="ec-copy">반영할 관점: <span style="color:var(--c-violet-ink)">${esc(chosen)}</span></p>
           <p class="ec-copy" style="color:var(--c-ink-soft)">각 수준에서 하나 이상 골라 지구본 주변에 놓고 실험해요.</p>
+          <p class="ec-click-copy" id="ec-action-copy" aria-live="polite"></p>
           <div id="ec-gauges" class="ec-gauges"></div>
           <div id="ec-fb" style="display:grid;gap:6px"></div>
           <p class="ec-scope">${esc(t.simulationNote)}</p>
@@ -1256,7 +934,12 @@ function renderActions(host: EarthSceneHost): void {
         p.selectedActionIds = on ? p.selectedActionIds.filter((x) => x !== a.id) : [...p.selectedActionIds, a.id];
         b.setAttribute('aria-pressed', String(!on));
         void audio.playSfx(on ? 'tap' : 'drop');
-        if (!on) { popBounce(b); speak(a.detail); host.guide?.say(a.detail, { speaker: host.speaker }); }
+        if (!on) {
+          popBounce(b);
+          const actionCopy = body.querySelector<HTMLElement>('#ec-action-copy');
+          if (actionCopy) typeText(actionCopy, a.detail);
+          host.guide?.say(a.detail, { speaker: host.speaker });
+        }
         host.save();
         renderBottom();
       });
@@ -1388,22 +1071,28 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
   overlay.setAttribute('role', 'status');
   overlay.setAttribute('aria-live', 'polite');
   const n = content.friends.length;
+  const finalePledge = completedGlobalCouncil ? `나의 약속 — ${p.personalActionDraft}` : (lines[5] ?? '');
+  const finaleNote = completedGlobalCouncil
+    ? '여섯 친구의 문제·해결책·약속이 지구를 한 바퀴 돌고, 나의 약속으로 완성됐어요.'
+    : '여섯 친구의 약속이 하나의 지구로 이어졌어요.';
   overlay.innerHTML = `
-    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      ${content.friends.map((_, i) => { const a = (i / n) * Math.PI * 2; return `<path class="ec-flow" data-lens="${(['ocean', 'air', 'climate', 'ecosystem', 'resource'] as const)[i % 5]}" d="M 50 50 Q ${50 + Math.cos(a) * 20} ${50 + Math.sin(a) * 30} ${50 + Math.cos(a) * 42} ${50 + Math.sin(a) * 40}" vector-effect="non-scaling-stroke" style="opacity:0;transition:opacity 500ms ${900 + i * 120}ms"/>`; }).join('')}
-    </svg>
     <div class="ec-f-friends" aria-hidden="true">
-      ${content.friends.map((f, i) => { const a = (i / n) * Math.PI * 2; return `<span class="ec-f-friend" data-i="${i}" style="left:${50 + Math.cos(a) * 42}%;top:${50 + Math.sin(a) * 40}%"><span class="ec-f-piece"></span>${img(f.imageId, '')}</span>`; }).join('')}
+      ${content.friends.map((f, i) => { const a = (i / n) * Math.PI * 2; return `<span class="ec-f-friend" data-i="${i}" style="left:${50 + Math.cos(a) * 42}%;top:${50 + Math.sin(a) * 40}%">${img(f.imageId, '')}</span>`; }).join('')}
     </div>
     ${hasFinaleBackground ? '' : img(hasAsset('reward.globe_puzzle') ? 'reward.globe_puzzle' : 'prop.globe', '완성된 지구본', 'ec-f-globe')}
     ${completedGlobalCouncil ? `<div class="ec-f-topics" aria-hidden="true">${content.issues.map((item, index) => `<span style="--topic-i:${index}">${esc(item.title)}</span>`).join('')}</div>` : ''}
     <div class="ec-f-copy">
       <h2>${esc(completedGlobalCouncil ? '네 가지 환경문제를 하나의 약속으로 이었어요!' : (issue ? `우리는 ${issue.title} 문제를 함께 풀기로 했어요.` : '우리는 지구를 함께 돌보기로 했어요.'))}</h2>
-      <p>${esc(completedGlobalCouncil ? `나의 약속 — ${p.personalActionDraft}` : (lines[5] ?? ''))}</p>
-      <p class="ec-note">${completedGlobalCouncil ? '여섯 친구의 문제·해결책·약속이 지구를 한 바퀴 돌고, 나의 약속으로 완성됐어요.' : '여섯 친구의 약속이 하나의 지구로 이어졌어요 — 이제 여권에 도장이 찍혀요.'}</p>
-      <button type="button" class="btn btn-primary btn-big" data-act="finale-continue" hidden>도장 받으러 가기</button>
+      <p id="ec-finale-pledge"></p>
+      <p class="ec-note" id="ec-finale-note"></p>
+      <button type="button" class="btn btn-primary btn-big" data-act="finale-continue" hidden>최종 결과 보기</button>
     </div>`;
   body.appendChild(overlay);
+  typeText(overlay.querySelector<HTMLElement>('#ec-finale-pledge')!, finalePledge, 28);
+  window.setTimeout(() => {
+    const note = overlay.querySelector<HTMLElement>('#ec-finale-note');
+    if (note) typeText(note, finaleNote, 22);
+  }, reduced ? 0 : Math.min(1600, finalePledge.length * 28 + 180));
   void audio.playSfx('complete');
   const celebrationAnchor = overlay.querySelector<HTMLElement>('.ec-f-globe') ?? overlay.querySelector<HTMLElement>('.ec-f-copy');
   if (celebrationAnchor) burstConfetti(celebrationAnchor, 10);
@@ -1415,7 +1104,6 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
         el.style.left = `${50 + Math.cos(a) * 24}%`;
         el.style.top = `${50 + Math.sin(a) * 26}%`;
       });
-      overlay.querySelectorAll<SVGPathElement>('path').forEach((path) => { path.style.opacity = '1'; });
     }, 350);
   }
   // 자동 소멸 대신 학생이 자기 약속 문장을 읽고 직접 넘어간다 — 연출이 3.5초 만에 사라져 못 읽는 사고 방지.

@@ -18,28 +18,6 @@ export interface MissionSave {
   data: Record<string, unknown>;
 }
 
-export type EuropeMissionScreen = 'map' | 'window' | 'gallery' | 'reason' | 'question' | 'postcard';
-
-/** 유럽 미션의 선택·글쓰기 진행 상태. 배열에는 화면 순서가 아닌 안정적인 콘텐츠 ID만 저장한다. */
-export interface EuropeMissionProgress {
-  schemaVersion: 2;
-  screen: EuropeMissionScreen;
-  activeCountryId: string | null;
-  activeVisualId: string | null;
-  visitedCountryIds: string[];
-  viewedVisualIds: string[];
-  savedVisualIds: string[];
-  selectedCountryId: string | null;
-  selectedEvidenceId: string | null;
-  reasonPromptId: string | null;
-  reasonDraft: string;
-  questionStarterId: string | null;
-  questionDraft: string;
-  postcardCompleted: boolean;
-  stampAwarded: boolean;
-  updatedAt: string;
-}
-
 export type AsiaMissionScreen =
   | 'map'
   | 'culture'
@@ -127,7 +105,6 @@ export type AfricaMissionScreen =
   | 'map'
   | 'region'
   | 'instrument'
-  | 'rhythm'
   | 'signal'
   | 'environment'
   | 'impact'
@@ -147,7 +124,6 @@ export interface AfricaMissionProgress {
   instrumentLab: {
     completed: boolean;
     exploredInstrumentIds: string[];
-    createdRhythm: number[];
   };
   environmentInvestigation: {
     selectedIssueId: string | null;

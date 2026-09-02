@@ -41,7 +41,7 @@ const { chromium: c2 } = require('playwright');
  const b=await c2.launch();const ctx=await b.newContext({viewport:{width:844,height:390}});
  await ctx.addInitScript(a=>{try{localStorage.setItem(a.k,JSON.stringify(a.s))}catch{}},{k:KEY2,s:save2()});
  const p=await ctx.newPage();
- for(const [n,r] of [['스테이지6','#/mission/respect-dialogue'],['완주','#/completion']]){
+ for(const [n,r] of [['스테이지6','#/mission/respect-dialogue']]){
   await p.goto('http://localhost:5273/'+r,{waitUntil:'domcontentloaded'});await p.waitForTimeout(2200);
   for(let i=0;i<4;i++){const btn=await p.$('.modal-actions button');if(!btn)break;try{await btn.click({timeout:800})}catch{break}await p.waitForTimeout(400)}
   const info=await p.evaluate(()=>{const b=document.querySelector('.page-body');if(!b)return{no:1};

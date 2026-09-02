@@ -9,6 +9,19 @@ import { fixJosa } from '../src/core/josa';
 const content = raw as unknown as EarthContent;
 
 describe('지구회의 콘텐츠 무결성', () => {
+  it('선택할 환경문제 4개가 있고 물 부족 주제도 세 수준의 해결 행동으로 이어진다', () => {
+    expect(content.issues).toHaveLength(4);
+    const climateIssue = content.issues.find((issue) => issue.id === 'climate');
+    expect(climateIssue?.imageAssetId).toBe('earth.issue.climate_glacier');
+    const waterIssue = content.issues.find((issue) => issue.id === 'resource');
+    expect(waterIssue?.imageAssetId).toBe('earth.issue.water_sharing');
+    expect(content.roundtable.resource).toHaveLength(4);
+    const waterTiers = new Set(content.actions.filter((action) => action.issues.includes('resource')).map((action) => action.tier));
+    expect(waterTiers).toEqual(new Set(['self', 'community', 'institution']));
+    expect(content.councilTurns).toHaveLength(6);
+    expect(new Set(content.councilTurns.map((turn) => turn.phase))).toEqual(new Set(['문제', '해결책', '약속']));
+    expect(content.councilTurns.every((turn) => content.friends.some((friend) => friend.id === turn.friendId))).toBe(true);
+  });
   it('신호 6개가 각각 친구·문제·연결 유형·범위 안내를 갖는다', () => {
     expect(content.signals).toHaveLength(6);
     const friendIds = new Set(content.friends.map((f) => f.id));
@@ -44,10 +57,14 @@ describe('진행 상태 검증', () => {
       scene: 'done',
       signalViewedIds: ['sig_nepal_glacier', 'sig_nepal_glacier', 'ghost'],
       signalObservedIds: ['sig_nepal_glacier', 'sig_japan_heat'],
+      inspectedIssueIds: ['ocean', 'ocean', 'ghost'],
+      councilTurnIndex: 999,
       selectedPerspectiveIds: ['p_effect', 'p_cost', 'p_local']
     }, content);
     expect(p.signalViewedIds).toEqual(['sig_nepal_glacier']);
     expect(p.signalObservedIds).toEqual(['sig_nepal_glacier']);
+    expect(p.inspectedIssueIds).toEqual(['ocean']);
+    expect(p.councilTurnIndex).toBe(content.councilTurns.length);
     expect(p.selectedPerspectiveIds).toHaveLength(2);
     expect(p.scene).toBe('signals');
     expect(p.missionCompleted).toBe(false);
@@ -61,6 +78,8 @@ describe('진행 상태 검증', () => {
     p.exploredConnectionTypes = ['ocean', 'climate'];
     expect(canOpenCouncil(p)).toBe(true);
     expect(validateEarthProgress({ ...p, scene: 'pledge' }, content).scene).toBe('issue');
+    p.inspectedIssueIds = content.issues.map((issue) => issue.id);
+    expect(validateEarthProgress({ ...p, scene: 'roundtable' }, content).scene).toBe('roundtable');
   });
 });
 

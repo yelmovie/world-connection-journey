@@ -91,6 +91,10 @@ describe('콘텐츠 공통 스키마', () => {
       expect(europe.requirements[key], key).toBeGreaterThanOrEqual(4);
       expect(europe.requirements[key], key).toBeLessThanOrEqual(europe.countries.length);
     }
+    expect(europe.signals).toHaveLength(4);
+    expect(europe.perspectives).toHaveLength(4);
+    expect(europe.actions.length).toBeGreaterThanOrEqual(8);
+    expect(europe.requirements.minSignals).toBe(3);
   });
 
   it('oceania는 여러 지역·사례·환경 신호·관점을 하나의 바다 흐름으로 제공한다', () => {
@@ -171,6 +175,19 @@ describe('콘텐츠 공통 스키마', () => {
 
   it('아메리카 지도와 네 나라의 모든 탐험 지점이 독립 이미지 자산에 연결된다', () => {
     expect(assetManifest.assets['americas.map']?.src).toContain('americas_map_regional_v2');
+    expect(americas.explore.lenses).toHaveLength(3);
+    for (const lens of americas.explore.lenses) {
+      expect(lens.prompt.length, `${lens.id}.prompt`).toBeGreaterThan(12);
+      expect(lens.points).toHaveLength(2);
+      if (lens.id !== 'position') {
+        for (const point of lens.points) {
+          expect('assetId' in point && point.assetId, `${lens.id}:${point.id}.assetId`).toBeTruthy();
+          if ('assetId' in point) {
+            expect(point.assetId in assetManifest.assets, `${lens.id}:${point.id}:${point.assetId}`).toBe(true);
+          }
+        }
+      }
+    }
     for (const country of americas.explore.countries) {
       expect(country.stops).toHaveLength(4);
       expect(country.stops.at(-1)?.id).toBe('landmark');
@@ -195,6 +212,8 @@ describe('콘텐츠 공통 스키마', () => {
     expect(JSON.stringify(americas)).toContain('pork_free_option');
     expect(asia.scenes.find((scene) => scene.id === 'china_nature')?.titleKo).toBe('대운하와 큰 도시');
     expect(dialogue.greetings.find((greeting) => greeting.id === 'greet_japan')?.introduction).toContain('오키나와');
+    expect(dialogue.learn.introMode).toBe('question-only');
+    expect(dialogue.learn.prediction.options).toEqual([]);
     expect(africa.countryCases.find((item) => item.id === 'south-africa-cape')?.culturalExample).toContain('12개 공용어');
   });
 

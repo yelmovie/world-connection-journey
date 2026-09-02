@@ -4,7 +4,7 @@
 학생은 다섯 대륙의 생활 자료를 조사하고, 존중하는 대화를 연습하며
 **관찰 → 증거 찾기 → 가설 세우기 → 질문하기 → 경청하기 → 판단 수정하기**의 학습 순환을 경험한다.
 
-첫 방문 흐름은 **타이틀 → 여행자 여권 → 세계 항로 지도**이며, 지도에서 다섯 대륙을 자유 순서로 완료한 뒤 대화 미션과 인증 화면이 열린다. 아래 번호는 기획상의 10페이지 번호다.
+첫 방문 흐름은 **타이틀 → 여행자 여권 → 세계 항로 지도**이며, 지도에서 다섯 대륙을 자유 순서로 완료한 뒤 마지막 단계 **하나의 지구, 여섯 개의 신호**가 열린다. 여섯 친구와 인사·경청을 연습하면 지도로 돌아와 친구들의 마지막 사진이 도착하고, 사진 속 환경 신호를 찾아 지도에서 바다·공기·기후·생태계·자원의 연결을 확인한 뒤 세계 친구 지구회의에서 여러 관점과 개인·지역사회·정부·기업·국제협력 수준의 해결안을 조합해 공동약속을 만든다. 공동약속이 완성되면 기존 여권 도장이 찍히고 인증 화면이 열린다. 여권에서 고른 캐릭터는 탐구 도움 방식을, 비행기는 미션에서 쓸 여행 장비를 정한다. 미션마다 도장·배움 카드·지구본 조각을 모으고, 마지막에는 처음 생각·근거·수정한 판단·새 상황에서 할 행동을 수료 기록으로 남긴다. 아래 번호는 기획상의 10페이지 번호다.
 
 ## 성취기준 연계 (2022 개정 교육과정)
 
@@ -25,14 +25,14 @@
 |---|---|---|---|
 | 1 | `#/` | 타이틀 | 새 여행 / 이어하기 / 설정 |
 | 2 | `#/map` | 세계 항로 지도 | 대륙 핫스폿 선택, 비행기 이동, 진행 상태 |
-| 3 | `#/passport` | 여행자 여권 | 별명·아바타·탐험 질문, 도장 확인 |
+| 3 | `#/passport` | 여행자 여권 | 별명·아바타·비행기 선택, 도장 확인 |
 | 4 | `#/mission/asia` | 아시아: 하루 읽기 | 타임라인 배치, 사실·해석·확인필요 분류, 존중 질문 조립 |
 | 5 | `#/mission/europe` | 유럽: 흔적과 오늘 | 자료 읽기, 목적이 다른 두 경로 설계·비교 |
 | 6 | `#/mission/africa` | 아프리카: 소리의 대화 | 맥락 읽기, 8칸 리듬 재구성·비교, 콜 앤 리스폰스 |
 | 7 | `#/mission/americas` | 아메리카: 함께 만드는 하루 | 필요/선호 분류, 제약 일정 조립, 선택형 대안 비교 |
 | 8 | `#/mission/oceania` | 오세아니아: 섬과 바다 | 핫스폿 조사, 관점 카드, 3턴 환경 시뮬레이션 |
-| 9 | `#/mission/respect-dialogue` | 다름을 잇는 대화 | 인사 사례 매칭, 경청, 공감 나침반 분기 대화 (5대륙 완료 시 해금) |
-| 10 | `#/completion` | 세계 연결 인증 | 퍼즐 지구본, 회고, 실천 약속, 인쇄용 수료증 |
+| 9 | `#/mission/respect-dialogue` | 하나의 지구, 여섯 개의 신호 | 여섯 친구 인사·경청 → 친구들의 마지막 사진 도착 → 사진 속 환경 신호 찾기 → 지구 연결 렌즈 → 세계 친구 지구회의(관점 듣기·해결안 조합 실험·공동약속) (5대륙 완료 시 해금) |
+| 10 | `#/completion` | 세계 연결 인증 | 퍼즐 지구본, 근거 회고, 새 상황 적용, 실천 약속, 인쇄용 수료증 |
 
 ## 실행
 
@@ -40,7 +40,7 @@
 npm install
 npm run dev        # 개발 서버 (localhost:5173)
 npm run build      # production 빌드 (dist/)
-npm run verify     # typecheck + test + build
+npm run verify     # typecheck + test + 에셋 감사 + build
 npm run assets     # 원본 에셋 → public/assets WebP 재생성
 ```
 
@@ -48,11 +48,12 @@ npm run assets     # 원본 에셋 → public/assets WebP 재생성
 
 - **스택**: Vite + TypeScript + Phaser 3 + 바닐라 DOM/CSS/SVG (React·서버 없음)
 - **저장**: `localStorage` 키 `world_connection_journey.save.v1` — 손상 시 백업 후 기본값 복구, 해금 상태는 항상 재계산
-- **오디오**: BGM 6곡(`public/sound/bgm`) crossfade, SFX 10종, 리듬 시퀀서는 시각 박자와 합성 타악기를 함께 사용
-- **에셋**: 원본은 `assets/` 등에 보존, 빌드 이미지 WebP 47개(3.797MiB). 매핑은 `src/content/asset-manifest.json`
+- **오디오**: BGM 6곡(`public/sound/bgm`) crossfade, 미션별 SFX, 리듬 시퀀서는 시각 박자와 합성 타악기를 함께 사용
+- **최종 단계 콘텐츠**: `public/content/v1/ko/environment.json`(환경 신호 6·연결 렌즈 5·문제 3·관점 6·해결 행동 9). 로직은 `src/core/earthCouncil.ts`, 화면은 `src/pages/earthCouncilScenes.ts`. 환경 사례는 일반 경향 수준이며 `needsReview: true` — 출처·범위는 `docs/GLOBAL_ENVIRONMENT_ASSET_PROMPTS.md` 참고.
+- **에셋**: 원본은 `assets/` 등에 보존하며, 137개 시맨틱 항목을 `src/content/asset-manifest.json`에서 관리하고 자동 감사한다.
 - **3D**: Three.js 의존성·GLB는 아직 없다. `passport-stamp`와 `completion-globe` 예약 위치에서 `prop.stamp`, `reward.globe_puzzle` 이미지를 폴백으로 표시한다.
-- **검증**: `npm run verify` 통과 — Vitest 7파일·32테스트, TypeScript 타입 검사, production 빌드
-- **네트워크**: 런타임 에셋·폰트·오디오는 모두 로컬이며 외부 요청이 없다. PWA 오프라인 캐시는 포함하지 않는다.
+- **검증**: `npm run verify`가 TypeScript, Vitest, 에셋 참조 무결성, production 빌드를 한 번에 검사한다.
+- **네트워크**: 런타임 에셋·폰트·오디오는 모두 로컬이다. 서비스 워커가 앱 셸·콘텐츠·지연 로딩 청크를 캐시하고, BGM은 한 번 재생한 뒤 런타임 캐시에 보관한다.
 - **문화적 안전성**: 단일 문화 단정 금지, 사례화 표현, 모든 콘텐츠 `needsReview: true`. 교육 내용 출처·검토자·라이선스 메타데이터가 아직 완비되지 않아 **교사 검수와 출처 보강 전 공식 수업·공개 배포는 조건부**다.
 
 자세한 구조는 [docs/TRD.md](docs/TRD.md), 범위는 [docs/MVP_SPEC.md](docs/MVP_SPEC.md), 에셋 목록은 [docs/ASSET_AUDIT.md](docs/ASSET_AUDIT.md), 점검 항목은 [docs/QA_CHECKLIST.md](docs/QA_CHECKLIST.md) 참고.

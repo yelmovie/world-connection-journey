@@ -59,7 +59,8 @@ function friendImg(learn: MissionLearn, size: string): string {
 export function showFriendIntro(missionId: MissionId, learn: MissionLearn, onBegin: () => void): void {
   const mode = learn.introMode ?? 'prediction';
   const asksQuestion = mode !== 'friend-only' && Boolean(learn.prediction?.question);
-  const options = asksQuestion && Array.isArray(learn.prediction.options)
+  // question-only는 생각을 열어 두는 도입이다. 데이터에 옛 선택지가 남아 있어도 고르기 UI를 만들지 않는다.
+  const options = mode === 'prediction' && asksQuestion && Array.isArray(learn.prediction.options)
     ? learn.prediction.options.filter((option) => typeof option === 'string' && option.trim().length > 0)
     : [];
   const previous = readRecord(missionId).initialHypothesis;

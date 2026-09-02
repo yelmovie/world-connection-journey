@@ -22,6 +22,8 @@ const sourceFiles = [
   ...walk(path.join(root, 'src', 'pages')),
   ...walk(path.join(root, 'src', 'ui')),
   ...walk(path.join(root, 'src', 'styles')),
+  // 매니페스트 자신은 제외한다 — 모든 id가 들어 있어 감사가 무의미해진다.
+  ...walk(path.join(root, 'src', 'content')).filter((file) => file !== manifestPath),
   ...walk(path.join(root, 'public', 'content'))
 ];
 const sources = sourceFiles.map((file) => ({

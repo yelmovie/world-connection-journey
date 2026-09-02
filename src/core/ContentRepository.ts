@@ -31,12 +31,12 @@ export interface ContentEnvelope {
 const CONTENT_SHAPES: Record<string, { missionId: string; objects: string[]; arrays: string[]; strings?: string[] }> = {
   common: { missionId: 'common', objects: ['ui', 'nickname'], arrays: ['actionPrinciples', 'stamps'], strings: ['reflectionFrame'] },
   asia: { missionId: 'asia_connected_regions', objects: ['intro', 'requirements', 'proposal'], arrays: ['regions', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions'] },
-  europe: { missionId: 'europe_interest_window', objects: ['intro', 'requirements', 'postcard', 'feedback'], arrays: ['countries', 'reasonPrompts', 'questionStarters'] },
+  europe: { missionId: 'europe_interest_window', objects: ['intro', 'requirements'], arrays: ['countries', 'signals', 'perspectives', 'actions'] },
   africa: { missionId: 'africa_sound_dialogue', objects: ['intro', 'requirements', 'callResponse', 'feedback', 'proposal'], arrays: ['regions', 'countryCases', 'contextCards', 'patterns', 'environmentSignals', 'issues', 'perspectives', 'actionTiers', 'actions', 'sources'] },
   americas: { missionId: 'americas_shared_day', objects: ['intro', 'constraints', 'altCompare', 'feedback'], arrays: ['students', 'blocks'] },
   oceania: { missionId: 'oceania_one_ocean', objects: ['intro', 'requirements', 'proposal'], arrays: ['zones', 'countryExamples', 'scenes', 'comparisonLenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions', 'sources'] },
   dialogue: { missionId: 'respect_dialogue', objects: ['intro', 'listening', 'compass', 'feedback'], arrays: ['greetings'] },
-  environment: { missionId: 'earth_council', objects: ['titles', 'connectionReasons', 'roundtable', 'simulationFeedback', 'pledge'], arrays: ['friends', 'lenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions'] }
+  environment: { missionId: 'earth_council', objects: ['titles', 'connectionReasons', 'roundtable', 'simulationFeedback', 'pledge'], arrays: ['friends', 'lenses', 'signals', 'issues', 'councilTurns', 'perspectives', 'actionTiers', 'actions'] }
 };
 
 const NESTED_SHAPES: Record<string, { objects?: string[]; arrays?: string[]; objectArrays?: string[] }> = {
@@ -45,7 +45,7 @@ const NESTED_SHAPES: Record<string, { objects?: string[]; arrays?: string[]; obj
   },
   europe: {
     objectArrays: [
-      'countries', 'reasonPrompts', 'questionStarters',
+      'countries', 'signals', 'perspectives', 'actions',
       'countries.0.visuals', 'countries.1.visuals', 'countries.2.visuals', 'countries.3.visuals',
       'countries.4.visuals', 'countries.5.visuals', 'countries.6.visuals'
     ]
@@ -64,7 +64,7 @@ const NESTED_SHAPES: Record<string, { objects?: string[]; arrays?: string[]; obj
   },
   environment: {
     arrays: ['pledge.frame', 'pledge.helperQuestions'],
-    objectArrays: ['friends', 'lenses', 'signals', 'issues', 'perspectives', 'actionTiers', 'actions']
+    objectArrays: ['friends', 'lenses', 'signals', 'issues', 'councilTurns', 'perspectives', 'actionTiers', 'actions']
   }
 };
 

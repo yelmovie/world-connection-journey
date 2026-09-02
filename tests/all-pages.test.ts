@@ -43,7 +43,5 @@ describe('All Pages Export createPage', () => {
     expect(typeof missionOceaniaPage.createPage).toBe('function');
     const missionDialoguePage = await import('../src/pages/missionDialogue');
     expect(typeof missionDialoguePage.createPage).toBe('function');
-    const completionPage = await import('../src/pages/completion');
-    expect(typeof completionPage.createPage).toBe('function');
   });
 });

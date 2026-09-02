@@ -4,10 +4,9 @@ import { saveRepo } from './SaveRepository';
 export type BgmId = 'main' | 'asia' | 'europe' | 'africa' | 'americas' | 'oceania';
 export type SfxId =
   | 'tap' | 'pickup' | 'drop' | 'success' | 'partial'
-  | 'stamp' | 'complete' | 'whoosh' | 'beat_low' | 'beat_high'
-  /* 아프리카 리듬 미션용 실제 악기 원샷 (Pixabay, 크레딧 불요 — assets/CREDITS.md) */
-  | 'djembe_low' | 'djembe_high' | 'talkingdrum' | 'shaker'
-  | 'kalimba' | 'kora' | 'clap' | 'count';
+  | 'stamp' | 'complete' | 'whoosh'
+  /* 아메리카 탐험의 환경 단서 효과음 (Pixabay — assets/CREDITS.md) */
+  | 'beat_low';
 
 const BGM_SRC: Record<BgmId, string> = {
   main: 'sound/bgm/maintheme.mp3',
@@ -38,6 +37,7 @@ class AudioManager {
   private bgmSuspended = false;
   private fadingFrom: HTMLAudioElement | null = null;
   private clip: HTMLAudioElement | null = null;
+  private clipResumeBgm: BgmId | null = null;
 
   init(): void {
     const unlock = () => {
@@ -111,7 +111,8 @@ class AudioManager {
   }
 
   /**
-   * 악기 연주처럼 긴 클립 1개를 재생한다(동시에 하나만). 재생 중에는 BGM을 낮추고, 끝나거나 멈추면 되돌린다.
+   * 악기 연주처럼 긴 클립 1개를 재생한다(동시에 하나만).
+   * 악기 소리만 들리도록 재생 동안 BGM을 멈추고 효과음도 막았다가, 끝나거나 멈추면 되돌린다.
    * SFX 설정을 따르며 파일 누락·차단 시에는 조용히 종료한다.
    */
   playClip(src: string, opts: { loop?: boolean; onEnd?: () => void } = {}): boolean {
@@ -121,11 +122,12 @@ class AudioManager {
     el.loop = opts.loop === true;
     el.volume = 0.85 * this.masterVolume;
     this.clip = el;
-    this.setBgmLevel(0.18);
+    this.clipResumeBgm = this.currentBgmId;
+    this.suspendBgm();
     const done = () => {
       if (this.clip !== el) return;
       this.clip = null;
-      this.setBgmLevel(1);
+      this.restoreBgmAfterClip();
       opts.onEnd?.();
     };
     el.addEventListener('ended', done, { once: true });
@@ -139,15 +141,17 @@ class AudioManager {
     if (!el) return;
     this.clip = null;
     this.disposeTrack(el);
-    this.setBgmLevel(1);
+    this.restoreBgmAfterClip();
+  }
+
+  private restoreBgmAfterClip(): void {
+    const resume = this.clipResumeBgm;
+    this.clipResumeBgm = null;
+    this.resumeBgmAfterVideo(resume);
   }
 
   get clipPlaying(): boolean {
     return this.clip !== null && !this.clip.paused && !this.clip.ended;
-  }
-
-  private setBgmLevel(level: number): void {
-    if (this.current && this.fadeTimer === null) this.current.volume = 0.6 * this.masterVolume * level;
   }
 
   /** 알림 순간에 BGM을 잠깐 낮췄다가 되돌린다 (페이드 중이면 건너뜀). */
@@ -216,6 +220,7 @@ class AudioManager {
 
   async playSfx(id: SfxId): Promise<void> {
     if (!this.unlocked || !this.ctx || !this.settings.sfx) return;
+    if (this.clip) return; // 악기 소리를 듣는 동안에는 효과음을 겹치지 않는다
     const now = performance.now();
     const last = this.lastSfxAt.get(id) ?? 0;
     if (now - last < 80) return; // 빠른 연속 클릭 중첩 방지
@@ -262,70 +267,6 @@ class AudioManager {
       console.warn(`[Audio] SFX 로드 실패(무음 진행): ${id}`, err);
       return null;
     }
-  }
-
-  /**
-   * 리듬 시퀀서용 타악기.
-   * 실제 젬베 샘플이 준비돼 있으면 그것을 정확한 시각에 예약 재생하고,
-   * 아직 로드 전이거나 파일이 없으면 합성음으로 대체한다(무음 사고 방지).
-   */
-  playBeat(kind: 'low' | 'high', when = 0): void {
-    if (!this.ctx || !this.settings.sfx) return;
-    const vol = this.masterVolume;
-    if (vol <= 0) return;
-
-    const sampleId: SfxId = kind === 'low' ? 'djembe_low' : 'djembe_high';
-    const sample = this.sfxBuffers.get(sampleId);
-    if (sample) {
-      const t = this.ctx.currentTime + when;
-      const src = this.ctx.createBufferSource();
-      src.buffer = sample;
-      const gain = this.ctx.createGain();
-      gain.gain.value = (kind === 'low' ? 0.95 : 0.85) * vol;
-      src.connect(gain).connect(this.ctx.destination);
-      src.start(t);
-      return;
-    }
-    // 샘플이 아직 없으면 백그라운드로 준비시키고 이번 타는 합성음으로 낸다.
-    void this.prepareBeatSamples();
-    this.playSynthBeat(kind, when, vol);
-  }
-
-  /** 시퀀서 진입 시 호출 — 젬베 샘플을 미리 디코드해 첫 재생부터 진짜 소리가 나게 한다. */
-  async prepareBeatSamples(): Promise<void> {
-    const ids: SfxId[] = ['djembe_low', 'djembe_high'];
-    await Promise.all(ids.map(async (id) => {
-      if (this.sfxBuffers.has(id)) return;
-      let pending = this.sfxLoads.get(id);
-      if (!pending) {
-        pending = this.loadSfx(id);
-        this.sfxLoads.set(id, pending);
-      }
-      const buf = await pending;
-      this.sfxLoads.delete(id);
-      this.sfxBuffers.set(id, buf);
-    }));
-  }
-
-  private playSynthBeat(kind: 'low' | 'high', when: number, vol: number): void {
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime + when;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    if (kind === 'low') {
-      osc.frequency.setValueAtTime(150, t);
-      osc.frequency.exponentialRampToValueAtTime(55, t + 0.12);
-      gain.gain.setValueAtTime(0.9 * vol, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-    } else {
-      osc.frequency.setValueAtTime(420, t);
-      osc.frequency.exponentialRampToValueAtTime(180, t + 0.06);
-      gain.gain.setValueAtTime(0.6 * vol, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-    }
-    osc.connect(gain).connect(this.ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.3);
   }
 
   get audioContext(): AudioContext | null {

@@ -604,6 +604,12 @@
 }
 .mission-result-stamp { width: 100%; aspect-ratio: 1; object-fit: contain; }
 .mission-result-stamp.stamp { height: auto; min-height: 104px; padding: 10px; }
+/* 여권 여섯 칸 — 스테이지마다 한 칸씩 채워지는 것을 결과 팝업에서 바로 보여 준다. */
+.mission-result-hero:has(.mission-result-stamps) { grid-template-columns: clamp(156px, 20vw, 232px) minmax(0, 1fr); }
+.mission-result-stamps { width: 100%; }
+.mission-result-stamps .stamp-collection__slot b {
+  color: rgba(25, 50, 77, .34); font: 900 clamp(20px, 2vw, 28px)/1 var(--font-head);
+}
 .mission-result-heading { display: grid; gap: 6px; text-align: left; }
 .mission-result-heading strong { color: var(--c-navy); font: 400 var(--fs-title)/1.12 var(--font-head); }
 .mission-result-heading p { color: var(--c-ink-soft); }

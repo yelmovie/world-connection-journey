@@ -352,8 +352,6 @@ class SaveRepository {
       const persistentData: Record<string, unknown> = {};
       if (m.data.learn !== undefined) persistentData.learn = m.data.learn;
       if (m.data.artifact !== undefined) persistentData.artifact = m.data.artifact;
-      // 유럽 관심 엽서는 완료 뒤 다시 열어 볼 수 있어야 하므로 진행 산출물도 보존한다.
-      if (m.data.europeProgress !== undefined) persistentData.europeProgress = m.data.europeProgress;
       // 구버전 저장 호환용 — 옛 asiaMission 저장 형식. 완료 뒤 세계회의·재방문에서 다시 읽을 수 있어야 한다.
       if (m.data.asiaProgress !== undefined) persistentData.asiaProgress = m.data.asiaProgress;
       // 구버전 저장 호환용 — 옛 oceaniaMission 저장 형식. 완료 뒤 세계회의·재방문에서 다시 읽을 수 있어야 한다.

@@ -1,7 +1,7 @@
 import { assetUrl, hasAsset } from '../core/assets';
 import { saveRepo } from '../core/SaveRepository';
 import { MISSION_IDS, type MissionId } from '../types';
-import { airplaneChoice, selectedAirplanePortraitAssetId } from './airplaneFleet';
+import { selectedAirplanePortraitAssetId } from './airplaneFleet';
 import { avatarChoice } from './avatarRoster';
 
 export interface MissionReturnCue {
@@ -68,7 +68,6 @@ export function playJourneyTransition(opts: {
     : undefined;
   const save = saveRepo.get();
   const avatar = avatarChoice(save.profile?.avatarId);
-  const plane = airplaneChoice(save.profile?.airplaneId);
   const passportOwner = save.profile?.nickname.trim() || avatar.name;
   const newestMissionId = companionAssetId
     ? MISSION_IDS.find((missionId) => PASSPORT_STAMP_ASSETS[missionId] === companionAssetId)
@@ -86,10 +85,10 @@ export function playJourneyTransition(opts: {
       ${stampTool}
     </span>`;
   }).join('');
-  const passportAssetId = hasAsset('prop.passport_builder') ? 'prop.passport_builder' : 'prop.passport';
-  const issueSeal = save.stamps.length === 0 && hasAsset('deco.emblem_stamp')
-    ? `<img class="journey-transition__issue-seal" src="${assetUrl('deco.emblem_stamp')}" data-asset-id="deco.emblem_stamp" alt="">`
-    : '';
+  const passportAssetId = hasAsset('prop.passport_stampbook') ? 'prop.passport_stampbook' : 'prop.passport';
+  const transitionLabel = opts.kind === 'stamp' && save.stamps.length === 0 && !newestMissionId
+    ? '여행을 시작해 여섯 도장을 완성해 줘!'
+    : opts.label;
   const overlay = document.createElement('div');
   overlay.className = `journey-transition journey-transition--${opts.kind}`;
   overlay.style.setProperty('--journey-duration', `${duration}ms`);
@@ -104,12 +103,9 @@ export function playJourneyTransition(opts: {
       : `<div class="journey-transition__passport-stage" aria-hidden="true">
           <strong class="journey-transition__passport-owner">${escapeHtml(passportOwner)}의 여행 여권</strong>
           ${hasAsset(passportAssetId) ? `<img class="journey-transition__passport" src="${assetUrl(passportAssetId)}" data-asset-id="${passportAssetId}" alt="">` : ''}
-          ${hasAsset(avatar.assetId) ? `<img class="journey-transition__passport-avatar" src="${assetUrl(avatar.assetId)}" data-asset-id="${avatar.assetId}" alt="">` : ''}
-          ${hasAsset(plane.assetId) ? `<img class="journey-transition__passport-plane" src="${assetUrl(plane.assetId)}" data-asset-id="${plane.assetId}" alt="">` : ''}
           <div class="journey-transition__stamp-grid">${stampSlots}</div>
-          ${issueSeal}
         </div>`}
-    <p class="journey-transition__label">${escapeHtml(opts.label)}</p>`;
+    <p class="journey-transition__label">${escapeHtml(transitionLabel)}</p>`;
   (document.getElementById('overlay-root') ?? document.body).appendChild(overlay);
 
   let settled = false;

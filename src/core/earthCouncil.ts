@@ -30,7 +30,22 @@ export interface EnvironmentalSignal {
   lastVerifiedAt?: string;
   needsReview: boolean;
 }
-export interface EarthIssue { id: string; title: string; question: string; heroSignalId: string; connectionLine: string }
+export interface EarthIssue {
+  id: string;
+  title: string;
+  question: string;
+  heroSignalId: string;
+  /** 문제 선택 카드 전용 그림. 없으면 대표 환경 신호 그림을 쓴다. */
+  imageAssetId?: string;
+  connectionLine: string;
+}
+export type CouncilTurnPhase = '문제' | '해결책' | '약속';
+export interface CouncilTurn {
+  id: string;
+  friendId: string;
+  phase: CouncilTurnPhase;
+  line: string;
+}
 export interface ConnectionReason { id: string; text: string; fits: boolean }
 export interface Perspective { id: string; key: string; label: string; line: string; worry: string }
 export interface RoundtableSeat { friendId: string; perspectiveId: string }
@@ -48,6 +63,7 @@ export interface EarthContent {
   lenses: EarthLens[];
   signals: EnvironmentalSignal[];
   issues: EarthIssue[];
+  councilTurns: CouncilTurn[];
   connectionReasons: Record<ConnectionType, ConnectionReason[]>;
   perspectives: Perspective[];
   roundtable: Record<string, RoundtableSeat[]>;
@@ -62,6 +78,10 @@ export interface GlobalEnvironmentProgress {
   signalViewedIds: string[];
   signalObservedIds: string[];
   exploredConnectionTypes: ConnectionType[];
+  /** 문제 카드에서 지구본으로 직접 이어 본 문제 ID */
+  inspectedIssueIds: string[];
+  /** 세계 친구 공동회의에서 현재 보고 있는 말풍선 순서 */
+  councilTurnIndex: number;
   selectedIssueId: string | null;
   listenedPerspectiveIds: string[];
   selectedPerspectiveIds: string[];
@@ -86,6 +106,8 @@ export function defaultEarthProgress(): GlobalEnvironmentProgress {
     signalViewedIds: [],
     signalObservedIds: [],
     exploredConnectionTypes: [],
+    inspectedIssueIds: [],
+    councilTurnIndex: 0,
     selectedIssueId: null,
     listenedPerspectiveIds: [],
     selectedPerspectiveIds: [],
@@ -124,6 +146,9 @@ export function validateEarthProgress(raw: unknown, content?: EarthContent): Glo
   base.signalViewedIds = uniqStrings(r.signalViewedIds, signalIds);
   base.signalObservedIds = uniqStrings(r.signalObservedIds, signalIds).filter((id) => base.signalViewedIds.includes(id) || !content);
   base.exploredConnectionTypes = uniqStrings(r.exploredConnectionTypes, new Set(CONNECTION_TYPES)) as ConnectionType[];
+  base.inspectedIssueIds = uniqStrings(r.inspectedIssueIds, issueIds);
+  base.councilTurnIndex = typeof r.councilTurnIndex === 'number' && Number.isFinite(r.councilTurnIndex)
+    ? Math.max(0, Math.min(content?.councilTurns.length ?? 99, Math.floor(r.councilTurnIndex))) : 0;
   const issue = typeof r.selectedIssueId === 'string' ? r.selectedIssueId : null;
   base.selectedIssueId = issue && (!issueIds || issueIds.has(issue)) ? issue : null;
   base.listenedPerspectiveIds = uniqStrings(r.listenedPerspectiveIds, perspectiveIds);
@@ -148,7 +173,7 @@ export function furthestScene(p: GlobalEnvironmentProgress): EarthScene {
   if (p.missionCompleted) return 'done';
   if (p.selectedActionIds.length > 0 && p.simulationAttempts > 0 && p.selectedPerspectiveIds.length === 2) return 'pledge';
   if (p.selectedPerspectiveIds.length === 2 && p.selectedIssueId) return 'actions';
-  if (p.selectedIssueId) return 'roundtable';
+  if (p.inspectedIssueIds.length >= 4 || p.selectedIssueId) return 'roundtable';
   if (p.exploredConnectionTypes.length >= MIN_CONNECTIONS) return 'issue';
   if (p.signalObservedIds.length >= MIN_SIGNALS_TO_CONNECT) return 'connect';
   return 'signals';

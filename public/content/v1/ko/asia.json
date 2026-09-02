@@ -361,23 +361,23 @@
       "id": "korea_culture",
       "exampleId": "korea_seoul",
       "category": "culture",
-      "titleKo": "옛집과 새 도시가 만나는 길",
+      "titleKo": "옛 한옥과 오늘의 도시가 함께 있는 길",
       "imageAssetId": "asia.korea.1",
-      "summaryKo": "기와집 너머로 오늘날의 건물이 함께 보여.",
-      "detailKo": "도시 안에서는 오래된 건축과 새로운 생활 공간을 함께 보존하고 사용하기도 해.",
-      "discoveryKo": "오래된 공간도 오늘의 생활 속에서 이어질 수 있어.",
+      "summaryKo": "오래된 한옥 뒤로 오늘의 높은 건물과 가게가 함께 보여.",
+      "detailKo": "한옥을 도서관이나 가게처럼 지금도 쓰며 옛이야기와 오늘의 생활을 이어 가기도 해.",
+      "discoveryKo": "문화유산은 남겨 두기만 하는 것이 아니라 배우고 아껴 사용하는 것이야.",
       "hotspots": [
         {
           "id": "old",
           "x": 0.36,
           "y": 0.56,
-          "labelKo": "오래된 기와집"
+          "labelKo": "오늘도 사용하는 오래된 한옥"
         },
         {
           "id": "new",
           "x": 0.75,
           "y": 0.24,
-          "labelKo": "새로운 도시 건물"
+          "labelKo": "한옥 곁에 있는 오늘의 도시 건물"
         }
       ]
     },
@@ -433,23 +433,23 @@
       "id": "china_culture",
       "exampleId": "china_beijing",
       "category": "culture",
-      "titleKo": "시장에 모인 여러 맛",
+      "titleKo": "시장 한곳에 모인 여러 지역의 맛",
       "imageAssetId": "asia.china.2",
-      "summaryKo": "시장에 여러 재료와 조리법이 함께 보여.",
-      "detailKo": "한 나라 안에서도 지역과 가족에 따라 먹는 재료와 조리법이 다양해.",
-      "discoveryKo": "한 시장 안에서도 서로 다른 생활문화가 만날 수 있어.",
+      "summaryKo": "여러 지역에서 온 채소, 향신료, 면과 만두가 한 시장에 모여 있어.",
+      "detailKo": "중국은 지역마다 날씨와 재료가 달라 음식 맛과 만드는 방법도 다양해.",
+      "discoveryKo": "음식에는 그 지역의 자연환경과 가족의 생활이 담겨 있어.",
       "hotspots": [
         {
           "id": "ingredients",
           "x": 0.46,
           "y": 0.5,
-          "labelKo": "여러 재료"
+          "labelKo": "여러 지역에서 온 재료"
         },
         {
           "id": "steam",
           "x": 0.72,
           "y": 0.34,
-          "labelKo": "따뜻하게 조리한 음식"
+          "labelKo": "가족과 지역마다 다른 요리법"
         }
       ]
     },
@@ -505,23 +505,23 @@
       "id": "japan_culture",
       "exampleId": "japan_tokyo",
       "category": "culture",
-      "titleKo": "등을 함께 만드는 시간",
+      "titleKo": "동네 사람들이 함께 만드는 종이등",
       "imageAssetId": "asia.japan.1",
-      "summaryKo": "동네 사람들이 종이등을 만들고 손질하고 있어.",
-      "detailKo": "축제에 쓰는 물건은 완성품뿐 아니라 함께 만들고 배우는 과정도 문화가 돼.",
-      "discoveryKo": "문화는 사람들이 함께 만들고 전하는 과정이야.",
+      "summaryKo": "어른과 아이들이 축제에 쓸 종이등을 만들고 서로 방법을 알려 주고 있어.",
+      "detailKo": "축제를 준비하고 물건을 고쳐 쓰는 과정에도 동네 사람들의 기억과 협력이 담겨 있어.",
+      "discoveryKo": "문화는 함께 만들고 배우며 다음 사람에게 전하는 과정이야.",
       "hotspots": [
         {
           "id": "hands",
           "x": 0.53,
           "y": 0.62,
-          "labelKo": "함께 만드는 손"
+          "labelKo": "만드는 방법을 알려 주는 손"
         },
         {
           "id": "lantern",
           "x": 0.28,
           "y": 0.35,
-          "labelKo": "종이등"
+          "labelKo": "함께 완성한 축제 종이등"
         }
       ]
     },
@@ -577,23 +577,23 @@
       "id": "mongolia_culture",
       "exampleId": "mongolia_ulaanbaatar",
       "category": "culture",
-      "titleKo": "물과 초원을 함께 살피기",
+      "titleKo": "우물과 초원을 함께 살피는 사람들",
       "imageAssetId": "asia.mongolia.3",
-      "summaryKo": "사람들이 우물의 물과 주변 땅을 함께 확인하고 있어.",
-      "detailKo": "지역 지식은 자연을 관찰하고 다음 생활 방법을 정하는 데에도 이어져.",
-      "discoveryKo": "자연을 살피는 지식도 세대와 이웃 사이에 전해져.",
+      "summaryKo": "사람들이 우물의 물과 주변 풀이 잘 자라는지 함께 확인하고 있어.",
+      "detailKo": "초원에서는 물과 풀의 변화를 보고 가축을 어디로 옮길지 정해.",
+      "discoveryKo": "자연을 살피는 생활의 지혜도 어른에게서 아이와 이웃으로 이어져.",
       "hotspots": [
         {
           "id": "well",
           "x": 0.53,
           "y": 0.62,
-          "labelKo": "함께 확인하는 우물"
+          "labelKo": "물의 양을 함께 확인하는 우물"
         },
         {
           "id": "ground",
           "x": 0.76,
           "y": 0.55,
-          "labelKo": "마른 땅"
+          "labelKo": "풀과 흙의 상태를 살피는 땅"
         }
       ]
     },
@@ -649,23 +649,23 @@
       "id": "vietnam_culture",
       "exampleId": "vietnam_mekong",
       "category": "culture",
-      "titleKo": "강가 가족의 함께 차리는 식사",
+      "titleKo": "강과 시장에서 온 재료로 함께 차리는 밥상",
       "imageAssetId": "asia.vietnam.3",
-      "summaryKo": "여러 세대가 허브와 국수, 생선과 과일을 함께 준비해.",
-      "detailKo": "메콩강 삼각주의 먹거리는 강과 과수원, 시장에서 얻은 재료와 이어져 있어. 모든 가족의 식탁이 같지는 않지만, 함께 준비하고 나누는 과정도 생활 문화를 보여 줘.",
-      "discoveryKo": "먹거리를 살펴보면 자연환경과 시장, 가족의 생활이 어떻게 이어지는지 알 수 있어.",
+      "summaryKo": "아이와 어른이 생선, 허브, 국수와 과일로 한 끼를 함께 준비하고 있어.",
+      "detailKo": "강·밭·과수원의 먹거리가 시장을 거쳐 가족의 식탁으로 와.",
+      "discoveryKo": "음식에는 자연환경과 가족이 함께 살아가는 모습이 담겨 있어.",
       "hotspots": [
         {
           "id": "ingredients",
           "x": 0.58,
           "y": 0.72,
-          "labelKo": "강과 밭에서 온 재료"
+          "labelKo": "강·밭·과수원에서 온 재료"
         },
         {
           "id": "family",
           "x": 0.5,
           "y": 0.48,
-          "labelKo": "함께 준비하는 가족"
+          "labelKo": "한 끼를 함께 준비하는 아이와 어른"
         }
       ]
     },
@@ -721,23 +721,23 @@
       "id": "nepal_culture",
       "exampleId": "nepal_kathmandu",
       "category": "culture",
-      "titleKo": "학교와 마을이 함께 지키는 유산",
+      "titleKo": "마을 어른과 학생이 함께 배우는 수업",
       "imageAssetId": "asia.nepal.1",
-      "summaryKo": "지역의 이야기와 기술을 학교 수업과 연결하는 사례가 있어.",
-      "detailKo": "UNESCO 네팔 학교 사례처럼 지역 구성원이 수업에 참여해 살아 있는 유산을 함께 배울 수 있어.",
-      "discoveryKo": "문화는 학교와 마을이 함께 배우며 이어 갈 수 있어.",
+      "summaryKo": "마을 어른이 오래된 건물과 생활 기술의 이야기를 학생에게 알려 주고 있어.",
+      "detailKo": "지금도 사용하는 말·노래·기술·축제도 ‘살아 있는 문화유산’이야.",
+      "discoveryKo": "어른은 경험을 나누고 학생은 질문하고 기록하며 문화를 이어 가.",
       "hotspots": [
         {
           "id": "people",
           "x": 0.44,
           "y": 0.52,
-          "labelKo": "여러 세대의 만남"
+          "labelKo": "마을 어른에게 직접 배우는 학생"
         },
         {
           "id": "place",
           "x": 0.72,
           "y": 0.3,
-          "labelKo": "지역의 오래된 공간"
+          "labelKo": "이야기와 기술이 담긴 오래된 공간"
         }
       ]
     },
@@ -793,23 +793,23 @@
       "id": "kazakhstan_culture",
       "exampleId": "kazakhstan_almaty",
       "category": "culture",
-      "titleKo": "돔브라 쿠이를 배우는 시간",
+      "titleKo": "두 줄 악기 돔브라로 이야기를 연주해요",
       "imageAssetId": "asia.kazakhstan.3",
-      "summaryKo": "어린 연주자와 선생님이 두 줄 악기의 곡을 함께 익혀.",
-      "detailKo": "돔브라 쿠이는 이야기와 연주를 통해 지식과 감정을 세대 사이에 전하는 문화야.",
-      "discoveryKo": "음악은 이야기와 기술을 다음 세대로 이어 줘.",
+      "summaryKo": "어린 연주자가 선생님에게 두 줄 악기 돔브라의 연주법을 배우고 있어.",
+      "detailKo": "‘쿠이’는 돔브라로 연주하는 곡으로, 자연과 사람들의 감정·이야기를 담기도 해.",
+      "discoveryKo": "음악을 듣고 따라 연주하며 공동체의 기억과 기술을 이어 가.",
       "hotspots": [
         {
           "id": "dombra",
           "x": 0.46,
           "y": 0.55,
-          "labelKo": "두 줄 돔브라"
+          "labelKo": "두 줄로 여러 소리를 내는 돔브라"
         },
         {
           "id": "teacher",
           "x": 0.7,
           "y": 0.44,
-          "labelKo": "배우고 가르치는 모습"
+          "labelKo": "연주와 곡의 뜻을 함께 배우는 모습"
         }
       ]
     },
@@ -865,23 +865,23 @@
       "id": "jordan_culture",
       "exampleId": "jordan_amman",
       "category": "culture",
-      "titleKo": "페트라에서 배우는 나바테아의 물 관리",
+      "titleKo": "사막 도시 페트라의 똑똑한 물길",
       "imageAssetId": "asia.jordan.3",
-      "summaryKo": "학생들이 바위를 깎아 만든 건축과 물길을 함께 관찰해.",
-      "detailKo": "페트라는 나바테아인이 바위를 깎아 건물과 무덤을 만들고, 수로와 저수 시설로 물을 관리한 유적 도시야. 오늘날에는 보존과 학습이 함께 이루어져.",
-      "discoveryKo": "오래된 유산은 건축 모양뿐 아니라 환경에 적응한 지식도 보여 줘.",
+      "summaryKo": "학생들이 바위를 깎아 만든 건물과 빗물을 옮기던 물길을 살펴보고 있어.",
+      "detailKo": "옛 나바테아 사람들은 비가 적은 곳에서 물을 모으고 아껴 쓰는 시설을 만들었어.",
+      "discoveryKo": "페트라는 멋진 건물뿐 아니라 사막에서 살아간 사람들의 지혜도 보여 줘.",
       "hotspots": [
         {
           "id": "facade",
           "x": 0.68,
           "y": 0.32,
-          "labelKo": "바위를 깎아 만든 건축"
+          "labelKo": "바위를 깎아 만든 건물"
         },
         {
           "id": "waterway",
           "x": 0.62,
           "y": 0.72,
-          "labelKo": "물을 옮기던 수로"
+          "labelKo": "빗물을 모아 옮기던 수로"
         }
       ]
     },
@@ -1113,7 +1113,7 @@
     },
     {
       "id": "expression",
-      "labelKo": "문화와 표현"
+      "labelKo": "이어 온 생활과 지혜"
     },
     {
       "id": "concern",

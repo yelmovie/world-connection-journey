@@ -21,18 +21,18 @@ const routes: Record<string, PageLoader> = {
   '#/mission/africa': () => import('./pages/missionAfrica'),
   '#/mission/americas': () => import('./pages/missionAmericas'),
   '#/mission/oceania': () => import('./pages/missionOceania'),
-  '#/mission/respect-dialogue': () => import('./pages/missionDialogue'),
-  '#/completion': () => import('./pages/completion')
+  '#/mission/respect-dialogue': () => import('./pages/missionDialogue')
 };
 
-/** 접근 가드 — 저장값을 믿지 않고 매번 재계산한다. */
-function guard(route: string): string {
+/** 접근 가드 — 저장값을 믿지 않고 매번 재계산한다. 모르는 해시는 타이틀로 보낸다. */
+function guard(requested: string): string {
+  // 옛 완주 화면은 엔딩 영상으로 대체됐다 — 저장된 lastRoute·북마크는 지도로 보낸다.
+  const route = requested === '#/completion' ? '#/map' : routes[requested] ? requested : '#/';
   const save = saveRepo.get();
   recomputeUnlocks(save);
-  const needsProfile = route.startsWith('#/mission/') || route === '#/map' || route === '#/completion';
+  const needsProfile = route.startsWith('#/mission/') || route === '#/map';
   if (needsProfile && !save.profile) return '#/passport';
   if (route === '#/mission/respect-dialogue' && save.missions.dialogue.status === 'locked') return '#/map';
-  if (route === '#/completion' && !save.completion.unlocked) return '#/map';
   return route;
 }
 
@@ -55,7 +55,7 @@ class Router {
     const now = performance.now();
     if (this.isTransitioning || now - this.lastNavAt < 300) return; // 전환 가드 + 중복 클릭 방지
     this.lastNavAt = now;
-    const target = guard(routes[route] ? route : '#/');
+    const target = guard(route);
     if (location.hash === target) {
       void this.sync();
     } else {
@@ -67,7 +67,7 @@ class Router {
     if (this.isTransitioning) return;
     this.isTransitioning = true;
     const requested = location.hash || '#/';
-    const route = guard(routes[requested] ? requested : '#/');
+    const route = guard(requested);
     if (route !== requested) {
       this.isTransitioning = false;
       location.hash = route;

@@ -35,7 +35,13 @@ function collectSources(node: unknown, out: Map<string, string>): void {
 async function fillSourceList(host: HTMLElement | null): Promise<void> {
   if (!host) return;
   const { loadContent } = await import('../core/ContentRepository');
+  const { AFRICA_INSTRUMENTS } = await import('../content/africaInstruments');
   const blocks: string[] = [];
+  // 악기 화면에는 출처를 띄우지 않으므로 사진·음원 제공처를 여기서 밝힌다.
+  blocks.push(`<p class="settings-copy"><strong>아프리카 악기 사진·음원</strong></p><ul class="settings-list">${
+    AFRICA_INSTRUMENTS.map((item) =>
+      `<li>${escapeText(item.name)} · ${escapeText(item.source)}</li>`).join('')
+  }</ul>`);
   for (const [name, label] of SOURCE_DOCS) {
     try {
       const found = new Map<string, string>();
@@ -58,7 +64,7 @@ const escapeAttr = escapeText;
 /** 설정 모달 — 모든 페이지 공용 */
 export function openSettings(): void {
   const s = saveRepo.get().settings;
-  const certificateIssued = saveRepo.get().completion.certificateIssued;
+  const completionUnlocked = saveRepo.get().completion.unlocked;
   const body = document.createElement('div');
   body.innerHTML = `
     <div class="settings-stack">
@@ -69,9 +75,9 @@ export function openSettings(): void {
         <input type="range" id="set-volume" min="0" max="100" step="1" value="${Math.round((s.volume ?? 0.8) * 100)}"
           aria-label="전체 소리 크기" class="settings-range">
       </label>
-      ${certificateIssued ? `
-      <button type="button" id="set-certificate" class="btn btn-ghost settings-full">
-        수료증 다시 보기
+      ${completionUnlocked ? `
+      <button type="button" id="set-ending" class="btn btn-ghost settings-full">
+        엔딩 영상 다시 보기
       </button>` : ''}
       <button type="button" id="set-prologue" class="btn btn-ghost settings-full">
         이 여행을 하는 이유 다시 보기
@@ -80,7 +86,7 @@ export function openSettings(): void {
         <summary>앱 정보 · 배움과 보상</summary>
         <ul class="settings-list">
           <li><strong>여행 목적</strong> 서로 다른 문화의 목소리와 자료를 확인하고, 함께 지킬 약속을 근거로 결정하는 연습을 해요.</li>
-          <li><strong>미션 보상</strong> 지역 도장, 배움 카드, 지구본 조각을 모아 마지막 세계 연결 회의와 수료증을 열어요.</li>
+          <li><strong>미션 보상</strong> 지역 도장과 배움 카드를 모아 마지막 세계 친구 지구회의와 엔딩 영상을 열어요.</li>
           <li><strong>남는 배움</strong> 처음 생각·확인한 근거·수정한 판단·새 상황에서 할 행동이 여행 기록으로 남아요.</li>
         </ul>
         <p class="settings-copy"><strong>세계를 잇는 여행</strong> v0.1.4 · 기획·제작: 옐샘 &amp; 아이스크림미디어</p>
@@ -261,9 +267,9 @@ export function openSettings(): void {
   body.querySelector('#set-volume')?.addEventListener('input', (e) => {
     audio.setVolume(Number((e.target as HTMLInputElement).value) / 100);
   });
-  body.querySelector('#set-certificate')?.addEventListener('click', () => {
+  body.querySelector('#set-ending')?.addEventListener('click', () => {
     closeSettings();
-    navigate('#/completion');
+    void import('./endingVideo').then(({ playEndingVideo }) => playEndingVideo(() => undefined));
   });
   body.querySelector('#set-prologue')?.addEventListener('click', () => {
     closeSettings();
@@ -379,8 +385,7 @@ export function describeSavedRoute(route: string): string {
     '#/mission/africa': '아프리카 여행부터 이어하기',
     '#/mission/americas': '아메리카 여행부터 이어하기',
     '#/mission/oceania': '오세아니아 여행부터 이어하기',
-    '#/mission/respect-dialogue': '하나의 지구, 여섯 개의 신호부터 이어하기',
-    '#/completion': '완주 기록부터 이어하기'
+    '#/mission/respect-dialogue': '하나의 지구, 여섯 개의 신호부터 이어하기'
   };
   return routeLabels[route] ?? '세계 지도부터 이어하기';
 }

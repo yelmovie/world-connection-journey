@@ -19,3 +19,5 @@ _unused/
 # 로컬 잡동사니
 .DS_Store
 Thumbs.db
+.qa-chrome-*/
+qa-*.png

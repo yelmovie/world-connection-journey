@@ -11,11 +11,11 @@
     "mediaNote": "환경 신호 이미지는 실제 보도 사진이나 시계열 관측 사진이 아닌 학습용 재현 이미지다.",
     "sources": [
       {
-        "title": "IPCC AR6",
+        "title": "기후 변화에 관한 국제 연구 보고서",
         "url": "https://www.ipcc.ch/report/ar6/"
       },
       {
-        "title": "세계기상기구 WMO",
+        "title": "세계기상기구 기후 자료",
         "url": "https://wmo.int/"
       },
       {
@@ -23,7 +23,7 @@
         "url": "https://www.unep.org/plastic-pollution"
       },
       {
-        "title": "NOAA Coral Reef Watch",
+        "title": "미국 해양대기청 산호초 관찰 자료",
         "url": "https://coralreefwatch.noaa.gov/"
       }
     ]
@@ -188,7 +188,7 @@
         "resource"
       ],
       "scopeNoteKo": "히말라야 산촌 한 곳에서 관찰한 모습이에요. 네팔의 다른 지역은 다른 모습일 수 있어요.",
-      "sourceTitle": "IPCC 제6차 평가보고서 — 산악 빙하의 축소 경향(일반 서술)",
+      "sourceTitle": "기후 변화에 관한 국제 연구 보고서 — 산악 빙하의 축소 경향",
       "sourceUrl": "https://www.ipcc.ch/report/ar6/wg1/",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -222,7 +222,7 @@
         "ocean"
       ],
       "scopeNoteKo": "일본 해안 마을 한 곳의 여름 모습이에요. 지역과 해마다 다를 수 있어요.",
-      "sourceTitle": "세계기상기구(WMO) — 해수 온도와 폭염 경향(일반 서술) (기관 홈 — 세부 보고서 링크는 교사 검토 필요)",
+      "sourceTitle": "세계기상기구 — 바닷물 온도와 폭염의 변화",
       "sourceUrl": "https://wmo.int/",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -231,7 +231,7 @@
       "id": "sig_morocco_water",
       "friendId": "greet_morocco",
       "countryId": "morocco",
-      "issueId": "climate",
+      "issueId": "resource",
       "titleKo": "비를 기다리는 밭",
       "observationPromptKo": "마른 땅과 물을 모아 두는 곳을 눌러 봐요.",
       "narrationKo": "건조 지역에서는 비가 적고 가뭄이 이어질 때 농업과 생활에 쓸 물이 부족해질 수 있어.",
@@ -256,7 +256,7 @@
         "resource"
       ],
       "scopeNoteKo": "모로코 남부 농촌 한 곳의 모습이에요. 바닷가 도시나 산악 지역은 다른 모습일 수 있어요.",
-      "sourceTitle": "유엔환경계획(UNEP) — 건조 지역의 물 부족 경향(일반 서술) (기관 홈 — 세부 보고서 링크는 교사 검토 필요)",
+      "sourceTitle": "유엔환경계획 — 건조 지역의 물 부족 변화",
       "sourceUrl": "https://www.unep.org/",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -290,7 +290,7 @@
         "resource"
       ],
       "scopeNoteKo": "콜롬비아 카리브해 해변 한 곳의 모습이에요. 태평양 쪽 해안이나 내륙 도시는 다른 모습일 수 있어요.",
-      "sourceTitle": "유엔환경계획(UNEP) — 해양 플라스틱의 국경 이동(일반 서술)",
+      "sourceTitle": "유엔환경계획 — 바다 쓰레기의 먼 거리 이동",
       "sourceUrl": "https://www.unep.org/plastic-pollution",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -325,7 +325,7 @@
         "ecosystem"
       ],
       "scopeNoteKo": "호주 북동쪽 산호 해안 한 곳의 모습이에요. 호주의 사막·도시·남쪽 바다는 다른 모습일 수 있어요.",
-      "sourceTitle": "미국 해양대기청(NOAA) Coral Reef Watch — 산호 백화의 원리(일반 서술)",
+      "sourceTitle": "미국 해양대기청 산호초 관찰 자료 — 산호가 하얗게 변하는 까닭",
       "sourceUrl": "https://coralreefwatch.noaa.gov/",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -359,7 +359,7 @@
         "climate"
       ],
       "scopeNoteKo": "탄자니아 북부 초원 한 곳의 모습이에요. 해안 도시와 산악 지역은 다른 모습일 수 있어요.",
-      "sourceTitle": "세계자연기금(WWF) — 건기 장기화와 야생동물 이동(일반 서술) (기관 홈 — 세부 보고서 링크는 교사 검토 필요)",
+      "sourceTitle": "세계자연기금 — 길어진 건기와 야생동물의 이동",
       "sourceUrl": "https://www.worldwildlife.org/",
       "lastVerifiedAt": "2026-08-30",
       "needsReview": true
@@ -378,6 +378,7 @@
       "title": "달라지는 기후와 사람들의 생활",
       "question": "달라진 기후는 지역마다 생활에 어떤 영향을 줄까?",
       "heroSignalId": "sig_nepal_glacier",
+      "imageAssetId": "earth.issue.climate_glacier",
       "connectionLine": "지구 전체의 기온 변화"
     },
     {
@@ -386,6 +387,52 @@
       "question": "서식지가 줄어들면 사람과 생물에게 어떤 변화가 생길까?",
       "heroSignalId": "sig_tanzania_habitat",
       "connectionLine": "동물과 물이 오가는 길"
+    },
+    {
+      "id": "resource",
+      "title": "물 부족과 공평한 사용",
+      "question": "물이 부족할 때 마을과 농장은 물을 어떻게 나누면 좋을까?",
+      "heroSignalId": "sig_morocco_water",
+      "imageAssetId": "earth.issue.water_sharing",
+      "connectionLine": "강과 지하수"
+    }
+  ],
+  "councilTurns": [
+    {
+      "id": "turn_nepal_problem",
+      "friendId": "greet_nepal",
+      "phase": "문제",
+      "line": "빙하가 줄면 계곡물의 양과 흐르는 때가 달라져 마을과 농장이 어려워질 수 있어."
+    },
+    {
+      "id": "turn_tanzania_problem",
+      "friendId": "greet_tanzania",
+      "phase": "문제",
+      "line": "물과 초원이 줄면 동물과 사람은 물과 먹을 곳을 찾아 더 멀리 움직여야 해."
+    },
+    {
+      "id": "turn_colombia_solution",
+      "friendId": "greet_colombia",
+      "phase": "해결책",
+      "line": "바다로 가는 쓰레기를 줄이려면 덜 쓰는 습관과 마을이 함께 모아 처리하는 방법이 모두 필요해."
+    },
+    {
+      "id": "turn_morocco_solution",
+      "friendId": "greet_morocco",
+      "phase": "해결책",
+      "line": "물이 부족할 때는 가정과 농장이 필요한 양을 정하고 모두가 쓸 수 있게 공평하게 나누자."
+    },
+    {
+      "id": "turn_japan_pledge",
+      "friendId": "greet_japan",
+      "phase": "약속",
+      "line": "도시의 더위와 바다 변화를 꾸준히 기록하고 학교와 마을이 함께 안전한 그늘을 늘리자."
+    },
+    {
+      "id": "turn_australia_pledge",
+      "friendId": "greet_australia",
+      "phase": "약속",
+      "line": "나라마다 방법은 달라도 정보를 나누고 바다와 숲과 생물을 함께 지키기로 약속하자."
     }
   ],
   "connectionReasons": {
@@ -573,6 +620,24 @@
         "friendId": "greet_nepal",
         "perspectiveId": "p_access"
       }
+    ],
+    "resource": [
+      {
+        "friendId": "greet_morocco",
+        "perspectiveId": "p_access"
+      },
+      {
+        "friendId": "greet_nepal",
+        "perspectiveId": "p_local"
+      },
+      {
+        "friendId": "greet_colombia",
+        "perspectiveId": "p_institution"
+      },
+      {
+        "friendId": "greet_japan",
+        "perspectiveId": "p_cost"
+      }
     ]
   },
   "actionTiers": [
@@ -635,6 +700,21 @@
       ]
     },
     {
+      "id": "a_save_water",
+      "tier": "self",
+      "icon": "bottle",
+      "name": "필요한 만큼 물 쓰기",
+      "detail": "양치하거나 씻을 때 물을 잠그고, 쓸 만큼만 받아요.",
+      "effect": 1,
+      "feasibility": 3,
+      "participation": 3,
+      "cooperation": 0,
+      "issues": [
+        "resource",
+        "climate"
+      ]
+    },
+    {
       "id": "a_cleanup",
       "tier": "community",
       "icon": "hands",
@@ -675,6 +755,20 @@
       "cooperation": 1,
       "issues": [
         "ecosystem"
+      ]
+    },
+    {
+      "id": "a_share_water",
+      "tier": "community",
+      "icon": "hands",
+      "name": "마을 물 사용 약속 만들기",
+      "detail": "가정·학교·농장이 필요한 물의 양과 순서를 함께 정해요.",
+      "effect": 2,
+      "feasibility": 2,
+      "participation": 3,
+      "cooperation": 2,
+      "issues": [
+        "resource"
       ]
     },
     {
@@ -721,6 +815,21 @@
       "issues": [
         "ecosystem",
         "ocean"
+      ]
+    },
+    {
+      "id": "a_water_support",
+      "tier": "institution",
+      "icon": "scroll",
+      "name": "물 부족 때 지원 순서 정하기",
+      "detail": "정부가 마실 물을 먼저 지키고, 농장과 마을의 절수 시설을 도와요.",
+      "effect": 3,
+      "feasibility": 2,
+      "participation": 2,
+      "cooperation": 3,
+      "issues": [
+        "resource",
+        "climate"
       ]
     }
   ],

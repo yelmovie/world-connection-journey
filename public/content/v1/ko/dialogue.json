@@ -10,10 +10,10 @@
     "peopleNote": "여섯 친구는 학습용 가상 인물이다. 인사 방식은 국가 규칙이 아니라 각 가상 친구가 편하게 여기는 한 사례로 말한다.",
     "mediaNote": "캐릭터 이미지는 실제 학생 사진이 아닌 학습용 재현 이미지다.",
     "sources": [
-      { "title": "UN Statistics M49 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
+      { "title": "유엔 통계 국가·지역 분류", "url": "https://unstats.un.org/unsd/methodology/m49/" },
       { "title": "모로코 정부의 아랍어·아마지그어 안내", "url": "https://www.maroc.ma/en/royal-speeches-and-messages/royal-messages/hm-king-sends-message-participants-international-conference-promotion-dialogue-among-cultures-and" },
-      { "title": "일본 통계국 Statistical Handbook of Japan", "url": "https://www.stat.go.jp/english/data/handbook/pdf/2024all.pdf" },
-      { "title": "호주 통계청 Aboriginal and Torres Strait Islander peoples 통계", "url": "https://www.abs.gov.au/statistics/people/aboriginal-and-torres-strait-islander-peoples/aboriginal-and-torres-strait-islander-people-census/2021" }
+      { "title": "일본 통계국 일본 통계 안내서", "url": "https://www.stat.go.jp/english/data/handbook/pdf/2024all.pdf" },
+      { "title": "호주 통계청 호주 원주민 공동체 통계", "url": "https://www.abs.gov.au/statistics/people/aboriginal-and-torres-strait-islander-peoples/aboriginal-and-torres-strait-islander-people-census/2021" }
     ]
   },
   "standards": [
@@ -92,7 +92,7 @@
       "country": "호주",
       "continent": "오세아니아",
       "location": "남반구의 오세아니아에 있고 인도양과 태평양 사이에 있는 나라야.",
-      "introduction": "넓은 사막과 열대 숲, 큰 산호초와 도시가 함께 있어. Aboriginal peoples와 Torres Strait Islander peoples의 서로 다른 문화, 그리고 여러 지역에서 온 사람들의 문화가 함께 이어져 있어.",
+      "introduction": "넓은 사막과 열대 숲, 큰 산호초와 도시가 함께 있어. 오랫동안 이 땅과 바다를 지켜 온 여러 원주민 공동체와 세계 여러 곳에서 온 사람들이 함께 살아.",
       "example": "나는 짧게 안부를 건네고, 악수나 다른 신체 접촉은 상대가 편한지 먼저 살펴. 우리 집과 다른 가정의 인사도 서로 다를 수 있어.",
       "context": "호주는 다양한 배경의 사람들이 함께 사는 나라라서, 각자 가정의 방식대로 인사하는 경우도 많아요.",
       "caution": "호주 사람이라고 모두 같은 방식으로 인사하는 건 아니야. 특히 여러 문화가 함께 사는 곳일수록 개인과 가정에 따라 달라.",
@@ -342,7 +342,7 @@
         "id": "npc_amara",
         "name": "아마라",
         "from": "탄자니아",
-        "situation": "아마라가 발표 시간에 한국어와 영어를 섞어 가며 천천히 말했어요. 몇몇 친구가 킥킥 웃자 아마라가 발표를 멈췄어요.",
+        "situation": "아마라가 발표 시간에 한국어와 자기가 익숙한 말을 섞어 천천히 말했어요. 몇몇 친구가 킥킥 웃자 아마라가 발표를 멈췄어요.",
         "firstImpression": "'발표 준비를 안 해 왔나 봐'라고 생각할 수 있어요.",
         "turns": [
           {
@@ -357,7 +357,7 @@
               },
               {
                 "id": "a1_b",
-                "text": "\"한국어 아직 어렵지? 다음엔 그냥 영어로만 해.\"",
+                "text": "\"한국어가 아직 어렵지? 다음에는 네가 편한 말로만 해.\"",
                 "empathy": 1,
                 "reply": "아마라가 어깨를 으쓱해요. \"조언 고마워. 그런데 나는 한국어로도 말해 보고 싶었어.\" 도와주려는 마음은 전해졌지만, 아마라의 도전을 줄이는 방향의 조언이 되었어요.",
                 "leadsTo": 1
@@ -427,6 +427,7 @@
     "stereotypeWarning": "'그 나라 사람은 다 그래'라는 생각이 끼어들지 않았나요? 나라 정보는 힌트일 뿐, 눈앞의 사람에 대한 답은 아니에요. 그 사람에게 직접 물어보는 게 언제나 가장 정확해요."
   },
   "learn": {
+    "introMode": "question-only",
     "friend": {
       "name": "세계의 친구들",
       "imageId": "greeting.nepal",
@@ -435,11 +436,7 @@
     "goal": "다른 문화를 존중하며 듣고, 국경을 넘어 이어지는 환경문제를 세계 친구들과 함께 풀 약속을 만들어 보자.",
     "prediction": {
       "question": "서로 다른 나라 친구들이 함께 문제를 풀려면 무엇부터 해야 할까?",
-      "options": [
-        "나라마다 정해져 있어",
-        "상황과 사람에 따라 달라",
-        "잘 모르겠어"
-      ]
+      "options": []
     },
     "discoveries": [
       "나라와 문화가 달라도 바다·공기·기후·생태계는 이어져 있어서 한 지역의 변화가 다른 지역에 닿아.",
