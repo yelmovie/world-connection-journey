@@ -16,7 +16,7 @@ import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
 import { queueMissionReturn } from '../ui/journeyTransition';
 import { validateEarthProgress, type EarthContent, type GlobalEnvironmentProgress } from '../core/earthCouncil';
-import { EARTH_CSS, earthPreloadIds, renderEarthScene, stopSpeaking } from './earthCouncilScenes';
+import { EARTH_CSS, earthPreloadIds, renderEarthScene } from './earthCouncilScenes';
 import type { MissionId } from '../types';
 
 /* ===== 콘텐츠 스키마 (public/content/v1/ko/dialogue.json 기준) ===== */
@@ -146,7 +146,8 @@ const DIALOGUE_CSS = `
   padding: var(--sp-3); background: rgba(255,255,255,0.97);
   border-radius: var(--radius-m); line-height: 1.5;
 }
-.dl-stage { flex: 1; min-height: 0; width: min(1500px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-3); }
+.dialogue-scene .page-body { display:flex; flex-direction:column; } /* 자식 flex:1 이 실제로 남는 높이를 채우게 */
+.dl-stage { flex: 1; min-height: 0; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-3); }
 .dl-head { display: flex; justify-content: center; flex-shrink: 0; }
 
 /* 대화·사례 모달도 본문과 같은 글자 위계를 사용한다. */
@@ -180,11 +181,12 @@ const DIALOGUE_CSS = `
 .dl-ox .btn { flex: 1; min-height: 58px; font-size: var(--dl-copy); }
 
 /* 2단계 — 상황 + 단서 + 반응 */
-.dl-listen { flex: 0 1 auto; align-self: stretch; max-height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.dl-listen { flex: 1 1 auto; align-self: stretch; max-height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--sp-3); overflow-y: auto; }
+.dl-listen > * { flex: 0 0 auto; }
 .dl-cues { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-2); }
-.dl-opt { text-align: left; min-height: 58px; font-size: var(--dl-copy); padding: 11px 14px; }
-.dl-scenario { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: var(--sp-4); align-items: center; }
-.dl-scenario img { width: 96px; height: 96px; object-fit: contain; }
+.dl-opt { text-align: left; min-height: 72px; font-size: max(20px, var(--dl-copy)); padding: 14px 18px; }
+.dl-scenario { display: grid; grid-template-columns: clamp(96px,9vw,150px) minmax(0,1fr); gap: var(--sp-4); align-items: center; font-size: max(20px, var(--dl-copy)); }
+.dl-scenario img { width: clamp(96px,9vw,150px); height: clamp(96px,9vw,150px); object-fit: contain; }
 .dl-option-head { display: flex; align-items: center; gap: var(--sp-3); font-weight: 800; font-size: var(--dl-copy); }
 .dl-option-head img { width: 64px; height: 64px; object-fit: contain; }
 
@@ -1246,7 +1248,6 @@ export function createPage(): Page {
     },
     unmount() {
       disposed = true;
-      stopSpeaking();
       closeActiveModal?.();
       closeActiveModal = null;
       guide?.dispose();
