@@ -112,6 +112,21 @@ interface ExpState {
   keywords: string[];
 }
 
+/** 지점 카드 글이 칸(고정 4행)을 넘으면 글자 크기를 줄여 맞춘다 — 넘침 숨김으로 제목·설명이 잘리지 않게 */
+const fitStopCards = (side: HTMLElement): void => {
+  const fit = (): void => side.querySelectorAll<HTMLElement>('.stop-card').forEach((card) => {
+    const title = card.querySelector<HTMLElement>('strong');
+    card.style.fontSize = ''; if (title) title.style.fontSize = '';
+    let fs = parseFloat(getComputedStyle(card).fontSize);
+    while (card.scrollHeight > card.clientHeight + 1 && fs > 13) {
+      fs -= 1; card.style.fontSize = `${fs}px`; if (title) title.style.fontSize = `${Math.round(fs * 1.18)}px`;
+    }
+  });
+  requestAnimationFrame(fit);
+  new ResizeObserver(fit).observe(side);
+  new MutationObserver(fit).observe(side, { attributes: true, attributeFilter: ['hidden', 'class'], subtree: true }); // 설명이 펼쳐질 때
+};
+
 const emptyCountry = (): CountryProgress => ({ stopsSeen: [], met: false, bagSeen: [], keep: null, done: false });
 
 export function isCountryJourneyComplete(
@@ -309,9 +324,9 @@ const PAGE_CSS = `
 .country-side { min-height:0; overflow:hidden; display:grid; grid-template-rows:auto repeat(4,minmax(0,1fr)); gap:clamp(8px,1vh,12px); }
 .country-head { padding:clamp(12px,1.2vw,18px) clamp(16px,1.4vw,22px); background:rgba(255,253,247,.7) !important; backdrop-filter:blur(5px) !important; }
 .country-head h2 { margin:0; color:var(--c-navy); font:900 clamp(32px,2.15vw,42px)/1.1 var(--font-head); word-break:keep-all; }
-.stop-card { min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; width:100%; padding:clamp(12px,1.15vw,20px); border:2px solid rgba(255,255,255,.58); border-left:7px solid rgba(205,216,222,.9); border-radius:18px; background:rgba(255,255,255,.55); backdrop-filter:blur(5px) saturate(1.04); box-shadow:0 8px 22px rgba(3,29,52,.12); color:#18384e; font:720 clamp(20px,1.18vw,25px)/1.42 var(--font-body); text-align:left; word-break:keep-all; }
+.stop-card { min-height:0; overflow:hidden; display:flex; flex-direction:column; justify-content:center; width:100%; padding:clamp(8px,1vh,14px) clamp(12px,1.1vw,18px); border:2px solid rgba(255,255,255,.58); border-left:7px solid rgba(205,216,222,.9); border-radius:18px; background:rgba(255,255,255,.55); backdrop-filter:blur(5px) saturate(1.04); box-shadow:0 8px 22px rgba(3,29,52,.12); color:#18384e; font:720 clamp(17px,1.02vw,22px)/1.32 var(--font-body); text-align:left; word-break:keep-all; }
 .stop-card.is-seen { border-left-color:var(--c-success); background:rgba(239,251,247,.62); }
-.stop-card strong { display:block; margin-bottom:4px; color:#155b4c; font:900 clamp(23px,1.38vw,29px)/1.16 var(--font-head); }
+.stop-card strong { display:block; margin-bottom:3px; color:#155b4c; font:900 clamp(20px,1.22vw,26px)/1.12 var(--font-head); }
 .stop-card.route-card { position:relative; cursor:pointer; touch-action:manipulation; transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease; }
 .stop-card.route-card strong { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
 .stop-card.route-card > * { pointer-events:none; }
@@ -357,7 +372,7 @@ const PAGE_CSS = `
 @keyframes routeNext { 50%{ box-shadow:0 0 0 10px rgba(255,220,94,.28),0 13px 28px rgba(3,29,52,.34); } }
 .voyage-rail { position:absolute; left:10%; right:10%; bottom:14px; z-index:5; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; background:#fffdf2ee; box-shadow:var(--shadow-card); }
 .voyage-rail span { font:900 clamp(18px,1vw,21px) var(--font-head); color:#17506e; white-space:nowrap; }
-.voyage-rail input { flex:1; min-width:0; height:34px; accent-color:#e2842d; }
+.voyage-rail input { flex:1; min-width:0; height:44px; accent-color:#e2842d; }
 .voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-34px; transform:translateX(-50%); padding:4px 13px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 clamp(17px,.95vw,20px) var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
 .voyage-rail.is-used::after { display:none; }
 /* 친구가 나타나면 항해는 끝났다 — 만나기 버튼과 겹치지 않게 레일을 걷는다 */
@@ -1076,6 +1091,7 @@ export function createPage(): Page {
         if (P.met && !P.done) later(() => renderBag(c), 100);
 
         layout.append(scene, side);
+        fitStopCards(side);
         stage.replaceChildren(layout);
         const nextStopIndex = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
         announceGuide(isOrderedRoute && nextStopIndex >= 0
@@ -1294,7 +1310,7 @@ export function createPage(): Page {
           });
           // 지구회의로 가져갈 신호 — 지도 화면과 마지막 회의가 이걸 읽는다
           recordEarthSignals('americas', E.signals.map((s) => s.label));
-          completeMissionFlow('americas', '아메리카', { directToStamp: true });
+          completeMissionFlow('americas', '아메리카');
         };
         const learn = getLearn(content);
         if (learn) showLearningWrap('americas', learn, doComplete);

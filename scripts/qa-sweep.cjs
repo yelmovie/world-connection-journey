@@ -58,7 +58,7 @@ function baseSave() {
 
 /** 점검 화면 목록 — 겉 화면 + 저장 상태를 바꿔 들어가는 미션 내부 화면 */
 function buildScenes() {
-  const af = content('africa'), asia = content('asia'), oc = content('oceania'), eu = content('europe');
+  const af = content('africa'), asia = content('asia'), oc = content('oceania');
   const scenes = [];
   const add = (name, route, patch) => { if (hasRoute(route)) scenes.push({ name, route, patch }); };
 
@@ -73,17 +73,21 @@ function buildScenes() {
   for (const screen of amScreens) {
     add(`아메리카·${screen}`, '#/mission/americas', (s) => { s.missions.americas = mission('in_progress', { exploreProgress: { screen } }, screen); });
   }
+  // 나라 상세(지점 카드 패널) — 핀을 눌러 들어간다, 나라마다 글 길이가 달라 전부 본다
+  content('americas').explore.countries.forEach((c, i) => {
+    scenes.push({ name: `아메리카·나라·${c.name}`, route: '#/mission/americas',
+      patch: (s) => { s.missions.americas = mission('in_progress', { exploreProgress: { screen: 'countries' } }, 'countries'); },
+      after: async (page) => { await page.locator('.hub-pin').nth(i).click({ timeout: 5000 }); await page.waitForTimeout(700); } });
+  });
   // 문화 가방 — 나라 화면에서 친구를 이미 만난 상태로 들어가 첫 나라 핀을 누르면 가방이 열린다
   const am = content('americas'); const c0 = am.explore.countries[0];
   scenes.push({ name: '아메리카·가방', route: '#/mission/americas',
     patch: (s) => { s.missions.americas = mission('in_progress', { exploreProgress: { screen: 'countries', countries: { [c0.id]: { stopsSeen: c0.stops.map((x) => x.id), met: true, bagSeen: [], keep: null, done: false } } } }, 'countries'); },
     after: async (page) => { await page.click('.hub-pin', { timeout: 5000 }); await page.waitForTimeout(700); } });
-  // 유럽 — 지도 → 문화 창 → 갤러리 → 이유 → 질문 → 엽서
-  const allVisuals = eu.countries.flatMap((c) => c.visuals.map((v) => v.id));
-  const euBase = { visitedCountryIds: eu.countries.map((c) => c.id), viewedVisualIds: allVisuals, savedVisualIds: allVisuals, selectedCountryId: 'france', selectedEvidenceId: 'france_louvre', reasonPromptId: 'scene', reasonDraft: '루브르의 옛것과 새것의 모습이 오래 눈에 남았어.', questionStarterId: 'why', questionDraft: '루브르의 옛것과 새것을 소중히 지킬까?', postcardCompleted: false, stampAwarded: false };
-  for (const screen of ['map', 'window', 'gallery', 'reason', 'question', 'postcard']) {
-    add(`유럽·${screen}`, '#/mission/europe', (s) => { s.missions.europe = mission('in_progress', { europeProgress: { ...euBase, screen, activeCountryId: 'france', activeVisualId: 'france_seine' } }, screen); });
-  }
+  const regional = (id, areaId, exampleId, screen) => (s) => { s.missions[id] = mission('in_progress', { regionalExploration: { screen, activeAreaId: areaId, activeExampleId: exampleId, visitedAreaIds: areaId ? [areaId] : [], viewedExampleIds: [], viewedSceneIds: [], discoveredSignalIds: [], listenedPerspectiveIds: [], heardPerspectiveIds: [], selectedActionIds: [] } }, screen); };
+  // 유럽 — 아시아·오세아니아와 같은 공용 권역 화면(createEuropePage)
+  add('유럽·권역전', '#/mission/europe', regional('europe', null, null, 'explore'));
+  add('유럽·연결', '#/mission/europe', regional('europe', null, null, 'connections'));
   // 아프리카 — 지도 + 다섯 지역 + 이후 화면(현재 FLOW를 읽는다)
   const afSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'pages', 'missionAfrica.ts'), 'utf8');
   const afFlow = (afSrc.match(/const FLOW[^=]*=\s*\[([^\]]+)\]/) || [, "'map','region'"])[1].match(/'(\w+)'/g).map((x) => x.replace(/'/g, ''));
@@ -97,7 +101,6 @@ function buildScenes() {
     }
   }
   // 아시아·오세아니아 — 권역 선택 전 / 권역 선택 / 환경 연결
-  const regional = (id, areaId, exampleId, screen) => (s) => { s.missions[id] = mission('in_progress', { regionalExploration: { screen, activeAreaId: areaId, activeExampleId: exampleId, visitedAreaIds: areaId ? [areaId] : [], viewedExampleIds: [], viewedSceneIds: [], discoveredSignalIds: [], listenedPerspectiveIds: [], heardPerspectiveIds: [], selectedActionIds: [] } }, screen); };
   add('아시아·권역전', '#/mission/asia', regional('asia', null, null, 'explore'));
   add('아시아·동아시아', '#/mission/asia', regional('asia', asia.regions[0].id, asia.countryExamples.find((e) => e.regionId === asia.regions[0].id)?.id ?? null, 'explore'));
   add('아시아·연결', '#/mission/asia', regional('asia', asia.regions[0].id, null, 'connections'));
@@ -128,7 +131,9 @@ function auditPage() {
 
   // 1) 글자 잘림 — 잎 텍스트 노드가 자기 박스를 넘는가
   document.querySelectorAll('p,span,strong,h1,h2,h3,h4,button,li,small,em,b,label,figcaption').forEach((el) => {
-    if (!vis(el) || el.querySelector('*')) return;
+    if (!vis(el)) return;
+    // 자식이 있어도 자기 글자 노드가 있으면(카드 제목+설명) 넘침을 본다
+    if (el.querySelector('*') && ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) return;
     const s = getComputedStyle(el);
     if (/(auto|scroll)/.test(s.overflow + s.overflowY)) return;
     if ((el.scrollHeight - el.clientHeight > 3 || el.scrollWidth - el.clientWidth > 3) && el.textContent.trim()) issues.push({ kind: '글자잘림', detail: label(el) });
@@ -145,6 +150,22 @@ function auditPage() {
         break;
       }
       p = p.parentElement;
+    }
+  });
+  // 1c) 글 상자 잘림 — 넘침 숨김 상자 안에서 글이 상자보다 길다(카드 제목+설명)
+  document.querySelectorAll('button,div,li,section,article,span').forEach((el) => {
+    if (!vis(el) || el.closest('.guide-wrap')) return;
+    const s = getComputedStyle(el);
+    if (!/(hidden|clip)/.test(s.overflow + s.overflowY)) return;
+    // 그림 크기와 무관하게, 안의 글자 상자가 실제로 밖으로 나갔는지 좌표로 잰다
+    const box = el.getBoundingClientRect();
+    for (const t of el.querySelectorAll('p,span,strong,b,small,h1,h2,h3,h4,em,label')) {
+      if (t.querySelector('*') || !t.textContent.trim() || !vis(t)) continue;
+      // 사이에 스크롤 상자가 있으면 밀어서 볼 수 있으니 잘림이 아니다
+      let sc = t.parentElement, scrollable = false; while (sc && sc !== el) { const o = getComputedStyle(sc); if (/(auto|scroll)/.test(o.overflow + o.overflowY)) { scrollable = true; break; } sc = sc.parentElement; }
+      if (scrollable) continue;
+      const r = t.getBoundingClientRect(); if (r.height < 6) continue;
+      if (r.bottom > box.bottom + 3 || r.top < box.top - 3 || r.right > box.right + 3) { issues.push({ kind: '글자잘림', detail: `${t.textContent.trim().slice(0, 24)} (${label(el).slice(0, 20)} 밖으로 ${Math.round(Math.max(r.bottom - box.bottom, box.top - r.top, r.right - box.right))}px)` }); break; }
     }
   });
   // 2) 빈 버튼

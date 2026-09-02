@@ -11,7 +11,7 @@ export function createDefaultAfricaProgress(): AfricaMissionProgress {
     visitedCountries: [],
     discoveredGeographyClues: [],
     discoveredCultureExamples: [],
-    instrumentLab: { completed: false, exploredInstrumentIds: [], createdRhythm: Array(8).fill(0) },
+    instrumentLab: { completed: false, exploredInstrumentIds: [] },
     environmentInvestigation: { selectedIssueId: null, inspectedSignalIds: [] },
     solutionLab: { completed: false, selectedActions: [], finalMetrics: null },
     jointProposal: { completed: false, selectedIdeas: [], reason: '' },
@@ -23,10 +23,6 @@ export function createDefaultAfricaProgress(): AfricaMissionProgress {
 const strings = (value: unknown): string[] => Array.isArray(value)
   ? [...new Set(value.filter((item): item is string => typeof item === 'string' && item.length > 0))]
   : [];
-const rhythm = (value: unknown): number[] => Array.from({ length: 8 }, (_, index) => {
-  const cell = Array.isArray(value) ? value[index] : 0;
-  return cell === 1 || cell === 2 ? cell : 0;
-});
 
 export function normalizeAfricaProgress(raw: unknown, legacy?: Record<string, unknown>): AfricaMissionProgress {
   const base = createDefaultAfricaProgress();
@@ -43,8 +39,7 @@ export function normalizeAfricaProgress(raw: unknown, legacy?: Record<string, un
     ? solution.finalMetrics as Record<string, unknown> : null;
   const oldState = legacy?.state && typeof legacy.state === 'object' ? legacy.state as Record<string, unknown> : {};
   const legacyInstruments = strings(oldState.viewed);
-  const legacyRhythm = rhythm(oldState.r3Draft);
-  const validScreen = new Set(['intro','map','region','instrument','rhythm','signal','environment','impact','council','solution','proposal']);
+  const validScreen = new Set(['intro','map','region','instrument','signal','environment','impact','council','solution','proposal']);
   const n = (key: string): number => Math.max(0, Math.min(100, Number(metrics?.[key] ?? 0)));
   return {
     ...base,
@@ -57,9 +52,7 @@ export function normalizeAfricaProgress(raw: unknown, legacy?: Record<string, un
     instrumentLab: {
       completed: instrument.completed === true || Number((oldState.r3 as Record<string, unknown> | undefined)?.final ?? 0) >= 1,
       exploredInstrumentIds: strings(instrument.exploredInstrumentIds).length
-        ? strings(instrument.exploredInstrumentIds) : legacyInstruments,
-      createdRhythm: rhythm(instrument.createdRhythm).some(Boolean)
-        ? rhythm(instrument.createdRhythm) : legacyRhythm
+        ? strings(instrument.exploredInstrumentIds) : legacyInstruments
     },
     environmentInvestigation: {
       selectedIssueId: typeof environment.selectedIssueId === 'string' ? environment.selectedIssueId : null,
@@ -94,7 +87,5 @@ export function calculateAfricaMetrics(actionEffects: Array<Partial<NonNullable<
 export function canCompleteAfrica(progress: AfricaMissionProgress): boolean {
   return AFRICA_REGION_IDS.every((id) => progress.visitedRegions.includes(id))
     && progress.instrumentLab.completed
-    && progress.environmentInvestigation.inspectedSignalIds.length >= 3
-    && progress.solutionLab.completed
-    && progress.jointProposal.completed;
+    && progress.environmentInvestigation.inspectedSignalIds.length >= 3; // 해결 실험·공동 제안 화면은 뺐다
 }

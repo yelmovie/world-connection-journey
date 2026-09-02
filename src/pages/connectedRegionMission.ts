@@ -204,9 +204,13 @@ const PAGE_CSS = `
 .regional-oceania .regional-signal-grid{grid-template-columns:1fr}
 .regional-oceania .regional-signal{display:flex;align-items:center;justify-content:center;text-align:center;padding:9px 12px}
 .regional-oceania .regional-signal strong{font-size:clamp(18px,1.18vw,22px);line-height:1;letter-spacing:-.025em;white-space:nowrap}
-.regional-choice{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px}
-.regional-choice img{width:50px;height:58px;object-fit:contain}
+.regional-choice{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;padding:6px 10px}
+.regional-choice img{width:44px;height:48px;object-fit:contain}
 .regional-choice span{min-width:0;font-size:clamp(15px,.95vw,17px);line-height:1.22;word-break:keep-all;overflow-wrap:break-word}
+/* 이름+역할은 두 줄이 카드 높이(1fr로 나눈 행) 안에 들어가게 작게 — 역할 줄이 잘리지 않게 */
+.regional-choice-identity{display:grid;gap:1px;min-width:0}
+.regional-choice-identity strong{font-size:clamp(16px,1.05vw,19px);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.regional-choice-identity span{font-size:clamp(13px,.85vw,15px);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .regional-choice span strong{font-size:clamp(17px,1.08vw,20px);line-height:1.15}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice{display:block;padding:0;overflow:hidden;background:transparent;perspective:1000px}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-inner{position:relative;display:block;width:100%;height:100%;min-height:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.2,.7,.2,1)}

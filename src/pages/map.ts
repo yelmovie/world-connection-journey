@@ -1,6 +1,6 @@
 import type { Page } from '../router';
 import { navigate } from '../router';
-import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
+import { collectedEarthSignals } from '../core/earthSignals';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { saveRepo, recomputeUnlocks } from '../core/SaveRepository';
@@ -13,8 +13,9 @@ import {
   consumeMissionReturn,
   playJourneyTransition
 } from '../ui/journeyTransition';
-import { cancelJourneyBridge, playDepartureBridge } from '../ui/journeyBridge';
 import { readLearnCard } from '../ui/learnFrame';
+import { playEndingVideo } from '../ui/endingVideo';
+import { closeActiveVideoOverlay } from '../ui/videoOverlay';
 import {
   missionCompanionAssetId,
   selectedAirplaneAssetId,
@@ -30,7 +31,6 @@ interface Spot {
   /** 학습 주제 2~6자 — 지도가 "무엇을 배우는 지도"로 읽히게 노드·안내판에 표시 */
   topic: string;
   objective: string;
-  steps: [string, string, string];
   minutes: number;
   x: number;
   y: number;
@@ -43,37 +43,31 @@ const SPOTS: Spot[] = [
   {
     id: 'americas', name: '아메리카', route: '#/mission/americas', topic: '대륙 탐험과 생활', minutes: 12,
     objective: '지도를 직접 움직여 네 나라를 탐험하고, 그곳에 사는 친구들을 만나 봐.',
-    steps: ['지도에서 네 나라 찾기', '나라 속 탐험과 친구의 문화 가방', '하루 비교로 닮은 점 찾기'],
     x: 0.70, y: 0.34, assetId: 'americas.student1', assetAlt: '아메리카 미션에서 만날 친구'
   },
   {
-    id: 'europe', name: '유럽', route: '#/mission/europe', topic: '여러 나라와 도시', minutes: 8,
-    objective: '유럽 여러 나라의 모습을 비교하고, 가장 궁금한 나라를 사진 근거와 질문으로 남겨.',
-    steps: ['일곱 나라 문화 장면 탐색', '사진과 여행가 이야기 듣기', '여행에서 알게 된 것 연결하기'],
+    id: 'europe', name: '유럽', route: '#/mission/europe', topic: '이어진 강과 도시', minutes: 8,
+    objective: '유럽 여러 나라의 장면을 살펴보고, 이어진 환경 변화와 함께할 일을 찾아봐.',
     x: 0.18, y: 0.32, assetId: 'europe.guide', assetAlt: '유럽 미션에서 만날 여행 가이드'
   },
   {
     id: 'africa', name: '아프리카', route: '#/mission/africa', topic: '다섯 지역과 연결', minutes: 12,
     objective: '다섯 지역의 열 나라 사례를 살피고, 소리와 환경 신호를 이어 공동 해결안을 만들어.',
-    steps: ['다섯 지역과 열 나라 탐험', '실제 악기·여덟 박 신호 체험', '환경 영향과 공동 해결안 연결'],
     x: 0.24, y: 0.58, assetId: 'africa.host', assetAlt: '아프리카 미션에서 만날 리듬 안내 친구'
   },
   {
     id: 'asia', name: '아시아', route: '#/mission/asia', topic: '여러 지역과 이어진 지구', minutes: 8,
     objective: '비행기로 아시아 여러 나라를 둘러보고 네팔 친구의 하루를 탐험해.',
-    steps: ['아시아 항로 둘러보기', '네팔에 착륙해 대화', '이야기 나누며 퀴즈 풀기'],
     x: 0.39, y: 0.46, assetId: 'asia.mina', assetAlt: '아시아 여러 지역을 함께 살펴볼 여행 친구'
   },
   {
     id: 'oceania', name: '오세아니아', route: '#/mission/oceania', topic: '섬·대륙과 하나의 바다', minutes: 11,
     objective: '다섯 탐험 구역의 자연·오늘날 생활·살아 있는 문화를 비교하고 바다로 이어진 공동 제안을 만들어.',
-    steps: ['다섯 탐험 구역 지도 비교', '지역 사례와 환경 신호 관찰', '여러 주체의 공동 제안 만들기'],
     x: 0.51, y: 0.75, assetId: 'oceania.youth', assetAlt: '오세아니아 미션에서 만날 섬 탐험 친구'
   },
   {
     id: 'dialogue', name: '하나의 지구, 여섯 개의 신호', route: '#/mission/respect-dialogue', topic: '세계 친구와 환경', minutes: 14,
     objective: '여섯 나라 친구를 만나고, 전·후 사진에서 달라진 배려와 환경 신호를 찾아 세계 친구 지구회의에서 공동약속을 만들어.',
-    steps: ['여섯 친구 만나기', '전·후 사진 변화 찾기', '환경 신호와 공동약속'],
     x: 0.69, y: 0.70, assetId: 'greeting.colombia', assetAlt: '마지막 존중 대화를 함께할 인사 친구'
   }
 ];
@@ -82,9 +76,14 @@ if (new Set(SPOTS.map((spot) => spot.route)).size !== SPOTS.length) {
   throw new Error('세계 지도 설정 오류: 서로 다른 단계가 같은 경로를 사용하고 있어요.');
 }
 
-/** 새 태평양 중심 배경에서 한국의 위치. 첫 항로와 비행기는 여기서 출발한다. */
-const KOREA_HOME = { x: 0.505, y: 0.43 } as const;
+/** 새 태평양 중심 배경에서 한반도에 맞춘 위치. 모든 항로와 비행기는 여기서 출발한다. */
+export const KOREA_HOME = { x: 0.493, y: 0.405 } as const;
 const PLANE_Y_OFFSET = 132;
+
+/** 완료한 여행과 관계없이 다음 항로는 언제나 한국에서 시작한다. */
+export function worldRouteOrigin(): typeof KOREA_HOME {
+  return KOREA_HOME;
+}
 
 function planePosition(x: number, y: number): { x: number; y: number } {
   return { x: x * GAME_W, y: Math.max(92, y * GAME_H - PLANE_Y_OFFSET) };
@@ -107,8 +106,8 @@ function hasLearnCardFor(missionId: MissionId): boolean {
 /** 2회차 상황 덱(P2-16) — 완주한 대륙을 다시 열 이유. 목표는 전부 학습 행동이다. */
 const REPLAY_DECK: Record<MissionId, string> = {
   americas: '2회차 도전 — 이번엔 네 나라의 장면에서 "물"과 관련된 모습만 찾아보며 탐험해 봐.',
-  europe: '2회차 도전 — 지난번과 다른 나라를 골라 새 회의 기록을 만들어 봐. 기록이 갱신돼!',
-  africa: '2회차 도전 — 리듬 규칙 3개를 전부 첫 시도에 통과하는 무결점 연주에 도전해 봐.',
+  europe: '2회차 탐험 — 다른 나라의 장면과 환경 변화를 다시 비교해 봐.',
+  africa: '2회차 도전 — 지난번에 못 들어 본 악기 소리까지 다섯 개를 모두 들어 봐.',
   asia: '2회차 도전 — 지난번에 못 들은 목소리를 모두 듣고 와 봐.',
   oceania: '2회차 도전 — 숨은 변화를 한 번도 빗나가지 않고 찾아봐.',
   dialogue: '2회차 도전 — 다른 환경 문제를 골라 회의를 다시 열어 봐. 이전 약속은 남아 있어.'
@@ -135,7 +134,7 @@ const STATUS_LABEL: Record<MissionStatus, string> = {
 
 const MAP_CSS = `
 .map-node-mail {
-  position:absolute;top:-4px;right:-4px;width:34px;height:34px;border-radius:50%;background:var(--c-coral);color:#fff;
+  position:absolute;bottom:-4px;left:-4px;width:34px;height:34px;border-radius:50%;background:var(--c-coral);color:#fff;
   display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:var(--shadow-card);z-index:3;
   animation:map-mail-ping 1.3s ease-out infinite;
 }
@@ -216,10 +215,9 @@ const MAP_CSS = `
 .map-hotspot[data-state="available"] .node-img { box-shadow:0 0 0 4px rgba(255,255,255,.92),0 0 0 8px rgba(242,193,78,.85),var(--shadow-card); }
 .map-hotspot[data-state="in_progress"] .node-img { box-shadow:0 0 0 4px rgba(255,255,255,.92),0 0 0 8px rgba(108,76,232,.75),var(--shadow-card); }
 /* 잠긴 단계는 자물쇠 배지로 알린다 */
-.map-node-lock { position:absolute;left:-6px;top:-2px;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#5d7793;color:#fff;border:3px solid #fff;box-shadow:var(--shadow-card);z-index:4; }
-.map-node-lock svg { width:17px;height:17px; }
-/* 완료 대륙에 모은 환경 신호 개수 뱃지 */
-.map-node-signals { position:absolute;left:50%;top:-16px;transform:translateX(-50%);padding:2px 10px;border-radius:999px;background:var(--c-turquoise);color:#063c3e;border:2px solid #fff;font:900 16px/1.3 var(--font-head);white-space:nowrap;box-shadow:var(--shadow-card);z-index:4; }
+/* 상태 아이콘 자리는 오른쪽 위 하나 — 잠금(남색 자물쇠) / 완료(초록 체크). 번호는 왼쪽 위라 겹치지 않는다 */
+.map-node-lock { position:absolute;right:-6px;top:-6px;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#2f4a66;color:#fff;border:3px solid #fff;box-shadow:var(--shadow-card);z-index:4; }
+.map-node-lock svg { width:22px;height:22px; }
 .map-hotspot[data-state="available"] .node-label { border-color:var(--c-coral); }
 .map-hotspot[data-state="in_progress"] .node-label { border-color:var(--c-violet); }
 .map-hotspot[data-state="completed"] .node-label { background:var(--c-success);color:#fff;border-color:#17633f; }
@@ -227,24 +225,16 @@ const MAP_CSS = `
    대륙 이름은 오른쪽 안내판과 aria-label에 그대로 남는다. */
 .map-hotspot .node-label { display:none; }
 .map-hotspot.is-selected .node-label { display:none; }
-.map-node-check { position:absolute;right:-4px;top:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--c-success);color:#fff;border:3px solid #fff;font-size:24px;font-weight:900;box-shadow:var(--shadow-card); }
+.map-node-check { position:absolute;right:-6px;top:-6px;display:grid;place-items:center;width:40px;height:40px;z-index:4;border-radius:50%;background:var(--c-success);color:#fff;border:3px solid #fff;font-size:24px;font-weight:900;box-shadow:var(--shadow-card); }
 /* 완료 스테이지는 멀리서도 구분되게 — 초록 링 + 완료 리본 */
 .map-hotspot[data-state="completed"] .node-img { box-shadow:0 0 0 5px rgba(46,173,120,.85),0 0 0 9px rgba(46,173,120,.28),var(--shadow-card); }
-.map-hotspot[data-state="completed"]::after { content:'완료!'; position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);padding:3px 14px;border-radius:999px;background:var(--c-success);color:#fff;font:900 16px/1.2 var(--font-head);border:2px solid #fff;box-shadow:var(--shadow-card);white-space:nowrap;z-index:4; }
 /* 노드 라벨 2행: 대륙명 + 학습 주제 — "무엇을 배우는 지도"로 읽히게 */
 .map-hotspot .node-topic { display:block;font-size:max(18px,var(--fs-small));font-weight:700;color:var(--c-ink-soft);line-height:1.25;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis; }
 .map-hotspot[data-state="completed"] .node-topic { color:#eaf7ef; }
 /* 완료 노드의 배움 카드 획득 칩 */
-.map-node-learn { position:absolute;left:-4px;top:0;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
+.map-node-learn { position:absolute;right:-4px;bottom:-2px;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
-/* 대륙에서 모은 것이 마지막 회의로 이어진다는 걸 매 화면에서 보이게 한다 */
 .map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(16px,var(--fs-small));font-weight:850;line-height:1.4; }
-.map-bag { margin-top:var(--sp-2);padding:10px 12px;border-radius:14px;background:rgba(255,253,246,.9);border:2px solid rgba(255,255,255,.8); }
-.map-bag strong { display:block;font-family:var(--font-head);font-size:max(17px,var(--fs-small));color:var(--c-navy); }
-.map-bag ul { margin:6px 0 0;padding:0;list-style:none;display:grid;gap:4px; }
-.map-bag li { display:flex;gap:7px;align-items:baseline;font-size:max(16px,var(--fs-small));font-weight:800;color:var(--c-ink); }
-.map-bag em { flex:0 0 auto;padding:1px 8px;border-radius:999px;background:#e8f2fb;color:#1c5a8c;font-style:normal;font-size:16px;font-weight:900;white-space:nowrap; }
-.map-bag__more { color:var(--c-ink-soft);font-size:16px;font-weight:750; }
 .map-brief {
   position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
   height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
@@ -261,9 +251,6 @@ const MAP_CSS = `
 .map-brief__status { display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:6px 12px;border-radius:999px;background:#fff;border:2px solid var(--c-line);font-size:max(18px,var(--fs-small));font-weight:800; }
 .map-brief__status::before { content:'●';color:var(--c-violet); }
 .map-brief__objective { display:none;max-width:32ch;line-height:1.4; }
-.map-brief__flow { display:grid;gap:5px;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.58);border:1px solid rgba(25,50,77,.14); }
-.map-brief__flow strong { font-size:max(16px,var(--fs-small)); }
-.map-brief__flow .mission-brief__steps { font-size:max(16px,var(--fs-small));line-height:1.35; }
 .map-brief__locked { margin:0;padding:9px 11px;border-radius:12px;background:rgba(242,193,78,.2);border:2px solid rgba(199,166,77,.55);font-weight:850;line-height:1.35; }
 .map-brief .btn-primary { min-height:60px; }
 .map-brief__actions { display:grid;gap:var(--sp-2);margin-top:auto; }
@@ -296,9 +283,6 @@ const MAP_CSS = `
   .map-brief__topic { margin-top:2px;padding:2px 8px;font-size:16px; }
   .map-brief__status { min-height:40px;padding:3px 8px;font-size:16px; }
   .map-brief__objective { font-size:18px;line-height:1.3; }
-  .map-brief__flow { padding:6px 9px;gap:2px; }
-  .map-brief__flow strong,.map-brief__flow .mission-brief__steps { font-size:16px; }
-  .map-brief__flow .mission-brief__steps { gap:1px; }
   .map-brief__locked { padding:6px 8px;font-size:16px; }
   .map-brief .btn-primary { min-height:50px;font-size:18px; }
 }
@@ -310,7 +294,7 @@ const MAP_CSS = `
     position:relative;inset:auto;width:auto;height:auto;max-height:none;margin:0 8px 8px;
     display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,32vw);align-items:center;gap:8px;padding:9px 11px;
   }
-  .map-brief__head,.map-brief__status,.map-brief__flow { display:none; }
+  .map-brief__head,.map-brief__status { display:none; }
   .map-brief__objective { display:block;max-width:none;font-size:18px;line-height:1.3; }
   .map-brief__locked,.map-teacher-mode { grid-column:1/-1; }
   .map-brief__actions { margin-top:0; }
@@ -418,8 +402,7 @@ export function createPage(): Page {
       });
       page.appendChild(guide.el);
 
-      const lastDone = [...SPOTS].reverse().find((spot) => save.missions[spot.id].status === 'completed');
-      const routeStart = lastDone ?? KOREA_HOME;
+      const routeStart = worldRouteOrigin();
 
       const updateRoute = (spot: Spot) => {
         const startX = routeStart.x * 100;
@@ -455,49 +438,35 @@ export function createPage(): Page {
           ${currentSave.teacherUnlocked ? '<p class="map-teacher-mode">교사용 전체 해금 중 · 마지막 단계와 완주 화면까지 열림</p>' : ''}
           <span class="map-brief__status">${photosArrived ? '여행이 끝난 뒤 도착한 사진' : statusLabel}</span>
           <p class="mission-brief__objective">${photosArrived ? '사진 속에서 친구들이 걱정하는 변화를 찾아보세요.' : spot.objective}</p>
-          ${photosArrived ? '' : `<div class="map-brief__flow"><ol class="mission-brief__steps">${spot.steps.map((step) => `<li>${step}</li>`).join('')}</ol></div>`}
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
           ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
           ${mission.status === 'completed' ? `<p class="map-brief__replay">${replayDeckText(spot.id, mission.data)}</p>` : ''}
-          ${(() => {
-            const bag = collectedEarthSignals();
-            if (bag.length === 0) return '';
-            const shown = bag.slice(-4);
-            return `<div class="map-bag"><strong>지구회의 가방 · ${bag.length}개</strong><ul>${shown
-              .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
-              .join('')}${bag.length > shown.length ? `<li class="map-bag__more">…앞서 모은 ${bag.length - shown.length}개도 들어 있어</li>` : ''}</ul></div>`;
-          })()}
           <div class="map-brief__actions">
             <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
-            ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">완주 기록 보기</button>' : ''}
+            ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">엔딩 영상 보기</button>' : ''}
           </div>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');
-        brief.querySelector('[data-act="completion"]')?.addEventListener('click', () => navigate('#/completion'));
+        brief.querySelector('[data-act="completion"]')?.addEventListener('click', () => playEndingVideo(() => undefined));
         depart?.addEventListener('click', () => {
           if (disposed || depart.disabled) return;
           depart.disabled = true;
           nodeById.forEach((node) => { node.disabled = true; });
           updateRoute(spot);
-          // 사진 도착(스토리 긴박) 때는 브릿지를 건너뛴다 — 흐름을 끊지 않는다
-          const bridge = photosArrived ? Promise.resolve() : playDepartureBridge(spot.name);
-          void bridge.then(() => {
-            if (disposed) return;
-            flyTo?.(spot.x, spot.y);
-            try {
-              const transition = playJourneyTransition({
-                kind: 'flight',
-                label: `${spot.name}로 날아가요!`,
-                assetId: selectedPlanePortrait,
-                companionAssetId: missionCompanionAssetId(spot.id, selectedPlaneFlight)
-              });
-              void transition.finished.then(() => {
-                if (!disposed) navigate(spot.route);
-              });
-            } catch (err) {
-              console.warn('[Map] 전환 연출 예외, 직접 이동합니다:', err);
+          flyTo?.(spot.x, spot.y);
+          try {
+            const transition = playJourneyTransition({
+              kind: 'flight',
+              label: `${spot.name}로 날아가요!`,
+              assetId: selectedPlanePortrait,
+              companionAssetId: missionCompanionAssetId(spot.id, selectedPlaneFlight)
+            });
+            void transition.finished.then(() => {
               if (!disposed) navigate(spot.route);
-            }
-          });
+            });
+          } catch (err) {
+            console.warn('[Map] 전환 연출 예외, 직접 이동합니다:', err);
+            if (!disposed) navigate(spot.route);
+          }
         });
       };
 
@@ -545,11 +514,6 @@ export function createPage(): Page {
           <span class="node-badge" aria-hidden="true">${index + 1}</span>
           ${mission.status === 'completed' ? '<span class="map-node-check" aria-hidden="true">✓</span>' : ''}
           ${mission.status === 'locked' && !saveRepo.get().teacherUnlocked ? `<span class="map-node-lock" aria-hidden="true">${SVG_LOCK}</span>` : ''}
-          ${(() => {
-            if (mission.status !== 'completed') return '';
-            const signalCount = collectedEarthSignals().filter((item) => item.missionId === spot.id).length;
-            return signalCount > 0 ? `<span class="map-node-signals" aria-hidden="true">신호 ${signalCount}</span>` : '';
-          })()}
           ${photosPending && !returnCueIsPhotos ? `<span class="map-node-mail" aria-hidden="true">${SVG_MAIL}</span>` : ''}
           ${hasLearnCard ? `<span class="map-node-learn" aria-hidden="true">${SVG_CARD}</span>` : ''}
           <span class="node-label">${spot.name}<span class="node-topic">${spot.topic}</span></span>`;
@@ -700,10 +664,11 @@ export function createPage(): Page {
 
     unmount() {
       disposed = true;
+      // 엔딩 영상 도중 이탈해도 BGM이 되살아나게 finish 경유로 닫는다
+      closeActiveVideoOverlay();
       if (celebrateTimer !== null) window.clearTimeout(celebrateTimer);
       celebrateTimer = null;
       cancelJourneyTransition();
-      cancelJourneyBridge();
       guide?.dispose();
       guide = null;
       resizeObserver?.disconnect();

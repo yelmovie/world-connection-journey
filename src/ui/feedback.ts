@@ -7,8 +7,9 @@ import { openModal } from './modal';
 import { assetUrl, hasAsset } from '../core/assets';
 import { PASSPORT_STAMP_ASSETS, playJourneyTransition, queueMissionReturn } from './journeyTransition';
 import { burstConfetti, stampSlam } from './fx';
-import type { MissionId } from '../types';
+import { MISSION_IDS, type MissionId } from '../types';
 import { selectedAvatarSpeaker } from './avatarRoster';
+import { playEndingVideo } from './endingVideo';
 
 const KIND_ICON = { success: '✓', partial: '◐', retry: '↻' } as const;
 
@@ -63,77 +64,29 @@ const RESULT_SPEAKERS: Record<Exclude<MissionId, 'dialogue'>, { assetId: string;
 /** 미션 완료 공통 처리: 점수 경쟁 없이 완료·도장·핵심 배움만 남긴다. */
 export function completeMissionFlow(
   missionId: MissionId,
-  missionTitle: string,
-  options: { directToStamp?: boolean } = {}
+  missionTitle: string
 ): void {
   // 저장 형식의 하위 호환을 위해 0점/빈 차원을 넘기되 학생 UI와 보상에는 점수를 쓰지 않는다.
   saveRepo.completeMission(missionId, 0, {});
   void audio.playSfx('complete');
-  if (options.directToStamp) {
-    queueMissionReturn({ missionId, missionTitle });
-    void audio.playSfx('stamp');
-    const transition = playJourneyTransition({
-      kind: 'stamp',
-      label: `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!`,
-      assetId: 'prop.stamp',
-      companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
-    });
-    void transition.finished.then(() => navigate('#/map'));
-    return;
-  }
-  const body = document.createElement('div');
-  const speaker = missionId === 'dialogue'
-    ? selectedAvatarSpeaker(saveRepo.get().profile)
-    : RESULT_SPEAKERS[missionId];
-  body.innerHTML = `
-    <div class="reward-rail mission-result-hero">
-      ${hasAsset('prop.stamp') ? `<img class="mission-result-stamp" src="${assetUrl('prop.stamp')}" data-asset-id="prop.stamp" alt="${missionTitle} 완료 도장">` : `<div class="stamp is-earned mission-result-stamp">${missionTitle}</div>`}
-      <div class="mission-result-heading">
-        <strong>여행 도장을 받았어요!</strong>
-        <p>${missionTitle} 활동을 끝냈어요.</p>
-      </div>
-    </div>
-    <div class="mission-result-guide">
-      ${hasAsset(speaker.assetId) ? `<img src="${assetUrl(speaker.assetId)}" data-asset-id="${speaker.assetId}" alt="" aria-hidden="true">` : ''}
-      <div>
-        <strong>${speaker.name}</strong>
-        <p class="feedback success"><span aria-hidden="true">✓</span><span data-result-line aria-hidden="true"></span><span class="visually-hidden" role="status">${learningLines[missionId]}</span></p>
-      </div>
-    </div>`;
-
-  let cancelTyping: () => void = () => undefined;
-  openModal({
-    id: `complete-${missionId}`,
-    title: '미션 완료!',
-    bodyEl: body,
-    dismissible: false,
-    actions: [
-      {
-        label: '도장 찍고 지도 보기',
-        kind: 'primary',
-        autofocus: true,
-        onClick: (close) => {
-          cancelTyping();
-          queueMissionReturn({ missionId, missionTitle });
-          close();
-          void audio.playSfx('stamp');
-          const transition = playJourneyTransition({
-            kind: 'stamp',
-            label: `${missionTitle} 도장이 여권에 쾅!`,
-            assetId: 'prop.stamp',
-            companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
-          });
-          void transition.finished.then(() => navigate('#/map'));
-        }
-      }
-    ]
+  // 여섯 미션을 모두 실제로 끝낸 순간만 완주 — 지도로 돌아가기 전에 엔딩 영상을 보여 준다.
+  // completion.unlocked는 교사용 전체 해금으로도 켜지므로 여기서는 쓰지 않는다.
+  const goHome = (): void => {
+    const save = saveRepo.get();
+    const allDone = MISSION_IDS.every((id) => save.missions[id].status === 'completed');
+    if (allDone) playEndingVideo(() => navigate('#/map'));
+    else navigate('#/map');
+  };
+  // 모든 미션 공통: 결과 모달 없이 바로 "도장 쾅" 전환으로 마무리한다(아메리카 방식으로 통일).
+  queueMissionReturn({ missionId, missionTitle });
+  void audio.playSfx('stamp');
+  const transition = playJourneyTransition({
+    kind: 'stamp',
+    label: `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!`,
+    assetId: 'prop.stamp',
+    companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
   });
-  cancelTyping = typeResultLine(body.querySelector<HTMLElement>('[data-result-line]'), learningLines[missionId]);
-  const earnedStamp = body.querySelector<HTMLElement>('[data-asset-id="prop.stamp"], .stamp');
-  if (earnedStamp) {
-    stampSlam(earnedStamp);
-    burstConfetti(earnedStamp, 10);
-  }
+  void transition.finished.then(goHome);
 }
 
 function typeResultLine(target: HTMLElement | null, text: string): () => void {
