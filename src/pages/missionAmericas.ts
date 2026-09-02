@@ -233,7 +233,6 @@ const PAGE_CSS = `
 .exp-dnd-guide b { display:grid; place-items:center; width:26px; height:26px; flex:0 0 auto; border-radius:50%; background:#f2c14e; color:#4c3600; font-family:var(--font-head); }
 .exp-dnd-guide i { font-style:normal; color:#8a5a00; font-weight:950; }
 .postcard { flex:0 0 auto; position:relative; text-align:left; padding:10px 66px 10px 62px; min-height:76px; border:3px solid rgba(217,201,163,.85); border-radius:16px; background:rgba(255,252,240,.86); backdrop-filter:blur(6px); box-shadow:var(--shadow-card); font-size:var(--am-label); line-height:1.4; touch-action:none; transition:transform var(--t-fast),border-color var(--t-fast),box-shadow var(--t-fast); }
-.postcard-grip { position:absolute; right:10px; top:50%; transform:translateY(-50%); width:42px; height:44px; border:2px dashed #c9a86a; border-radius:9px; display:grid; place-items:center; background:rgba(255,255,255,.55); color:#8a5a00; font:900 25px/1 var(--font-head); pointer-events:none; }
 .postcard img { position:absolute; left:10px; top:50%; transform:translateY(-50%); width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid #fff; box-shadow:var(--shadow-card); }
 .postcard.is-selected { border-color:var(--c-gold); background:#fff6cf; transform:translateX(-5px); box-shadow:0 0 0 5px rgba(242,193,78,.25),var(--shadow-card); }
 .postcard.is-dragging { opacity:.35; }
@@ -690,7 +689,7 @@ export function createPage(): Page {
             <img src="${assetUrl(avatarAsset(content, pc.studentId))}" alt="">
             <strong>${student?.name ?? ''}</strong> · ${pc.hint}
             <span class="pc-extra" hidden>힌트: ${pc.extraHint}</span>
-            <span class="postcard-grip" aria-hidden="true">⠿</span>
+            
           </button>`);
           card.setAttribute('aria-describedby', 'americas-dnd-guide');
           if (S.placed.includes(pc.countryId)) card.classList.add('is-done');
