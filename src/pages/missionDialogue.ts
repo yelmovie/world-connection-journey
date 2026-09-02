@@ -149,9 +149,9 @@ const DIALOGUE_CSS = `
 .dialogue-scene .page-body { padding-bottom:8px; }
 .dialogue-scene:not(:has(.ec)) .dl-stage { width:calc(100% - var(--guide-size) * .68); margin-left:auto; margin-right:0; } /* 캐릭터 그림의 실제 폭만큼만 비킨다 */
 .dialogue-scene .panel {
-  background: var(--glass-panel); backdrop-filter: blur(9px) saturate(1.05);
-  border: 2px solid rgba(255,255,255,0.72); border-radius: var(--radius-l);
-  box-shadow: var(--shadow-card); padding: clamp(14px, 1.25vw, 22px);
+  background: rgba(255,255,255,.58); backdrop-filter: blur(16px) saturate(1.15);
+  border: 1.5px solid rgba(255,255,255,.85); border-radius: var(--radius-l);
+  box-shadow: 0 14px 34px rgba(8,30,55,.16), inset 0 1px 0 rgba(255,255,255,.7); padding: clamp(14px, 1.25vw, 22px);
 }
 .dialogue-scene .card {
   padding: var(--sp-3); background: rgba(255,255,255,0.97);
@@ -239,9 +239,14 @@ const DIALOGUE_CSS = `
 
 /* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
 .dl-talk { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px,0.72fr) minmax(0,1.55fr); gap: var(--sp-4); }
-.dl-who { min-height: 0; display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); overflow-y: auto; }
-.dl-portrait { width: clamp(164px, 15vw, 240px); height: clamp(164px, 15vw, 240px); border-radius: 50%; object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow-pop); }
-.dl-chat { align-self: start; max-height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.dl-who { min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-2); overflow: hidden; }
+.dl-portrait { width: clamp(120px, min(15vw, 26vh), 240px); height: clamp(120px, min(15vw, 26vh), 240px); border-radius: 50%; object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow-pop); }
+.dl-chat { align-self: stretch; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 2.4cqh, 22px); overflow: hidden; container-type: size; } /* 양쪽 패널이 같은 높이 — 넘치면 스크롤 대신 글자를 줄인다 */
+/* 패널이 클수록 말풍선·선택지도 커져 빈 곳이 남지 않는다 */
+.dl-chat #dlg-area { gap: clamp(8px, 2cqh, 18px) !important; }
+.dl-chat .dl-opt { min-height: clamp(64px, 25cqh, 150px); font-size: clamp(18px, 4.3cqh, 28px); padding: clamp(10px, 2.4cqh, 20px) clamp(14px, 2.8cqh, 26px); }
+.dl-chat .npc-bubble { font-size: clamp(18px, 4cqh, 27px); padding: clamp(12px, 2.4cqh, 22px) clamp(16px, 2.8cqh, 26px); }
+.dl-chat #stage3-fb .feedback { font-size: clamp(17px, 3cqh, 23px); }
 .dl-council { width:min(1180px,100%);margin:auto;display:grid;gap:var(--sp-3);align-content:center; }
 .dl-council__intro { padding:14px 18px;border-radius:18px;background:rgba(245,251,255,.72);backdrop-filter:blur(6px); }
 .dl-council__issues { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--sp-3); }
@@ -1046,6 +1051,10 @@ export function createPage(): Page {
 
         const area = body.querySelector<HTMLElement>('#dlg-area');
         const fb = body.querySelector<HTMLElement>('#stage3-fb');
+        for (const sel of ['.dl-who', '.dl-chat']) {
+          const box = body.querySelector<HTMLElement>(sel);
+          if (box) keepFitted(box, () => Array.from(box.querySelectorAll<HTMLElement>('p,button,strong,span,small,b,li')), 13);
+        }
         body.querySelector<HTMLElement>('.dl-side-btn')?.addEventListener('click', () => {
           closeActiveModal = openCharacterDialogue({
             id: `npc-side-${npc.id}-${npcPhase}`,
