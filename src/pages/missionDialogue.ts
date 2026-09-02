@@ -14,6 +14,7 @@ import { getLearn, readLearnRecord, showFriendIntro, showLearningWrap } from '..
 import { openModal } from '../ui/modal';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 import { selectedAvatarSpeaker } from '../ui/avatarRoster';
+import { keepFitted } from '../ui/fitText';
 import { queueMissionReturn } from '../ui/journeyTransition';
 import { validateEarthProgress, type EarthContent, type GlobalEnvironmentProgress } from '../core/earthCouncil';
 import { EARTH_CSS, earthPreloadIds, renderEarthScene } from './earthCouncilScenes';
@@ -83,6 +84,8 @@ interface VisualCompareScene {
   afterAssetId: string;
   mission: string;
   discovery: string;
+  /** 찾은 뒤 보여 주는 설명 — 무엇이 달라졌고, 그것이 왜 다른 문화의 친구를 배려하는 일인지 잇는다 */
+  insight: string;
   hotspot: { x: number; y: number; label: string };
 }
 
@@ -92,18 +95,21 @@ const VISUAL_COMPARE_SCENES: VisualCompareScene[] = [
     id: 'yusra', name: '유스라', from: '모로코',
     beforeAssetId: 'stage6.yusra.before', afterAssetId: 'stage6.yusra.after',
     mission: '말할 기회가 생긴 곳을 찾아!', discovery: '말할 차례 나누기',
+    insight: '전에는 친구들이 먼저 말해 버려 유스라가 끼어들 틈이 없었어. 후에는 발표 카드를 들면 차례가 오도록 정했지. 아직 우리말이 서툰 친구도 기다려 주면 자기 생각을 말할 수 있어. 말할 차례를 나누는 건 다른 나라에서 온 친구를 존중하는 첫걸음이야.',
     hotspot: { x: 84, y: 51, label: '유스라의 발표 카드' }
   },
   {
     id: 'kenji', name: '켄지', from: '일본',
     beforeAssetId: 'stage6.kenji.before', afterAssetId: 'stage6.kenji.after',
     mission: '억지 권유가 사라진 곳을 찾아!', discovery: '거절과 선택 존중하기',
+    insight: '전에는 켄지가 손을 저어도 계속 음식을 권했어. 후에는 접시를 내밀며 켄지가 직접 고르게 했지. 나라·종교·건강에 따라 먹지 않는 음식이 있을 수 있어. "싫으면 안 먹어도 돼"라고 선택을 존중하는 것이 배려야.',
     hotspot: { x: 63, y: 73, label: '함께 고르는 간식' }
   },
   {
     id: 'amara', name: '아마라', from: '탄자니아',
     beforeAssetId: 'stage6.amara.before', afterAssetId: 'stage6.amara.after',
     mission: '발표를 도와준 변화를 찾아!', discovery: '끝까지 듣고 응원하기',
+    insight: '전에는 아마라가 탄자니아 동물 이야기를 하는데 아무도 눈을 맞추지 않았어. 후에는 친구들이 끝까지 듣고 손을 들어 질문했지. 발음이 조금 달라도 끝까지 들어 주고 궁금한 걸 물어보면, 친구는 자기 나라 이야기를 자랑스럽게 할 수 있어.',
     hotspot: { x: 79, y: 61, label: '질문하는 손과 응원 카드' }
   }
 ];
@@ -137,6 +143,11 @@ const DIALOGUE_CSS = `
   padding:var(--sp-3) clamp(16px,3vw,48px) clamp(54px,7vh,60px);
   font-size: var(--dl-copy); line-height: 1.55;
 }
+/* 6단계 전체: 안내 캐릭터 레인(156px)과 아래 바가 본문을 잡아먹어 패널이 잘리고 스크롤이 생기던 문제.
+   레인·아래 바를 지구회의 화면과 같은 크기로 줄이고, 캐릭터가 서는 왼쪽 폭만큼 무대를 비켜 세운다. */
+.dialogue-scene { --guide-lane-h:clamp(56px,7vh,72px); --bottom-bar-h:clamp(64px,8vh,76px); }
+.dialogue-scene .page-body { padding-bottom:8px; }
+.dialogue-scene:not(:has(.ec)) .dl-stage { width:calc(100% - var(--guide-size) * .68); margin-left:auto; margin-right:0; } /* 캐릭터 그림의 실제 폭만큼만 비킨다 */
 .dialogue-scene .panel {
   background: var(--glass-panel); backdrop-filter: blur(9px) saturate(1.05);
   border: 2px solid rgba(255,255,255,0.72); border-radius: var(--radius-l);
@@ -191,12 +202,12 @@ const DIALOGUE_CSS = `
 .dl-option-head img { width: 64px; height: 64px; object-fit: contain; }
 
 /* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
-.dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.62fr);gap:14px}
+.dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,.85fr);gap:14px} /* 설명이 들어갈 옆 패널을 넓힌다 */
 .dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
 .dl-compare-photo{position:relative;flex:1;min-height:clamp(220px,34vh,420px);overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
 .dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .dl-compare-after{clip-path:inset(0 0 0 50%)}
-.dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none}
+.dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none} /* 드래그는 사진 전체가 받는다 */
 .dl-compare-divider::after{content:'↔';position:absolute;left:50%;top:50%;width:52px;height:52px;display:grid;place-items:center;transform:translate(-50%,-50%);border:4px solid #fff;border-radius:50%;background:var(--c-navy);color:#fff;font:950 25px/1 var(--font-head);box-shadow:0 7px 18px rgba(5,34,55,.35)}
 .dl-compare-tag{position:absolute;z-index:4;top:14px;padding:6px 16px;border:3px solid #fff;border-radius:999px;color:#fff;font:950 clamp(17px,1.3vw,21px)/1 var(--font-head);text-shadow:0 2px 5px rgba(0,0,0,.55);box-shadow:0 5px 12px rgba(5,34,55,.25);pointer-events:none}
 .dl-compare-tag.is-before{left:14px;background:#d65b68}.dl-compare-tag.is-after{right:14px;background:#178b74}
@@ -215,8 +226,11 @@ const DIALOGUE_CSS = `
 .dl-compare-person strong{display:block;font:950 clamp(22px,1.8vw,29px)/1.15 var(--font-head)}
 .dl-compare-person small{font-size:clamp(15px,1vw,18px);font-weight:800;color:var(--c-ink-soft)}
 .dl-compare-mission{padding:14px;border:3px dashed #e4b633;border-radius:18px;background:#fff7d8;font:950 clamp(21px,1.6vw,27px)/1.35 var(--font-head);word-break:keep-all}
-.dl-compare-result{min-height:clamp(80px,11vh,126px);padding:14px;display:grid;place-items:center;border-radius:18px;background:#e9f8f4;color:#176249;font:950 clamp(21px,1.55vw,26px)/1.35 var(--font-head)}
+.dl-compare-result{min-height:clamp(80px,11vh,126px);padding:14px 16px;display:grid;gap:8px;align-content:start;text-align:left;border-radius:18px;background:#e9f8f4;color:#176249;font:950 clamp(21px,1.55vw,26px)/1.35 var(--font-head)}
 .dl-compare-result[hidden]{display:none}
+.dl-compare-result b{font:950 clamp(20px,1.5vw,25px)/1.25 var(--font-head)}
+.dl-compare-result span{font:700 clamp(16px,1.15vw,20px)/1.45 var(--font-body);color:#1f4d42;word-break:keep-all}
+.dl-compare-photo{cursor:ew-resize;touch-action:pan-y}
 .dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
 .dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
@@ -730,6 +744,27 @@ export function createPage(): Page {
         const result = body.querySelector<HTMLElement>('[data-result]');
         const nextBtn = bottom.querySelector<HTMLButtonElement>('[data-act="next"]');
 
+        // 사진 위 가운데 손잡이나 사진 아무 곳이나 눌러 끌어도 아래 슬라이더와 똑같이 움직인다
+        const photo = body.querySelector<HTMLElement>('.dl-compare-photo');
+        if (photo && range) {
+          let dragging = false;
+          const setFromPointer = (event: PointerEvent) => {
+            const rect = photo.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(100, Math.round(((event.clientX - rect.left) / rect.width) * 100)));
+            range.value = String(pct);
+            range.dispatchEvent(new Event('input', { bubbles: true }));
+          };
+          photo.addEventListener('pointerdown', (event) => {
+            if ((event.target as HTMLElement).closest('[data-change]')) return; // 반짝이는 점은 그대로 누른다
+            dragging = true;
+            photo.setPointerCapture(event.pointerId);
+            setFromPointer(event);
+          });
+          photo.addEventListener('pointermove', (event) => { if (dragging) setFromPointer(event); });
+          const stop = () => { dragging = false; };
+          photo.addEventListener('pointerup', stop);
+          photo.addEventListener('pointercancel', stop);
+        }
         range?.addEventListener('input', () => {
           if (resolved || disposed) return;
           const value = Number(range.value);
@@ -757,10 +792,12 @@ export function createPage(): Page {
           visualCompareIndex = index + 1;
           hotspot.disabled = true;
           hotspot.classList.add('is-found');
-          if (mission) mission.textContent = '찾았다!';
+          if (mission) mission.textContent = `찾았다! ${scene.hotspot.label}`;
           if (result) {
             result.hidden = false;
-            result.textContent = `✓ ${scene.discovery}`;
+            result.innerHTML = `<b>✓ ${scene.discovery}</b><span>${scene.insight}</span>`;
+            const side = result.closest<HTMLElement>('.dl-compare-side');
+            if (side) keepFitted(side, () => Array.from(result.querySelectorAll<HTMLElement>('b,span')), 13); // 설명이 패널을 넘치면 글자를 줄인다
           }
           if (nextBtn) {
             nextBtn.disabled = false;
@@ -769,7 +806,7 @@ export function createPage(): Page {
           checkpoint('stage2');
           void audio.playSfx('success');
           popBounce(hotspot);
-          guide?.say(scene.discovery, { cue: nextBtn, speaker: hostSpeaker });
+          guide?.say(scene.insight.split('. ')[0] + '.', { cue: nextBtn, speaker: hostSpeaker });
         });
 
         nextBtn?.addEventListener('click', () => {
