@@ -103,28 +103,6 @@ function hasLearnCardFor(missionId: MissionId): boolean {
   return readLearnCard(missionId).earned;
 }
 
-/** 2회차 상황 덱(P2-16) — 완주한 대륙을 다시 열 이유. 목표는 전부 학습 행동이다. */
-const REPLAY_DECK: Record<MissionId, string> = {
-  americas: '2회차 도전 — 이번엔 네 나라의 장면에서 "물"과 관련된 모습만 찾아보며 탐험해 봐.',
-  europe: '2회차 탐험 — 다른 나라의 장면과 환경 변화를 다시 비교해 봐.',
-  africa: '2회차 도전 — 지난번에 못 들어 본 악기 소리까지 다섯 개를 모두 들어 봐.',
-  asia: '2회차 도전 — 지난번에 못 들은 목소리를 모두 듣고 와 봐.',
-  oceania: '2회차 도전 — 숨은 변화를 한 번도 빗나가지 않고 찾아봐.',
-  dialogue: '2회차 도전 — 다른 환경 문제를 골라 회의를 다시 열어 봐. 이전 약속은 남아 있어.'
-};
-
-/** 완료한 미션의 2회차 도전 문구. 아시아는 저장된 heardPerspectiveIds로 완청 여부를 반영한다. */
-function replayDeckText(missionId: MissionId, missionData: unknown): string {
-  if (missionId === 'asia') {
-    const heard = (missionData as { regionalExploration?: { heardPerspectiveIds?: unknown } } | undefined)
-      ?.regionalExploration?.heardPerspectiveIds;
-    if (Array.isArray(heard) && heard.length >= 4) {
-      return '2회차 도전 — 목소리를 모두 들었어! 이번엔 장면 속 연결을 다시 살펴봐.';
-    }
-  }
-  return REPLAY_DECK[missionId];
-}
-
 const STATUS_LABEL: Record<MissionStatus, string> = {
   locked: '아직 잠겨 있음',
   available: '지금 도전 가능',
@@ -234,7 +212,6 @@ const MAP_CSS = `
 /* 완료 노드의 배움 카드 획득 칩 */
 .map-node-learn { position:absolute;right:-4px;bottom:-2px;display:grid;place-items:center;width:26px;height:26px;border-radius:9px;background:var(--c-gold);color:#5b430a;border:2px solid #fff;box-shadow:var(--shadow-card); }
 .map-world-deco { position:absolute;z-index:3;pointer-events:none;filter:drop-shadow(0 8px 18px rgba(0,0,0,.3)); }
-.map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(16px,var(--fs-small));font-weight:850;line-height:1.4; }
 .map-brief {
   position:absolute;right:var(--scene-safe);top:var(--sp-3);z-index:var(--z-panel);width:clamp(280px,20vw,360px);
   height:auto;max-height:calc(100% - var(--sp-5));overflow-y:auto;overflow-x:hidden;
@@ -440,7 +417,6 @@ export function createPage(): Page {
           <p class="mission-brief__objective">${photosArrived ? '사진 속에서 친구들이 걱정하는 변화를 찾아보세요.' : spot.objective}</p>
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
           ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
-          ${mission.status === 'completed' ? `<p class="map-brief__replay">${replayDeckText(spot.id, mission.data)}</p>` : ''}
           <div class="map-brief__actions">
             <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
             ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">엔딩 영상 보기</button>' : ''}
