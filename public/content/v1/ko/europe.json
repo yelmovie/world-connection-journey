@@ -433,6 +433,57 @@
           "needsReview": true
         }
       ]
+    },
+    {
+      "id": "uk",
+      "name": "영국",
+      "map": {
+        "x": 21,
+        "y": 18
+      },
+      "accent": "#5b7fc7",
+      "hook": "섬나라의 흰 절벽과 강가 도시, 언덕 위 옛 성을 만나 봐.",
+      "visuals": [
+        {
+          "id": "uk_dover_coast",
+          "title": "도버의 흰 절벽 해안",
+          "category": "environment",
+          "imageId": "europe.uk.dover",
+          "caption": "하얀 절벽 아래로 바다와 항구, 배가 보여.",
+          "lookFor": "절벽 · 바다 · 배",
+          "sourceTitle": "프로젝트 생성 관찰 그림(사진 준비 중)",
+          "sourceUrl": "project:generated-europe-uk-uk_dover_coast",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "uk_london_thames",
+          "title": "런던 템스강 곁 등굣길",
+          "category": "daily",
+          "imageId": "europe.uk.thames",
+          "caption": "강 위 다리를 건너 걸어가고 버스를 타는 사람들이 보여.",
+          "lookFor": "강 · 다리 · 빨간 버스",
+          "sourceTitle": "프로젝트 생성 관찰 그림(사진 준비 중)",
+          "sourceUrl": "project:generated-europe-uk-uk_london_thames",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        },
+        {
+          "id": "uk_edinburgh_castle",
+          "title": "에든버러의 옛 성과 도시",
+          "category": "heritage",
+          "imageId": "europe.uk.edinburgh",
+          "caption": "언덕 위 오래된 성 아래로 도시가 이어져.",
+          "lookFor": "언덕 · 성 · 도시",
+          "sourceTitle": "프로젝트 생성 관찰 그림(사진 준비 중)",
+          "sourceUrl": "project:generated-europe-uk-uk_edinburgh_castle",
+          "license": "AI-generated project original",
+          "verifiedAt": "",
+          "needsReview": true
+        }
+      ]
     }
   ],
   "signals": [

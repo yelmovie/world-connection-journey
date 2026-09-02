@@ -29,7 +29,7 @@ const FALLBACK_TITLE_CONVERSATIONS: TitleConversations = {
   right: {
     name: '장미몽실',
     lines: [
-      '안녕! 다섯 대륙 친구들이 너를 기다리고 있어.',
+      '안녕! 여섯 대륙 친구들이 너를 기다리고 있어.',
       '정답만 찾는 여행이 아니야. 친구의 말을 듣고 네 생각을 바꿔도 괜찮아.',
       '우리 같이 여행하면서 모두가 지킬 약속을 만들어 보자!'
     ]
@@ -257,7 +257,7 @@ export function createPage(): Page {
           <div class="title-stage">
             <div class="title-copy">
               <img class="title-logo" src="${assetUrl('title.logo')}" alt="세계를 잇는 여행" data-asset-id="title.logo">
-              <p class="title-subtitle">다섯 대륙 친구들의 목소리로 공동 약속을 완성하는 여행</p>
+              <p class="title-subtitle">여섯 대륙 친구들의 목소리로 공동 약속을 완성하는 여행</p>
             </div>
           </div>
         </div>
@@ -391,7 +391,7 @@ export function createPage(): Page {
 /** 인트로 자막 — 영상 장면 순서: 구름 위 만남 → 세계지도 위 비행 → 친구들 탄 비행기 → 창밖 지도 → 지구 위 항로 */
 const INTRO_CUES = [
   { start: 0, end: 3.2, text: '안녕! 나는 세계를 잇는 비행기, 코리야.' },
-  { start: 3.2, end: 6.4, text: '오늘은 너와 함께 다섯 대륙 친구들을 만나러 갈 거야.' },
+  { start: 3.2, end: 6.4, text: '오늘은 너와 함께 여섯 대륙 친구들을 만나러 갈 거야.' },
   { start: 6.4, end: 9.8, text: '보고, 묻고, 들으면서 친구들의 하루를 탐험해 보자.' },
   { start: 9.8, end: 13.2, text: '여행이 끝나면 친구들이 보낸 특별한 신호가 도착할 거야.' },
   { start: 13.2, end: 16.5, text: '자, 여권을 만들고 출발하자!' }

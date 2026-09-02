@@ -241,7 +241,7 @@ export function openSettings(): void {
     }
     queueMicrotask(() => confirmDialog(
       '모든 단계를 열까요?',
-      '다섯 대륙을 끝내지 않아도 마지막 단계와 완주 화면까지 바로 갈 수 있어요. 적용 뒤 지도에서 마지막 단계가 자동으로 선택돼요. 학생 기록은 그대로 남아요.',
+      '여섯 대륙을 끝내지 않아도 마지막 단계와 완주 화면까지 바로 갈 수 있어요. 적용 뒤 지도에서 마지막 단계가 자동으로 선택돼요. 학생 기록은 그대로 남아요.',
       '전체 해금',
       () => {
         saveRepo.unlockAllForTeacher();

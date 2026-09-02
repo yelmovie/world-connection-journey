@@ -98,7 +98,9 @@
     "africa.region.north": {
       "type": "image",
       "src": "assets/africa_region_north.webp",
-      "pages": ["p06"],
+      "pages": [
+        "p06"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -107,7 +109,9 @@
     "africa.region.west": {
       "type": "image",
       "src": "assets/africa_region_west.webp",
-      "pages": ["p06"],
+      "pages": [
+        "p06"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -116,7 +120,9 @@
     "africa.region.central": {
       "type": "image",
       "src": "assets/africa_region_central.webp",
-      "pages": ["p06"],
+      "pages": [
+        "p06"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -125,7 +131,9 @@
     "africa.region.east": {
       "type": "image",
       "src": "assets/africa_region_east.webp",
-      "pages": ["p06"],
+      "pages": [
+        "p06"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -134,7 +142,9 @@
     "africa.region.south": {
       "type": "image",
       "src": "assets/africa_region_south.webp",
-      "pages": ["p06"],
+      "pages": [
+        "p06"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -849,7 +859,9 @@
       "type": "image",
       "src": "assets/americas_map_regional_v2.webp",
       "original": "generated_images/exec-3b096c4b-074b-4495-a0f1-c75eb6dfc715.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -859,7 +871,9 @@
       "type": "image",
       "src": "assets/americas_canada_west_v2.webp",
       "original": "generated_images/exec-78ecc778-78e6-4bf7-8388-e4272e63553f.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -869,7 +883,9 @@
       "type": "image",
       "src": "assets/americas_canada_plains_v2.webp",
       "original": "generated_images/exec-1e21adde-70af-4c8f-ba44-dcc99aa2466f.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -879,7 +895,9 @@
       "type": "image",
       "src": "assets/americas_canada_east_v2.webp",
       "original": "generated_images/exec-d71bd6ad-55af-4198-9dc4-2c57cc739397.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -889,7 +907,9 @@
       "type": "image",
       "src": "assets/americas_canada_landmark_v2.webp",
       "original": "generated_images/exec-db55299d-3572-4678-bbbb-575bde129d87.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -899,7 +919,9 @@
       "type": "image",
       "src": "assets/americas_mexico_coast_v2.webp",
       "original": "generated_images/exec-22a6e503-9a76-4107-8de5-46331ba8f5df.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -909,7 +931,9 @@
       "type": "image",
       "src": "assets/americas_mexico_highland_v2.webp",
       "original": "generated_images/exec-c1fd8408-e62b-47a0-854c-c7092e013e6b.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -919,7 +943,9 @@
       "type": "image",
       "src": "assets/americas_mexico_mountain_v2.webp",
       "original": "generated_images/exec-787067ff-f9e6-401c-8a61-695879086d39.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -929,7 +955,9 @@
       "type": "image",
       "src": "assets/americas_mexico_landmark_v2.webp",
       "original": "generated_images/exec-e34b6a5e-6d74-4252-8a8f-8c0eb9fae219.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -939,7 +967,9 @@
       "type": "image",
       "src": "assets/americas_brazil_upriver_v2.webp",
       "original": "generated_images/exec-13a4474d-6b84-411b-97ed-c272c89f7a16.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -949,7 +979,9 @@
       "type": "image",
       "src": "assets/americas_brazil_riverside_v2.webp",
       "original": "generated_images/exec-00444bc7-fe41-4979-a2cf-4eb20d5e0c17.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -959,7 +991,9 @@
       "type": "image",
       "src": "assets/americas_brazil_city_v2.webp",
       "original": "generated_images/exec-1add4341-ab79-4e55-8db7-f3f472491450.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -969,7 +1003,9 @@
       "type": "image",
       "src": "assets/americas_brazil_landmark_v2.webp",
       "original": "generated_images/exec-ebfe5219-3a28-4341-acf6-8f96d24eac33.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -979,7 +1015,9 @@
       "type": "image",
       "src": "assets/americas_peru_coast_v2.webp",
       "original": "generated_images/exec-90276fa9-490d-4257-a239-5c9b8457c9cb.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -989,7 +1027,9 @@
       "type": "image",
       "src": "assets/americas_peru_andes_v2.webp",
       "original": "generated_images/exec-68fa21cc-f602-4f6d-88c6-b3c7ec8a0dfd.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -999,7 +1039,9 @@
       "type": "image",
       "src": "assets/americas_peru_amazon_v2.webp",
       "original": "generated_images/exec-e05edbe7-aa97-42a1-b2b5-a8574dcdfca5.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -1009,7 +1051,9 @@
       "type": "image",
       "src": "assets/americas_peru_landmark_v2.webp",
       "original": "generated_images/exec-1d9cad48-b6ef-405d-b83b-ef27709eb852.png",
-      "pages": ["p07"],
+      "pages": [
+        "p07"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -1115,7 +1159,17 @@
       "type": "image",
       "src": "assets/player_avatar_maya.webp",
       "original": "assets/player-avatars/player_avatar_maya_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -1125,7 +1179,17 @@
       "type": "image",
       "src": "assets/player_avatar_oliver.webp",
       "original": "assets/player-avatars/player_avatar_oliver_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -1135,7 +1199,17 @@
       "type": "image",
       "src": "assets/player_avatar_hana.webp",
       "original": "assets/player-avatars/player_avatar_hana_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -1145,7 +1219,17 @@
       "type": "image",
       "src": "assets/player_avatar_yusef.webp",
       "original": "assets/player-avatars/player_avatar_yusef_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -1155,7 +1239,17 @@
       "type": "image",
       "src": "assets/player_avatar_salote.webp",
       "original": "assets/player-avatars/player_avatar_salote_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -1165,7 +1259,17 @@
       "type": "image",
       "src": "assets/player_avatar_tevita.webp",
       "original": "assets/player-avatars/player_avatar_tevita_v1.png",
-      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "pages": [
+        "p02",
+        "p03",
+        "p04",
+        "p05",
+        "p06",
+        "p07",
+        "p08",
+        "p09",
+        "p10"
+      ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
@@ -2549,37 +2653,325 @@
       "license": "AI-generated (project original)",
       "note": "상단 잘림 없이 다시 제작한 네팔 빙하와 계곡물 변화 관찰 장면"
     },
-    "asia.map.regional": { "type": "image", "src": "assets/asia_map_regional_v2.webp", "original": "generated_images/exec-79ad3592-105b-4e52-a17a-2172e3ab7831.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "아시아의 실제 윤곽과 지형 관계를 단순화한 3D 페인터리 권역 지도" },
-    "asia.vietnam.1": { "type": "image", "src": "assets/asia_vietnam_1_v2.webp", "original": "generated_images/exec-2d693634-28a6-4303-9d3d-5075c5db980d.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "베트남 메콩강 삼각주의 수로와 과수원 관찰 일러스트" },
-    "asia.vietnam.2": { "type": "image", "src": "assets/asia_vietnam_2_v2.webp", "original": "generated_images/exec-83dcaeb4-ac3a-4807-ae86-a165b091701d.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "베트남 메콩강 삼각주의 아침 수상 시장 관찰 일러스트" },
-    "asia.vietnam.3": { "type": "image", "src": "assets/asia_vietnam_3_v2.webp", "original": "generated_images/exec-30982a12-523a-42e5-8bac-85e398c5ba14.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "베트남 메콩강 삼각주 가족의 식사 준비 관찰 일러스트" },
-    "asia.kazakhstan.1": { "type": "image", "src": "assets/asia_kazakhstan_1_v2.webp", "original": "generated_images/exec-129af195-dff3-4d73-a723-889786b9da25.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "카자흐스탄 사르아르카 초원과 사이가영양 관찰 일러스트" },
-    "asia.kazakhstan.2": { "type": "image", "src": "assets/asia_kazakhstan_2_v2.webp", "original": "generated_images/exec-2246af84-5889-4959-b08c-b8415890eafd.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "톈산산맥 가까운 알마티 공원의 오늘날 생활 일러스트" },
-    "asia.kazakhstan.3": { "type": "image", "src": "assets/asia_kazakhstan_3_v2.webp", "original": "generated_images/exec-5592d310-47b0-44df-804a-cf06303f919a.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "알마티 공동체의 돔브라 쿠이 학습 일러스트" },
-    "asia.jordan.1": { "type": "image", "src": "assets/asia_jordan_1_v2.webp", "original": "generated_images/exec-9bf665cf-522f-47c5-88e4-1e6d811b83bf.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "요르단 와디럼의 사암 절벽과 건조 골짜기 관찰 일러스트" },
-    "asia.jordan.2": { "type": "image", "src": "assets/asia_jordan_2_v2.webp", "original": "generated_images/exec-1ea2bf59-149f-42bb-9cd6-d5ec73aef9bd.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "요르단 암만의 언덕 도시와 버스 생활 관찰 일러스트" },
-    "asia.jordan.3": { "type": "image", "src": "assets/asia_jordan_3_v2.webp", "original": "generated_images/exec-cddc63a6-a946-439d-bd1a-e42899ce3536.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "페트라의 건축과 나바테아 물 관리를 배우는 현장 학습 일러스트" },
-    "oceania.map.regional": { "type": "image", "src": "assets/oceania_map_regional_v2.webp", "original": "generated_images/exec-43ca10b7-0c20-4b90-8510-f53f08892720.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "호주·뉴질랜드와 태평양 섬 권역의 상대 위치를 보여 주는 3D 페인터리 지도" },
-    "oceania.australia.nature": { "type": "image", "src": "assets/oceania_australia_nature_v2.webp", "original": "generated_images/exec-719ef3a4-a4b1-4042-9a2e-d0a4eb9d551b.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "호주 카카두 습지와 사암 절벽 관찰 일러스트" },
-    "oceania.australia.daily": { "type": "image", "src": "assets/oceania_australia_daily_v2.webp", "original": "generated_images/exec-2c444ead-1f50-4b2e-ba2a-f59b94634450.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "시드니 항구 페리의 오늘날 통근 생활 일러스트" },
-    "oceania.australia.culture": { "type": "image", "src": "assets/oceania_australia_culture_v2.webp", "original": "generated_images/exec-aafef73d-f365-468e-8de1-766029734df3.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "카카두 전통 소유자와 공원 관리자의 Country 돌봄 학습 일러스트" },
-    "oceania.newzealand.nature": { "type": "image", "src": "assets/oceania_newzealand_nature_v2.webp", "original": "generated_images/exec-d0d996d2-bd55-4328-9f52-d8f091ab34d5.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "뉴질랜드 오클랜드 항구와 랑이토토 화산섬 관찰 일러스트" },
-    "oceania.newzealand.daily": { "type": "image", "src": "assets/oceania_newzealand_daily_v2.webp", "original": "generated_images/exec-71d807f0-b775-48fe-bf6d-a285ffb507fa.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "오클랜드 페리·버스·자전거 이동 생활 일러스트" },
-    "oceania.newzealand.culture": { "type": "image", "src": "assets/oceania_newzealand_culture_v3.webp", "original": "assets/generated/oceania_newzealand_culture_v3_source.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "마오리 공동체의 와카 항해 지식 학습 일러스트 · 사람과 빈 와카를 완전히 분리한 수정본" },
-    "oceania.melanesia.nature": { "type": "image", "src": "assets/oceania_melanesia_nature_v2.webp", "original": "generated_images/exec-1e8aaefe-2769-4eb4-bea9-8ef40ed72a4d.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "피지 비티레부의 산·강·맹그로브·산호초 연결 일러스트" },
-    "oceania.melanesia.daily": { "type": "image", "src": "assets/oceania_melanesia_daily_v2.webp", "original": "generated_images/exec-df09a9a4-bec7-4b8f-b011-e6a7d25f5e6d.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "피지 수바 시장과 버스 정류장의 오늘날 생활 일러스트" },
-    "oceania.melanesia.culture": { "type": "image", "src": "assets/oceania_melanesia_culture_v2.webp", "original": "generated_images/exec-8ee33d9d-bc01-4635-a6bc-e83268d34a0a.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "파푸아뉴기니 포트모르즈비 청소년 공동 창작 일러스트" },
-    "oceania.micronesia.nature": { "type": "image", "src": "assets/oceania_micronesia_nature_v2.webp", "original": "generated_images/exec-add823c7-605e-4181-bf23-a86f331834bd.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "팔라우 코로르 주변 석회암 섬과 산호 바다 일러스트" },
-    "oceania.micronesia.daily": { "type": "image", "src": "assets/oceania_micronesia_daily_v2.webp", "original": "generated_images/exec-61d03cea-9790-48c6-a45f-b99645823233.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "팔라우 코로르의 학교·거리·항구 생활 일러스트" },
-    "oceania.micronesia.culture": { "type": "image", "src": "assets/oceania_micronesia_culture_v2.webp", "original": "generated_images/exec-3704ff64-58e0-41db-8c85-36d0296e1c51.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "미크로네시아 공동체의 스틱 차트와 항해 지식 학습 일러스트" },
-    "oceania.polynesia.nature": { "type": "image", "src": "assets/oceania_polynesia_nature_v2.webp", "original": "generated_images/exec-8fde73dd-264c-4e86-90e3-59fe32514218.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "사모아 우폴루의 화산 지형·하천·해안 연결 일러스트" },
-    "oceania.polynesia.daily": { "type": "image", "src": "assets/oceania_polynesia_daily_v2.webp", "original": "generated_images/exec-2100aa27-bc8c-4ab1-bf2f-c85323feee05.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "사모아 아피아의 방과 후 버스·운동·음악 생활 일러스트" },
-    "oceania.polynesia.culture": { "type": "image", "src": "assets/oceania_polynesia_culture_v2.webp", "original": "generated_images/exec-d5efc4c3-8035-4257-a791-626abcf564a2.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "쿡제도 라로통가의 바람·파도·별 항해 수업 일러스트" },
+    "asia.map.regional": {
+      "type": "image",
+      "src": "assets/asia_map_regional_v2.webp",
+      "original": "generated_images/exec-79ad3592-105b-4e52-a17a-2172e3ab7831.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "아시아의 실제 윤곽과 지형 관계를 단순화한 3D 페인터리 권역 지도"
+    },
+    "asia.vietnam.1": {
+      "type": "image",
+      "src": "assets/asia_vietnam_1_v2.webp",
+      "original": "generated_images/exec-2d693634-28a6-4303-9d3d-5075c5db980d.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "베트남 메콩강 삼각주의 수로와 과수원 관찰 일러스트"
+    },
+    "asia.vietnam.2": {
+      "type": "image",
+      "src": "assets/asia_vietnam_2_v2.webp",
+      "original": "generated_images/exec-83dcaeb4-ac3a-4807-ae86-a165b091701d.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "베트남 메콩강 삼각주의 아침 수상 시장 관찰 일러스트"
+    },
+    "asia.vietnam.3": {
+      "type": "image",
+      "src": "assets/asia_vietnam_3_v2.webp",
+      "original": "generated_images/exec-30982a12-523a-42e5-8bac-85e398c5ba14.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "베트남 메콩강 삼각주 가족의 식사 준비 관찰 일러스트"
+    },
+    "asia.kazakhstan.1": {
+      "type": "image",
+      "src": "assets/asia_kazakhstan_1_v2.webp",
+      "original": "generated_images/exec-129af195-dff3-4d73-a723-889786b9da25.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "카자흐스탄 사르아르카 초원과 사이가영양 관찰 일러스트"
+    },
+    "asia.kazakhstan.2": {
+      "type": "image",
+      "src": "assets/asia_kazakhstan_2_v2.webp",
+      "original": "generated_images/exec-2246af84-5889-4959-b08c-b8415890eafd.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "톈산산맥 가까운 알마티 공원의 오늘날 생활 일러스트"
+    },
+    "asia.kazakhstan.3": {
+      "type": "image",
+      "src": "assets/asia_kazakhstan_3_v2.webp",
+      "original": "generated_images/exec-5592d310-47b0-44df-804a-cf06303f919a.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "알마티 공동체의 돔브라 쿠이 학습 일러스트"
+    },
+    "asia.jordan.1": {
+      "type": "image",
+      "src": "assets/asia_jordan_1_v2.webp",
+      "original": "generated_images/exec-9bf665cf-522f-47c5-88e4-1e6d811b83bf.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "요르단 와디럼의 사암 절벽과 건조 골짜기 관찰 일러스트"
+    },
+    "asia.jordan.2": {
+      "type": "image",
+      "src": "assets/asia_jordan_2_v2.webp",
+      "original": "generated_images/exec-1ea2bf59-149f-42bb-9cd6-d5ec73aef9bd.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "요르단 암만의 언덕 도시와 버스 생활 관찰 일러스트"
+    },
+    "asia.jordan.3": {
+      "type": "image",
+      "src": "assets/asia_jordan_3_v2.webp",
+      "original": "generated_images/exec-cddc63a6-a946-439d-bd1a-e42899ce3536.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "페트라의 건축과 나바테아 물 관리를 배우는 현장 학습 일러스트"
+    },
+    "oceania.map.regional": {
+      "type": "image",
+      "src": "assets/oceania_map_regional_v2.webp",
+      "original": "generated_images/exec-43ca10b7-0c20-4b90-8510-f53f08892720.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "호주·뉴질랜드와 태평양 섬 권역의 상대 위치를 보여 주는 3D 페인터리 지도"
+    },
+    "oceania.australia.nature": {
+      "type": "image",
+      "src": "assets/oceania_australia_nature_v2.webp",
+      "original": "generated_images/exec-719ef3a4-a4b1-4042-9a2e-d0a4eb9d551b.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "호주 카카두 습지와 사암 절벽 관찰 일러스트"
+    },
+    "oceania.australia.daily": {
+      "type": "image",
+      "src": "assets/oceania_australia_daily_v2.webp",
+      "original": "generated_images/exec-2c444ead-1f50-4b2e-ba2a-f59b94634450.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "시드니 항구 페리의 오늘날 통근 생활 일러스트"
+    },
+    "oceania.australia.culture": {
+      "type": "image",
+      "src": "assets/oceania_australia_culture_v2.webp",
+      "original": "generated_images/exec-aafef73d-f365-468e-8de1-766029734df3.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "카카두 전통 소유자와 공원 관리자의 Country 돌봄 학습 일러스트"
+    },
+    "oceania.newzealand.nature": {
+      "type": "image",
+      "src": "assets/oceania_newzealand_nature_v2.webp",
+      "original": "generated_images/exec-d0d996d2-bd55-4328-9f52-d8f091ab34d5.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "뉴질랜드 오클랜드 항구와 랑이토토 화산섬 관찰 일러스트"
+    },
+    "oceania.newzealand.daily": {
+      "type": "image",
+      "src": "assets/oceania_newzealand_daily_v2.webp",
+      "original": "generated_images/exec-71d807f0-b775-48fe-bf6d-a285ffb507fa.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "오클랜드 페리·버스·자전거 이동 생활 일러스트"
+    },
+    "oceania.newzealand.culture": {
+      "type": "image",
+      "src": "assets/oceania_newzealand_culture_v3.webp",
+      "original": "assets/generated/oceania_newzealand_culture_v3_source.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "마오리 공동체의 와카 항해 지식 학습 일러스트 · 사람과 빈 와카를 완전히 분리한 수정본"
+    },
+    "oceania.melanesia.nature": {
+      "type": "image",
+      "src": "assets/oceania_melanesia_nature_v2.webp",
+      "original": "generated_images/exec-1e8aaefe-2769-4eb4-bea9-8ef40ed72a4d.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "피지 비티레부의 산·강·맹그로브·산호초 연결 일러스트"
+    },
+    "oceania.melanesia.daily": {
+      "type": "image",
+      "src": "assets/oceania_melanesia_daily_v2.webp",
+      "original": "generated_images/exec-df09a9a4-bec7-4b8f-b011-e6a7d25f5e6d.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "피지 수바 시장과 버스 정류장의 오늘날 생활 일러스트"
+    },
+    "oceania.melanesia.culture": {
+      "type": "image",
+      "src": "assets/oceania_melanesia_culture_v2.webp",
+      "original": "generated_images/exec-8ee33d9d-bc01-4635-a6bc-e83268d34a0a.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "파푸아뉴기니 포트모르즈비 청소년 공동 창작 일러스트"
+    },
+    "oceania.micronesia.nature": {
+      "type": "image",
+      "src": "assets/oceania_micronesia_nature_v2.webp",
+      "original": "generated_images/exec-add823c7-605e-4181-bf23-a86f331834bd.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "팔라우 코로르 주변 석회암 섬과 산호 바다 일러스트"
+    },
+    "oceania.micronesia.daily": {
+      "type": "image",
+      "src": "assets/oceania_micronesia_daily_v2.webp",
+      "original": "generated_images/exec-61d03cea-9790-48c6-a45f-b99645823233.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "팔라우 코로르의 학교·거리·항구 생활 일러스트"
+    },
+    "oceania.micronesia.culture": {
+      "type": "image",
+      "src": "assets/oceania_micronesia_culture_v2.webp",
+      "original": "generated_images/exec-3704ff64-58e0-41db-8c85-36d0296e1c51.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "미크로네시아 공동체의 스틱 차트와 항해 지식 학습 일러스트"
+    },
+    "oceania.polynesia.nature": {
+      "type": "image",
+      "src": "assets/oceania_polynesia_nature_v2.webp",
+      "original": "generated_images/exec-8fde73dd-264c-4e86-90e3-59fe32514218.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "사모아 우폴루의 화산 지형·하천·해안 연결 일러스트"
+    },
+    "oceania.polynesia.daily": {
+      "type": "image",
+      "src": "assets/oceania_polynesia_daily_v2.webp",
+      "original": "generated_images/exec-2100aa27-bc8c-4ab1-bf2f-c85323feee05.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "사모아 아피아의 방과 후 버스·운동·음악 생활 일러스트"
+    },
+    "oceania.polynesia.culture": {
+      "type": "image",
+      "src": "assets/oceania_polynesia_culture_v2.webp",
+      "original": "generated_images/exec-d5efc4c3-8035-4257-a791-626abcf564a2.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "쿡제도 라로통가의 바람·파도·별 항해 수업 일러스트"
+    },
     "earth.signal.nepal_glacier": {
       "type": "image",
       "src": "assets/earth_signal_nepal_glacier.webp",
       "original": "assets/earth-signals/earth_signal_nepal_glacier_banner_v1.webp",
-      "pages": ["p09"],
+      "pages": [
+        "p09"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -2589,7 +2981,9 @@
       "type": "image",
       "src": "assets/earth_signal_japan_heat.webp",
       "original": "assets/earth-signals/earth_signal_japan_heat_banner_v1.webp",
-      "pages": ["p09"],
+      "pages": [
+        "p09"
+      ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
@@ -2606,32 +3000,318 @@
       "license": "AI-generated (project original)",
       "note": "모로코 남부 올리브 밭 — 마른 땅과 빗물 저장 통 (환경 신호 현장 사진, 개념 일러스트)"
     },
-    "asia.korea.landmark": { "type": "image", "src": "assets/asia_korea_landmark_v2.webp", "original": "generated_images/exec-ae167fc2-822b-48ee-b9bd-364f979770f8.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "서울 창덕궁 인정전 대표 장소 관찰 일러스트" },
-    "asia.china.landmark": { "type": "image", "src": "assets/asia_china_landmark_v2.webp", "original": "generated_images/exec-458b5ea0-bd73-4b03-b1d4-903c1273d684.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "베이징 천단 대표 장소 관찰 일러스트" },
-    "asia.japan.landmark": { "type": "image", "src": "assets/asia_japan_landmark_v2.webp", "original": "generated_images/exec-f4482355-b841-4a6d-b34f-cb3cc1b5e9bf.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "도쿄 스카이트리 대표 장소 관찰 일러스트" },
-    "asia.mongolia.landmark": { "type": "image", "src": "assets/asia_mongolia_landmark_v2.webp", "original": "generated_images/exec-5dbdcdcc-add0-4d06-a763-d81521a54613.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "울란바토르 간단사원 대표 장소 관찰 일러스트" },
-    "asia.vietnam.landmark": { "type": "image", "src": "assets/asia_vietnam_landmark_v2.webp", "original": "generated_images/exec-c58a21ce-74fd-429b-8091-dc0690c88ece.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "껀터 닌끼에우 보행교 대표 장소 관찰 일러스트" },
-    "asia.nepal.landmark": { "type": "image", "src": "assets/asia_nepal_landmark_v2.webp", "original": "generated_images/exec-17b72bbb-6703-498c-9936-dc38d005943d.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "카트만두 더르바르 광장 대표 장소 관찰 일러스트" },
-    "asia.kazakhstan.landmark": { "type": "image", "src": "assets/asia_kazakhstan_landmark_v2.webp", "original": "generated_images/exec-1ed987bd-b207-4a88-868f-7c30e9f5b8ea.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "알마티 승천 대성당 대표 장소 관찰 일러스트" },
-    "asia.jordan.landmark": { "type": "image", "src": "assets/asia_jordan_landmark_v2.webp", "original": "generated_images/exec-dd77b9d9-8681-4129-947e-2e6f088ce784.png", "pages": ["p04"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "페트라 알카즈네 대표 장소 관찰 일러스트" },
-    "oceania.australia.landmark": { "type": "image", "src": "assets/oceania_australia_landmark_v2.webp", "original": "generated_images/exec-efc000b0-2836-4900-9324-c3b854d5f12e.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "시드니 오페라하우스 대표 장소 관찰 일러스트" },
-    "oceania.newzealand.landmark": { "type": "image", "src": "assets/oceania_newzealand_landmark_v2.webp", "original": "generated_images/exec-90e79ad4-ecca-4228-8a83-982eb26ec238.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "오클랜드 스카이 타워 대표 장소 관찰 일러스트" },
-    "oceania.fiji.landmark": { "type": "image", "src": "assets/oceania_fiji_landmark_v2.webp", "original": "generated_images/exec-023c4315-ed74-48fd-8de4-59716ff142d7.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "레부카 역사 항구 도시 대표 장소 관찰 일러스트" },
-    "oceania.png.landmark": { "type": "image", "src": "assets/oceania_png_landmark_v2.webp", "original": "generated_images/exec-701a2a10-8592-497d-afbd-5ed9bb85fc2e.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "포트모르즈비 국회의사당 대표 장소 관찰 일러스트" },
-    "oceania.palau.landmark": { "type": "image", "src": "assets/oceania_palau_landmark_v2.webp", "original": "generated_images/exec-4052cc11-7718-4466-9e6c-46120810dd67.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "팔라우 록아일랜드 남부 석호 대표 장소 관찰 일러스트" },
-    "oceania.fsm.landmark": { "type": "image", "src": "assets/oceania_fsm_landmark_v2.webp", "original": "generated_images/exec-4dc21d0f-955c-472d-8374-2870c8cce8ac.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "폰페이 난마돌 대표 장소 관찰 일러스트" },
-    "oceania.samoa.landmark": { "type": "image", "src": "assets/oceania_samoa_landmark_v2.webp", "original": "generated_images/exec-54d389af-771f-4e5c-b588-87eec4d37cc6.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "아피아 시계탑과 해안 대표 장소 관찰 일러스트" },
-    "oceania.cook.landmark": { "type": "image", "src": "assets/oceania_cook_landmark_v2.webp", "original": "generated_images/exec-4bf25d96-ca27-45a0-a829-581d57ae70bd.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "아바루아 CICC 교회 대표 장소 관찰 일러스트" },
-    "africa.morocco.landmark": { "type": "image", "src": "assets/africa_morocco_landmark_v2.webp", "original": "generated_images/exec-8ca63c88-e42b-452a-880c-1432235506e4.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "카사블랑카 하산 2세 모스크 대표 장소 관찰 일러스트" },
-    "africa.egypt.landmark": { "type": "image", "src": "assets/africa_egypt_landmark_v2.webp", "original": "generated_images/exec-2697c6fb-8b22-43de-a3ae-9f575eab8182.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "기자 피라미드와 스핑크스 대표 장소 관찰 일러스트" },
-    "africa.ghana.landmark": { "type": "image", "src": "assets/africa_ghana_landmark_v2.webp", "original": "generated_images/exec-e7b6c6cf-7c0e-49bb-8a55-88b13abcda77.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "쿠마시 주변 아산테 전통 건축물 관찰 일러스트" },
-    "africa.senegal.landmark": { "type": "image", "src": "assets/africa_senegal_landmark_v2.webp", "original": "generated_images/exec-2f175c07-f2f6-49e0-94be-143993e5e12b.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "생루이 페데르브 다리 대표 장소 관찰 일러스트" },
-    "africa.kenya.landmark": { "type": "image", "src": "assets/africa_kenya_landmark_v2.webp", "original": "generated_images/exec-99594b64-e793-48bb-934d-57cd2792a392.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "몸바사 포트 지저스 대표 장소 관찰 일러스트" },
-    "africa.ethiopia.landmark": { "type": "image", "src": "assets/africa_ethiopia_landmark_v2.webp", "original": "generated_images/exec-bfe78433-59c9-46f4-a7e6-72d1c5c1fa43.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "곤다르 파실 게비 대표 장소 관찰 일러스트" },
-    "africa.cameroon.landmark": { "type": "image", "src": "assets/africa_cameroon_landmark_v2.webp", "original": "generated_images/exec-348cf787-9d8e-44f5-8eb5-06ece9de4d14.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "야운데 통일 기념비 대표 장소 관찰 일러스트" },
-    "africa.drc.landmark": { "type": "image", "src": "assets/africa_drc_landmark_v2.webp", "original": "generated_images/exec-c1822c9c-2623-4599-8b0d-03188f49c435.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "킨샤사 리메테 교차로 탑 대표 장소 관찰 일러스트" },
-    "africa.south_africa.landmark": { "type": "image", "src": "assets/africa_south_africa_landmark_v2.webp", "original": "generated_images/exec-bf8329e3-9030-412f-acca-1b0ebb14824e.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "케이프타운 테이블산 대표 장소 관찰 일러스트" },
-    "africa.namibia.landmark": { "type": "image", "src": "assets/africa_namibia_landmark_v2.webp", "original": "generated_images/exec-a7b2c1e4-1405-41c2-b049-ba6d2bba5754.png", "pages": ["p06"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "트위펠폰테인 암각화 대표 장소 관찰 일러스트" },
+    "asia.korea.landmark": {
+      "type": "image",
+      "src": "assets/asia_korea_landmark_v2.webp",
+      "original": "generated_images/exec-ae167fc2-822b-48ee-b9bd-364f979770f8.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "서울 창덕궁 인정전 대표 장소 관찰 일러스트"
+    },
+    "asia.china.landmark": {
+      "type": "image",
+      "src": "assets/asia_china_landmark_v2.webp",
+      "original": "generated_images/exec-458b5ea0-bd73-4b03-b1d4-903c1273d684.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "베이징 천단 대표 장소 관찰 일러스트"
+    },
+    "asia.japan.landmark": {
+      "type": "image",
+      "src": "assets/asia_japan_landmark_v2.webp",
+      "original": "generated_images/exec-f4482355-b841-4a6d-b34f-cb3cc1b5e9bf.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "도쿄 스카이트리 대표 장소 관찰 일러스트"
+    },
+    "asia.mongolia.landmark": {
+      "type": "image",
+      "src": "assets/asia_mongolia_landmark_v2.webp",
+      "original": "generated_images/exec-5dbdcdcc-add0-4d06-a763-d81521a54613.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "울란바토르 간단사원 대표 장소 관찰 일러스트"
+    },
+    "asia.vietnam.landmark": {
+      "type": "image",
+      "src": "assets/asia_vietnam_landmark_v2.webp",
+      "original": "generated_images/exec-c58a21ce-74fd-429b-8091-dc0690c88ece.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "껀터 닌끼에우 보행교 대표 장소 관찰 일러스트"
+    },
+    "asia.nepal.landmark": {
+      "type": "image",
+      "src": "assets/asia_nepal_landmark_v2.webp",
+      "original": "generated_images/exec-17b72bbb-6703-498c-9936-dc38d005943d.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "카트만두 더르바르 광장 대표 장소 관찰 일러스트"
+    },
+    "asia.kazakhstan.landmark": {
+      "type": "image",
+      "src": "assets/asia_kazakhstan_landmark_v2.webp",
+      "original": "generated_images/exec-1ed987bd-b207-4a88-868f-7c30e9f5b8ea.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "알마티 승천 대성당 대표 장소 관찰 일러스트"
+    },
+    "asia.jordan.landmark": {
+      "type": "image",
+      "src": "assets/asia_jordan_landmark_v2.webp",
+      "original": "generated_images/exec-dd77b9d9-8681-4129-947e-2e6f088ce784.png",
+      "pages": [
+        "p04"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "페트라 알카즈네 대표 장소 관찰 일러스트"
+    },
+    "oceania.australia.landmark": {
+      "type": "image",
+      "src": "assets/oceania_australia_landmark_v2.webp",
+      "original": "generated_images/exec-efc000b0-2836-4900-9324-c3b854d5f12e.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "시드니 오페라하우스 대표 장소 관찰 일러스트"
+    },
+    "oceania.newzealand.landmark": {
+      "type": "image",
+      "src": "assets/oceania_newzealand_landmark_v2.webp",
+      "original": "generated_images/exec-90e79ad4-ecca-4228-8a83-982eb26ec238.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "오클랜드 스카이 타워 대표 장소 관찰 일러스트"
+    },
+    "oceania.fiji.landmark": {
+      "type": "image",
+      "src": "assets/oceania_fiji_landmark_v2.webp",
+      "original": "generated_images/exec-023c4315-ed74-48fd-8de4-59716ff142d7.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "레부카 역사 항구 도시 대표 장소 관찰 일러스트"
+    },
+    "oceania.png.landmark": {
+      "type": "image",
+      "src": "assets/oceania_png_landmark_v2.webp",
+      "original": "generated_images/exec-701a2a10-8592-497d-afbd-5ed9bb85fc2e.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "포트모르즈비 국회의사당 대표 장소 관찰 일러스트"
+    },
+    "oceania.palau.landmark": {
+      "type": "image",
+      "src": "assets/oceania_palau_landmark_v2.webp",
+      "original": "generated_images/exec-4052cc11-7718-4466-9e6c-46120810dd67.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "팔라우 록아일랜드 남부 석호 대표 장소 관찰 일러스트"
+    },
+    "oceania.fsm.landmark": {
+      "type": "image",
+      "src": "assets/oceania_fsm_landmark_v2.webp",
+      "original": "generated_images/exec-4dc21d0f-955c-472d-8374-2870c8cce8ac.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "폰페이 난마돌 대표 장소 관찰 일러스트"
+    },
+    "oceania.samoa.landmark": {
+      "type": "image",
+      "src": "assets/oceania_samoa_landmark_v2.webp",
+      "original": "generated_images/exec-54d389af-771f-4e5c-b588-87eec4d37cc6.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "아피아 시계탑과 해안 대표 장소 관찰 일러스트"
+    },
+    "oceania.cook.landmark": {
+      "type": "image",
+      "src": "assets/oceania_cook_landmark_v2.webp",
+      "original": "generated_images/exec-4bf25d96-ca27-45a0-a829-581d57ae70bd.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "아바루아 CICC 교회 대표 장소 관찰 일러스트"
+    },
+    "africa.morocco.landmark": {
+      "type": "image",
+      "src": "assets/africa_morocco_landmark_v2.webp",
+      "original": "generated_images/exec-8ca63c88-e42b-452a-880c-1432235506e4.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "카사블랑카 하산 2세 모스크 대표 장소 관찰 일러스트"
+    },
+    "africa.egypt.landmark": {
+      "type": "image",
+      "src": "assets/africa_egypt_landmark_v2.webp",
+      "original": "generated_images/exec-2697c6fb-8b22-43de-a3ae-9f575eab8182.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "기자 피라미드와 스핑크스 대표 장소 관찰 일러스트"
+    },
+    "africa.ghana.landmark": {
+      "type": "image",
+      "src": "assets/africa_ghana_landmark_v2.webp",
+      "original": "generated_images/exec-e7b6c6cf-7c0e-49bb-8a55-88b13abcda77.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "쿠마시 주변 아산테 전통 건축물 관찰 일러스트"
+    },
+    "africa.senegal.landmark": {
+      "type": "image",
+      "src": "assets/africa_senegal_landmark_v2.webp",
+      "original": "generated_images/exec-2f175c07-f2f6-49e0-94be-143993e5e12b.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "생루이 페데르브 다리 대표 장소 관찰 일러스트"
+    },
+    "africa.kenya.landmark": {
+      "type": "image",
+      "src": "assets/africa_kenya_landmark_v2.webp",
+      "original": "generated_images/exec-99594b64-e793-48bb-934d-57cd2792a392.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "몸바사 포트 지저스 대표 장소 관찰 일러스트"
+    },
+    "africa.ethiopia.landmark": {
+      "type": "image",
+      "src": "assets/africa_ethiopia_landmark_v2.webp",
+      "original": "generated_images/exec-bfe78433-59c9-46f4-a7e6-72d1c5c1fa43.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "곤다르 파실 게비 대표 장소 관찰 일러스트"
+    },
+    "africa.cameroon.landmark": {
+      "type": "image",
+      "src": "assets/africa_cameroon_landmark_v2.webp",
+      "original": "generated_images/exec-348cf787-9d8e-44f5-8eb5-06ece9de4d14.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "야운데 통일 기념비 대표 장소 관찰 일러스트"
+    },
+    "africa.drc.landmark": {
+      "type": "image",
+      "src": "assets/africa_drc_landmark_v2.webp",
+      "original": "generated_images/exec-c1822c9c-2623-4599-8b0d-03188f49c435.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "킨샤사 리메테 교차로 탑 대표 장소 관찰 일러스트"
+    },
+    "africa.south_africa.landmark": {
+      "type": "image",
+      "src": "assets/africa_south_africa_landmark_v2.webp",
+      "original": "generated_images/exec-bf8329e3-9030-412f-acca-1b0ebb14824e.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "케이프타운 테이블산 대표 장소 관찰 일러스트"
+    },
+    "africa.namibia.landmark": {
+      "type": "image",
+      "src": "assets/africa_namibia_landmark_v2.webp",
+      "original": "generated_images/exec-a7b2c1e4-1405-41c2-b049-ba6d2bba5754.png",
+      "pages": [
+        "p06"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "트위펠폰테인 암각화 대표 장소 관찰 일러스트"
+    },
     "env.signal.colombia": {
       "type": "image",
       "src": "assets/env_signal_colombia.webp",
@@ -2690,174 +3370,501 @@
       "note": "산 정상과 빙하가 잘리지 않도록 상단 안전 여백을 확보한 기후 변화 환경문제 선택 카드"
     },
     "stage6.yusra.before": {
-      "type": "image", "src": "assets/stage6_yusra_before.webp", "original": "assets/stage6/stage6_yusra_before.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_yusra_before.webp",
+      "original": "assets/stage6/stage6_yusra_before.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 유스라, 말할 기회를 얻기 전"
     },
     "stage6.yusra.after": {
-      "type": "image", "src": "assets/stage6_yusra_after.webp", "original": "assets/stage6/stage6_yusra_after.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_yusra_after.webp",
+      "original": "assets/stage6/stage6_yusra_after.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 유스라, 발언 순서를 나눈 뒤"
     },
     "stage6.kenji.before": {
-      "type": "image", "src": "assets/stage6_kenji_before.webp", "original": "assets/stage6/stage6_kenji_before.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_kenji_before.webp",
+      "original": "assets/stage6/stage6_kenji_before.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 켄지, 거절이 존중받기 전"
     },
     "stage6.kenji.after": {
-      "type": "image", "src": "assets/stage6_kenji_after.webp", "original": "assets/stage6/stage6_kenji_after.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_kenji_after.webp",
+      "original": "assets/stage6/stage6_kenji_after.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 켄지, 선택을 존중받은 뒤"
     },
     "stage6.amara.before": {
-      "type": "image", "src": "assets/stage6_amara_before.webp", "original": "assets/stage6/stage6_amara_before.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_amara_before.webp",
+      "original": "assets/stage6/stage6_amara_before.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 아마라, 발표가 멈춘 순간"
     },
     "stage6.amara.after": {
-      "type": "image", "src": "assets/stage6_amara_after.webp", "original": "assets/stage6/stage6_amara_after.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/stage6_amara_after.webp",
+      "original": "assets/stage6/stage6_amara_after.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "6단계 사진 비교 — 아마라, 경청과 응원을 받은 뒤"
     },
     "earth.council.globe": {
-      "type": "image", "src": "assets/earth_council_globe_korea_v3.webp", "original": "assets/earth-council/earth_council_globe_korea_v3.png",
-      "pages": ["p09"], "preload": "page", "alpha": true, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/earth_council_globe_korea_v3.webp",
+      "original": "assets/earth-council/earth_council_globe_korea_v3.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
       "note": "한반도·동아시아 중심의 세계 친구 지구회의 문제 선택 화면 전용 연결 지구본"
     },
     "earth.signal.map": {
-      "type": "image", "src": "assets/earth_signal_map_v2.webp", "original": "assets/earth-council/earth_signal_map_v2.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/earth_signal_map_v2.webp",
+      "original": "assets/earth-council/earth_signal_map_v2.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "여섯 환경 신호의 실제 지역과 클릭 지점을 맞춘 최종 단계 전용 세계지도"
     },
     "earth.council.finale": {
-      "type": "image", "src": "assets/earth_council_finale_korea_v3.webp", "original": "assets/earth-council/earth_council_finale_korea_v3.png",
-      "pages": ["p09"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/earth_council_finale_korea_v3.webp",
+      "original": "assets/earth-council/earth_council_finale_korea_v3.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "한반도·동아시아 중심의 세계 친구 지구회의 공동약속 완성 화면 전용 우주 속 지구"
     },
     "oceania.signal.coral.before": {
-      "type": "image", "src": "assets/oceania-signals/coral-before.webp", "original": "generated_images/exec-b2442174-956f-40a3-b570-ec7c5f935c06.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/coral-before.webp",
+      "original": "generated_images/exec-b2442174-956f-40a3-b570-ec7c5f935c06.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "따뜻해진 바다와 산호 변화 비교 전 — 건강한 산호초"
     },
     "oceania.signal.coral.after": {
-      "type": "image", "src": "assets/oceania-signals/coral-after.webp", "original": "generated_images/exec-02a4b530-f2e5-40d0-8df0-1cf11ff4e4eb.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/coral-after.webp",
+      "original": "generated_images/exec-02a4b530-f2e5-40d0-8df0-1cf11ff4e4eb.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "따뜻해진 바다와 산호 변화 비교 후 — 백화된 산호초"
     },
     "oceania.signal.debris.before": {
-      "type": "image", "src": "assets/oceania-signals/debris-before.webp", "original": "generated_images/exec-957ac920-8644-43ea-bd49-e6cddd10c38d.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/debris-before.webp",
+      "original": "generated_images/exec-957ac920-8644-43ea-bd49-e6cddd10c38d.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "바다를 건너온 쓰레기 비교 전 — 깨끗한 석호"
     },
     "oceania.signal.debris.after": {
-      "type": "image", "src": "assets/oceania-signals/debris-after.webp", "original": "generated_images/exec-19f5f435-71b9-477e-8bfe-0bd9fed75d8b.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/debris-after.webp",
+      "original": "generated_images/exec-19f5f435-71b9-477e-8bfe-0bd9fed75d8b.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "바다를 건너온 쓰레기 비교 후 — 해류로 모인 해양 쓰레기"
     },
     "oceania.signal.water.before": {
-      "type": "image", "src": "assets/oceania-signals/water-before.webp", "original": "generated_images/exec-3b9962a5-2828-4f9d-9240-7b3fe33761c2.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/water-before.webp",
+      "original": "generated_images/exec-3b9962a5-2828-4f9d-9240-7b3fe33761c2.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "높아진 물과 거센 날씨 비교 전 — 잔잔한 해안 마을"
     },
     "oceania.signal.water.after": {
-      "type": "image", "src": "assets/oceania-signals/water-after.webp", "original": "generated_images/exec-f9c1382c-8489-4fe6-825c-3e40a556bcac.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/water-after.webp",
+      "original": "generated_images/exec-f9c1382c-8489-4fe6-825c-3e40a556bcac.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "높아진 물과 거센 날씨 비교 후 — 높은 파도와 폭풍"
     },
     "oceania.signal.weather.before": {
-      "type": "image", "src": "assets/oceania-signals/weather-before.webp", "original": "generated_images/exec-35727b6f-bd67-4dcb-a3c6-0790c126bf94.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/weather-before.webp",
+      "original": "generated_images/exec-35727b6f-bd67-4dcb-a3c6-0790c126bf94.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "바람과 날씨가 바꾼 이동 비교 전 — 잔잔한 섬 항구"
     },
     "oceania.signal.weather.after": {
-      "type": "image", "src": "assets/oceania-signals/weather-after.webp", "original": "generated_images/exec-6e65f14d-60fe-4ae9-ab8d-2c3abb749195.png",
-      "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/oceania-signals/weather-after.webp",
+      "original": "generated_images/exec-6e65f14d-60fe-4ae9-ab8d-2c3abb749195.png",
+      "pages": [
+        "p08"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "바람과 날씨가 바꾼 이동 비교 후 — 강풍으로 멈춘 항로"
     },
     "asia.signal.mongolia.before": {
-      "type": "image", "src": "assets/asia-signals/mongolia-before-v1.webp", "original": "generated_images/exec-544eebc5-aaf4-4aa1-8b78-8154a82a0e4b.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/mongolia-before-v1.webp",
+      "original": "generated_images/exec-544eebc5-aaf4-4aa1-8b78-8154a82a0e4b.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "몽골 초원의 물 변화 비교 전 — 풀이 자라고 우물에 물이 있는 때"
     },
     "asia.signal.mongolia.after": {
-      "type": "image", "src": "assets/asia-signals/mongolia-after-v1.webp", "original": "generated_images/exec-7547bfd5-56a3-43ba-b186-edf4e85d37cc.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/mongolia-after-v1.webp",
+      "original": "generated_images/exec-7547bfd5-56a3-43ba-b186-edf4e85d37cc.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "몽골 초원의 물 변화 비교 후 — 긴 건조기로 풀이 마르고 물이 줄어든 때"
     },
     "asia.signal.japan.before": {
-      "type": "image", "src": "assets/asia-signals/japan-before-v1.webp", "original": "generated_images/exec-9e35c1e6-c58c-4de9-a7f5-616713303a39.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/japan-before-v1.webp",
+      "original": "generated_images/exec-9e35c1e6-c58c-4de9-a7f5-616713303a39.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "일본 해안 공원의 더위 비교 전 — 온화한 날의 산책 공간"
     },
     "asia.signal.japan.after": {
-      "type": "image", "src": "assets/asia-signals/japan-after-v3.webp", "original": "generated_images/exec-3b288a4b-10e8-4815-b867-d5c8b015a3a7.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/japan-after-v3.webp",
+      "original": "generated_images/exec-3b288a4b-10e8-4815-b867-d5c8b015a3a7.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "일본 해안 공원의 폭염 비교 후 — 나무가 거의 사라지고 포장면이 넓어져 그늘이 부족한 모습"
     },
     "asia.signal.vietnam.before": {
-      "type": "image", "src": "assets/asia-signals/vietnam-before-v1.webp", "original": "generated_images/exec-45bd26b8-0448-454b-b256-952971578a91.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/vietnam-before-v1.webp",
+      "original": "generated_images/exec-45bd26b8-0448-454b-b256-952971578a91.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "메콩강 삼각주 염분 변화 비교 전 — 담수 운하와 푸른 논"
     },
     "asia.signal.vietnam.after": {
-      "type": "image", "src": "assets/asia-signals/vietnam-after-v1.webp", "original": "generated_images/exec-18e9776e-4078-4492-996a-9ce902c03d0a.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/vietnam-after-v1.webp",
+      "original": "generated_images/exec-18e9776e-4078-4492-996a-9ce902c03d0a.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "메콩강 삼각주 염분 변화 비교 후 — 염수 유입과 농업 적응"
     },
     "asia.signal.nepal.before": {
-      "type": "image", "src": "assets/asia-signals/nepal-before-v1.webp", "original": "generated_images/exec-a0232fa7-8fe4-47c9-8e78-52ed10f54862.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/nepal-before-v1.webp",
+      "original": "generated_images/exec-a0232fa7-8fe4-47c9-8e78-52ed10f54862.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "네팔 빙하와 계곡물 비교 전 — 넓은 빙하와 풍부한 물길"
     },
     "asia.signal.nepal.after": {
-      "type": "image", "src": "assets/asia-signals/nepal-after-v1.webp", "original": "generated_images/exec-5eae94e0-0b19-4785-a25c-9f50db49f347.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/nepal-after-v1.webp",
+      "original": "generated_images/exec-5eae94e0-0b19-4785-a25c-9f50db49f347.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "네팔 빙하와 계곡물 비교 후 — 줄어든 빙하와 가늘어진 물길"
     },
     "asia.signal.kazakhstan.before": {
-      "type": "image", "src": "assets/asia-signals/kazakhstan-before-v1.webp", "original": "generated_images/exec-356223cd-fda8-4fc2-ac53-80e21bad6fd0.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/kazakhstan-before-v1.webp",
+      "original": "generated_images/exec-356223cd-fda8-4fc2-ac53-80e21bad6fd0.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "카자흐스탄 공간 비교 첫 장면 — 사르아르카 초원과 습지"
     },
     "asia.signal.kazakhstan.after": {
-      "type": "image", "src": "assets/asia-signals/kazakhstan-after-v2.webp", "original": "generated_images/exec-99dc9db1-6320-441b-983e-1119ae2908b4.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/kazakhstan-after-v2.webp",
+      "original": "generated_images/exec-99dc9db1-6320-441b-983e-1119ae2908b4.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "카자흐스탄 환경 변화 후 — 도시 확장으로 줄고 끊어진 초원 습지"
     },
     "asia.signal.jordan.before": {
-      "type": "image", "src": "assets/asia-signals/jordan-before-v1.webp", "original": "generated_images/exec-0643b82b-314c-4ece-835b-d52ea903d293.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/jordan-before-v1.webp",
+      "original": "generated_images/exec-0643b82b-314c-4ece-835b-d52ea903d293.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "요르단 물 관리 비교 전 — 비가 적은 사막의 자연 물길"
     },
     "asia.signal.jordan.after": {
-      "type": "image", "src": "assets/asia-signals/jordan-after-v2.webp", "original": "generated_images/exec-1f7f12b9-a4db-45ba-9c0a-48afd7a90f04.png",
-      "pages": ["p07"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/asia-signals/jordan-after-v2.webp",
+      "original": "generated_images/exec-1f7f12b9-a4db-45ba-9c0a-48afd7a90f04.png",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "요르단 가뭄 비교 후 — 오래된 폭염과 적은 비로 거의 마른 물웅덩이"
     },
     "europe.signal.france_heat.after": {
-      "type": "image", "src": "assets/europe-signals/france-heat-after-v1.webp", "original": "generated_images/exec-67d7e0b3-fc42-4dbc-827f-b5b1fda95cee.png",
-      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/europe-signals/france-heat-after-v1.webp",
+      "original": "generated_images/exec-67d7e0b3-fc42-4dbc-827f-b5b1fda95cee.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "파리 센강 비교 후 — 폭염과 줄어든 나무 그늘"
     },
     "europe.signal.germany_flood.after": {
-      "type": "image", "src": "assets/europe-signals/germany-flood-after-v1.webp", "original": "generated_images/exec-e543086a-be1d-4609-be53-166250d60821.png",
-      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/europe-signals/germany-flood-after-v1.webp",
+      "original": "generated_images/exec-e543086a-be1d-4609-be53-166250d60821.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "라인강 비교 후 — 큰비로 높아진 강물과 안전 대비"
     },
     "europe.signal.italy_drought.after": {
-      "type": "image", "src": "assets/europe-signals/italy-drought-after-v2.webp", "original": "assets/generated/europe_italy_drought_after_v2_source.png",
-      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/europe-signals/italy-drought-after-v2.webp",
+      "original": "assets/generated/europe_italy_drought_after_v2_source.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "돌로미티 비교 후 — 죽은 나무, 갈라진 흙, 마른 물길로 가뭄 피해가 분명한 장면"
     },
     "europe.signal.greece_heat.after": {
-      "type": "image", "src": "assets/europe-signals/greece-heat-after-v2.webp", "original": "assets/generated/europe_greece_heat_after_v2_source.png",
-      "pages": ["p05"], "preload": "page", "alpha": false, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/europe-signals/greece-heat-after-v2.webp",
+      "original": "assets/generated/europe_greece_heat_after_v2_source.png",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
       "note": "그리스 섬마을 비교 후 — 마른 식물, 빈 급수대, 물통 줄과 지친 표정으로 물 부족이 분명한 장면"
     },
     "earth.completion.globe": {
-      "type": "image", "src": "assets/earth_completion_globe_korea_v3.webp", "original": "assets/earth-council/earth_completion_globe_korea_v3.png",
-      "pages": ["p10"], "preload": "page", "alpha": true, "license": "AI-generated (project original)",
+      "type": "image",
+      "src": "assets/earth_completion_globe_korea_v3.webp",
+      "original": "assets/earth-council/earth_completion_globe_korea_v3.png",
+      "pages": [
+        "p10"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
       "note": "한반도·동아시아 중심의 세계 연결 완주 여섯 조각 퍼즐 전용 연결 지구"
+    },
+    "europe.uk.dover": {
+      "type": "image",
+      "src": "assets/europe_uk_dover.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "영국 도버 흰 절벽 해안 관찰 그림"
+    },
+    "europe.uk.thames": {
+      "type": "image",
+      "src": "assets/europe_uk_thames.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "영국 런던 템스강 곁 등굣길 관찰 그림"
+    },
+    "europe.uk.edinburgh": {
+      "type": "image",
+      "src": "assets/europe_uk_edinburgh.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p05"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "영국 에든버러 성과 도시 관찰 그림"
+    },
+    "americas.scene.usa.west": {
+      "type": "image",
+      "src": "assets/americas_scene_usa_west.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "미국 서부 해안 장면"
+    },
+    "americas.scene.usa.plains": {
+      "type": "image",
+      "src": "assets/americas_scene_usa_plains.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "미국 중부 대평원 장면"
+    },
+    "americas.scene.usa.east": {
+      "type": "image",
+      "src": "assets/americas_scene_usa_east.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "미국 동부 도시 장면"
+    },
+    "americas.scene.usa.landmark": {
+      "type": "image",
+      "src": "assets/americas_scene_usa_landmark.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "미국 뉴욕 자유의 여신상"
+    },
+    "americas.student5": {
+      "type": "image",
+      "src": "assets/americas_student5.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "license": "placeholder (교체 예정)",
+      "note": "미국 친구 리암 전신(투명 배경)",
+      "alpha": true
     }
   }
 }

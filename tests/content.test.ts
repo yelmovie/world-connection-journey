@@ -67,9 +67,9 @@ describe('콘텐츠 공통 스키마', () => {
     expect(() => validateContentDocument(badKey, 'oceania')).toThrow(/필드 이름/);
   });
 
-  it('europe는 7개 나라에 환경·생활·문화 장면을 각각 제공한다', () => {
-    expect(europe.countries).toHaveLength(7);
-    const expected = new Set(['france', 'germany', 'italy', 'spain', 'poland', 'greece', 'czechia']);
+  it('europe는 8개 나라에 환경·생활·문화 장면을 각각 제공한다', () => {
+    expect(europe.countries).toHaveLength(8);
+    const expected = new Set(['france', 'germany', 'italy', 'spain', 'poland', 'greece', 'czechia', 'uk']);
     const visualIds = new Set<string>();
     for (const country of europe.countries) {
       expect(expected.has(country.id), country.id).toBe(true);

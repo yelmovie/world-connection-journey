@@ -265,7 +265,7 @@ const PAGE_CSS = `
 .regional-asia .regional-note-group:first-child .regional-note-list{grid-template-columns:repeat(2,minmax(0,1fr))}
 .regional-info{align-self:start;min-height:48px;padding:8px 16px;border-radius:999px;font-size:max(16px,var(--fs-small))}
 /* 구역을 고르기 전에도 사이드가 비어 보이지 않게 — 권역을 바로 고를 수 있는 목록 */
-.regional-area-picks{flex:1 1 auto;min-height:0;display:grid;gap:8px;align-content:start;overflow:auto}
+.regional-area-picks{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;align-content:start;overflow:auto} /* 나라가 8개여도 두 열로 스크롤 없이 */
 .regional-area-pick{justify-content:flex-start;text-align:left;min-height:56px;padding:9px 14px;border-radius:16px;font-size:max(17px,var(--fs-small))}
 .regional-area-pick span{display:block;margin-top:2px;font:700 max(15px,calc(var(--fs-small) - 1px))/1.25 var(--font-body);color:var(--c-ink-soft)}
 /* 장면 모달은 그림이 주인공 — 기본 모달 폭(680px)으로는 사진이 작아져 넓힌다 */

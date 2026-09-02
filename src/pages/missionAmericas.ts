@@ -8,6 +8,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { enablePickPlace, enableRangeDrag, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow } from '../ui/feedback';
+import { keepFitted } from '../ui/fitText';
 import { burstConfetti, popBounce } from '../ui/fx';
 import { openCharacterDialogue } from '../ui/characterDialogue';
 import { createGuide, type GuideController } from '../ui/guide';
@@ -80,12 +81,12 @@ interface AmericasContent {
 }
 
 function assertContent(content: AmericasContent): void {
-  if (!Array.isArray(content.students) || content.students.length !== 4) {
-    throw new Error('아메리카 콘텐츠 오류: students는 네 친구 배열이어야 해요.');
+  if (!Array.isArray(content.students) || content.students.length < 4) {
+    throw new Error('아메리카 콘텐츠 오류: students는 네 명 이상의 친구 배열이어야 해요.');
   }
   const e = content.explore;
-  if (!e || e.postcards?.length !== 4 || e.countries?.length !== 4 || e.lenses?.length !== 3) {
-    throw new Error('아메리카 콘텐츠 오류: explore 섹션(대화창 4·나라 4·렌즈 3)이 필요해요.');
+  if (!e || (e.postcards?.length ?? 0) < 4 || (e.countries?.length ?? 0) < 4 || e.countries.length !== e.postcards.length || e.lenses?.length !== 3) {
+    throw new Error('아메리카 콘텐츠 오류: explore 섹션(대화창·나라 4개 이상 같은 수, 렌즈 3)이 필요해요.');
   }
   for (const c of e.countries) {
     if (c.stops.length < 3 || c.bag.length < 3) {
@@ -257,7 +258,7 @@ const PAGE_CSS = `
 .am-scene > .page-body > .am-stage { width:100%; max-width:none; }
 .am-scene .am-stage > .exp-map-fit > .aspect-fit { place-items:start center; }
 .am-scene[data-screen=landing] .exp-wrap { gap:clamp(8px,1vw,16px); }
-.am-scene[data-screen=landing] .exp-cards { align-self:stretch; height:100%; max-height:none; overflow:hidden; display:grid; grid-template-rows:auto auto repeat(4,minmax(0,1fr)); gap:clamp(5px,.65vh,8px); }
+.am-scene[data-screen=landing] .exp-cards { align-self:stretch; height:100%; max-height:none; overflow:hidden; display:grid; grid-template-rows:auto auto; grid-auto-rows:minmax(0,1fr); gap:clamp(5px,.65vh,8px); }
 #scene-root .am-scene[data-screen=landing] .exp-cards.panel { align-self:stretch; max-height:none; }
 .am-scene[data-screen=landing] .exp-cards__title { font-size:clamp(28px,2vw,40px); line-height:1; margin-bottom:2px; }
 .am-scene[data-screen=landing] .postcard { min-height:44px; height:100%; padding-block:clamp(6px,.75vh,10px); font-size:clamp(16px,1.03vw,20px); line-height:1.3; overflow:hidden; }
@@ -696,6 +697,8 @@ export function createPage(): Page {
           items.push(card);
           side.appendChild(card);
         });
+        // 카드가 다섯 장이라 낮은 창에선 카드마다 글자를 줄여 잘리지 않게 한다
+        items.forEach((card) => keepFitted(card, () => [card], 13));
 
         const next = nextButton('탐험 렌즈 꺼내기', 'lens');
         const refresh = (): void => {
@@ -856,7 +859,7 @@ export function createPage(): Page {
         const allDone = E.countries.every((c) => S.countries[c.id]?.done);
         next.disabled = !allDone;
         stage.replaceChildren(fitMap(map));
-        setBottom(allDone ? '네 나라를 모두 탐험했어!' : '나라를 눌러 그 속으로 들어가 보자', next);
+        setBottom(allDone ? '모든 나라를 다 탐험했어!' : '나라를 눌러 그 속으로 들어가 보자', next);
         announceGuide(allDone
           ? '네 친구를 모두 만났어! 이제 친구들의 하루를 나란히 놓고 비교해 볼까?'
           : '이제 나라 속으로 들어가 보자. 나라마다 탐험하는 방법이 달라!');
@@ -1094,7 +1097,7 @@ export function createPage(): Page {
         stage.replaceChildren(layout);
         const nextStopIndex = c.stops.findIndex((stop) => !P.stopsSeen.includes(stop.id));
         announceGuide(isOrderedRoute && nextStopIndex >= 0
-          ? `${c.mode === 'river' ? '카누를 타고 강을 내려가자!' : '발자국을 따라 고원으로 올라가자!'} 주황색 ${nextStopIndex + 1}번부터 차례로 눌러 봐.`
+          ? `${c.mode === 'river' ? '카누를 타고 강을 내려가자!' : c.mode === 'altitude' ? '발자국을 따라 고원으로 올라가자!' : '발자국을 따라 차례대로 가 보자!'} 주황색 ${nextStopIndex + 1}번부터 차례로 눌러 봐.`
           : c.modeGuide);
         refresh();
       };
@@ -1278,7 +1281,7 @@ export function createPage(): Page {
         finishBtn.addEventListener('click', () => finish());
         stage.replaceChildren(wrap);
         refresh();
-        announceGuide('네 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');
+        announceGuide('다섯 나라에서 모은 이야기가 물·숲·생활 신호가 되었어. 마지막 지구회의에서 쓰이게 될 거야!');
       };
 
       const finish = (): void => {

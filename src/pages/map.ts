@@ -41,8 +41,8 @@ interface Spot {
 /** 화살표키 탐색 순서와 지도 번호가 같다. */
 const SPOTS: Spot[] = [
   {
-    id: 'americas', name: '아메리카', route: '#/mission/americas', topic: '대륙 탐험과 생활', minutes: 12,
-    objective: '지도를 직접 움직여 네 나라를 탐험하고, 그곳에 사는 친구들을 만나 봐.',
+    id: 'americas', name: '북·남아메리카', route: '#/mission/americas', topic: '두 대륙 탐험과 생활', minutes: 12,
+    objective: '북아메리카와 남아메리카, 두 대륙의 다섯 나라를 탐험하고 그곳에 사는 친구들을 만나 봐.',
     x: 0.70, y: 0.34, assetId: 'americas.student1', assetAlt: '아메리카 미션에서 만날 친구'
   },
   {

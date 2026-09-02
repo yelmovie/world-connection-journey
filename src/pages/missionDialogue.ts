@@ -577,7 +577,7 @@ export function createPage(): Page {
         if (bag.length > 0 && matched.size === 0 && !oxDone) {
           openModal({
             id: 'dialogue-bag',
-            title: '다섯 대륙에서 모아 온 이야기',
+            title: '여섯 대륙에서 모아 온 이야기',
             bodyHtml: `<ul class="dl-bag-list">${bag
               .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
               .join('')}</ul><p style="margin-top:12px;font-weight:800">이제 이 이야기들을 들고 세계 친구들을 만나러 가자.</p>`,
