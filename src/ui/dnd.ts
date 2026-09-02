@@ -255,7 +255,8 @@ export function enableRangeDrag(input: HTMLInputElement): () => void {
   };
   const onDown = (ev: PointerEvent): void => {
     ev.preventDefault();
-    try { input.setPointerCapture(ev.pointerId); } catch { /* 이미 해제된 포인터 무시 */ }
+    // 터치는 암시적 캡처가 있다 — 명시 캡처를 걸면 크롬이 이 요소의 다음 탭 click을 삼킨다
+    if (ev.pointerType !== 'touch') { try { input.setPointerCapture(ev.pointerId); } catch { /* 이미 해제된 포인터 무시 */ } }
     input.focus({ preventScroll: true });
     apply(ev);
     const onMove = (e: PointerEvent) => apply(e);

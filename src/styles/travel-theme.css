@@ -189,9 +189,9 @@
   transform: translateY(-1px);
 }
 
-#scene-root .page .btn:active,
-#overlay-root .btn:active,
-.prologue-overlay .btn:active {
+#scene-root .page .btn:active, #scene-root .page .btn.is-pressed,
+#overlay-root .btn:active, #overlay-root .btn.is-pressed,
+.prologue-overlay .btn:active, .prologue-overlay .btn.is-pressed {
   transform: translateY(2px) scale(0.985);
   box-shadow: 0 1px 0 rgba(15, 45, 69, 0.18), 0 4px 12px rgba(9, 34, 56, 0.14);
 }

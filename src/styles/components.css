@@ -11,20 +11,23 @@
   text-shadow: none;
 }
 .btn:hover { filter: brightness(1.06); }
-.btn:active { transform: translateY(3px); box-shadow: 0 0 0 #1a67b5, var(--shadow-card); }
+.btn:active, .btn.is-pressed { transform: translateY(3px); box-shadow: 0 0 0 #1a67b5, var(--shadow-card); }
 .btn:disabled {
   cursor: not-allowed; filter: grayscale(0.7) brightness(0.9);
   transform: none; opacity: 0.7;
 }
 .btn-primary { background: var(--c-gold); color: #5a3c00; box-shadow: var(--edge) #c69a2e, var(--shadow-card); text-shadow: none; }
-.btn-primary:active { box-shadow: 0 0 0 #c69a2e, var(--shadow-card); }
+.btn-primary:active, .btn-primary.is-pressed { box-shadow: 0 0 0 #c69a2e, var(--shadow-card); }
 .btn-success { background: var(--c-success); box-shadow: var(--edge) #1f8158, var(--shadow-card); }
-.btn-success:active { box-shadow: 0 0 0 #1f8158, var(--shadow-card); }
+.btn-success:active, .btn-success.is-pressed { box-shadow: 0 0 0 #1f8158, var(--shadow-card); }
 .btn-ghost {
   background: rgba(255,255,255,0.85); color: var(--c-ink);
   box-shadow: var(--edge) rgba(25,50,77,0.25), var(--shadow-card); text-shadow: none;
 }
-.btn-ghost:active { box-shadow: 0 0 0 rgba(25,50,77,0.25), var(--shadow-card); }
+.btn-ghost:active, .btn-ghost.is-pressed { box-shadow: 0 0 0 rgba(25,50,77,0.25), var(--shadow-card); }
+/* .btn이 아닌 버튼(카드·핀·캐릭터·화살표)도 누르는 순간 살짝 줄어든다 — scale은 transform과 따로 합쳐져 위치를 안 깨뜨린다 */
+button:not(.btn):is(:active, .is-pressed), [role="button"]:is(:active, .is-pressed) { scale: .96; }
+button:disabled:is(:active, .is-pressed) { scale: none; }
 .btn-icon {
   width: clamp(52px, 3.4vw, 64px); height: clamp(52px, 3.4vw, 64px);
   padding: 0; border-radius: 50%; flex: 0 0 auto;
@@ -263,7 +266,9 @@
   position:absolute;left:50%;bottom:calc(var(--bottom-bar-h) + var(--sp-3));transform:translateX(-50%);
   display: flex; flex-direction: column; gap: var(--sp-2); z-index: var(--z-toast);
   align-items: center;
+  pointer-events:none; /* 토스트가 떠 있는 동안 아래 조작(레일·버튼)을 가로채지 않게 */
 }
+.toast-wrap > * { pointer-events:auto; }
 #app:has(.completion-page) .toast-wrap { top:calc(var(--top-bar-h) + var(--sp-2));bottom:auto; }
 #overlay-root:has(.modal-backdrop) .toast-wrap { display:none; }
 .toast {

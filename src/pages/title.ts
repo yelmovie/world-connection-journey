@@ -127,7 +127,7 @@ const TITLE_CSS = `
 .title-speech[data-side="right"] .title-speech__name { color:#a54379; }
 .title-speech__text { margin:0;min-height:2.8em;font-size:20px;font-weight:800;line-height:1.4;word-break:keep-all; }
 .title-speech__close {
-  position:absolute;top:9px;right:10px;width:38px;height:38px;padding:0;border:0;border-radius:50%;
+  position:absolute;top:6px;right:6px;width:44px;height:44px;padding:0;border:0;border-radius:50%;
   color:var(--c-navy);background:rgba(23,58,91,.09);font-size:25px;line-height:1;cursor:pointer;
 }
 .title-speech__hint { display:block;margin-top:8px;color:#6f5514;font-size:15px;font-weight:850; }
@@ -168,7 +168,7 @@ const TITLE_CSS = `
   .title-character { width:min(27vw,172px,28.5vh);max-height:28.5vh;bottom:8px; }
   .title-character--left { left:4px; }
   .title-character--right { right:4px; }
-  .title-speech { left:8px;width:min(43vw,220px);bottom:calc(28.5vh + 18px);min-height:106px;padding:14px 42px 12px 14px;border-radius:20px; }
+  .title-speech { left:8px;width:min(43vw,220px);bottom:calc(28.5vh + 18px);min-height:106px;padding:14px 52px 12px 14px;border-radius:20px; }
   .title-speech[data-side="right"] { right:8px; }
   .title-speech__name { font-size:18px; }
   .title-speech__text { font-size:16px; }

@@ -383,7 +383,7 @@ const PASSPORT_CSS = `
 .passport-cover-owner span { color:#39706c;font-size:clamp(15px,1vw,18px);font-weight:950;letter-spacing:.06em; }
 .passport-cover-name { max-width:100%;color:#102f49;text-align:center;font-family:var(--font-head);font-size:clamp(24px,1.75vw,32px);font-weight:950;line-height:1.08;word-break:keep-all;overflow-wrap:anywhere; }
 
-.passport-selection-layout { min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 126px;gap:10px;touch-action:pan-y; }
+.passport-selection-layout { min-height:0;display:grid;grid-template-rows:minmax(0,1fr) 126px;gap:10px; }
 .passport-selector-stage { min-height:0;display:grid;grid-template-columns:72px minmax(0,1fr) 72px;gap:12px;align-items:center; }
 .passport-arrow {
   width:64px;height:64px;padding:0;border:2px solid rgba(38,75,103,.22);border-radius:50%;background:rgba(255,255,255,.88);
@@ -391,6 +391,7 @@ const PASSPORT_CSS = `
 }
 .passport-arrow svg { width:30px;height:30px;stroke:currentColor;stroke-width:3;fill:none; }
 .passport-feature {
+  touch-action:none; /* 무대 위 좌우 스와이프는 우리가 pointer 이벤트로 받는다 */
   position:relative;height:100%;min-height:260px;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(320px,1fr);
   align-items:center;gap:clamp(20px,4vw,70px);padding:8px clamp(14px,3vw,46px);
 }
@@ -927,6 +928,7 @@ export function createPage(): Page {
         surface.addEventListener('pointerdown', (event) => {
           if (event.pointerType === 'mouse' || (event.target as HTMLElement).closest('button')) return;
           startX = event.clientX;
+          surface.setPointerCapture(event.pointerId); // 손가락이 무대 밖으로 나가도 pointerup을 받는다
         });
         surface.addEventListener('pointerup', (event) => {
           if (startX === null) return;

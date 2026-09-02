@@ -23,7 +23,7 @@ export function enableMapZoom(viewport: HTMLElement, target: HTMLElement, option
   let scale = 1;
   let x = 0;
   let y = 0;
-  const points = new Map<number, { x: number; y: number; start: { x: number; y: number }; onControl: boolean; captured: boolean }>();
+  const points = new Map<number, { x: number; y: number; start: { x: number; y: number }; onControl: boolean; captured: boolean; touch: boolean }>();
   let pinchStart: { distance: number; scale: number } | null = null;
   let dragFrom: { x: number; y: number } | null = null;
   let gestureMoved = false;
@@ -60,7 +60,8 @@ export function enableMapZoom(viewport: HTMLElement, target: HTMLElement, option
 
   const capture = (id: number): void => {
     const p = points.get(id);
-    if (!p || p.captured) return;
+    // 터치는 암시적 캡처가 있다 — 명시 캡처를 걸면 크롬이 다음 탭의 click을 삼킨다
+    if (!p || p.captured || p.touch) return;
     try { viewport.setPointerCapture(id); p.captured = true; } catch { /* 이미 사라진 포인터 */ }
   };
   const beginGesture = (): void => {
@@ -74,7 +75,7 @@ export function enableMapZoom(viewport: HTMLElement, target: HTMLElement, option
   const onDown = (event: PointerEvent): void => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     const onControl = Boolean((event.target as HTMLElement).closest('button, input, a, select, textarea'));
-    points.set(event.pointerId, { x: event.clientX, y: event.clientY, start: { x: event.clientX, y: event.clientY }, onControl, captured: false });
+    points.set(event.pointerId, { x: event.clientX, y: event.clientY, start: { x: event.clientX, y: event.clientY }, onControl, captured: false, touch: event.pointerType === 'touch' });
     if (points.size === 2) {
       pinchStart = { distance: distance(), scale };
       dragFrom = null;
@@ -118,7 +119,8 @@ export function enableMapZoom(viewport: HTMLElement, target: HTMLElement, option
     if (points.size === 0) {
       dragFrom = null;
       if (gestureMoved) {
-        suppressClickUntil = performance.now() + 400;
+        // 끌기가 만든 click은 pointerup 직후 수십 ms 안에 온다 — 창을 길게 잡으면 바로 이어 누른 버튼까지 삼킨다
+        suppressClickUntil = performance.now() + 150;
         target.style.transition = '';
         gestureMoved = false;
       }

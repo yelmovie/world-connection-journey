@@ -119,7 +119,7 @@ const CSS = `
 /* 사진은 16:9를 지킨다 — 글 아래 남는 높이(약 250px 제외)에 맞춰 폭을 정하고 가운데 둔다 */
 .country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - 300px) * 16 / 9));min-width:min(100%,360px);aspect-ratio:16/9;min-height:0}
 .country-detail:has(.detail-caption[hidden]) .detail-photo{width:min(100%,calc((100cqh - 70px) * 16 / 9));min-height:0}
-.detail-photo{position:relative;flex:1 1 auto;width:100%;min-height:clamp(150px,20vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;overflow:hidden;touch-action:pan-y;user-select:none;cursor:grab}
+.detail-photo{position:relative;flex:1 1 auto;width:100%;min-height:clamp(150px,20vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;overflow:hidden;touch-action:none;user-select:none;cursor:grab} /* pan-y로 두면 빠른 스와이프가 fling으로 잡혀 바로 다음 탭을 크롬이 삼킨다 */
 .detail-photo:active{cursor:grabbing}
 .detail-photo:focus-visible{outline:5px solid #ffe052;outline-offset:3px}
 .detail-photo-nav{position:absolute;z-index:2;top:50%;width:clamp(56px,5vw,74px);height:clamp(84px,11vh,124px);transform:translateY(-50%);border:0;background:rgba(9,47,71,.7);color:#fff;font-size:clamp(30px,2.6vw,44px);font-weight:950;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;transition:background .16s ease,transform .16s ease}
@@ -340,12 +340,16 @@ export function createPage(): Page {
         photo.querySelector('[data-photo-prev]')?.addEventListener('click',(event)=>{event.stopPropagation();move(-1)});
         photo.querySelector('[data-photo-next]')?.addEventListener('click',(event)=>{event.stopPropagation();move(1)});
         photo.addEventListener('keydown',(event)=>{if(event.key==='ArrowLeft'){event.preventDefault();move(-1)}else if(event.key==='ArrowRight'){event.preventDefault();move(1)}});
-        let dragStartX:number|null=null;let suppressPhotoClick=false;
-        photo.addEventListener('pointerdown',(event)=>{if((event.target as HTMLElement).closest('button'))return;dragStartX=event.clientX;suppressPhotoClick=false;photo.setPointerCapture?.(event.pointerId)});
-        photo.addEventListener('pointerup',(event)=>{if(dragStartX===null)return;const distance=event.clientX-dragStartX;dragStartX=null;if(Math.abs(distance)>=36){suppressPhotoClick=true;move(distance>0?-1:1)}});
-        photo.addEventListener('pointercancel',()=>{dragStartX=null});
+        let dragStartX:number|null=null;
         // 그림의 왼쪽/오른쪽 절반을 누르는 것만으로도 같은 방향으로 이동한다.
-        photo.addEventListener('click',(event)=>{if((event.target as HTMLElement).closest('button'))return;if(suppressPhotoClick){suppressPhotoClick=false;return}const rect=photo.getBoundingClientRect();move(event.clientX<rect.left+rect.width/2?-1:1)});
+        const halfTap=(clientX:number)=>{const rect=photo.getBoundingClientRect();move(clientX<rect.left+rect.width/2?-1:1)};
+        // 터치는 암시적 캡처가 있다 — 명시 캡처를 걸면 크롬이 이 요소의 다음 탭 click을 삼킨다. 마우스·펜만 잡는다.
+        photo.addEventListener('pointerdown',(event)=>{if((event.target as HTMLElement).closest('button'))return;if(event.pointerType==='mouse'&&event.button!==0)return;dragStartX=event.clientX;if(event.pointerType!=='touch')photo.setPointerCapture?.(event.pointerId)});
+        // 탭도 pointerup에서 바로 처리한다 — 스와이프 직후엔 크롬이 click을 안 줄 때가 있어 click에 기대면 한 번씩 안 먹는다.
+        photo.addEventListener('pointerup',(event)=>{if(dragStartX===null)return;const distance=event.clientX-dragStartX;dragStartX=null;if(Math.abs(distance)>=36)move(distance>0?-1:1);else if(Math.abs(distance)<12)halfTap(event.clientX)});
+        photo.addEventListener('pointercancel',()=>{dragStartX=null});
+        // 포인터가 만든 click(detail>0)은 위에서 이미 처리했다. 보조기기·키보드가 보내는 click(detail 0)만 받는다.
+        photo.addEventListener('click',(event)=>{if((event.target as HTMLElement).closest('button')||event.detail>0)return;halfTap(event.clientX||photo.getBoundingClientRect().right)});
         cases.forEach((item,index)=>{const pin=button(item.countryName,'country-pin');pin.dataset.case=item.id;const scenePosition=COUNTRY_SCENE_POSITIONS[item.id]??item.scenePosition??item.mapPosition;pin.style.left=`${scenePosition.x}%`;pin.style.top=`${scenePosition.y}%`;pin.classList.toggle('is-viewed',P.visitedCountries.includes(item.id));
           pin.addEventListener('click',()=>show(index+1)); mapStage.appendChild(pin);
         });

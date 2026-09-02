@@ -302,7 +302,7 @@ const PAGE_CSS = `
 .regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
 @media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
 /* 터치 응답 — 끌기 면은 브라우저 스크롤에 뺏기지 않게, 누르는 것은 100ms 안에 눌린 티가 나게 */
-.regional-modal-visual[data-scene-visual]{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.regional-modal-visual[data-scene-visual]{touch-action:none;user-select:none;-webkit-user-select:none} /* pan-y면 빠른 스와이프가 fling으로 잡혀 다음 탭을 삼킨다 */
 .regional-modal-visual.is-wipe{touch-action:none;cursor:ew-resize;user-select:none;-webkit-user-select:none}
 .regional-pin:active{transform:translate(-50%,-50%) scale(.94);box-shadow:0 3px 0 rgba(7,38,62,.28),0 6px 14px rgba(5,30,50,.28)}
 .regional-pin.is-active:active{transform:translate(-50%,-54%) scale(1)}
@@ -720,7 +720,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           sceneVisual.addEventListener('pointerdown', (ev) => {
             if ((ev.target as HTMLElement).closest('button')) return;
             swipeFrom = { id: ev.pointerId, x: ev.clientX, y: ev.clientY };
-            try { sceneVisual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ }
+            if (ev.pointerType !== 'touch') { try { sceneVisual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ } }
           });
           const endSwipe = (ev: PointerEvent): void => {
             if (!swipeFrom || swipeFrom.id !== ev.pointerId) return;
@@ -797,7 +797,8 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             if ((ev.target as HTMLElement).closest('input')) return; // 하단 range는 enableRangeDrag 몫
             if (ev.pointerType === 'mouse' && ev.button !== 0) return;
             draggingPointer = ev.pointerId;
-            try { visual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ }
+            // 터치는 암시적 캡처가 있다 — 명시 캡처를 걸면 크롬이 그 요소의 다음 탭 click을 삼킨다
+            if (ev.pointerType !== 'touch') { try { visual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ } }
             wipeBar.focus({ preventScroll: true });
             pendingX = ev.clientX;
             moveHandle();

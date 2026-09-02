@@ -210,7 +210,7 @@ const DIALOGUE_CSS = `
 .dl-compare-divider::after{content:'↔';position:absolute;left:50%;top:50%;width:52px;height:52px;display:grid;place-items:center;transform:translate(-50%,-50%);border:4px solid #fff;border-radius:50%;background:var(--c-navy);color:#fff;font:950 25px/1 var(--font-head);box-shadow:0 7px 18px rgba(5,34,55,.35)}
 .dl-compare-tag{position:absolute;z-index:4;top:14px;padding:6px 16px;border:3px solid #fff;border-radius:999px;color:#fff;font:950 clamp(17px,1.3vw,21px)/1 var(--font-head);text-shadow:0 2px 5px rgba(0,0,0,.55);box-shadow:0 5px 12px rgba(5,34,55,.25);pointer-events:none}
 .dl-compare-tag.is-before{left:14px;background:#d65b68}.dl-compare-tag.is-after{right:14px;background:#178b74}
-.dl-compare-range{width:100%;height:52px;appearance:none;-webkit-appearance:none;border:3px solid #fff;border-radius:999px;background:linear-gradient(90deg,#f2c344,#ffe58b);box-shadow:inset 0 2px 5px rgba(55,44,12,.2),0 5px 12px rgba(5,34,55,.14);cursor:ew-resize;touch-action:pan-x}
+.dl-compare-range{width:100%;height:52px;appearance:none;-webkit-appearance:none;border:3px solid #fff;border-radius:999px;background:linear-gradient(90deg,#f2c344,#ffe58b);box-shadow:inset 0 2px 5px rgba(55,44,12,.2),0 5px 12px rgba(5,34,55,.14);cursor:ew-resize;touch-action:none}
 .dl-compare-range::-webkit-slider-thumb{-webkit-appearance:none;width:44px;height:44px;border:4px solid #fff;border-radius:50%;background:var(--c-navy);box-shadow:0 4px 12px rgba(4,31,51,.42);cursor:grab}
 .dl-compare-range::-moz-range-thumb{width:38px;height:38px;border:4px solid #fff;border-radius:50%;background:var(--c-navy);box-shadow:0 4px 12px rgba(4,31,51,.42);cursor:grab}
 .dl-compare-range:focus-visible{outline:5px solid rgba(255,207,62,.5);outline-offset:3px}
@@ -229,7 +229,7 @@ const DIALOGUE_CSS = `
 .dl-compare-result[hidden]{display:none}
 .dl-compare-result b{font:950 clamp(20px,1.5vw,25px)/1.25 var(--font-head)}
 .dl-compare-result span{font:700 clamp(16px,1.15vw,20px)/1.45 var(--font-body);color:#1f4d42;word-break:keep-all}
-.dl-compare-photo{cursor:ew-resize;touch-action:pan-y}
+.dl-compare-photo{cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
 .dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
@@ -751,21 +751,23 @@ export function createPage(): Page {
         // 사진 위 가운데 손잡이나 사진 아무 곳이나 눌러 끌어도 아래 슬라이더와 똑같이 움직인다
         const photo = body.querySelector<HTMLElement>('.dl-compare-photo');
         if (photo && range) {
-          let dragging = false;
+          let rect: DOMRect | null = null; // 끄는 동안은 pointerdown 때 잰 상자를 쓴다 — move마다 레이아웃을 다시 재지 않는다
           const setFromPointer = (event: PointerEvent) => {
-            const rect = photo.getBoundingClientRect();
+            if (!rect) return;
             const pct = Math.max(0, Math.min(100, Math.round(((event.clientX - rect.left) / rect.width) * 100)));
+            if (range.value === String(pct)) return;
             range.value = String(pct);
             range.dispatchEvent(new Event('input', { bubbles: true }));
           };
           photo.addEventListener('pointerdown', (event) => {
             if ((event.target as HTMLElement).closest('[data-change]')) return; // 반짝이는 점은 그대로 누른다
-            dragging = true;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+            rect = photo.getBoundingClientRect();
             photo.setPointerCapture(event.pointerId);
             setFromPointer(event);
           });
-          photo.addEventListener('pointermove', (event) => { if (dragging) setFromPointer(event); });
-          const stop = () => { dragging = false; };
+          photo.addEventListener('pointermove', setFromPointer);
+          const stop = () => { rect = null; };
           photo.addEventListener('pointerup', stop);
           photo.addEventListener('pointercancel', stop);
         }

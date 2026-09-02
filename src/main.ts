@@ -2,6 +2,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
 import './styles/travel-theme.css';
+import './ui/touch';
 
 import { router } from './router';
 import { audio } from './core/AudioManager';
