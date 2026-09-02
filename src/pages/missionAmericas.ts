@@ -559,6 +559,7 @@ export function createPage(): Page {
 
       const mission = saveRepo.get().missions.americas;
       let S = restoreState(mission.data, E.countries);
+      if (mission.status === 'completed') S.screen = 'landing'; // 완료한 뒤 다시 오면 첫 화면부터(기록은 그대로) — 사진·친구를 다시 볼 수 있게
       // 구버전(어울림 학급) 저장은 새 탐험 흐름과 호환되지 않아 처음부터 시작한다(완료 도장은 그대로 유지됨).
       if (mission.data.exploreProgress && S.screen !== 'landing') showToast('저장한 탐험 지점에서 이어갈게.', 'info');
       let finished = false;

@@ -481,7 +481,7 @@ export function createPage(): Page {
         if (saved.checkpointId === 'stage3') stage = 3;
         if (saved.checkpointId === 'stage4') stage = 4;
       }
-      // 완주한 학생이 다시 들어오면 여섯 친구 인사부터 반복하지 않고, 지구회의를 다른 문제로 다시 연다.
+      // 완주한 학생이 다시 들어오면 1단계(인사·사진 탐정)부터 다시 둘러볼 수 있게 하되, 지구회의는 다른 문제로 다시 열리게 초기화한다.
       // 학생이 직접 쓴 약속(jointPledgeDraft·personalActionDraft)은 지우지 않는다 — 다시 쓰는 게 아니라 고쳐 쓰는 경험이 되게.
       if (saved.status === 'completed' && saved.data.earth) {
         earthProgress = validateEarthProgress(saved.data.earth, earth);
@@ -491,7 +491,7 @@ export function createPage(): Page {
           selectedIssueId: null, listenedPerspectiveIds: [], selectedPerspectiveIds: [],
           perspectiveReason: '', selectedActionIds: [], simulationAttempts: 0
         };
-        stage = 4;
+        stage = 1;
       }
 
       const checkpoint = (id: 'stage1' | 'stage2' | 'stage3' | 'stage4') => {

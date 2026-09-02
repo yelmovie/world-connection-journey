@@ -576,6 +576,8 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
       if (disposed) return;
       audio.playBgm(model.bgm);
       const state = normalizeState(model);
+      // 완료한 뒤 다시 오면 권역 지도(사진 관찰)부터 — 본 기록·신호·목소리는 그대로 남겨 자유롭게 다시 둘러보게 한다
+      if (saveRepo.get().missions[model.id]?.status === 'completed') { state.screen = 'explore'; state.activeAreaId = null; state.activeExampleId = null; }
       const flippedVoiceIds = new Set<string>();
       const teacherUnlocked = saveRepo.isTeacherUnlocked();
       const page = document.createElement('div');
