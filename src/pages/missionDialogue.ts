@@ -181,7 +181,7 @@ const DIALOGUE_CSS = `
 .dl-ox .btn { flex: 1; min-height: 58px; font-size: var(--dl-copy); }
 
 /* 2단계 — 상황 + 단서 + 반응 */
-.dl-listen { flex: 1 1 auto; align-self: stretch; max-height: 100%; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--sp-3); overflow-y: auto; }
+.dl-listen { flex: 0 1 auto; align-self: stretch; margin: auto 0; max-height: 100%; min-height: 0; display: flex; flex-direction: column; gap: var(--sp-3); overflow-y: auto; } /* 패널은 내용만큼, 무대 안에서 세로 가운데 */
 .dl-listen > * { flex: 0 0 auto; }
 .dl-cues { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: var(--sp-2); }
 .dl-opt { text-align: left; min-height: 72px; font-size: max(20px, var(--dl-copy)); padding: 14px 18px; }
@@ -1193,10 +1193,10 @@ export function createPage(): Page {
             schemaVersion: 1,
             missionId: 'dialogue',
             title: earth.titles.council,
-            purpose: '여섯 친구의 환경 신호가 국경을 넘어 이어져 있음을 확인하고, 서로 다른 관점과 여러 수준의 해결안으로 공동약속을 만들어요.',
+            purpose: '여섯 친구의 환경 신호를 그림과 지도에서 찾고, 친구들의 약속을 읽은 뒤 내가 지킬 약속을 만들어요.',
             initialHypothesis: learnRec.initialHypothesis ?? learn?.prediction.question ?? '여행을 시작하며 질문을 떠올렸어요.',
             evidenceIds: [...matched, ...scenarioIds, ...content.compass.npcs.map((npc) => npc.id), ...earthProgress.signalObservedIds, ...earthProgress.exploredConnectionTypes, ...earthProgress.selectedPerspectiveIds, ...earthProgress.selectedActionIds],
-            evidenceLabel: `환경 신호 ${earthProgress.signalObservedIds.length}개를 관찰하고 ${earthProgress.exploredConnectionTypes.length}개 렌즈로 연결을 확인했어.`,
+            evidenceLabel: `환경 신호 ${earthProgress.signalObservedIds.length}개를 관찰하고 지도에서 ${earthProgress.exploredConnectionTypes.length}개 연결 단서를 확인했어.`,
             voiceId: content.compass.npcs[0]?.id ?? 'dialogue-friends',
             voiceName: learnRec.friendName ?? content.compass.npcs[0]?.name ?? '대화 친구들',
             voiceLine: learnRec.cardLine ?? '첫인상으로 단정하지 말고 상대의 말과 상황을 다시 확인해요.',
