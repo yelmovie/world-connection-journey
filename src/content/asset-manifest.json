@@ -652,7 +652,7 @@
     },
     "asia.mina": {
       "type": "image",
-      "src": "assets/asia_mina_explorer.png",
+      "src": "assets/asia_mina_explorer.webp",
       "original": "assets/asia_mina_explorer.png",
       "pages": [
         "p02",
@@ -665,7 +665,7 @@
     },
     "asia.flight_overview": {
       "type": "image",
-      "src": "assets/asia_flight_overview.png",
+      "src": "assets/asia_flight_overview.webp",
       "original": "assets/asia_flight_overview.png",
       "pages": [
         "p04"
@@ -1277,7 +1277,7 @@
     },
     "oceania.viti_levu_video_poster": {
       "type": "image",
-      "src": "assets/oceania_viti_levu_video_poster.png",
+      "src": "assets/oceania_viti_levu_video_poster.webp",
       "original": "assets/oceania_viti_levu_video_poster.png",
       "pages": [
         "p08"
@@ -1289,7 +1289,7 @@
     },
     "oceania.viti_levu_polluted_now": {
       "type": "image",
-      "src": "assets/oceania_viti_levu_polluted_now.png",
+      "src": "assets/oceania_viti_levu_polluted_now.webp",
       "original": "generated_images/exec-7cb2f6e4-3fe8-4626-a714-b6146fa933c9.png",
       "pages": [
         "p08"
@@ -1887,14 +1887,14 @@
     "reward.certificate": {
       "type": "image",
       "src": "assets/reward_certificate.webp",
-      "original": "assets/ChatGPT Image 2026년 8월 14일 오전 04_00_42.png",
+      "original": "assets/generated/certificate/reward_certificate_icon_v2_source.png",
       "pages": [
         "p10"
       ],
       "preload": "page",
       "alpha": true,
       "license": "AI-generated (project original)",
-      "note": "인증서 두루마리 — 최종 인증서 화면"
+      "note": "지구 문양과 금장 도장이 있는 인증서 아이콘 — 최종 인증서 화면"
     },
     "reward.wreath": {
       "type": "image",
@@ -2512,7 +2512,7 @@
     "asia.japan.1": {
       "type": "image",
       "src": "assets/asia_japan_1.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/asia/asia_japan_1_v2_source.png",
       "pages": [
         "p04"
       ],
@@ -2524,7 +2524,7 @@
     "asia.japan.2": {
       "type": "image",
       "src": "assets/asia_japan_2.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/asia/asia_japan_2_v2_source.png",
       "pages": [
         "p04"
       ],
@@ -2536,7 +2536,7 @@
     "asia.japan.3": {
       "type": "image",
       "src": "assets/asia_japan_3.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/asia/asia_japan_3_v2_source.png",
       "pages": [
         "p04"
       ],

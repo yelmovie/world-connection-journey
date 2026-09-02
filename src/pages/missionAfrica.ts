@@ -5,6 +5,7 @@ import { audio } from '../core/AudioManager';
 import { fitAspect } from '../ui/aspectBox';
 import { recordEarthSignals } from '../core/earthSignals';
 import { enableMapZoom } from '../ui/mapZoom';
+import { enableRangeDrag } from '../ui/dnd';
 import { getLearn, showLearningWrap } from '../ui/learnFrame';
 import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
@@ -100,6 +101,9 @@ const CSS = `
 .region-pin,.country-pin,.signal-pin{position:absolute;z-index:4;transform:translate(-50%,-50%);min-width:78px;min-height:78px;border-radius:50%;border:4px solid #fff;background:#173e5ee8;color:#fff;font:900 clamp(19px,1.45vw,24px)/1.15 var(--font-head);box-shadow:0 7px 18px #051e3280;display:grid;place-items:center;padding:9px;text-align:center;cursor:pointer}
 .region-pin::after{content:'탐험';display:block;font:800 16px/1 var(--font-head);color:#ffe273}.region-pin.is-visited{background:#147b63}.region-pin.is-visited::after{content:'✓ 방문'}
 .region-pin:focus-visible,.country-pin:focus-visible,.signal-pin:focus-visible{outline:5px solid #ffe052;outline-offset:3px}
+.region-pin:active,.country-pin:active,.signal-pin:active,.person-button:active{transform:translate(-50%,-50%) scale(.93);filter:brightness(1.08)}
+.tool-buttons button:active,.instrument-thumbs button:active{transform:scale(.96)}
+.tool-buttons button,.instrument-thumbs button,.region-pin,.country-pin,.signal-pin,.person-button{transition:transform .12s ease}
 .map-plane{position:absolute;width:clamp(64px,6vw,96px);transform:translate(-50%,-112%);filter:drop-shadow(0 8px 8px #001a);transition:left .7s cubic-bezier(.2,.8,.3,1),top .7s cubic-bezier(.2,.8,.3,1);pointer-events:none;z-index:3}
 .map-controls{position:absolute;left:14px;bottom:14px;display:flex;gap:8px;z-index:5}.map-controls button{width:52px;height:52px;border-radius:50%;font-size:25px}
 .map-help{position:absolute;right:14px;top:14px;max-width:330px;padding:10px 14px;border-radius:14px;background:#fffdf2e8;color:#183b52;font-size:clamp(16px,1.1vw,19px);font-weight:800;box-shadow:0 6px 18px #0a304d44;z-index:5}
@@ -109,7 +113,7 @@ const CSS = `
 .region-mapstage::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#03293a55,transparent 45%,#fff3);pointer-events:none}
 .region-instruction{position:absolute;left:16px;top:16px;right:16px;z-index:4;background:#fffdf1e8;border-left:7px solid #f3bf45;border-radius:14px;padding:10px 14px;font-size:var(--body-text);font-weight:850;color:#173b53}
 .region-mapstage .country-pin{min-width:0;min-height:46px;padding:6px 14px;border-radius:999px;background:rgba(12,38,58,.34);backdrop-filter:blur(6px) saturate(1.1);color:#fff;border:2px solid rgba(255,255,255,.85);text-shadow:0 2px 6px rgba(4,22,38,.85);box-shadow:0 6px 16px rgba(4,22,38,.35);z-index:5}.country-pin.is-viewed{background:rgba(22,132,103,.44);border-color:#8ff0cd}.country-pin.is-viewed::after{content:' ✓';color:#c8ffe9}
-.region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:38px}.region-tool{flex:0 0 auto}.region-tool-copy{margin:0;min-height:2.8em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff;word-break:keep-all}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}
+.region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:44px;touch-action:none;cursor:pointer}.region-tool{flex:0 0 auto}.region-tool-copy{margin:0;min-height:2.8em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff;word-break:keep-all}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
 .country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(11px,1.2vw,16px);display:flex;flex-direction:column;gap:8px;overflow:hidden;container-type:size}
 /* 사진은 16:9를 지킨다 — 글 아래 남는 높이(약 250px 제외)에 맞춰 폭을 정하고 가운데 둔다 */
@@ -250,10 +254,10 @@ export function createPage(): Page {
         if(region.interaction==='climate-slider'){
           tool.innerHTML=`<label>그림을 누르거나 손잡이를 움직여 봐</label><input type="range" min="0" max="2" step="1" value="0" aria-label="북부 아프리카 풍경 비교"><p class="region-tool-copy" data-tool-copy aria-live="polite">${safe(stops[0]?.label??'첫 풍경')} · ${safe(stops[0]?.note??'')}</p>`;
           const input=tool.querySelector<HTMLInputElement>('input')!;
-          input.addEventListener('input',()=>focus(stopAt(Number(input.value))));tapAdvance(input);
+          input.addEventListener('input',()=>focus(stopAt(Number(input.value))));enableRangeDrag(input);tapAdvance(input);
         }else if(region.interaction==='panorama'){
           tool.innerHTML=`<label>그림을 누르거나 손잡이를 움직여 봐</label><input type="range" min="0" max="100" step="50" value="0" aria-label="서부 아프리카 생활 파노라마 이동"><p class="region-tool-copy" data-tool-copy aria-live="polite">${safe(stops[0]?.label??'첫 풍경')} · ${safe(stops[0]?.note??'')}</p>`;
-          const input=tool.querySelector<HTMLInputElement>('input')!;input.addEventListener('input',()=>focus(stopAt(Math.round(Number(input.value)/50))));tapAdvance(input);
+          const input=tool.querySelector<HTMLInputElement>('input')!;input.addEventListener('input',()=>focus(stopAt(Math.round(Number(input.value)/50))));enableRangeDrag(input);tapAdvance(input);
         }else if(region.interaction==='terrain-layers'){
           tool.innerHTML=`<label>버튼을 눌러 하나씩 봐</label><div class="tool-buttons">${stops.map((stop)=>`<button data-tool="${safe(stop.id)}">${safe(stop.label)}</button>`).join('')}</div><p class="region-tool-copy" data-tool-copy aria-live="polite">${safe(stops[0]?.note??'')}</p>`;
           tool.querySelectorAll<HTMLButtonElement>('button').forEach((b)=>b.addEventListener('click',()=>{tool.querySelectorAll('button').forEach((button)=>button.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');focus(stops.find((stop)=>stop.id===b.dataset.tool))}));

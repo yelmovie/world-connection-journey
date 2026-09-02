@@ -268,6 +268,9 @@ export function enableRangeDrag(input: HTMLInputElement): () => void {
     input.addEventListener('pointerup', stop);
     input.addEventListener('pointercancel', stop);
   };
+  // 터치에서 브라우저가 스크롤로 가로채 pointercancel을 내지 않게 — 트랙 위 손가락은 전부 슬라이더 몫
+  const prevTouchAction = input.style.touchAction;
+  input.style.touchAction = 'none';
   input.addEventListener('pointerdown', onDown);
-  return () => input.removeEventListener('pointerdown', onDown);
+  return () => { input.removeEventListener('pointerdown', onDown); input.style.touchAction = prevTouchAction; };
 }

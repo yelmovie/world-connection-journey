@@ -938,12 +938,12 @@
   },
   "reward.certificate": {
     "kind": "char",
-    "original": "assets/ChatGPT Image 2026년 8월 14일 오전 04_00_42.png",
+    "original": "assets/generated/certificate/reward_certificate_icon_v2_source.png",
     "pages": [
       "p10"
     ],
     "preload": "page",
-    "note": "인증서 두루마리 — 최종 인증서 화면"
+    "note": "지구 문양과 금장 도장이 있는 인증서 아이콘 — 최종 인증서 화면"
   },
   "reward.wreath": {
     "kind": "char",

@@ -301,6 +301,16 @@ const PAGE_CSS = `
 .regional-hotspot.is-found::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:950 25px/1 var(--font-head);text-shadow:0 2px 4px rgba(3,35,28,.75)}
 .regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
 @media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
+/* 터치 응답 — 끌기 면은 브라우저 스크롤에 뺏기지 않게, 누르는 것은 100ms 안에 눌린 티가 나게 */
+.regional-modal-visual[data-scene-visual]{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.regional-modal-visual.is-wipe{touch-action:none;cursor:ew-resize;user-select:none;-webkit-user-select:none}
+.regional-pin:active{transform:translate(-50%,-50%) scale(.94);box-shadow:0 3px 0 rgba(7,38,62,.28),0 6px 14px rgba(5,30,50,.28)}
+.regional-pin.is-active:active{transform:translate(-50%,-54%) scale(1)}
+.regional-country-shortcut:active{transform:translate(-50%,-50%) scale(.95);box-shadow:0 2px 0 #d49b28,0 6px 12px rgba(5,30,50,.3)}
+.regional-hotspot:active{transform:translate(-50%,-50%) scale(.9)}
+.regional-photo:active{transform:scale(.98)}
+.regional-choice:active,.regional-signal:active,.regional-action:active{transform:scale(.975)}
+:is(.regional-oceania,.regional-asia,.regional-europe) .regional-note-item:active{transform:scale(.985);background:rgba(255,255,255,.85)}
 /* 오세아니아 바다 지킴 게이지 — 선택할 때마다 물이 차오른다 */
 .regional-gauge{display:flex;align-items:center;gap:9px;flex:1 1 220px;min-width:200px}
 .regional-gauge strong{flex:0 0 auto;font:900 max(16px,calc(var(--fs-small) - 2px))/1.2 var(--font-head);color:#0c4a63}
@@ -703,6 +713,25 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           const target = model.scenes.find((item) => item.id === button.dataset.sceneNav);
           if (target) openScene(target);
         }));
+        // 사진을 옆으로 밀어도 화살표와 같게 넘어간다 — 점(hotspot)·화살표 위에서 시작한 건 그 버튼 몫.
+        const sceneVisual = modalBody.querySelector<HTMLElement>('[data-scene-visual]');
+        if (sceneVisual && sceneNavigation && previousScene && nextScene) {
+          let swipeFrom: { id: number; x: number; y: number } | null = null;
+          sceneVisual.addEventListener('pointerdown', (ev) => {
+            if ((ev.target as HTMLElement).closest('button')) return;
+            swipeFrom = { id: ev.pointerId, x: ev.clientX, y: ev.clientY };
+            try { sceneVisual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ }
+          });
+          const endSwipe = (ev: PointerEvent): void => {
+            if (!swipeFrom || swipeFrom.id !== ev.pointerId) return;
+            const dx = ev.clientX - swipeFrom.x;
+            const dy = ev.clientY - swipeFrom.y;
+            swipeFrom = null;
+            if (Math.abs(dx) >= 36 && Math.abs(dx) > Math.abs(dy)) openScene(dx < 0 ? nextScene : previousScene);
+          };
+          sceneVisual.addEventListener('pointerup', endSwipe);
+          sceneVisual.addEventListener('pointercancel', () => { swipeFrom = null; });
+        }
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
       };
@@ -751,25 +780,37 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         };
         wipe?.addEventListener('input', () => setWipeValue(Number(wipe.value)));
         if (wipeBar && visual) {
+          // 손잡이만이 아니라 사진 어디를 눌러도 그 자리로 뛰고, 어디서 시작해도 끌린다.
+          // 포인터는 사진 상자가 잡아 두므로 손가락이 상자 밖으로 나가도 끝까지 따라온다.
+          visual.classList.add('is-wipe');
           let draggingPointer: number | null = null;
-          const moveHandle = (ev: PointerEvent): void => {
+          let frame = 0;
+          let pendingX = 0;
+          const moveHandle = (): void => {
+            frame = 0;
             const rect = visual.getBoundingClientRect();
             if (rect.width <= 0) return;
-            setWipeValue(((ev.clientX - rect.left) / rect.width) * 100);
+            setWipeValue(((pendingX - rect.left) / rect.width) * 100);
           };
-          wipeBar.addEventListener('pointerdown', (ev) => {
+          const queueMove = (ev: PointerEvent): void => { pendingX = ev.clientX; if (!frame) frame = requestAnimationFrame(moveHandle); };
+          visual.addEventListener('pointerdown', (ev) => {
+            if ((ev.target as HTMLElement).closest('input')) return; // 하단 range는 enableRangeDrag 몫
+            if (ev.pointerType === 'mouse' && ev.button !== 0) return;
             draggingPointer = ev.pointerId;
-            wipeBar.setPointerCapture(ev.pointerId);
-            moveHandle(ev);
+            try { visual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ }
+            wipeBar.focus({ preventScroll: true });
+            pendingX = ev.clientX;
+            moveHandle();
+            ev.preventDefault();
           });
-          wipeBar.addEventListener('pointermove', (ev) => { if (draggingPointer === ev.pointerId) moveHandle(ev); });
+          visual.addEventListener('pointermove', (ev) => { if (draggingPointer === ev.pointerId) queueMove(ev); });
           const endDrag = (ev: PointerEvent): void => {
             if (draggingPointer !== ev.pointerId) return;
-            if (wipeBar.hasPointerCapture(ev.pointerId)) wipeBar.releasePointerCapture(ev.pointerId);
+            try { if (visual.hasPointerCapture(ev.pointerId)) visual.releasePointerCapture(ev.pointerId); } catch { /* 이미 해제 */ }
             draggingPointer = null;
           };
-          wipeBar.addEventListener('pointerup', endDrag);
-          wipeBar.addEventListener('pointercancel', endDrag);
+          visual.addEventListener('pointerup', endDrag);
+          visual.addEventListener('pointercancel', endDrag);
           wipeBar.addEventListener('keydown', (ev) => {
             const step = ev.shiftKey ? 10 : 5;
             if (ev.key === 'ArrowLeft') setWipeValue(lastValue - step);

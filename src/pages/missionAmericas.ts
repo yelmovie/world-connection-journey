@@ -374,14 +374,29 @@ const PAGE_CSS = `
 @keyframes routeNext { 50%{ box-shadow:0 0 0 10px rgba(255,220,94,.28),0 13px 28px rgba(3,29,52,.34); } }
 .voyage-rail { position:absolute; left:10%; right:10%; bottom:14px; z-index:5; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:999px; background:#fffdf2ee; box-shadow:var(--shadow-card); }
 .voyage-rail span { font:900 clamp(18px,1vw,21px) var(--font-head); color:#17506e; white-space:nowrap; }
-.voyage-rail input { flex:1; min-width:0; height:44px; accent-color:#e2842d; }
+.voyage-rail input { flex:1; min-width:0; height:64px; }
+/* 레일 공통 — 트랙은 두껍게, 손잡이는 탐험가 얼굴(64px)로. 트랙 아무 곳이나 눌러도 enableRangeDrag가 값을 옮긴다 */
+.am-rail { -webkit-appearance:none; appearance:none; margin:0; background:transparent; cursor:grab; touch-action:none; }
+.am-rail:active { cursor:grabbing; }
+.am-rail::-webkit-slider-runnable-track { height:20px; border-radius:999px; background:linear-gradient(90deg,#8fd0f2,#2b7fc0); box-shadow:inset 0 2px 5px rgba(3,29,52,.35); }
+.am-rail::-webkit-slider-thumb { -webkit-appearance:none; width:64px; height:64px; margin-top:-22px; border-radius:50%; border:4px solid #fff; background:#fff var(--rail-thumb,none) center/cover no-repeat; box-shadow:0 6px 16px rgba(3,29,52,.4); transition:scale .08s ease; }
+.am-rail:active::-webkit-slider-thumb { scale:1.12; }
+.am-rail::-moz-range-track { height:20px; border-radius:999px; background:linear-gradient(90deg,#8fd0f2,#2b7fc0); }
+.am-rail::-moz-range-thumb { width:64px; height:64px; border-radius:50%; border:4px solid #fff; background:#fff var(--rail-thumb,none) center/cover no-repeat; box-shadow:0 6px 16px rgba(3,29,52,.4); }
+.am-rail:focus-visible { outline:5px solid #ffe052; outline-offset:4px; border-radius:999px; }
 .voyage-rail::after { content:'끌어서 항해'; position:absolute; left:50%; top:-34px; transform:translateX(-50%); padding:4px 13px; border-radius:999px; background:var(--c-gold); color:#4c3600; font:900 clamp(17px,.95vw,20px) var(--font-head); white-space:nowrap; animation:railHint 1.6s ease-in-out infinite; }
 .voyage-rail.is-used::after { display:none; }
-/* 친구가 나타나면 항해는 끝났다 — 만나기 버튼과 겹치지 않게 레일을 걷는다 */
-.country-scene:has(.friend-meet) .voyage-rail { display:none; }
+/* 친구가 나타나면 만나기 버튼 자리만큼 레일 오른쪽을 줄인다 — 끌던 손 밑에서 레일이 사라지지 않게(숨기면 드래그가 끊긴다) */
+.voyage-rail { transition:right .3s ease; }
+.country-scene:has(.friend-meet) .voyage-rail { right:calc(clamp(110px,11vw,160px) + 44px); }
 @keyframes railHint { 50% { transform:translateX(-50%) translateY(-5px); } }
-.alt-slider { position:absolute; right:18px; top:12%; bottom:12%; z-index:5; display:flex; flex-direction:column; align-items:center; gap:8px; }
-.alt-slider input { writing-mode:vertical-lr; direction:rtl; height:100%; width:46px; }
+.alt-slider { position:absolute; right:18px; top:10%; bottom:10%; z-index:5; display:flex; flex-direction:column; align-items:center; gap:8px; padding:6px; border-radius:999px; background:rgba(255,253,242,.78); backdrop-filter:blur(4px); box-shadow:var(--shadow-card); transition:left .3s ease,right .3s ease; }
+.alt-slider input { writing-mode:vertical-lr; direction:rtl; flex:1; min-height:0; width:72px; }
+.alt-slider .am-rail::-webkit-slider-runnable-track { width:20px; height:auto; background:linear-gradient(0deg,#c9b08a,#8fd0f2); }
+.alt-slider .am-rail::-webkit-slider-thumb { margin-top:0; margin-left:-22px; }
+.alt-slider .am-rail::-moz-range-track { width:20px; height:auto; background:linear-gradient(0deg,#c9b08a,#8fd0f2); }
+/* 친구가 나타나면 오른쪽 아래 만나기 버튼과 겹친다 — 레일을 왼쪽으로 옮긴다 */
+.country-scene:has(.friend-meet) .alt-slider { right:auto; left:18px; }
 .alt-slider span { background:rgba(255,255,255,.86); border-radius:999px; padding:4px 11px; font-weight:900; font-size:clamp(17px,.95vw,20px); box-shadow:var(--shadow-card); }
 .friend-meet { position:absolute; right:16px; bottom:14px; z-index:6; border:0; background:transparent; display:grid; justify-items:center; gap:4px; cursor:pointer; animation:friendBob 2.2s ease-in-out infinite; }
 /* 캐릭터 주변에 노란 안내 박스(tap-cue 아웃라인)를 씌우지 않는다 — 캐릭터 자체가 행동 유도다 */
@@ -417,6 +432,10 @@ const PAGE_CSS = `
 /* ---- 하루 비교 ---- 시간대는 탭으로 하나씩. 가로 스크롤은 뒤쪽 시간대를 통째로 숨긴다. */
 /* 초등 손가락 기준 — 어떤 화면에서도 조작 버튼은 44px 이상 */
 .am-scene button { min-height:44px; }
+/* 누르는 순간 바로 반응(100ms 안) — transform은 각 요소가 위치용으로 쓰므로 scale·filter로 겹쳐 준다 */
+.am-scene .postcard:active, .am-scene .day-card:active, .am-scene .bag-item:active, .am-scene .signal-token:active,
+.am-scene .stop-node:active, .am-scene .hub-pin:active, .am-scene .lens-point:active, .am-scene .lens-scene-card:active, .am-scene .exp-slot:active,
+.am-scene .is-pressed { scale:.95; filter:brightness(1.07); transition:scale .06s ease,filter .06s ease; }
 /* 가이드 말풍선이 카드에 겹쳐도 카드가 눌리게 — 말풍선은 안내만, 클릭은 통과 */
 /* 가이드와 지도 줌 버튼이 둘 다 왼쪽 아래라 태블릿에서 겹친다 — 줌 버튼은 오른쪽 아래로 */
 .am-scene .map-zoom-controls { left:auto; right:12px; }
@@ -593,6 +612,16 @@ export function createPage(): Page {
       const plane = airplaneChoice(saveRepo.get().profile?.airplaneId);
       guide = createGuide({ assetId: plane.assetId, speakerName: plane.name });
       page.insertBefore(guide.el, bottom);
+
+      // 터치 :active는 Chrome이 150ms쯤 늦게 준다 — pointerdown 즉시 is-pressed를 붙여 손끝 반응이 바로 보이게
+      page.addEventListener('pointerdown', (ev) => {
+        const target = (ev.target as HTMLElement).closest?.('.postcard,.day-card,.bag-item,.signal-token,.stop-node,.hub-pin,.lens-point,.lens-scene-card,.exp-slot,.route-card');
+        if (!target) return;
+        target.classList.add('is-pressed');
+        const release = (): void => { target.classList.remove('is-pressed'); window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', release); };
+        window.addEventListener('pointerup', release);
+        window.addEventListener('pointercancel', release);
+      });
 
       const announceGuide = (text: string, cue: HTMLElement | null = null): void => {
         guide?.say(text, { cue, autoStart: true, persist: true });
@@ -937,35 +966,44 @@ export function createPage(): Page {
           void audio.playSfx('tap');
           refresh();
         };
+        // 레일(캐나다·페루)용 — 지나온 지점은 전부 들른 것으로 쳐서 빨리 끌어도 중간이 비지 않는다.
+        // 같은 지점에 머무는 동안은 손잡이만 움직이고 DOM·저장은 건드리지 않는다(포인터 이동마다 다시 그리면 끊긴다).
+        let shownIdx = -1;
+        const seeUpTo = (idx: number): void => {
+          if (idx === shownIdx) return;
+          shownIdx = idx;
+          for (let i = 0; i <= idx; i += 1) {
+            const stop = c.stops[i];
+            if (!stop || P.stopsSeen.includes(stop.id)) continue;
+            P.stopsSeen.push(stop.id);
+            stopCards[i]?.classList.add('is-seen');
+            stopCards[i]?.querySelector('.stop-card-copy')?.removeAttribute('hidden');
+          }
+          bgFor(idx);
+          void audio.playSfx('tap');
+          persist();
+          refresh();
+        };
 
         /* 나라별 상호작용 */
         if (c.mode === 'voyage') {
           // 캐나다 — 가로로 끌어 서→동 항해. 지나친 지점은 모두 들른 것으로 친다(건너뛰기 방지).
           const lastSeenIndex = Math.max(0, ...P.stopsSeen.map((id) => c.stops.findIndex((stop) => stop.id === id)));
           let progress = c.stops.length > 1 ? (lastSeenIndex / (c.stops.length - 1)) * 100 : 0;
-          const rail = el(`<div class="voyage-rail"><span>서쪽 바다</span><input type="range" min="0" max="100" step="1" value="${Math.round(progress)}" aria-label="서쪽에서 동쪽으로 항해하기"><span>동쪽 바다</span></div>`);
+          const rail = el(`<div class="voyage-rail"><span>서쪽 바다</span><input type="range" class="am-rail" style="--rail-thumb:url('${assetUrl(playerSpeaker.assetId)}')" min="0" max="100" step="1" value="${Math.round(progress)}" aria-label="서쪽에서 동쪽으로 항해하기"><span>동쪽 바다</span></div>`);
           const railInput = rail.querySelector('input')!;
           const sail = (next: number): void => {
             progress = Math.max(0, Math.min(100, next));
             railInput.value = String(Math.round(progress));
-            const idx = Math.min(c.stops.length - 1, Math.round((progress / 100) * (c.stops.length - 1)));
-            // 배가 지나온 지점은 전부 들른 것으로 — 끌다가 중간을 건너뛰어 막히지 않게 한다
-            for (let i = 0; i <= idx; i += 1) {
-              const stop = c.stops[i];
-              if (!stop || P.stopsSeen.includes(stop.id)) continue;
-              P.stopsSeen.push(stop.id);
-              stopCards[i]?.classList.add('is-seen');
-              stopCards[i]?.querySelector('.stop-card-copy')?.removeAttribute('hidden');
-            }
-            bgFor(idx);
-            persist();
-            refresh();
+            seeUpTo(Math.min(c.stops.length - 1, Math.round((progress / 100) * (c.stops.length - 1))));
           };
           let dragX: number | null = null;
+          let sceneW = 1;
           scene.addEventListener('pointerdown', (ev) => {
             // 친구 만나기·레일 등 조작 요소 위에서는 드래그를 시작하지 않는다 (포인터 캡처가 클릭을 삼킨다)
             if ((ev.target as HTMLElement).closest('button, input')) return;
             dragX = ev.clientX;
+            sceneW = scene.clientWidth || 1; // 이동 중엔 레이아웃을 읽지 않는다
             scene.setPointerCapture(ev.pointerId);
             rail.classList.add('is-used');
           });
@@ -973,10 +1011,13 @@ export function createPage(): Page {
             if (dragX === null) return;
             const delta = ev.clientX - dragX;
             dragX = ev.clientX;
-            sail(progress + delta / 6);
+            sail(progress + (delta / sceneW) * 140); // 장면 폭의 70%쯤 끌면 끝까지 간다
           });
-          scene.addEventListener('pointerup', () => { dragX = null; });
+          const endDrag = (): void => { dragX = null; };
+          scene.addEventListener('pointerup', endDrag);
+          scene.addEventListener('pointercancel', endDrag);
           railInput.addEventListener('input', () => { rail.classList.add('is-used'); sail(Number(railInput.value)); });
+          enableRangeDrag(railInput); // 손잡이가 아니라 트랙 아무 곳이나 눌러도·끌어도 따라온다
           scene.appendChild(rail);
           if (!P.stopsSeen.length) seeStop(0);
         } else if (c.mode === 'trail' || c.mode === 'river') {
@@ -1046,11 +1087,12 @@ export function createPage(): Page {
           stopCards.forEach((card, i) => card.addEventListener('click', () => activateStop(i)));
           markNext();
         } else {
-          // 페루 — 해안에서 마추픽추까지 장면 슬라이더
-          const slider = el(`<div class="alt-slider"><span>마추픽추</span><input type="range" min="0" max="${Math.max(0, c.stops.length - 1)}" step="1" value="0" aria-label="페루 장면 고르기"><span>해안</span></div>`);
+          // 페루 — 해안에서 마추픽추까지 세로 레일. 값은 지점당 100칸이라 손잡이가 툭툭 끊기지 않고 부드럽게 따라온다.
+          const STEP = 100;
+          const slider = el(`<div class="alt-slider"><span>마추픽추</span><input type="range" class="am-rail" style="--rail-thumb:url('${assetUrl(playerSpeaker.assetId)}')" min="0" max="${Math.max(0, c.stops.length - 1) * STEP}" step="1" value="0" aria-label="해안에서 마추픽추까지 올라가기"><span>해안</span></div>`);
           const input = slider.querySelector('input')!;
-          input.value = String(Math.max(0, ...P.stopsSeen.map((id) => c.stops.findIndex((stop) => stop.id === id))));
-          input.addEventListener('input', () => seeStop(Number(input.value)));
+          input.value = String(Math.max(0, ...P.stopsSeen.map((id) => c.stops.findIndex((stop) => stop.id === id))) * STEP);
+          input.addEventListener('input', () => seeUpTo(Math.round(Number(input.value) / STEP)));
           enableRangeDrag(input);
           scene.appendChild(slider);
           if (!P.stopsSeen.length) seeStop(0);
