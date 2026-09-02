@@ -16,6 +16,9 @@ import { enableRangeDrag } from '../ui/dnd';
 import { showToast } from '../ui/toast';
 
 type Hotspot = { id: string; x: number; y: number; label: string };
+/** 사진 속 점(핫스팟)은 지형·건물을 짚어 주는 '자연·명소' 장면에만 둔다 — 생활·문화 장면은 점 없이 설명과 발견 문장을 바로 보여 준다(클릭 피로 방지). */
+const HOTSPOT_CATEGORIES = new Set(['nature', 'landmark']);
+const keepHotspots = <T,>(category: string, spots: T[]): T[] => (HOTSPOT_CATEGORIES.has(category) ? spots : []);
 type Area = { id: string; name: string; short: string; description: string; x: number; y: number; color: string };
 type Example = {
   id: string;
@@ -200,6 +203,11 @@ const PAGE_CSS = `
 .regional-choice-grid{flex:1 1 auto;grid-template-columns:1fr;grid-auto-rows:minmax(0,1fr)}
 .regional-signal,.regional-choice{text-align:left;padding:10px 11px;min-height:0;border-radius:14px;font-size:clamp(15px,1vw,18px);line-height:1.2}
 .regional-signal strong{font-size:clamp(18px,1.15vw,21px);line-height:1.18}
+/* 전·후 비교를 마친 신호: 왼쪽에 초록 체크 배지 */
+.regional-signal{position:relative}
+.regional-signal[aria-pressed="true"]{padding-left:46px}
+.regional-signal[aria-pressed="true"]::before{content:'✓';position:absolute;left:12px;top:50%;width:26px;height:26px;transform:translateY(-50%);display:grid;place-items:center;border-radius:50%;background:var(--c-success);color:#fff;font:900 16px/1 var(--font-head);box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.regional-spot-discovery{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:#eef8f4;border-left:6px solid #1b9a7a;font-weight:800;color:#123f3a}
 .regional-signal span{font-size:clamp(15px,.95vw,17px)}
 .regional-oceania .regional-signal-grid{grid-template-columns:1fr}
 .regional-oceania .regional-signal{display:flex;align-items:center;justify-content:center;text-align:center;padding:9px 12px}
@@ -456,7 +464,7 @@ function asiaModel(content: AsiaSource): RegionalModel {
     requirements: { minAreas: content.requirements.minRegions, minExamples: content.requirements.minExamples, minDiscoveries: content.requirements.minDiscoveries, minSignals: content.requirements.minSignals },
     areas: content.regions.map((item, index) => ({ id: item.id, name: item.nameKo, short: item.silhouette, description: `${item.nameKo}의 자연과 생활 사례를 살펴봐.`, x: item.mapPosition.xPercent, y: item.mapPosition.yPercent, color: COLORS[index % COLORS.length] ?? COLORS[0]! })),
     examples: content.countryExamples.map((item) => ({ id: item.id, areaId: item.regionId, country: item.countryNameKo, place: item.placeNameKo, scope: item.scopeNoteKo, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: item.sceneIds })),
-    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.category === 'nature' ? '자연과 공간' : item.category === 'daily' ? '오늘날의 생활' : item.category === 'landmark' ? '대표 장소 관찰' : '이어 온 생활과 지혜', title: item.titleKo, assetId: item.imageAssetId, summary: item.summaryKo, detail: item.detailKo, discovery: item.discoveryKo, hotspots: item.hotspots.map((spot) => ({ id: spot.id, x: spot.x * 100, y: spot.y * 100, label: spot.labelKo })), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.category === 'nature' ? '자연과 공간' : item.category === 'daily' ? '오늘날의 생활' : item.category === 'landmark' ? '대표 장소 관찰' : '이어 온 생활과 지혜', title: item.titleKo, assetId: item.imageAssetId, summary: item.summaryKo, detail: item.detailKo, discovery: item.discoveryKo, hotspots: keepHotspots(item.category, item.hotspots.map((spot) => ({ id: spot.id, x: spot.x * 100, y: spot.y * 100, label: spot.labelKo }))), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     signals: content.signals.map((item) => {
       const visual = signalVisuals[item.id];
       const lesson = signalLessons[item.id];
@@ -487,7 +495,7 @@ function oceaniaModel(content: OceaniaSource): RegionalModel {
       const landmarkIds = content.scenes.filter((scene) => scene.category === 'landmark' && sameCountryIds.has(scene.exampleId)).map((scene) => scene.id);
       return { id: item.id, areaId: item.zoneId, country: item.country, place: item.place, scope: item.scopeNote, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: [...(scenesByZone.get(item.zoneId) ?? []), ...landmarkIds] };
     }),
-    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.categoryLabel, title: item.title, assetId: item.assetId, summary: item.summary, detail: item.detail, discovery: item.discovery, hotspots: item.hotspots, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.categoryLabel, title: item.title, assetId: item.assetId, summary: item.summary, detail: item.detail, discovery: item.discovery, hotspots: keepHotspots(item.category, item.hotspots), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     signals: content.signals.filter((item) => item.id !== 'water_energy').map((item) => {
       const visual = signalVisuals[item.id];
       return { id: item.id, title: item.title, prompt: item.prompt, connection: `${item.connectionType} · ${item.connectionNote}`, issueId: issueFromConnections([item.connectionType]), beforeAssetId: visual?.before ?? item.beforeAssetId, afterAssetId: visual?.after ?? item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl };
@@ -656,6 +664,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             <section class="regional-spot-detail" data-spot-detail aria-live="polite">
               ${scene.category === 'culture' ? '' : `<h4 data-spot-title>${esc(scene.title)}</h4>`}
               <p data-spot-copy>${esc([scene.summary, scene.detail].filter(Boolean).join(' '))}</p>
+              ${scene.hotspots.length === 0 && scene.discovery ? `<p class="regional-spot-discovery">${esc(scene.discovery)}</p>` : ''}
             </section>
           </div>`;
         modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((button) => button.addEventListener('click', () => {
@@ -899,7 +908,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           ${goalChip('서로 다른 주체', chosenTierCount(), 2)}`;
         const progressStrip = `<div class="regional-progress-strip${usesOceaniaInteractions ? ' is-gauge-only' : ''}" role="status" aria-label="환경 연결 완료 조건 진행">${progressGoals}${gauge}</div>`;
         body.innerHTML = `<section class="regional-shell"><div class="regional-connections">${progressStrip}<div class="regional-connection-layout">
-          <section class="regional-section"><span class="chip">${model.id === 'asia' ? '1. 아시아의 환경문제' : model.id === 'europe' ? '1. 유럽의 환경문제' : '1. 바다·물·기후의 연결'}</span><h2>${model.id === 'oceania' ? '멀리 떨어진 지역도 이어져 있어' : '무엇이 달라지고, 어떤 어려움이 생길까?'}</h2><p>${model.id === 'oceania' ? '신호를 눌러 그림의 변화를 비교해 봐.' : '그림을 밀어 원인과 영향을 이어 봐.'}</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}" aria-label="환경 신호: ${esc(item.title)}${state.discoveredSignalIds.includes(item.id) ? ', 기록함' : ''}"><strong>${usesOceaniaInteractions ? '' : state.discoveredSignalIds.includes(item.id) ? '✓ ' : ''}${esc(item.title)}</strong>${usesOceaniaInteractions ? '' : `<br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span>`}</button>`).join('')}</div></section>
+          <section class="regional-section"><span class="chip">${model.id === 'asia' ? '1. 아시아의 환경문제' : model.id === 'europe' ? '1. 유럽의 환경문제' : '1. 바다·물·기후의 연결'}</span><h2>${model.id === 'oceania' ? '멀리 떨어진 지역도 이어져 있어' : '무엇이 달라지고, 어떤 어려움이 생길까?'}</h2><p>${model.id === 'oceania' ? '신호를 눌러 그림의 변화를 비교해 봐.' : '그림을 밀어 원인과 영향을 이어 봐.'}</p><div class="regional-signal-grid">${model.signals.map((item) => `<button class="card card-pick regional-signal" data-signal="${item.id}" aria-pressed="${state.discoveredSignalIds.includes(item.id)}" aria-label="환경 신호: ${esc(item.title)}${state.discoveredSignalIds.includes(item.id) ? ', 기록함' : ''}"><strong>${esc(item.title)}</strong>${usesOceaniaInteractions ? '' : `<br><span>${esc(item.connection.split(' · ')[0] ?? '')}</span>`}</button>`).join('')}</div></section>
           <section class="regional-section"><span class="chip">2. 지역의 목소리</span><h2>서로 다른 목소리를 들어 봐</h2><p>친구들의 생각을 눌러 비교해 봐.</p><div class="regional-choice-grid">${perspectiveCards}</div>${(() => { const unheard = model.perspectives.length - state.heardPerspectiveIds.length; return unheard > 0 ? `<p class="regional-discovery">아직 못 들은 목소리가 ${unheard}개 있어 — 완료 뒤에도 언제든 다시 와서 들을 수 있어.</p>` : ''; })()}</section>
           <section class="regional-section"><span class="chip">${usesOceaniaInteractions ? '3. 함께할 일' : '3. 책임을 나누는 행동'}</span><h2>${usesOceaniaInteractions ? '나, 우리가 할 수 있는 일' : '서로 다른 크기의 행동을 함께 골라 봐'}</h2><p>${usesOceaniaInteractions ? '할 수 있는 일에 자유롭게 체크해 봐.' : esc(actionGuide)}</p>${actionPanel}</section>
         </div></div></section>`;
