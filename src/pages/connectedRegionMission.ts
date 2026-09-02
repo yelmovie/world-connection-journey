@@ -170,7 +170,7 @@ const PAGE_CSS = `
 .regional-pin small{display:block;margin-top:4px;font:700 16px/1.1 var(--font-body)}
 .regional-pin.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-pin.is-visited::after{content:"✓";position:absolute;right:-8px;top:-10px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#1b9b68;border:2px solid #fff}
-.regional-country-shortcut{position:absolute;z-index:4;left:84%;top:52%;transform:translate(-50%,-50%);padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
+.regional-country-shortcut{position:absolute;z-index:4;transform:translate(-50%,-50%);padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
 .regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 16px/1.1 var(--font-body)}
 .regional-country-shortcut.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-side{padding:14px 16px;background:rgba(255,253,247,.96);display:flex;flex-direction:column;gap:9px;min-height:0}
@@ -822,7 +822,12 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const area = model.areas.find((item) => item.id === state.activeAreaId) ?? null;
         const examples = area ? model.examples.filter((item) => item.areaId === area.id) : [];
         const example = model.examples.find((item) => item.id === state.activeExampleId && item.areaId === area?.id) ?? examples[0] ?? null;
-        const koreaShortcut = model.id === 'asia' ? model.examples.find((item) => item.country === '대한민국') : null;
+        // 동아시아 나라 바로가기 핀 — 지도 위 위치(%)는 권역 핀과 겹치지 않게 서로 어긋나게 둔다
+        const countryShortcuts = model.id === 'asia'
+          ? [{ country: '중국', place: '베이징', x: 62, y: 44 }, { country: '대한민국', place: '서울', x: 86, y: 57 }, { country: '일본', place: '도쿄', x: 94, y: 35 }]
+            .map((spot) => ({ ...spot, example: model.examples.find((item) => item.country === spot.country) }))
+            .filter((spot): spot is typeof spot & { example: NonNullable<typeof spot.example> } => Boolean(spot.example))
+          : [];
         if (example && state.activeExampleId !== example.id) state.activeExampleId = example.id;
         const scenes = example ? model.scenes.filter((item) => example.sceneIds.includes(item.id)) : [];
         const galleryTitle = area
@@ -831,14 +836,14 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         body.innerHTML = `<section class="regional-shell">
           <div class="regional-map" aria-label="${esc(model.title)} 권역 지도"><div class="regional-map-frame"><div class="regional-map-layer" style="background-image:url('${assetUrl(model.mapAssetId)}')">
             ${model.areas.map((item) => `<button type="button" class="regional-pin ${state.activeAreaId === item.id ? 'is-active' : ''} ${state.visitedAreaIds.includes(item.id) ? 'is-visited' : ''}" style="--x:${item.x}%;--y:${item.y}%;--pin:${item.color}" data-area="${item.id}">${esc(item.name)}<small>${esc(item.short)}</small></button>`).join('')}
-            ${koreaShortcut ? `<button type="button" class="regional-country-shortcut ${state.activeExampleId === koreaShortcut.id ? 'is-active' : ''}" data-country-shortcut="${koreaShortcut.id}">대한민국<small>서울 · 바로 보기</small></button>` : ''}
+            ${countryShortcuts.map((spot) => `<button type="button" class="regional-country-shortcut ${state.activeExampleId === spot.example.id ? 'is-active' : ''}" style="left:${spot.x}%;top:${spot.y}%" data-country-shortcut="${spot.example.id}">${esc(spot.country)}<small>${esc(spot.place)} · 바로 보기</small></button>`).join('')}
           </div></div></div>
           <aside class="regional-side">
             ${area ? `<span class="chip">${esc(model.areaLabel)} 탐험</span><h2>${esc(area.name)}</h2><p>${esc(area.description)}</p><h3>${galleryTitle}</h3><div class="regional-photo-grid">${scenes.length ? scenes.map((scene) => `<button class="regional-photo ${state.viewedSceneIds.includes(scene.id) ? 'is-viewed' : ''}" data-scene="${scene.id}"><img src="${imageFor(model, scene.assetId)}" alt=""><strong>${esc(scene.title)}</strong></button>`).join('') : `<p>이 ${esc(model.areaLabel)}과 연결된 장면을 준비하고 있어.</p>`}</div>` : `<span class="chip">위치부터 살펴보기</span><h2>${model.areaLabel}을 골라 봐</h2><p>지도에서 눌러도 되고, 아래 목록에서 골라도 돼.</p><div class="regional-area-picks">${model.areas.map((item) => `<button type="button" class="btn btn-ghost regional-area-pick" data-area="${item.id}">${state.visitedAreaIds.includes(item.id) ? '✓ ' : ''}${esc(item.name)}<span>${esc(item.short)}</span></button>`).join('')}</div><button type="button" class="btn btn-ghost regional-info" data-map-info>이 지도는 어떤 그림이야?</button>`}
           </aside>
         </section>`;
         body.querySelectorAll<HTMLElement>('[data-area]').forEach((button) => button.addEventListener('click', () => { const id = button.dataset.area!; state.activeAreaId = id; state.activeExampleId = model.examples.find((item) => item.areaId === id)?.id ?? null; persist(); render(); }));
-        body.querySelector<HTMLElement>('[data-country-shortcut]')?.addEventListener('click', () => { if (!koreaShortcut) return; state.activeAreaId = koreaShortcut.areaId; state.activeExampleId = koreaShortcut.id; persist(); render(); });
+        body.querySelectorAll<HTMLElement>('[data-country-shortcut]').forEach((button) => button.addEventListener('click', () => { const spot = countryShortcuts.find((item) => item.example.id === button.dataset.countryShortcut); if (!spot) return; state.activeAreaId = spot.example.areaId; state.activeExampleId = spot.example.id; persist(); render(); }));
         body.querySelectorAll<HTMLElement>('[data-scene]').forEach((button) => button.addEventListener('click', () => { const scene = model.scenes.find((item) => item.id === button.dataset.scene); if (scene) openScene(scene); }));
         body.querySelector<HTMLElement>('[data-map-info]')?.addEventListener('click', () => {
           openModal({

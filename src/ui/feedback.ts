@@ -3,7 +3,8 @@ import { loadContent } from '../core/ContentRepository';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
 import { navigate } from '../router';
-import { PASSPORT_STAMP_ASSETS, playJourneyTransition, queueMissionReturn } from './journeyTransition';
+import { playJourneyTransition, queueMissionReturn } from './journeyTransition';
+import { STAMP_ASSETS, stampForMission } from '../core/stamps';
 import { MISSION_IDS, type MissionId } from '../types';
 import { playEndingVideo } from './endingVideo';
 
@@ -65,14 +66,20 @@ export function completeMissionFlow(
     if (allDone) playEndingVideo(() => navigate('#/certificate')); // 여섯 도장 완성 → 엔딩 영상 → 인증서
     else navigate('#/map');
   };
-  // 모든 미션 공통: 결과 모달 없이 바로 "도장 쾅" 전환으로 마무리한다(아메리카 방식으로 통일).
   queueMissionReturn({ missionId, missionTitle });
+  // 지구회의는 도장이 없다 — 곧바로 엔딩 영상·인증서로.
+  if (missionId === 'dialogue') {
+    goHome();
+    return;
+  }
+  // 결과 모달 없이 바로 "도장 쾅" 전환. 아메리카는 미션 도중 북·남 도장을 이미 받았으니 완료 연출만.
+  const stamp = stampForMission(missionId);
   void audio.playSfx('stamp');
   const transition = playJourneyTransition({
     kind: 'stamp',
-    label: `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!`,
+    label: stamp ? `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!` : '북·남아메리카 여행 완료!',
     assetId: 'prop.stamp',
-    companionAssetId: PASSPORT_STAMP_ASSETS[missionId]
+    ...(stamp ? { companionAssetId: STAMP_ASSETS[stamp] } : {})
   });
   void transition.finished.then(goHome);
 }

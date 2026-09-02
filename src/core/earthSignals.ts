@@ -59,7 +59,7 @@ function readEntries(value: unknown): Array<{ label: string; issueId?: string }>
   return out;
 }
 
-/** 지금까지 다섯 대륙에서 모은 신호 — 대륙 순서를 지켜 돌려준다. */
+/** 지금까지 여섯 대륙에서 모은 신호 — 대륙 순서를 지켜 돌려준다. */
 export function collectedEarthSignals(): CollectedSignal[] {
   const save = saveRepo.get();
   const out: CollectedSignal[] = [];

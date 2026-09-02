@@ -5,6 +5,7 @@ import {
   matchesTeacherPassword
 } from '../src/core/SaveRepository';
 import { MISSION_IDS } from '../src/types';
+import { STAMP_SLOTS } from '../src/core/stamps';
 
 describe('교사용 보호 기능', () => {
   it('비밀번호 yelsam을 대소문자 구분 없이 확인한다', () => {
@@ -33,7 +34,7 @@ describe('교사용 보호 기능', () => {
       expect(save.missions[id].checkpointId).toBeNull();
       expect(save.rewardClaimedById[`mission.${id}`]).toBe(true);
     }
-    expect(save.stamps).toEqual(MISSION_IDS);
+    expect(save.stamps).toEqual([...STAMP_SLOTS]);
     expect(save.completion.unlocked).toBe(true);
     expect(save.teacherUnlocked).toBe(false);
     expect(save.missions.asia.bestScore).toBe(72);

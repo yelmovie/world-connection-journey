@@ -5,6 +5,8 @@ import { loadContent } from '../core/ContentRepository';
 import { writeMissionArtifact } from '../core/missionArtifacts';
 import { recordEarthSignals } from '../core/earthSignals';
 import { saveRepo } from '../core/SaveRepository';
+import { americasGroupDone, STAMP_ASSETS, STAMP_LABELS } from '../core/stamps';
+import { playJourneyTransition } from '../ui/journeyTransition';
 import { buildTopBar, updateSteps } from '../ui/chrome';
 import { enablePickPlace, enableRangeDrag, type PickPlaceController } from '../ui/dnd';
 import { completeMissionFlow } from '../ui/feedback';
@@ -615,6 +617,19 @@ export function createPage(): Page {
           learn: saveRepo.get().missions.americas.data.learn
         });
       };
+      // 북(캐나다·미국·멕시코)/남(브라질·페루) 나라를 다 끝내면 그 자리에서 대륙 도장을 찍는다. persist() 뒤에 호출할 것.
+      const awardContinentStamps = (): void => {
+        for (const stamp of ['americas_north', 'americas_south'] as const) {
+          if (!americasGroupDone(saveRepo.get(), stamp) || !saveRepo.awardStamp(stamp)) continue;
+          void audio.playSfx('stamp');
+          playJourneyTransition({
+            kind: 'stamp',
+            label: `${STAMP_LABELS[stamp]} 여행 도장이 여권에 쾅!`,
+            assetId: 'prop.stamp',
+            companionAssetId: STAMP_ASSETS[stamp]
+          });
+        }
+      };
       const go = (screen: Screen): void => {
         S.screen = screen;
         persist();
@@ -905,6 +920,7 @@ export function createPage(): Page {
           const newlyCompleted = !P.done && isCountryJourneyComplete(c, P);
           if (newlyCompleted) P.done = true;
           persist();
+          if (newlyCompleted) awardContinentStamps();
           renderCountries();
           if (newlyCompleted) later(() => announceGuide(`${c.name}의 사진과 이야기를 모두 살펴봤어! 다른 나라도 둘러볼까?`), 120);
         });
@@ -1116,6 +1132,7 @@ export function createPage(): Page {
           P.done = true;
           persist();
           void audio.playSfx('stamp');
+          if (newlyCompleted) awardContinentStamps();
           renderCountries();
           if (newlyCompleted) later(() => announceGuide(`${c.name}의 사진과 이야기를 모두 살펴봤어! 다른 나라도 둘러볼까?`), 120);
         });

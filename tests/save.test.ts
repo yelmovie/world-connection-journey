@@ -67,6 +67,15 @@ describe('저장 데이터 검증·복구', () => {
     expect(restored.rewardClaimedById['mission.europe']).toBeUndefined();
   });
 
+  it('예전 저장의 미션 id 도장은 6대륙 도장으로 이관된다', () => {
+    const restored = validateSave({
+      schemaVersion: 1,
+      missions: { americas: { status: 'completed' } },
+      stamps: ['americas', 'dialogue']
+    });
+    expect(restored.stamps).toEqual(['americas_north', 'americas_south']);
+  });
+
   it('volume 하위호환: 구 저장에 volume이 없으면 0.8, 범위 밖은 클램프된다', () => {
     // volume 필드가 없던 구 v1 저장
     const legacy = validateSave({

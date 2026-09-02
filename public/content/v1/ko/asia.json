@@ -69,8 +69,8 @@
       "nameKo": "동아시아",
       "silhouette": "산맥과 큰 도시",
       "mapPosition": {
-        "xPercent": 78,
-        "yPercent": 37
+        "xPercent": 75,
+        "yPercent": 22
       },
       "countryExampleIds": [
         "korea_seoul",
@@ -94,8 +94,8 @@
       "nameKo": "동남아시아",
       "silhouette": "큰 강과 섬",
       "mapPosition": {
-        "xPercent": 69,
-        "yPercent": 70
+        "xPercent": 66,
+        "yPercent": 76
       },
       "countryExampleIds": [
         "vietnam_mekong"

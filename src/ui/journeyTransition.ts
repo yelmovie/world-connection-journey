@@ -1,6 +1,7 @@
 import { assetUrl, hasAsset } from '../core/assets';
 import { saveRepo } from '../core/SaveRepository';
-import { MISSION_IDS, type MissionId } from '../types';
+import { STAMP_ASSETS, STAMP_LABELS, STAMP_SLOTS } from '../core/stamps';
+import type { MissionId } from '../types';
 import { selectedAirplanePortraitAssetId } from './airplaneFleet';
 import { avatarChoice } from './avatarRoster';
 
@@ -19,7 +20,7 @@ export interface JourneyTransitionHandle {
 let pendingReturn: MissionReturnCue | null = null;
 let activeCancel: (() => void) | null = null;
 
-/** 여권의 여섯 도장 슬롯과 지도 노드가 같은 상징을 사용하게 하는 단일 매핑. */
+/** @deprecated core/stamps.ts STAMP_ASSETS 사용 — 도장은 미션이 아니라 6대륙 단위다. */
 export const PASSPORT_STAMP_ASSETS: Record<MissionId, string> = {
   asia: 'deco.landmark_taj',
   europe: 'deco.landmark_eiffel',
@@ -69,24 +70,24 @@ export function playJourneyTransition(opts: {
   const save = saveRepo.get();
   const avatar = avatarChoice(save.profile?.avatarId);
   const passportOwner = avatar.name;
-  const newestMissionId = companionAssetId
-    ? MISSION_IDS.find((missionId) => PASSPORT_STAMP_ASSETS[missionId] === companionAssetId)
+  // 방금 받은 도장 = companionAssetId 와 같은 그림을 쓰는 대륙 슬롯
+  const newestStampId = companionAssetId
+    ? STAMP_SLOTS.find((stampId) => STAMP_ASSETS[stampId] === companionAssetId)
     : undefined;
-  const stampSlots = MISSION_IDS.map((missionId, index) => {
-    const earned = save.stamps.includes(missionId);
-    const stampAssetId = missionId === newestMissionId && companionAssetId
-      ? companionAssetId
-      : PASSPORT_STAMP_ASSETS[missionId];
-    const stampTool = missionId === newestMissionId && hasAsset(assetId)
+  const stampSlots = STAMP_SLOTS.map((stampId, index) => {
+    const earned = save.stamps.includes(stampId);
+    const isNew = stampId === newestStampId;
+    const stampAssetId = STAMP_ASSETS[stampId];
+    const stampTool = isNew && hasAsset(assetId)
       ? `<img class="journey-transition__stamp-tool" src="${assetUrl(assetId)}" data-asset-id="${assetId}" alt="">`
       : '';
-    return `<span class="journey-transition__stamp-slot${earned ? ' is-earned' : ''}${missionId === newestMissionId ? ' is-new' : ''}" data-stamp-slot="${index + 1}">
+    return `<span class="journey-transition__stamp-slot${earned ? ' is-earned' : ''}${isNew ? ' is-new' : ''}" data-stamp-slot="${index + 1}" aria-label="${STAMP_LABELS[stampId]} 도장 ${earned ? '받음' : '아직'}">
       ${earned && hasAsset(stampAssetId) ? `<img src="${assetUrl(stampAssetId)}" data-asset-id="${stampAssetId}" alt="">` : ''}
       ${stampTool}
     </span>`;
   }).join('');
   const passportAssetId = hasAsset('prop.passport_stampbook') ? 'prop.passport_stampbook' : 'prop.passport';
-  const transitionLabel = opts.kind === 'stamp' && save.stamps.length === 0 && !newestMissionId
+  const transitionLabel = opts.kind === 'stamp' && save.stamps.length === 0 && !newestStampId
     ? '여행을 시작해 여섯 도장을 완성해 줘!'
     : opts.label;
   const overlay = document.createElement('div');

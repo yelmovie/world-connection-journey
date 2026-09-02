@@ -7,8 +7,8 @@ import { withJosa } from '../core/josa';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { burstConfetti, popBounce } from '../ui/fx';
-import { cancelJourneyTransition, playJourneyTransition, PASSPORT_STAMP_ASSETS } from '../ui/journeyTransition';
-import { MISSION_IDS } from '../types';
+import { cancelJourneyTransition, playJourneyTransition } from '../ui/journeyTransition';
+import { isStampId, STAMP_ASSETS, STAMP_LABELS, STAMP_SLOTS } from '../core/stamps';
 import { showToast } from '../ui/toast';
 import { AIRPLANE_CHOICES as PLANES } from '../ui/airplaneFleet';
 import { AVATAR_CHOICES as AVATARS } from '../ui/avatarRoster';
@@ -329,6 +329,8 @@ const PASSPORT_CSS = `
 .passport-stamps__title { margin:0;font:800 max(15px,var(--fs-small)) var(--font-body);color:#3d5a72;letter-spacing:.02em; }
 .passport-stamps__title b { color:var(--c-navy);font-size:1.15em; }
 .passport-stamps__row { display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%; }
+.passport-stamp { display:grid;gap:4px;min-width:0; }
+.passport-stamp-name { text-align:center;font:800 12px/1.2 var(--font-body);color:#3d5a72;white-space:nowrap; }
 .passport-stamp-slot { aspect-ratio:1;display:grid;place-items:center;border:2px dashed rgba(29,74,111,.35);border-radius:14px;background:rgba(255,255,255,.55);color:#8aa0b2;font:900 18px var(--font-head);overflow:hidden; }
 .passport-stamp-slot.is-earned { border:2px solid var(--c-gold);background:#fff;box-shadow:var(--shadow-card); }
 .passport-stamp-slot img { width:100%;height:100%;object-fit:cover; }
@@ -683,16 +685,17 @@ export function createPage(): Page {
       page.appendChild(body);
       root.appendChild(page);
 
-      /** 여행 도장 여섯 칸 — 받은 것은 그림, 아직인 것은 번호 */
+      /** 여행 도장 여섯 칸(6대륙) — 받은 것은 그림, 아직인 것은 번호. 칸 아래에 대륙 이름 */
       const renderStamps = () => {
         const box = page.querySelector<HTMLElement>('#passport-stamps');
         if (!box) return;
-        const earned = saveRepo.get().stamps;
-        box.innerHTML = `<p class="passport-stamps__title">여행 도장 <b>${earned.length}</b> / ${MISSION_IDS.length}</p>
-          <div class="passport-stamps__row">${MISSION_IDS.map((id, i) => {
-            const asset = PASSPORT_STAMP_ASSETS[id];
+        const earned = saveRepo.get().stamps.filter(isStampId);
+        box.innerHTML = `<p class="passport-stamps__title">여행 도장 <b>${earned.length}</b> / ${STAMP_SLOTS.length}</p>
+          <div class="passport-stamps__row">${STAMP_SLOTS.map((id, i) => {
+            const asset = STAMP_ASSETS[id];
+            const label = STAMP_LABELS[id];
             const got = earned.includes(id);
-            return `<span class="passport-stamp-slot${got ? ' is-earned' : ''}" role="img" aria-label="${i + 1}번 도장 ${got ? '받음' : '아직'}">${got && hasAsset(asset) ? `<img src="${assetUrl(asset)}" data-asset-id="${asset}" alt="">` : `<b>${i + 1}</b>`}</span>`;
+            return `<span class="passport-stamp" role="img" aria-label="${label} 도장 ${got ? '받음' : '아직'}"><span class="passport-stamp-slot${got ? ' is-earned' : ''}">${got && hasAsset(asset) ? `<img src="${assetUrl(asset)}" data-asset-id="${asset}" alt="">` : `<b>${i + 1}</b>`}</span><small class="passport-stamp-name" aria-hidden="true">${label}</small></span>`;
           }).join('')}</div>`;
       };
       renderStamps();

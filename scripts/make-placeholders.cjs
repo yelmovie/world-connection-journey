@@ -16,7 +16,8 @@ const ITEMS = [
   { file: 'americas_scene_usa_plains.png', w: 1280, h: 720, title: '미국 · 중부 대평원', sub: '사진 준비 중' },
   { file: 'americas_scene_usa_east.png', w: 1280, h: 720, title: '미국 · 동부 도시', sub: '사진 준비 중' },
   { file: 'americas_scene_usa_landmark.png', w: 1280, h: 720, title: '미국 · 뉴욕 자유의 여신상', sub: '사진 준비 중' },
-  { file: 'americas_student5.png', w: 900, h: 1200, title: '리암', sub: '캐릭터 준비 중', transparent: true }
+  { file: 'americas_student5.png', w: 900, h: 1200, title: '리암', sub: '캐릭터 준비 중', transparent: true },
+  { file: 'stamp_americas_south.png', w: 384, h: 384, title: '남아메리카 도장', sub: '그림 준비 중', transparent: true }
 ];
 
 (async () => {

@@ -1,6 +1,7 @@
 import { audio } from '../core/AudioManager';
 import { assetUrl, hasAsset } from '../core/assets';
 import { matchesTeacherPassword, saveRepo } from '../core/SaveRepository';
+import { isStampId } from '../core/stamps';
 import { navigate } from '../router';
 import { confirmDialog, openModal } from './modal';
 import { showToast } from './toast';
@@ -314,17 +315,18 @@ export function buildTopBar(opts: { title: string; subtitle?: string; backTo?: s
   const isMap = currentRoute === '#/map';
   const selectedPlane = airplaneChoice(save.profile?.airplaneId);
   const selectedAvatar = avatarChoice(save.profile?.avatarId);
+  const stampCount = save.stamps.filter(isStampId).length; // 예전 저장의 미션 id 는 세지 않는다
   const ticket = save.profile && opts.showPassport
     ? `<button type="button" class="journey-ticket" data-act="passport"
         data-selected-avatar="${escapeHtml(selectedAvatar.saveId)}" data-selected-airplane="${escapeHtml(selectedPlane.saveId)}"
         title="${escapeHtml(selectedAvatar.name)}의 여행 여권"
-        aria-label="${escapeHtml(selectedAvatar.name)}의 여권 보기. 비행기 ${escapeHtml(selectedPlane.name)}, 도장 ${save.stamps.length}개">
+        aria-label="${escapeHtml(selectedAvatar.name)}의 여권 보기. 비행기 ${escapeHtml(selectedPlane.name)}, 도장 ${stampCount}개">
         <span class="journey-ticket__crew" aria-hidden="true">
           ${hasAsset(selectedAvatar.assetId) ? `<img class="journey-ticket__avatar" src="${assetUrl(selectedAvatar.assetId)}" data-asset-id="${selectedAvatar.assetId}" alt="">` : ''}
           ${hasAsset(selectedPlane.assetId) ? `<img class="journey-ticket__plane" src="${assetUrl(selectedPlane.assetId)}" data-asset-id="${selectedPlane.assetId}" alt="">` : ''}
         </span>
         <span class="journey-ticket__name">${escapeHtml(selectedAvatar.name)}</span>
-        <span class="journey-ticket__meta">${escapeHtml(selectedPlane.name)} · 도장 ${save.stamps.length}개</span>
+        <span class="journey-ticket__meta">${escapeHtml(selectedPlane.name)} · 도장 ${stampCount}개</span>
       </button>`
     : '';
   const backAria = isHome

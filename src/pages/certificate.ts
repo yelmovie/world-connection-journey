@@ -3,10 +3,8 @@ import { navigate } from '../router';
 import { assetUrl, hasAsset } from '../core/assets';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
-import { PASSPORT_STAMP_ASSETS } from '../ui/journeyTransition';
 import { avatarChoice } from '../ui/avatarRoster';
-import { MISSION_IDS } from '../types';
-import type { MissionId } from '../types';
+import { STAMP_ASSETS, STAMP_LABELS, STAMP_SLOTS } from '../core/stamps';
 
 /** 인증서 한 장 — 세로 A4. 학교·학년반·번호·이름은 인쇄해서 손으로 쓰도록 빈칸으로 둔다. */
 const STYLE = `
@@ -37,6 +35,8 @@ const STYLE = `
 .cert-body { position:relative; z-index:1; width:84%; margin:0 auto; font:700 2.75cqw/1.75 var(--font-body); color:#22405a; word-break:keep-all; text-wrap:balance; }
 .cert-body b { color:var(--cert-teal); font-weight:900; }
 .cert-stamps { position:relative; z-index:1; display:grid; grid-template-columns:repeat(6,1fr); gap:1.6cqw; width:76%; margin:0 auto; }
+.cert-stamp-cell { display:grid; gap:.5cqw; min-width:0; }
+.cert-stamp-name { display:block; text-align:center; font:800 2.2cqw/1.2 var(--font-body); color:#4b6a84; white-space:nowrap; }
 .cert-stamp { aspect-ratio:1; display:grid; place-items:center; border-radius:50%; border:2px solid rgba(201,162,74,.6); background:#fff; overflow:hidden; box-shadow:0 3px 10px rgba(20,50,80,.12); }
 .cert-stamp img { width:100%; height:100%; object-fit:cover; }
 .cert-stamp b { font:900 3cqw/1 var(--font-head); color:#b7c3cf; }
@@ -112,10 +112,11 @@ export function createPage(): Page {
             </section>
             <p class="cert-body">${BODY_TEXT}</p>
             <div class="cert-stamps" aria-label="여행 도장">
-              ${MISSION_IDS.map((id: MissionId, index) => {
-                const asset = PASSPORT_STAMP_ASSETS[id];
+              ${STAMP_SLOTS.map((id, index) => {
+                const asset = STAMP_ASSETS[id];
+                const label = STAMP_LABELS[id];
                 const got = earned.has(id) && hasAsset(asset);
-                return `<span class="cert-stamp" role="img" aria-label="${index + 1}번 도장 ${got ? '받음' : '아직'}">${got ? `<img src="${assetUrl(asset)}" data-asset-id="${asset}" alt="">` : `<b>${index + 1}</b>`}</span>`;
+                return `<span class="cert-stamp-cell" role="img" aria-label="${label} 도장 ${got ? '받음' : '아직'}"><span class="cert-stamp">${got ? `<img src="${assetUrl(asset)}" data-asset-id="${asset}" alt="">` : `<b>${index + 1}</b>`}</span><small class="cert-stamp-name" aria-hidden="true">${label}</small></span>`;
               }).join('')}
             </div>
             ${pledge ? `<p class="cert-pledge"><em>나의 약속</em> · ${pledge.replace(/</g, '&lt;')}</p>` : ''}

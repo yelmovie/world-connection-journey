@@ -3865,6 +3865,18 @@
       "license": "placeholder (교체 예정)",
       "note": "미국 친구 리암 전신(투명 배경)",
       "alpha": true
+    },
+    "stamp.americas_south": {
+      "type": "image",
+      "src": "assets/stamp_americas_south.png",
+      "original": "사진 준비 중 — docs/IMAGE_PROMPTS_UK_USA.md 프롬프트로 생성해 같은 파일명으로 덮어쓰기",
+      "pages": [
+        "p07"
+      ],
+      "preload": "page",
+      "alpha": true,
+      "license": "placeholder (교체 예정)",
+      "note": "남아메리카 도장(마추픽추) — 사진 준비 중"
     }
   }
 }

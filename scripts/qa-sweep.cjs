@@ -48,7 +48,7 @@ function baseSave() {
       oceania: done({ earthSignals: [{ label: '산호가 하얗게 변한 신호', issueId: 'ocean' }] }),
       dialogue: mission('available', {})
     },
-    stamps: ['asia', 'europe', 'africa', 'americas', 'oceania'],
+    stamps: ['asia', 'europe', 'africa', 'americas_north', 'americas_south', 'oceania'],
     settings: { bgm: false, sfx: false, reducedMotion: true, volume: 0 },
     completion: { unlocked: true, reflection: '', placedPuzzlePieceIds: [], reflectionDrafts: { initialThought: '', evidenceLearned: '', revisedThought: '', transferApplication: '' }, actionPrinciples: [], certificateIssued: false },
     rewardClaimedById: {},

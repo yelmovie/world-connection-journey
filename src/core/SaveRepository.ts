@@ -1,6 +1,7 @@
 import { bus } from './EventBus';
 import type { GameSaveV1, MissionId, MissionSave } from '../types';
 import { CONTINENT_IDS, MISSION_IDS } from '../types';
+import { computeStamps, STAMP_SLOTS, type StampId } from './stamps';
 
 export const SAVE_KEY = 'world_connection_journey.save.v1';
 const BACKUP_KEY = 'world_connection_journey.save.v1.corrupt-backup';
@@ -134,7 +135,8 @@ export function validateSave(raw: unknown): GameSaveV1 {
 }
 
 function normalizeMissionRewards(save: GameSaveV1): void {
-  save.stamps = MISSION_IDS.filter((id) => save.missions[id].status === 'completed');
+  // 도장은 미션 id 가 아니라 6대륙 id — 예전 저장('americas','dialogue')도 여기서 자동 이관된다.
+  save.stamps = computeStamps(save);
   for (const id of MISSION_IDS) {
     const key = `mission.${id}`;
     if (save.missions[id].status === 'completed') save.rewardClaimedById[key] = true;
@@ -167,7 +169,7 @@ export function markAllMissionsCompletedForTeacher(
 /**
  * 교사용 해금 상태를 적용하는 단일 변환.
  *
- * 다섯 대륙은 원래부터 열려 있으므로 실제 변화는 마지막 대화와 완주 화면에
+ * 여섯 대륙은 원래부터 열려 있으므로 실제 변화는 마지막 대화와 완주 화면에
  * 집중된다. 기존 진행/완료 상태는 건드리지 않고 잠긴 항목만 연다.
  */
 export function applyTeacherUnlock(save: GameSaveV1): void {
@@ -178,7 +180,7 @@ export function applyTeacherUnlock(save: GameSaveV1): void {
   recomputeUnlocks(save);
 }
 
-/** 해금 규칙 단일 소스: 대화는 5대륙 완료 시, 완료 화면은 대화까지 완료 시. */
+/** 해금 규칙 단일 소스: 대화는 6대륙 완료 시, 완료 화면은 대화까지 완료 시. */
 export function recomputeUnlocks(save: GameSaveV1): void {
   const continentsDone = CONTINENT_IDS.every((id) => save.missions[id].status === 'completed');
   const d = save.missions.dialogue;
@@ -364,12 +366,20 @@ class SaveRepository {
       if (m.data.exploreProgress !== undefined) persistentData.exploreProgress = m.data.exploreProgress;
       if (m.data.earthSignals !== undefined) persistentData.earthSignals = m.data.earthSignals;
       m.data = persistentData;
-      if (!s.rewardClaimedById[rewardKey]) {
-        s.rewardClaimedById[rewardKey] = true;
-        if (!s.stamps.includes(missionId)) s.stamps.push(missionId);
-      }
+      s.rewardClaimedById[rewardKey] = true;
+      // 도장은 대륙 단위(아메리카 완료 → 북·남 두 개, 지구회의 → 없음). 순서는 STAMP_SLOTS.
+      s.stamps = computeStamps(s);
     });
     bus.emit('MISSION_COMPLETE', { missionId, score });
+  }
+
+  /** 미션 도중 대륙 도장 지급(아메리카 북/남). 새로 찍혔을 때만 true. */
+  awardStamp(stamp: StampId): boolean {
+    if (this.state.stamps.includes(stamp)) return false;
+    this.update((s) => {
+      s.stamps = STAMP_SLOTS.filter((id) => id === stamp || s.stamps.includes(id));
+    });
+    return true;
   }
 
   /** 새 여행 시작 — 호출 전 반드시 확인 모달을 거칠 것. */

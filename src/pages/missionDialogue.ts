@@ -570,7 +570,7 @@ export function createPage(): Page {
             </div>
           </div>`;
 
-        // 다섯 대륙에서 모아 온 것을 먼저 펼쳐 보인다 — 마지막 단계가 갑자기 등장한 별개 게임으로 보이지 않게.
+        // 여섯 대륙에서 모아 온 것을 먼저 펼쳐 보인다 — 마지막 단계가 갑자기 등장한 별개 게임으로 보이지 않게.
         // renderStage1은 친구를 만날 때마다 다시 불리므로, 14줄 목록은 첫 입장(연결 0개)에서 딱 한 번만 연다.
         const bag = collectedEarthSignals();
         if (bag.length > 0 && matched.size === 0 && !oxDone) {

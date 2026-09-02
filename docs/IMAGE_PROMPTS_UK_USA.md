@@ -35,5 +35,18 @@ webp로 만들었다면 `src/content/asset-manifest.json`에서 해당 항목의
 
 > 리암은 아메리카 지도 핀·대화창 카드·문화 가방에 쓰여요. 기존 학생 캐릭터(`americas_student1~4.webp`)와 크기·시선·발 위치를 맞춰 주세요.
 
+## 여권 도장 · 남아메리카
+
+여권 도장이 6대륙(아시아·유럽·아프리카·북아메리카·남아메리카·오세아니아)으로 늘면서 남아메리카 도장 그림이 하나 더 필요해요.
+기존 도장 그림(`deco_landmark_taj / eiffel / pyramid / liberty / sydney.webp`)과 같은 세트로 보여야 합니다.
+
+- **파일명**: `stamp_americas_south.png` (webp로 만들면 매니페스트 `stamp.americas_south`의 `src` 확장자만 바꾸기)
+- **규격**: 정사각형 **384×384 이상**(1024×1024 권장), **배경 투명 PNG**
+- **기존 도장의 생김새**: 둥근 파란 바다 원반 위에 떠 있는 작은 섬 미니어처. 섬 가운데에 랜드마크가 크게 서 있고, 주변에 작은 나무·바위·배·갈매기·구름, 뒤로는 도시나 산이 낮게 깔림. 3D 카툰 렌더, 따뜻하고 선명한 채도, 부드러운 조명, 글자 없음. 원반 바깥은 투명.
+
+| 파일명 | 장면 | 프롬프트 |
+|---|---|---|
+| `stamp_americas_south.png` | 남아메리카 도장 · 마추픽추 | Machu Picchu ancient stone terraces and ruins on top of a small round floating island, tall green Andes mountain peaks rising behind, llamas on the grass terraces, a few fluffy clouds and a condor in the sky, the island sits on a round blue water disc like a miniature diorama badge, centered composition, **transparent background outside the disc**, same 3D cartoon miniature-island style as the existing landmark stamp set (Statue of Liberty island, Eiffel Tower island, Taj Mahal island, Pyramid island, Sydney Opera House island), square 1:1. |
+
 ## 중국
 아시아 미션에 이미 **중국(베이징)** 장면 4장이 들어 있어 추가 그림이 필요 없어요.
