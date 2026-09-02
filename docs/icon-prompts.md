@@ -1,26 +1,11 @@
-# icon-prompts — UI 아이콘 교체 프롬프트
+# 아이콘 프롬프트 캔버스 (2026-09-03)
 
-작성일: 2026-08-15
+이모지를 UI 아이콘으로 쓴 곳. 이미지는 생성하지 않고 프롬프트만 정리. ✓·✦·◐·↻ 같은 기호는 Graphics(SVG)로 그릴 수 있어 `dokdo-design`으로 넘긴다.
 
-## 현재 상태: 교체 대상 없음
-
-`src/` 전체를 이모지 코드포인트 범위(U+1F300–U+1FAFF)로 검색한 결과 **일치 0건**이다(2026-08-15, ripgrep `[\x{1F300}-\x{1FAFF}]` 재확인). UI는 이모지 대신 텍스트 기호(✓, ◐, ? 등)와 manifest 기반 WebP 이미지(`icon.compass` 등)를 사용하므로, 현재 아이콘으로 교체할 이모지가 없다.
-
-## 향후 아이콘 추가 시 규격
-
-새 아이콘이 필요해지면 아래 규격으로 생성·등록한다.
-
-- **형식**: 투명 배경 PNG 또는 SVG. 래스터는 원본 256×256px 이상(빌드 파이프라인이 아이콘을 256px WebP로 변환 — `scripts/build-assets.mjs` 규격).
-- **등록**: 파일을 직접 참조하지 말고 `src/content/asset-manifest.json`에 `icon.*` semantic ID로 등록한 뒤 `assetUrl()`/`hasAsset()`으로 사용한다. `license` 필드 기록 필수.
-- **스타일**: 기존 에셋과 동일한 밝은 3D 카툰 렌더 톤(`icon.compass` 참고), 단일 오브젝트, 여백 최소화.
-
-### 프롬프트 표 형식
-
-아이콘 생성 요청 시 아래 표 형식으로 기록한다.
-
-| semantic ID | 용도(페이지) | 프롬프트 | 규격 |
-|---|---|---|---|
-| icon.listening | p09 경청 단계 | 귀와 하트가 결합된 경청 아이콘, 밝은 3D 카툰 렌더, 투명 배경, 단일 오브젝트 | 투명 PNG 256px |
-| icon.heart_speech | p09 공감 대화 | 하트가 담긴 말풍선 아이콘, 밝은 3D 카툰 렌더, 투명 배경, 단일 오브젝트 | 투명 PNG 256px |
-
-위 두 줄은 docs/ASSET_AUDIT.md "3. missing 목록"에 기록된 미생성 아이콘(현재 코드는 SVG로 대체)의 예시 항목이다. 필수 작업은 아니며, 생성 시 이 표에 추가하고 assets/CREDITS.md에 출처를 기록한다.
+| 위치(파일:줄) | 현재 이모지 | 용도 | 생성 프롬프트 | 규격 |
+|---|---|---|---|---|
+| src/pages/missionAmericas.ts:368 | 👆 | 다음 지점 안내 배지 '여기를 눌러!' | 권고: 제거(문구+주황 테두리만으로 충분). 굳이 쓰면 flat pointing-hand icon, navy outline, gold fill, no shadow | 24px, SVG |
+| src/pages/missionAmericas.ts:975 | 🚤 / 👣 | 탐험 방식 아이콘(강 내려가기 / 발자국 경로) | Two flat line icons for a kids' map game: (1) small motorboat side view, (2) two footprints; navy #173653 stroke 2.5px, white fill, rounded ends | 32px, SVG 2종 |
+| scripts/make-placeholders.cjs | 🖼 | 사진 준비 중 안내판(임시) | 교체 예정 자산 — 실제 그림이 들어오면 사라짐 | — |
+| src/ui/feedback.ts:10 | ✓ ◐ ↻ | 피드백 종류 표시 | Graphics(SVG)로 그린다 → dokdo-design | 20px |
+| 여러 파일 | ✓ (CSS content) | 완료 체크 배지 | Graphics(SVG)로 그린다 → dokdo-design | 16~24px |
