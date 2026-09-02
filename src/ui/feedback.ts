@@ -74,7 +74,7 @@ export function completeMissionFlow(
   const goHome = (): void => {
     const save = saveRepo.get();
     const allDone = MISSION_IDS.every((id) => save.missions[id].status === 'completed');
-    if (allDone) playEndingVideo(() => navigate('#/map'));
+    if (allDone) playEndingVideo(() => navigate('#/certificate')); // 여섯 도장 완성 → 엔딩 영상 → 인증서
     else navigate('#/map');
   };
   // 모든 미션 공통: 결과 모달 없이 바로 "도장 쾅" 전환으로 마무리한다(아메리카 방식으로 통일).

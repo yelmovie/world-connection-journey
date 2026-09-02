@@ -2061,7 +2061,8 @@
       "src": "assets/deco_emblem_stamp.webp",
       "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_13 (8).png",
       "pages": [
-        "p03"
+        "p03",
+        "p09"
       ],
       "preload": "page",
       "alpha": true,
@@ -2574,10 +2575,30 @@
     "oceania.polynesia.nature": { "type": "image", "src": "assets/oceania_polynesia_nature_v2.webp", "original": "generated_images/exec-8fde73dd-264c-4e86-90e3-59fe32514218.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "사모아 우폴루의 화산 지형·하천·해안 연결 일러스트" },
     "oceania.polynesia.daily": { "type": "image", "src": "assets/oceania_polynesia_daily_v2.webp", "original": "generated_images/exec-2100aa27-bc8c-4ab1-bf2f-c85323feee05.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "사모아 아피아의 방과 후 버스·운동·음악 생활 일러스트" },
     "oceania.polynesia.culture": { "type": "image", "src": "assets/oceania_polynesia_culture_v2.webp", "original": "generated_images/exec-d5efc4c3-8035-4257-a791-626abcf564a2.png", "pages": ["p08"], "preload": "page", "alpha": false, "license": "AI-generated (project original)", "note": "쿡제도 라로통가의 바람·파도·별 항해 수업 일러스트" },
+    "earth.signal.nepal_glacier": {
+      "type": "image",
+      "src": "assets/earth_signal_nepal_glacier.webp",
+      "original": "assets/earth-signals/earth_signal_nepal_glacier_banner_v1.webp",
+      "pages": ["p09"],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "최종 지구 신호 관찰용 네팔 빙하와 계곡 물길 초광폭 장면"
+    },
+    "earth.signal.japan_heat": {
+      "type": "image",
+      "src": "assets/earth_signal_japan_heat.webp",
+      "original": "assets/earth-signals/earth_signal_japan_heat_banner_v1.webp",
+      "pages": ["p09"],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "최종 지구 신호 관찰용 일본 여름 해안과 그늘 휴식 초광폭 장면"
+    },
     "env.signal.morocco": {
       "type": "image",
       "src": "assets/env_signal_morocco.webp",
-      "original": "assets/environment/env_signal_morocco.png",
+      "original": "assets/earth-signals/env_signal_morocco_banner_v2.webp",
       "pages": [
         "p09"
       ],
@@ -2614,7 +2635,7 @@
     "env.signal.colombia": {
       "type": "image",
       "src": "assets/env_signal_colombia.webp",
-      "original": "assets/environment/env_signal_colombia.png",
+      "original": "assets/earth-signals/env_signal_colombia_banner_v2.webp",
       "pages": [
         "p09"
       ],
@@ -2625,7 +2646,7 @@
     "env.signal.australia": {
       "type": "image",
       "src": "assets/env_signal_australia.webp",
-      "original": "assets/environment/env_signal_australia.png",
+      "original": "assets/earth-signals/env_signal_australia_banner_v2.webp",
       "pages": [
         "p09"
       ],
@@ -2636,7 +2657,7 @@
     "env.signal.tanzania": {
       "type": "image",
       "src": "assets/env_signal_tanzania.webp",
-      "original": "assets/environment/env_signal_tanzania.png",
+      "original": "assets/earth-signals/env_signal_tanzania_banner_v2.webp",
       "pages": [
         "p09"
       ],

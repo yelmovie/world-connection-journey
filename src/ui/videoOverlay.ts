@@ -12,6 +12,8 @@ export function closeActiveVideoOverlay(): void { activeVideoFinish?.(); }
  * 로드 실패·자동재생 차단이어도 흐름이 막히지 않는다(재생 버튼 또는 건너뛰기).
  */
 export function playVideoOverlay(opts: {
+  /** 게임 배경음을 계속 틀고 영상 소리는 끈다 */
+  keepBgm?: boolean;
   id: string;
   src: string;
   poster?: string;
@@ -57,7 +59,7 @@ export function playVideoOverlay(opts: {
     video.load();
     overlay.removeEventListener('keydown', onKeyDown);
     overlay.remove();
-    audio.resumeBgmAfterVideo(resumeBgm);
+    if (!opts.keepBgm) audio.resumeBgmAfterVideo(resumeBgm);
     previousFocus?.focus();
     opts.onDone();
   };
@@ -65,10 +67,11 @@ export function playVideoOverlay(opts: {
     if (event.key === 'Escape') { event.preventDefault(); finish(); }
   };
 
-  // 영상 자체 BGM만 나오게: 게임 BGM을 멈추고, 재생 중 unlock·장면 전환으로 되살아나는 것도 막는다.
-  audio.suspendBgm();
+  // keepBgm: 게임 배경음을 그대로 두고 영상 자체 소리는 끈다(영상 소리가 작아 안 들리는 문제 대신 배경음 사용).
+  // 아니면 영상 자체 BGM만 나오게: 게임 BGM을 멈추고, 재생 중 unlock·장면 전환으로 되살아나는 것도 막는다.
+  if (!opts.keepBgm) audio.suspendBgm();
   // 영상의 원래 배경음: BGM 설정을 따르고 마스터 볼륨을 적용한다.
-  video.muted = !audio.settings.bgm;
+  video.muted = opts.keepBgm ? true : !audio.settings.bgm;
   const master = saveRepo.get().settings.volume;
   video.volume = typeof master === 'number' && Number.isFinite(master) ? Math.max(0, Math.min(1, master)) : 0.8;
   const caption = overlay.querySelector<HTMLElement>('.video-overlay__caption')!;

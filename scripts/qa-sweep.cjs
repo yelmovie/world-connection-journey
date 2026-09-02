@@ -67,6 +67,7 @@ function buildScenes() {
   add('여권', '#/passport', null);
   add('세계지도', '#/map', null);
   add('완주', '#/completion', null);
+  add('인증서', '#/certificate', null);
 
   // 아메리카 — 화면 순서대로(현재 코드의 SCREENS 목록을 읽는다)
   const amSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'pages', 'missionAmericas.ts'), 'utf8');

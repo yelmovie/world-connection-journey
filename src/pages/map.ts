@@ -420,10 +420,11 @@ export function createPage(): Page {
           ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
           <div class="map-brief__actions">
             <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
-            ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">엔딩 영상 보기</button>' : ''}
+            ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">엔딩 영상 보기</button><button class="btn btn-ghost" data-act="certificate">인증서 보기</button>' : ''}
           </div>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');
-        brief.querySelector('[data-act="completion"]')?.addEventListener('click', () => playEndingVideo(() => undefined));
+        brief.querySelector('[data-act="completion"]')?.addEventListener('click', () => playEndingVideo(() => navigate('#/certificate')));
+        brief.querySelector('[data-act="certificate"]')?.addEventListener('click', () => navigate('#/certificate'));
         depart?.addEventListener('click', () => {
           if (disposed || depart.disabled) return;
           depart.disabled = true;

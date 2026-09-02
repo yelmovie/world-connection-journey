@@ -26,7 +26,7 @@ export const PASSPORT_STAMP_ASSETS: Record<MissionId, string> = {
   africa: 'deco.landmark_pyramid',
   americas: 'deco.landmark_liberty',
   oceania: 'deco.landmark_sydney',
-  dialogue: 'deco.portal_globe'
+  dialogue: 'deco.emblem_stamp'
 };
 
 export function queueMissionReturn(cue: MissionReturnCue): void {

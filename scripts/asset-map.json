@@ -1147,7 +1147,8 @@
     "kind": "deco",
     "original": "assets/ChatGPT Image 2026년 8월 13일 오후 05_42_13 (8).png",
     "pages": [
-      "p03"
+      "p03",
+      "p09"
     ],
     "preload": "page",
     "note": "우표 장식 지구 메달 엠블럼 — 여권 화면 장식"
@@ -1299,9 +1300,27 @@
   "__missing__": [
     "europe.map"
   ],
+  "earth.signal.nepal_glacier": {
+    "kind": "photo",
+    "original": "assets/earth-signals/earth_signal_nepal_glacier_banner_v1.webp",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "최종 지구 신호 관찰용 네팔 빙하와 계곡 물길 초광폭 장면"
+  },
+  "earth.signal.japan_heat": {
+    "kind": "photo",
+    "original": "assets/earth-signals/earth_signal_japan_heat_banner_v1.webp",
+    "pages": [
+      "p09"
+    ],
+    "preload": "page",
+    "note": "최종 지구 신호 관찰용 일본 여름 해안과 그늘 휴식 초광폭 장면"
+  },
   "env.signal.morocco": {
     "kind": "photo",
-    "original": "assets/environment/env_signal_morocco.png",
+    "original": "assets/earth-signals/env_signal_morocco_banner_v2.webp",
     "pages": [
       "p09"
     ],
@@ -1310,7 +1329,7 @@
   },
   "env.signal.colombia": {
     "kind": "photo",
-    "original": "assets/environment/env_signal_colombia.png",
+    "original": "assets/earth-signals/env_signal_colombia_banner_v2.webp",
     "pages": [
       "p09"
     ],
@@ -1319,7 +1338,7 @@
   },
   "env.signal.australia": {
     "kind": "photo",
-    "original": "assets/environment/env_signal_australia.png",
+    "original": "assets/earth-signals/env_signal_australia_banner_v2.webp",
     "pages": [
       "p09"
     ],
@@ -1328,7 +1347,7 @@
   },
   "env.signal.tanzania": {
     "kind": "photo",
-    "original": "assets/environment/env_signal_tanzania.png",
+    "original": "assets/earth-signals/env_signal_tanzania_banner_v2.webp",
     "pages": [
       "p09"
     ],

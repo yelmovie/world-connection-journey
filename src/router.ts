@@ -21,7 +21,8 @@ const routes: Record<string, PageLoader> = {
   '#/mission/africa': () => import('./pages/missionAfrica'),
   '#/mission/americas': () => import('./pages/missionAmericas'),
   '#/mission/oceania': () => import('./pages/missionOceania'),
-  '#/mission/respect-dialogue': () => import('./pages/missionDialogue')
+  '#/mission/respect-dialogue': () => import('./pages/missionDialogue'),
+  '#/certificate': () => import('./pages/certificate')
 };
 
 /** 접근 가드 — 저장값을 믿지 않고 매번 재계산한다. 모르는 해시는 타이틀로 보낸다. */
@@ -30,7 +31,7 @@ function guard(requested: string): string {
   const route = requested === '#/completion' ? '#/map' : routes[requested] ? requested : '#/';
   const save = saveRepo.get();
   recomputeUnlocks(save);
-  const needsProfile = route.startsWith('#/mission/') || route === '#/map';
+  const needsProfile = route.startsWith('#/mission/') || route === '#/map' || route === '#/certificate';
   if (needsProfile && !save.profile) return '#/passport';
   if (route === '#/mission/respect-dialogue' && save.missions.dialogue.status === 'locked') return '#/map';
   return route;
