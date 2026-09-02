@@ -1111,6 +1111,66 @@
       "license": "AI-generated (project original)",
       "note": "추정: 배낭 여행자 소녀"
     },
+    "player.avatar.maya": {
+      "type": "image",
+      "src": "assets/player_avatar_maya.webp",
+      "original": "assets/player-avatars/player_avatar_maya_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 관찰 렌즈를 든 은빛 단발 마이아"
+    },
+    "player.avatar.oliver": {
+      "type": "image",
+      "src": "assets/player_avatar_oliver.webp",
+      "original": "assets/player-avatars/player_avatar_oliver_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 기록기를 든 주황 곱슬머리 올리버"
+    },
+    "player.avatar.hana": {
+      "type": "image",
+      "src": "assets/player_avatar_hana.webp",
+      "original": "assets/player-avatars/player_avatar_hana_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 수첩을 든 노란 모자 하나"
+    },
+    "player.avatar.yusef": {
+      "type": "image",
+      "src": "assets/player_avatar_yusef.webp",
+      "original": "assets/player-avatars/player_avatar_yusef_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 지도를 든 긴 트위스트 헤어 유세프"
+    },
+    "player.avatar.salote": {
+      "type": "image",
+      "src": "assets/player_avatar_salote.webp",
+      "original": "assets/player-avatars/player_avatar_salote_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 비교 카드를 든 짧은 아프로 살로테"
+    },
+    "player.avatar.tevita": {
+      "type": "image",
+      "src": "assets/player_avatar_tevita.webp",
+      "original": "assets/player-avatars/player_avatar_tevita_v1.png",
+      "pages": ["p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10"],
+      "preload": "page",
+      "alpha": true,
+      "license": "AI-generated (project original)",
+      "note": "플레이어 전용 별나침반 탐험대 · 새싹 캡슐을 든 금발 웨이브 테비타"
+    },
     "oceania.viti_levu_video_poster": {
       "type": "image",
       "src": "assets/oceania_viti_levu_video_poster.png",

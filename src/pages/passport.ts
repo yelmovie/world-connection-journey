@@ -555,7 +555,7 @@ export function createPage(): Page {
                 </header>
                 <div class="passport-station">
                   <div class="passport-station-guide" aria-hidden="true">
-                    <img src="${assetUrl('oceania.visitor')}" data-asset-id="oceania.visitor" alt="">
+                    <img src="${assetUrl(initialAvatar.assetId)}" data-asset-id="${initialAvatar.assetId}" alt="">
                     <p class="passport-guide-bubble">여권에 쓸 이름을 적어 줘.</p>
                   </div>
                   <div class="passport-tag-wrap">
