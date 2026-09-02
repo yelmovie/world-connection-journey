@@ -279,13 +279,14 @@ export const EARTH_CSS = `
 .ec-finale.has-earth-bg { background-size:cover;background-position:center;background-repeat:no-repeat;justify-content:flex-end;padding:clamp(18px,3vh,34px); }
 .ec-finale .ec-f-copy { position:relative;z-index:3;width:min(900px,88%);padding:12px 22px;border:2px solid rgba(255,255,255,.44);border-radius:24px;background:rgba(5,22,48,.78);backdrop-filter:blur(9px);box-shadow:0 16px 38px rgba(0,0,0,.38); }
 .ec-finale .ec-f-copy h2 { margin:0 0 5px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.65); }
-.ec-finale .ec-f-copy p { margin:3px 0;color:#f7fbff;font-weight:800; }
+.ec-finale .ec-f-copy p { margin:3px auto;color:#f7fbff;font-weight:800; }
 .ec-finale .ec-f-globe { width:min(30vh,280px);filter:drop-shadow(0 12px 30px rgba(120,220,255,.5)); }
 .ec-finale .ec-f-friends { position:absolute;inset:0;pointer-events:none; }
 .ec-finale .ec-f-friend { position:absolute;width:clamp(64px,8vw,120px);transform:translate(-50%,-50%);transition:left 900ms cubic-bezier(.2,.8,.3,1),top 900ms cubic-bezier(.2,.8,.3,1),opacity 600ms; }
 .ec-finale .ec-f-piece { position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:26px;height:26px;border-radius:6px;background:var(--c-gold);box-shadow:var(--shadow-card); }
-.ec-finale h2 { margin:0;font:900 clamp(26px,3vw,48px)/1.25 var(--font-head);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:22em;word-break:keep-all; }
-.ec-finale p { margin:0;font:700 max(20px,var(--fs-body))/1.4 var(--font-body);color:#f5f9ff;max-width:30em; }
+.ec-finale h2 { margin:0 auto;font:900 clamp(26px,3vw,48px)/1.25 var(--font-head);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.6);max-width:22em;word-break:keep-all;text-align:center; }
+.ec-finale p { margin:0 auto;font:700 max(20px,var(--fs-body))/1.4 var(--font-body);color:#f5f9ff;max-width:30em;text-align:center;word-break:keep-all; } /* 폭 제한 문단이 왼쪽에 붙어 쏠려 보이던 문제 — 가운데로 */
+.ec-finale .ec-f-copy { text-align:center; }
 .ec-finale svg { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
 .ec-finale [data-act="finale-continue"] { margin-top:10px; }
 .ec-finale [data-act="finale-continue"][hidden] { display:none; }
