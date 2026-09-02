@@ -408,8 +408,8 @@ const PASSPORT_CSS = `
 .passport-choice-item .passport-avatar[aria-checked='true'] { transform:none; }
 .passport-choice[aria-checked='true']::after { content:'✓';right:4px;top:4px;width:25px;height:25px;background:#26705a;font-size:16px; }
 .passport-plane-feature { grid-template-columns:minmax(330px,1fr) minmax(300px,.85fr); }
-.passport-plane-stage-img { --plane-stage-lift:clamp(24px,4vh,38px);width:min(500px,90%);height:min(320px,84%);object-fit:contain;object-position:center;filter:drop-shadow(0 16px 18px rgba(17,49,72,.24));transform:translateY(calc(-1 * var(--plane-stage-lift)));animation:passport-plane-float 3.6s ease-in-out infinite; }
-.passport-plane-stage .passport-stage-art::before { width:min(500px,92%);aspect-ratio:1.7;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.9),rgba(185,224,239,.5) 58%,transparent 60%); }
+.passport-plane-stage-img { --plane-stage-lift:0px;width:min(500px,90%);height:100%;max-height:320px;min-height:0;object-fit:contain;object-position:center;filter:drop-shadow(0 16px 18px rgba(17,49,72,.24));transform:translateY(calc(-1 * var(--plane-stage-lift)));animation:passport-plane-float 3.6s ease-in-out infinite; }
+.passport-plane-stage .passport-stage-art::before { top:50%;left:50%;transform:translate(-50%,-50%);width:min(500px,92%);aspect-ratio:1.7;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.9),rgba(185,224,239,.5) 58%,transparent 60%); }
 @keyframes passport-plane-float { 0%,100% { transform:translateY(calc(2px - var(--plane-stage-lift))) rotate(-.5deg); } 50% { transform:translateY(calc(-7px - var(--plane-stage-lift))) rotate(.5deg); } }
 
 @media (max-width:1100px) {
@@ -502,7 +502,7 @@ export function createPage(): Page {
       catch { console.warn('[passport] common.json 없음 — 기본값 사용'); }
 
       const assetIds = [
-        'bg.title', 'prop.stamp', 'prop.passport', 'prop.passport_builder', 'deco.emblem_stamp',
+        'bg.title', 'prop.stamp', 'prop.passport', 'prop.passport_builder', 'prop.passport_stampbook',
         ...AVATARS.map((item) => item.assetId), ...PLANES.map((item) => item.assetId)
       ];
       await preloadImages(assetIds);
@@ -824,7 +824,7 @@ export function createPage(): Page {
         const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
         const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
         showToast(`${withJosa(avatar.name, '과', '와')} ${plane.name}, 여행 준비 완료!`, 'success');
-        const transition = playJourneyTransition({ kind: 'stamp', label: '여권 준비 완료!', assetId: 'prop.stamp' });
+        const transition = playJourneyTransition({ kind: 'stamp', label: '여행을 시작해 여섯 도장을 완성해 줘!', assetId: 'prop.stamp' });
         void transition.finished.then(() => { if (!disposed) navigate('#/map'); });
       };
 
@@ -998,4 +998,3 @@ function choiceHtml(kind: 'avatar' | 'plane', saveId: string, assetId: string, l
     ? `<div class="passport-choice-item">${button}<span class="passport-choice-name" aria-hidden="true">${name}</span></div>`
     : button;
 }
-
