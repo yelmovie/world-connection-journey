@@ -170,7 +170,7 @@ const PAGE_CSS = `
 .regional-pin small{display:block;margin-top:4px;font:700 16px/1.1 var(--font-body)}
 .regional-pin.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-pin.is-visited::after{content:"✓";position:absolute;right:-8px;top:-10px;width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:#1b9b68;border:2px solid #fff}
-.regional-country-shortcut{position:absolute;z-index:4;transform:translate(-50%,-50%);padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
+.regional-country-shortcut{position:absolute;z-index:4;transform:translate(-50%,-50%);white-space:nowrap;padding:8px 12px;border:3px solid #fff;border-radius:18px;background:#fff8d9;color:#123c5b;font:900 16px/1.15 var(--font-head);box-shadow:0 6px 0 #d49b28,0 12px 22px rgba(5,30,50,.3)}
 .regional-country-shortcut small{display:block;margin-top:3px;color:#76531c;font:800 16px/1.1 var(--font-body)}
 .regional-country-shortcut.is-active{outline:5px solid rgba(255,203,67,.85);transform:translate(-50%,-54%) scale(1.05)}
 .regional-side{padding:14px 16px;background:rgba(255,253,247,.96);display:flex;flex-direction:column;gap:9px;min-height:0}
@@ -824,7 +824,7 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         const example = model.examples.find((item) => item.id === state.activeExampleId && item.areaId === area?.id) ?? examples[0] ?? null;
         // 동아시아 나라 바로가기 핀 — 지도 위 위치(%)는 권역 핀과 겹치지 않게 서로 어긋나게 둔다
         const countryShortcuts = model.id === 'asia'
-          ? [{ country: '중국', place: '베이징', x: 62, y: 44 }, { country: '대한민국', place: '서울', x: 86, y: 57 }, { country: '일본', place: '도쿄', x: 94, y: 35 }]
+          ? [{ country: '중국', place: '베이징', x: 62, y: 44 }, { country: '대한민국', place: '서울', x: 86, y: 57 }, { country: '일본', place: '도쿄', x: 90, y: 34 }]
             .map((spot) => ({ ...spot, example: model.examples.find((item) => item.country === spot.country) }))
             .filter((spot): spot is typeof spot & { example: NonNullable<typeof spot.example> } => Boolean(spot.example))
           : [];
