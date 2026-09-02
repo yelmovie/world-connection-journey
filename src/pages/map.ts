@@ -182,6 +182,7 @@ const MAP_CSS = `
   font-size:16px;font-weight:800;line-height:1.2;white-space:nowrap;
 }
 .map-hotspot .node-img,
+.map-brief__replay { margin:var(--sp-1) 0 0;padding:8px 12px;border-radius:12px;background:#fff3cf;border:2px solid #e8bf4e;color:#5b430a;font-size:max(16px,var(--fs-small));font-weight:850;line-height:1.4; }
 .map-brief__head .mission-brief__hero {
   object-fit:contain;object-position:center bottom;padding:6px 7px 0;
   background:radial-gradient(circle at 50% 38%,rgba(224,250,255,.46),rgba(34,126,161,.18) 68%,transparent 72%);
