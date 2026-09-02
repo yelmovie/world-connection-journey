@@ -7,7 +7,8 @@ import { withJosa } from '../core/josa';
 import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { burstConfetti, popBounce } from '../ui/fx';
-import { cancelJourneyTransition, playJourneyTransition } from '../ui/journeyTransition';
+import { cancelJourneyTransition, playJourneyTransition, PASSPORT_STAMP_ASSETS } from '../ui/journeyTransition';
+import { MISSION_IDS } from '../types';
 import { showToast } from '../ui/toast';
 import { AIRPLANE_CHOICES as PLANES } from '../ui/airplaneFleet';
 import { AVATAR_CHOICES as AVATARS } from '../ui/avatarRoster';
@@ -324,6 +325,13 @@ const PASSPORT_CSS = `
   display:grid;grid-template-rows:auto auto auto;gap:8px;justify-items:center;
 }
 .passport-preview[hidden] { display:none!important; }
+.passport-stamps { width:min(480px,100%);display:grid;gap:6px;justify-items:center; }
+.passport-stamps__title { margin:0;font:800 max(15px,var(--fs-small)) var(--font-body);color:#3d5a72;letter-spacing:.02em; }
+.passport-stamps__title b { color:var(--c-navy);font-size:1.15em; }
+.passport-stamps__row { display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%; }
+.passport-stamp-slot { aspect-ratio:1;display:grid;place-items:center;border:2px dashed rgba(29,74,111,.35);border-radius:14px;background:rgba(255,255,255,.55);color:#8aa0b2;font:900 18px var(--font-head);overflow:hidden; }
+.passport-stamp-slot.is-earned { border:2px solid var(--c-gold);background:#fff;box-shadow:var(--shadow-card); }
+.passport-stamp-slot img { width:100%;height:100%;object-fit:cover; }
 .passport-preview-heading { width:100%;display:grid;grid-template-columns:1fr auto;align-items:center; }
 .passport-preview-heading .passport-heading-copy { justify-items:start; }
 .passport-preview__title { font-size:clamp(24px,1.8vw,32px);text-align:left; }
@@ -669,11 +677,25 @@ export function createPage(): Page {
               <span class="passport-owner-mark" id="passport-owner-mark">이름을 쓰면 나만의 서명이 생겨요</span>
             </div>
             <p class="passport-selected-label" id="passport-selected-label"></p>
+            <div class="passport-stamps" id="passport-stamps" aria-label="여행 도장"></div>
           </aside>
         </div>`;
       page.appendChild(body);
       root.appendChild(page);
 
+      /** 여행 도장 여섯 칸 — 받은 것은 그림, 아직인 것은 번호 */
+      const renderStamps = () => {
+        const box = page.querySelector<HTMLElement>('#passport-stamps');
+        if (!box) return;
+        const earned = saveRepo.get().stamps;
+        box.innerHTML = `<p class="passport-stamps__title">여행 도장 <b>${earned.length}</b> / ${MISSION_IDS.length}</p>
+          <div class="passport-stamps__row">${MISSION_IDS.map((id, i) => {
+            const asset = PASSPORT_STAMP_ASSETS[id];
+            const got = earned.includes(id);
+            return `<span class="passport-stamp-slot${got ? ' is-earned' : ''}" role="img" aria-label="${i + 1}번 도장 ${got ? '받음' : '아직'}">${got && hasAsset(asset) ? `<img src="${assetUrl(asset)}" data-asset-id="${asset}" alt="">` : `<b>${i + 1}</b>`}</span>`;
+          }).join('')}</div>`;
+      };
+      renderStamps();
       const input = page.querySelector<HTMLInputElement>('#nickname');
       if (input) input.value = typeof draft?.nickname === 'string' ? draft.nickname.slice(0, maxLen) : profile?.nickname ?? '';
       const msg = page.querySelector<HTMLElement>('#nick-msg');
