@@ -202,8 +202,8 @@ const DIALOGUE_CSS = `
 
 /* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
 .dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,.85fr);gap:14px} /* 설명이 들어갈 옆 패널을 넓힌다 */
-.dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
-.dl-compare-photo{position:relative;flex:1;min-height:clamp(220px,34vh,420px);overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
+.dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important;container-type:size}
+.dl-compare-photo{position:relative;flex:0 0 auto;align-self:center;aspect-ratio:16/9;width:min(100%,calc((100cqh - 86px) * 16 / 9));min-height:0;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
 .dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .dl-compare-after{clip-path:inset(0 0 0 50%)}
 .dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none} /* 드래그는 사진 전체가 받는다 */
@@ -233,8 +233,8 @@ const DIALOGUE_CSS = `
 .dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
 .dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
-@media(max-width:940px){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-photo{min-height:330px}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
-@media(max-height:720px) and (min-width:941px){.dl-compare-photo{min-height:300px}.dl-compare-person span:first-child{width:48px;height:48px}.dl-compare-person{grid-template-columns:48px 1fr}.dl-compare-result{min-height:96px}}
+@media(max-width:940px){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
+@media(max-height:720px) and (min-width:941px){.dl-compare-person span:first-child{width:48px;height:48px}.dl-compare-person{grid-template-columns:48px 1fr}.dl-compare-result{min-height:96px}}
 
 /* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
 .dl-talk { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(320px,0.72fr) minmax(0,1.55fr); gap: var(--sp-4); }
@@ -299,6 +299,20 @@ const DIALOGUE_CSS = `
   outline:0!important;animation:none!important;
 }
 
+/* 중간 높이(브라우저 창·배율 있는 노트북): 경청 패널이 스크롤 없이 들어가게 버튼·아이콘을 낮춘다 */
+@media (max-height: 899px) {
+  .dl-listen { gap: var(--sp-2); }
+  .dl-opt { min-height: 56px; padding: 10px 14px; }
+  .dl-scenario { grid-template-columns: clamp(64px,6.5vw,100px) minmax(0,1fr); gap: var(--sp-3); }
+  .dl-scenario img { width: clamp(64px,6.5vw,100px); height: clamp(64px,6.5vw,100px); }
+  .dl-option-head img { width: 48px; height: 48px; }
+}
+/* 그래도 넘치면(is-tight) 장식을 빼고 줄여서라도 스크롤 없이 담는다 */
+.dl-listen.is-tight { gap: 6px; padding: var(--sp-2); }
+.dl-listen.is-tight .dl-scenario img, .dl-listen.is-tight .dl-option-head img, .dl-listen.is-tight #cue-summary { display: none; }
+.dl-listen.is-tight .dl-scenario { grid-template-columns: minmax(0,1fr); }
+.dl-listen.is-tight .dl-opt { min-height: 44px; padding: 8px 12px; }
+.dl-listen.is-tight .card { padding: 8px 12px; }
 @media (max-height: 620px) {
   .dialogue-scene .page-body { padding:6px clamp(10px,2.5vw,28px) 44px;overflow-y:auto; }
   .dl-stage { flex:none;min-height:430px;gap:var(--sp-2); }
@@ -871,6 +885,18 @@ export function createPage(): Page {
 
         const fb = body.querySelector<HTMLElement>('#stage2-fb');
         const optCol = body.querySelector<HTMLElement>('#opt-col');
+        // 내용이 패널을 넘치면 스크롤 대신 글자를 줄인다 — 단서 확인·선택지 열림·피드백 표시 때마다 다시 맞춘다
+        const listenPanel = body.querySelector<HTMLElement>('.dl-listen');
+        const fitOnce = listenPanel
+          ? keepFitted(listenPanel, () => Array.from(listenPanel.querySelectorAll<HTMLElement>('p,button,strong,span,small')), 13)
+          : (): void => {};
+        const refit = (): void => {
+          fitOnce();
+          if (listenPanel && listenPanel.scrollHeight > listenPanel.clientHeight) {
+            listenPanel.classList.add('is-tight');
+            fitOnce();
+          }
+        };
         const cueRow = body.querySelector<HTMLElement>('#cue-row');
         const cueSummary = body.querySelector<HTMLElement>('#cue-summary');
         body.querySelector<HTMLButtonElement>('[data-act="scenario-story"]')?.addEventListener('click', () => {
@@ -889,6 +915,7 @@ export function createPage(): Page {
             if (cueSummary) cueSummary.hidden = false;
             if (optCol) optCol.hidden = false;
             guide?.say('친구의 말과 표정을 생각하며 존중하는 반응을 골라요.', { cue: optCol, speaker: hostSpeaker });
+            refit();
           } else if (!open) {
             if (optCol) optCol.hidden = true;
             guide?.setCue((cueRow?.querySelector<HTMLElement>('button:not(:disabled)')) ?? null);
@@ -913,6 +940,7 @@ export function createPage(): Page {
               card.innerHTML = `<span aria-hidden="true" style="font-weight:900;color:var(--c-turquoise)">✓</span> ${cue}`;
               card.disabled = true;
               syncOptions();
+              refit();
             });
             cueRow.appendChild(card);
           });
@@ -936,7 +964,7 @@ export function createPage(): Page {
                   b.disabled = true;
                 });
                 btn.classList.add('is-selected');
-                if (fb) showFeedback(fb, 'success', '상대를 존중하는 반응을 골랐어요.', 'dialogue');
+                if (fb) { showFeedback(fb, 'success', '상대를 존중하는 반응을 골랐어요.', 'dialogue'); refit(); }
                 // 피드백을 본 뒤 새로고침해도 같은 답을 다시 골라 점수를 바꾸지 못하도록
                 // 다음 상황 위치까지 즉시 체크포인트로 확정한다.
                 scenarioIndex += 1;
@@ -953,7 +981,7 @@ export function createPage(): Page {
                 btn.dataset.locked = '1';
                 btn.disabled = true;
                 btn.style.opacity = '0.6';
-                if (fb) showFeedback(fb, 'partial', '다른 반응을 다시 골라 봐요.', 'dialogue');
+                if (fb) { showFeedback(fb, 'partial', '다른 반응을 다시 골라 봐요.', 'dialogue'); refit(); }
                 guide?.say(firstSentence(opt.why), { speaker: hostSpeaker, cue: optCol });
               }
             });
