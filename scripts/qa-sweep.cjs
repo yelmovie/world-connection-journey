@@ -191,6 +191,9 @@ function auditPage() {
     if (!vis(el)) return; const r = el.getBoundingClientRect();
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     if (cx < 0 || cy < 0 || cx > innerWidth || cy > innerHeight) return;
+    // 스크롤 칸 밖으로 밀려난(잘린) 버튼은 스크롤하면 보이는 정상 상태 — 가림으로 세지 않는다
+    let sp = el.parentElement; while (sp && sp !== document.body) { const ss = getComputedStyle(sp); if (/(auto|scroll)/.test(ss.overflowY + ss.overflow)) break; sp = sp.parentElement; }
+    if (sp && sp !== document.body) { const sr = sp.getBoundingClientRect(); if (cy < sr.top || cy > sr.bottom || cx < sr.left || cx > sr.right) return; }
     const hit = document.elementFromPoint(cx, cy);
     if (hit && hit !== el && !el.contains(hit) && !hit.contains(el)) issues.push({ kind: '버튼가려짐', detail: `${label(el)} ← ${hit.className.toString().slice(0, 30) || hit.tagName}` });
   });

@@ -340,12 +340,39 @@ const PAGE_CSS = `
   .regional-pin small,.regional-country-shortcut small{display:none}
   .regional-pin.is-visited::after{width:18px;height:18px;right:-6px;top:-7px;font-size:11px}
 }
+/* 지도 칸 실제 크기 기준(.regional-map이 container-type:size) — 뷰포트가 넓어도 칸이 좁거나 낮으면 프레임이 작아지므로 핀을 줄인다.
+   프레임 폭 = min(칸 폭, 칸 높이×16/9) → 폭 560 이하 또는 높이 315 이하면 이름만·작게, 480/270 이하면 점+이름 최소 */
+@container (max-width:560px) or (max-height:315px){
+  .regional-pin,.regional-country-shortcut{min-height:36px;padding:0 7px 0 6px;border:3px solid transparent;border-left-width:1.5px;border-right-width:1.5px;border-radius:11px;background-clip:padding-box;backdrop-filter:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.72),0 4px 10px rgba(5,30,50,.25);font-size:12px;line-height:1;column-gap:5px}
+  .regional-country-shortcut{display:grid;align-items:center}
+  .regional-pin::before{width:8px;height:8px}
+  .regional-pin small,.regional-country-shortcut small{display:none}
+  .regional-pin{background-color:rgba(9,32,56,.58)}
+  .regional-country-shortcut{background-color:rgba(255,248,217,.8);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.9),0 4px 10px rgba(5,30,50,.22)}
+  .regional-pin.is-active{background-color:rgba(255,203,67,.5);box-shadow:inset 0 0 0 1.5px #ffd54a,0 4px 10px rgba(5,30,50,.25);outline-offset:-3px}
+  .regional-country-shortcut.is-active{background-color:rgba(255,236,170,.92);outline-offset:-3px}
+  .regional-pin.is-visited::after{width:18px;height:18px;right:-6px;top:-7px;font-size:11px}
+  .regional-map-note{display:none}
+}
+@container (max-width:480px) or (max-height:270px){
+  .regional-pin,.regional-country-shortcut{padding:0 5px 0 4px;font-size:11.5px;column-gap:4px;letter-spacing:-.02em}
+  .regional-pin::before{width:7px;height:7px}
+}
 /* 가로 폰/작은 창: 지도와 패널을 나란히 유지(세로로 쌓으면 패널이 눌린다) */
 @media(max-width:940px) and (orientation:landscape){
   .regional-shell{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px);min-height:0}
   .regional-map{height:100%;min-height:0}
 }
-@media(max-height:460px){
+/* 하단 바(좁거나 낮은 창): '다음으로 가려면' 칩은 작게·한 줄씩, 버튼은 줄바꿈 없이 자기 폭 유지 */
+@media (max-width:900px) and (orientation:landscape),(max-height:560px){
+  .regional-dock{gap:8px}
+  .regional-dock .btn{flex:0 0 auto;white-space:nowrap}
+  .regional-dock .gate-note{flex:1 1 auto;width:auto;min-width:0;justify-content:center;gap:3px 5px;padding:3px 8px;font-size:13px;line-height:1.2}
+  .regional-dock .gate-note__lead,.regional-dock .gate-note__item{white-space:nowrap}
+  .regional-dock .gate-note__item{padding:1px 6px;border-width:1.5px}
+}
+/* 폴드 가로(≈830×515)처럼 폭이 좁고 낮은 창도 같은 '한 열 쌓기+패널 스크롤' 규칙 — 3열은 칸이 250px뿐이라 글자가 겹친다 */
+@media (max-height:460px),(max-width:900px) and (max-height:560px){
   .regional-mission .regional-body{padding:8px 12px}
   .regional-shell{height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 16px);gap:10px}
   .regional-map{min-height:0;border-radius:20px}
@@ -419,7 +446,7 @@ const PAGE_CSS = `
   .regional-wipe{height:36px;bottom:4px}
 }
 /* 낮은 창(≤620px 높이, 폰 제외): 연결 화면 글머리를 줄여 목소리 카드에 높이를 주고, 뒷면 인용문은 카드 높이에 맞춘다 */
-@media(max-height:620px) and (min-height:461px){
+@media (max-height:620px) and (min-height:461px) and (min-width:901px),(max-height:620px) and (min-height:561px){
   .regional-photo-grid{grid-auto-rows:minmax(clamp(104px,18vh,210px),1fr)}
   .regional-photo img{min-height:clamp(70px,11vh,154px)}
   .regional-section{padding:9px;gap:5px}

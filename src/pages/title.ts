@@ -60,7 +60,7 @@ const TITLE_CSS = `
   box-shadow: 0 8px 22px rgba(18,45,76,.2);
   backdrop-filter: blur(8px);
 }
-.title-page { grid-template-rows:auto minmax(0,1fr) minmax(270px,36vh); }
+.title-page { grid-template-rows:auto minmax(0,1fr) minmax(270px,36dvh); }
 .title-page > .page-body { grid-row:2; }
 .title-page > .bottom-bar { grid-row:3; }
 .title-body {
@@ -84,7 +84,7 @@ const TITLE_CSS = `
 /* 친구가 말하는 동안에는 제목을 비워 준다 — 말풍선이 로고에 묻히던 문제 */
 .title-page:has(.title-speech:not([hidden])) .title-copy { opacity: 0; pointer-events: none; }
 .title-logo {
-  width:min(clamp(585px,64.5vw,975px),100%);max-height:30vh;object-fit:contain;
+  width:min(clamp(585px,64.5vw,975px),100%);height:auto;max-height:30dvh;object-fit:contain;flex:0 0 auto;
   filter: drop-shadow(0 9px 24px rgba(10,25,45,.42));
 }
 .title-subtitle {
@@ -100,7 +100,7 @@ const TITLE_CSS = `
 }
 .title-character {
   position:absolute;bottom:clamp(8px,1.8vh,18px);
-  width:min(clamp(285px,27vw,450px),51vh);max-height:51vh;padding:0;border:0;background:transparent;
+  width:min(clamp(285px,27vw,450px),51dvh);max-height:51dvh;padding:0;border:0;background:transparent;
   filter: drop-shadow(0 14px 28px rgba(10,25,45,.42));
   z-index:2;cursor:pointer;
 }
@@ -178,25 +178,40 @@ const TITLE_CSS = `
 }
 @media (max-height: 640px) and (min-width: 721px) {
   #scene-root .title-page .top-bar { position:absolute;inset:0 0 auto 0; }
-  .title-page { grid-template-rows:minmax(0,1fr) minmax(170px,40vh); }
+  .title-page { grid-template-rows:minmax(0,1fr) minmax(170px,40dvh); }
   .title-page > .page-body { grid-row:1; }
   .title-page > .bottom-bar { grid-row:2; }
   .title-body { padding-top:clamp(8px,2vh,18px); }
   .title-copy { gap:clamp(16px,5vh,28px); }
-  .title-logo { width:min(60vw,700px);max-height:27vh; }
+  .title-logo { width:min(60vw,700px);max-height:27dvh; }
   .title-subtitle { font-size:clamp(27px,3.3vw,38px); }
   #scene-root .title-page > .bottom-bar { min-height:170px; }
   /* 비행기 폭은 가운데 CTA(44vw)와 겹치지 않는 한도(50vw - 215px)까지만 */
-  .title-character { width:min(45vw,495px,55vh,calc(50vw - 215px));max-height:55vh;bottom:4px; }
+  .title-character { width:min(45vw,495px,55dvh,calc(50vw - 215px));max-height:55dvh;bottom:4px; }
   .title-character--left { left:4px; }
   .title-character--right { right:4px; }
-  .title-speech { left:14px;width:min(330px,33vw);bottom:calc(min(55vh,50vw - 215px) + 10px);min-height:104px;padding:13px 44px 11px 16px;border-radius:20px; }
+  .title-speech { left:14px;width:min(330px,33vw);bottom:calc(min(55dvh,50vw - 215px) + 10px);min-height:104px;padding:13px 44px 11px 16px;border-radius:20px; }
   .title-speech[data-side="right"] { right:14px; }
   .title-speech__name { font-size:18px; }
   .title-speech__text { min-height:2.6em;font-size:17px;line-height:1.3; }
   .title-speech__hint { margin-top:5px;font-size:13px; }
   .title-cta { width:min(560px,44vw);margin-bottom:18px; }
   .title-cta .btn-big { min-height:52px;font-size:20px; }
+}
+/* 세로가 아주 짧은 창(≤360px — 폰 가로에서 주소창·키보드가 남긴 높이): 부제는 접고 로고·비행기·버튼만 100dvh 안에 */
+@media (max-height: 360px) and (min-width: 721px) {
+  .title-page { grid-template-rows:minmax(0,1fr) minmax(0,52dvh); }
+  .title-body { padding-top:4px; }
+  .title-copy { gap:0; }
+  .title-logo { max-height:34dvh; }
+  .title-subtitle { display:none; }
+  #scene-root .title-page > .bottom-bar { min-height:0; }
+  .title-character { width:min(45vw,495px,46dvh,calc(50vw - 215px));max-height:46dvh;bottom:2px; }
+  .title-speech { bottom:auto;top:6px;min-height:0;padding:8px 40px 8px 12px; }
+  .title-speech__text { min-height:0;font-size:15px; }
+  .title-speech__hint { display:none; }
+  .title-cta { margin-bottom:8px; }
+  .title-cta .btn-big { min-height:46px;font-size:18px; }
 }
 .prologue-overlay {
   position: fixed; inset: 0; z-index: var(--z-loading);

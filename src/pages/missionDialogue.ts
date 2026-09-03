@@ -233,7 +233,7 @@ const DIALOGUE_CSS = `
 .dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
 .dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
-@media(max-width:940px){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
+@media(max-width:940px) and (orientation:portrait){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
 @media(max-height:720px) and (min-width:941px){.dl-compare-person span:first-child{width:48px;height:48px}.dl-compare-person{grid-template-columns:48px 1fr}.dl-compare-result{min-height:96px}}
 
 /* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
@@ -351,6 +351,55 @@ const DIALOGUE_CSS = `
   .dl-greet-card { min-height:146px; }
   .dl-greet-card img { height:clamp(98px,15vh,118px); }
 }
+/* 좁고 낮은 가로(폴드 가로 830×515, 844×390): 예전엔 900px 이하 '세로 폰' 규칙이 걸려 한 열로 쌓이면서
+   카드가 납작해지고 아바타가 글자를 덮었다. 가이드를 150px로 줄여 무대를 넓히고, 두 열을 유지한 채 요소를 낮춘다. */
+@media (max-width: 900px) and (max-height: 620px) {
+  .dialogue-scene { --guide-size:150px; --dl-photo-reserve:330px; } /* 상단바56+레인56+하단바69+본문여백30+리본40+패널여백24+간격10+손잡이40 */
+  #scene-root .page.dialogue-scene .ribbon-title { min-height:40px; padding:2px 24px; }
+  .dialogue-scene .ribbon-title .ribbon-main { font-size:24px; }
+  .dialogue-scene .panel { padding:10px; }
+  /* 1단계: 아바타는 칸 안에서만 — 높이가 모자라면 그림이 줄고 이름은 그대로 */
+  .dl-greet-row { grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr); gap:8px; }
+  .dl-greet-grid { gap:6px; }
+  .dl-greet-card img { flex:0 1 auto; min-height:0; height:clamp(40px,12vh,82px); }
+  .dl-greet-card .g-name { font-size:18px; }
+  .dl-ox .btn { min-height:48px; font-size:18px; }
+  /* 2단계 사진 비교: 사진 왼쪽·설명 오른쪽, 설명은 세로 흐름으로(넘치면 패널 안 스크롤) */
+  .dl-visual-compare { grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr); grid-template-rows:minmax(0,1fr); gap:8px; }
+  .dl-compare-card { padding:8px!important; gap:6px; }
+  .dl-compare-range { height:40px; }
+  .dl-compare-range::-webkit-slider-thumb { width:34px; height:34px; border-width:3px; }
+  .dl-compare-tag { top:8px; padding:3px 10px; font-size:15px; }
+  .dl-compare-divider::after { width:40px; height:40px; font-size:20px; border-width:3px; }
+  .dl-change-hotspot { width:52px; height:52px; border-width:4px; }
+  .dl-compare-side { display:flex; flex-direction:column; gap:6px; }
+  .dl-compare-person { grid-template-columns:40px 1fr; padding:4px 8px; gap:6px; }
+  .dl-compare-person span:first-child { width:40px; height:40px; font-size:20px; }
+  .dl-compare-person strong { font-size:19px; }
+  .dl-compare-person small { font-size:13px; }
+  .dl-compare-mission { padding:6px 10px; font-size:17px; border-width:2px; }
+  .dl-compare-result { min-height:0; padding:8px 10px; gap:4px; }
+  .dl-compare-result b { font-size:17px; }
+  .dl-compare-result span { font-size:14px; line-height:1.35; }
+  .dl-photo-progress { margin-top:0; }
+  .dl-photo-progress span { height:8px; }
+  /* 3단계: 초상화 왼쪽·이름·나침반·상황 버튼 오른쪽으로 접어 왼쪽 칸이 넘치지 않게, 대화는 오른쪽 칸 안에 */
+  .dl-talk { grid-template-columns:minmax(250px,.6fr) minmax(0,1.4fr); gap:8px; }
+  .dl-who .chip, .dl-compass .c-num { white-space:nowrap; }
+  .dl-who { display:grid; grid-template-columns:auto minmax(0,1fr); grid-auto-rows:min-content; align-content:center; justify-items:start; column-gap:10px; row-gap:6px; }
+  .dl-portrait { grid-row:1/4; align-self:center; width:80px; height:80px; border-width:3px; }
+  .dl-compass .c-dial { width:44px; height:44px; }
+  .dl-compass .c-num { font-size:20px; }
+  .dl-side-btn { min-height:40px; font-size:16px; }
+  .dl-chat { gap:8px; }
+  .dl-chat #dlg-area { gap:6px !important; }
+  .dl-chat .dl-opt { min-height:44px; padding:6px 12px; font-size:clamp(15px,4cqh,18px); }
+  .dl-chat .npc-bubble { font-size:16px; padding:8px 12px; }
+  .dl-chat #stage3-fb .feedback { font-size:15px; }
+  /* 경청 */
+  .dl-listen { gap:6px 8px; }
+  .dl-listen .dl-scenario .btn { min-height:40px; padding:6px 12px; font-size:16px; }
+}
 /* 모바일 가로(915×412) — 공용 CSS가 이 높이에서 캐릭터 가이드를 숨기므로
    빈 가이드 레인(56px)·하단바의 캐릭터 자리(200px)를 본문에 돌려주고, 리본·바·글자를 낮춘다. */
 @media (max-height: 460px) {
@@ -416,7 +465,7 @@ const DIALOGUE_CSS = `
   .dl-chat .npc-bubble { font-size:16px; padding:8px 12px; }
   .dl-chat #stage3-fb .feedback { font-size:15px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 900px) and (orientation: portrait) { /* 세로 폰에서만 한 열로 — 폴드 가로(830×515)는 아래 가로 블록이 맡는다 */
   .dl-greet-row, .dl-talk { grid-template-columns: 1fr; }
   .dl-council__issues,.dl-council__promises { grid-template-columns:1fr; }
   .dialogue-scene { --guide-size:clamp(190px,30vw,260px); }

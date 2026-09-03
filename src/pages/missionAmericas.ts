@@ -643,6 +643,47 @@ const PAGE_CSS = `
   .signal-token::before { width:38px; height:38px; }
   .signal-token strong { margin-bottom:1px; font-size:16px; }
 }
+/* ===== 폰·폴드 가로(≤960px 폭 + ≤620px 높이, 830×515·915×412·844×390) — 위 규칙들 뒤에 두어 이긴다. 974×601·1024×600·데스크톱에는 안 걸린다 ===== */
+@media (max-width:960px) and (max-height:620px) {
+  /* 착륙: 지도가 500px 남짓이라 고정 px 원 5개가 서로 포개졌다 — 원은 48px, 이름표는 원 옆으로(아래로 두면 다음 나라 원을 덮는다) */
+  .exp-slot { width:48px; height:48px; border-width:3px; font-size:13px; }
+  .exp-slot .slot-name { bottom:auto; left:calc(100% + 3px); top:50%; translate:0 -50%; padding:2px 7px; font-size:12px; }
+  /* 착륙: 지도를 위로 붙이고 가이드 말풍선은 마스코트 오른쪽·바닥(지도 아래 띠)에 — 지도 위를 덮지 않게 */
+  .am-scene[data-screen=landing] .exp-wrap > .exp-map-fit > .aspect-fit { place-items:start center; }
+  .am-scene[data-screen=landing] > .guide-wrap .guide-bubble { left:calc(var(--scene-safe) + var(--guide-size) + 8px); bottom:0; width:min(300px,calc(100vw - var(--guide-size) - var(--scene-safe) * 2 - 8px)); }
+  .am-scene[data-screen=landing] > .guide-wrap .guide-bubble::after { left:-10px; right:auto; bottom:24px; border:10px solid transparent; border-left:0; border-right-color:rgba(255,253,241,.97); filter:drop-shadow(-2px 0 0 #f2c14e); }
+  /* 렌즈: 토큰이 84×68 고정이라 '두 대양'·'적도'가 서로, 그리고 적도 라벨과 겹쳤다 */
+  .lens-point { min-width:0; min-height:32px; padding:3px 9px; border-width:2px; font-size:13px; }
+  .exp-map__equator span { right:auto; left:0; padding:2px 7px; font-size:12px; }
+  .exp-map__ocean { padding:3px 8px; font-size:12px; }
+  /* 나라: 지점 카드는 내용 높이만큼, 넘치면 목록만 스크롤(고정 4행 + 넘침 숨김이 설명 3줄·4번째 제목을 잘랐다) */
+  .country-side { display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden; gap:5px; }
+  .country-side > * { flex:0 0 auto; }
+  .stop-card { min-height:0; overflow:visible; font-size:13px; line-height:1.3; }
+  .stop-card strong { font-size:15px; }
+  .stop-card-step { width:26px; height:26px; font-size:15px; }
+  /* 항해 레일: 바다 이름 칩이 손잡이·친구 아바타·만나기 버튼에 가려졌다 — 레일은 폭 전체, 친구는 레일 위로 */
+  .voyage-rail { left:8px; right:8px; bottom:8px; padding:4px 10px; gap:6px; }
+  .voyage-rail span { font-size:13px; }
+  .voyage-rail input { height:44px; }
+  .am-rail::-webkit-slider-thumb { width:44px; height:44px; margin-top:-12px; border-width:3px; }
+  .am-rail::-moz-range-thumb { width:44px; height:44px; border-width:3px; }
+  .country-scene:has(.friend-meet) .voyage-rail { right:8px; }
+  .country-scene:has(.voyage-rail) .friend-meet { bottom:64px; right:8px; }
+  .friend-meet img { width:76px; }
+  .friend-meet span { padding:3px 10px; font-size:14px; }
+  /* 문화 가방: 2×2 고정 행이 본문을 3줄에서 잘랐다 — 카드는 내용 높이, 격자가 스크롤 */
+  .bag-grid { grid-template-rows:auto; grid-auto-rows:auto; align-content:start; overflow-y:auto; gap:6px; }
+  .bag-item { min-height:64px; overflow:visible; padding:8px 12px; font-size:17px; }
+  .bag-item.is-open { font-size:13px; line-height:1.35; }
+  .bag-item.is-open strong { margin-bottom:2px; font-size:15px; }
+  .bag-pick-hint { padding:5px 10px; font-size:14px; }
+}
+/* 폴드 가로(≤860px): 장면이 300px 남짓이라 지점 이름표끼리 겹친다 — 핀은 번호만, 이름은 옆 목록의 같은 번호로 */
+@media (max-width:860px) and (max-height:620px) {
+  .stop-node { grid-template-columns:auto; min-width:0; max-width:none; min-height:0; padding:3px; gap:0; border-radius:50%; }
+  .stop-node .stop-label { display:none; }
+}
 @media (prefers-reduced-motion:reduce) {
   .lens-point, .stop-node.is-next, .friend-meet, .postcard.is-wrong, .voyage-rail::after, .exp-slot { animation:none !important; }
 }

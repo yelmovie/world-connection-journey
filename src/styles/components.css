@@ -80,6 +80,13 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   font-family: var(--font-head); font-size: var(--fs-title); color: #fff;
   text-shadow: 0 2px 8px rgba(15, 30, 50, 0.55);
   display: flex; align-items: center; gap: var(--sp-3);
+  /* 제목은 어느 폭에서든 한 줄 — 두 줄로 꺾이면 고정 높이 상단바를 넘어 본문을 덮는다.
+     리본은 min-width:0 으로 버튼·진행 점에 자리를 내주고, 글자는 chrome.ts 가 줄인 뒤(하한 18px) 남으면 말줄임. */
+  min-width: 0; white-space: nowrap;
+}
+.top-bar-title .ribbon-main {
+  display: block; max-width: 100%; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -256,6 +263,30 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   .character-dialogue__conversation { justify-content:flex-start; }
   .character-dialogue__hint { display:none; }
 }
+/* 폴드·폰 가로(폭 ≤1000, 세로 ≤560): 세 칸 최소폭(210+420+210)이 모달 폭을 넘어 오른쪽 인물이 잘리고,
+   min-height:420px 이 모달 높이를 넘어 왼쪽 인물 이름표가 모달 아래로 밀리던 문제 — 칸 최소폭을 풀고 높이는 내용만큼만. */
+@media (max-width:1000px) and (min-width:761px) {
+  .character-dialogue.has-partner { grid-template-columns:minmax(0,.62fr) minmax(0,1.3fr) minmax(0,.62fr);gap:10px; }
+  .character-dialogue { gap:12px; }
+}
+@media (max-height:560px) and (min-width:761px) {
+  .modal-backdrop .modal:has(.character-dialogue) { max-height:calc(100dvh - 16px); }
+  .modal:has(.character-dialogue) .modal-body { padding:8px 12px; }
+  .character-dialogue { min-height:0; }
+  .character-dialogue__portrait { padding:6px 6px 44px; }
+  /* height:100% 는 행 높이가 미정이라 그림 원본 높이로 풀려 행을 키운다 — 화면 높이 기준으로 가둔다 */
+  .character-dialogue__portrait img { height:auto;max-height:34dvh;max-width:100%; }
+  .character-dialogue__meta { bottom:6px;padding:4px 10px;font-size:16px; }
+  .character-dialogue__bubble { min-height:100px;padding:10px 14px;gap:4px; }
+  .character-dialogue__line { font-size:clamp(18px,2.2vh,22px);line-height:1.4; }
+  .character-dialogue__speaker { font-size:clamp(22px,3.4vh,30px); }
+  .character-dialogue__conversation { gap:8px; }
+  /* 좁아진 가운데 칸에서 버튼이 두 줄로 접혀 모달이 넘치지 않게 — 최소폭을 풀고 한 줄 유지 */
+  .character-dialogue__footer { gap:8px;flex-wrap:nowrap; }
+  .character-dialogue__progress,.character-dialogue__skip,.character-dialogue__next { min-width:0; }
+  .character-dialogue__skip,.character-dialogue__next { flex:1 1 auto;padding-inline:10px; }
+  .character-dialogue__footer .btn { min-height:46px;font-size:17px; }
+}
 .modal-body details > summary { min-height:48px;display:flex;align-items:center;padding-block:8px;cursor:pointer; }
 .modal-body input[type="range"] { min-height:44px; }
 :root[data-reduced-motion="true"] .character-dialogue__portrait img { animation:none; }
@@ -393,17 +424,6 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
     white-space: nowrap !important;
   }
 }
-/* 같은 접기 — chrome.ts 의 fitTopBarTitle 이 하한 글자(18px)로도 한 줄에 못 넣는 아주 좁은 창에서 붙인다. */
-#scene-root .page .top-bar-title.is-clipped {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  margin: -1px !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  clip-path: inset(50%) !important;
-}
-
 @media (max-width: 600px) {
   .top-bar { gap: var(--sp-2); padding-inline: var(--sp-3); }
   .top-bar-title { min-width: 0; font-size: clamp(20px, 5vw, 26px); line-height: 1.05; }
@@ -546,6 +566,15 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
     grid-template-columns: max-content minmax(0, 1fr); align-items: baseline;
     gap: 0 var(--sp-2); padding: var(--sp-2) var(--sp-3);
   }
+}
+
+/* 폴드·폰 가로(세로 ≤560px): 말풍선이 본문 카드·지도 위로 올라오는 높이를 더 줄인다 —
+   폭을 좁혀 줄 수를 늘리는 대신 안쪽 여백·선택지 목록 높이를 깎는다(글자 18px 하한은 유지). */
+@media (max-height: 560px) {
+  .page > .guide-wrap .guide-bubble { width:min(400px,calc(86vw - var(--guide-size) - var(--scene-safe)));max-width:min(34ch,70vw); }
+  .guide-bubble-copy { padding: 4px var(--sp-2); }
+  .guide-actions { max-height: min(26vh, 150px); padding: 0 var(--sp-2) var(--sp-2); }
+  .guide-action { min-height: 44px; padding: 6px 10px; }
 }
 
 /* ===== "여기를 눌러요" 탭 큐 ===== */
@@ -889,10 +918,7 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   .top-bar .btn-icon { width:48px;height:48px;padding:0; }
   .top-bar-nav,.top-bar-actions { gap:6px; }
   .top-bar .quest-ribbon { min-height: 48px; padding: 3px 16px; }
-  /* 긴 제목은 두 줄로 꺾여 상단바 아래 본문을 덮는 대신 한 줄을 유지하며 글자를 줄인다(폭 비례, 하한 20px).
-     min-width:0 으로 리본이 진행 점·소리·설정 버튼을 밀어내지 못하게 하고,
-     그래도 한 줄에 안 들어가는 제목은 chrome.ts 의 fitTopBarTitle 이 실제 폭을 재어 더 줄인다(하한 18px). */
-  .top-bar-title { min-width: 0; white-space: nowrap; }
+  /* 긴 제목은 폭 비례로 줄이고(하한 20px), 그래도 한 줄에 안 들어가면 chrome.ts 의 fitTopBarTitle 이 실제 폭을 재어 더 줄인다(하한 18px). */
   .top-bar .quest-ribbon .ribbon-main { font-size: clamp(20px, 2.6vw, 30px); }
   .top-bar .journey-ticket { display:none; }
   .mission-brief { padding: 10px; gap: 7px; }

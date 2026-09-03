@@ -308,35 +308,34 @@ function soundIconSvg(): string {
 const TITLE_MIN_FONT_PX = 18;
 
 /**
- * 제목 리본 한 줄 맞춤 — 좁은 화면(components.css 가 .top-bar-title 에 nowrap 을 주는 구간)에서
- * 긴 제목이 진행 점·소리·설정 버튼 쪽으로 넘치면 한 줄에 들어갈 때까지 글자를 줄인다(하한 18px).
- * 줄바꿈이 허용되는 넓은 화면과 접힌 제목(세로 400px 이하)은 건드리지 않는다.
+ * 제목 리본 한 줄 맞춤 — 리본 글자는 항상 한 줄(components.css .top-bar-title 이 nowrap + 말줄임)이고,
+ * 진행 점·소리·설정 버튼 쪽으로 넘치면 한 줄에 들어갈 때까지 글자를 줄인다(하한 18px).
+ * 하한으로도 안 들어가면 CSS 말줄임(…)이 남은 글자를 맡는다 — 두 줄로 꺾여 상단바 아래 본문을 덮는 일은 없다.
+ * 넘침은 리본(h1)이 아니라 글자 상자(.ribbon-main, overflow:hidden)에서 잰다 — 리본은 min-width:0 으로 줄어들 뿐 넘치지 않는다.
  */
 function fitTopBarTitle(bar: HTMLElement): void {
   const title = bar.querySelector<HTMLElement>('.top-bar-title');
   if (!title) return;
   const text = title.querySelector<HTMLElement>('.ribbon-main') ?? title;
   text.style.removeProperty('font-size');
-  title.classList.remove('is-clipped');
-  if (title.clientWidth < 2 || getComputedStyle(title).whiteSpace !== 'nowrap') return;
-  // 리본(세로 flex, 가운데 정렬) 안의 글자 상자는 nowrap 이라 자기 폭을 줄이지 못하고 양쪽으로 삐져나온다 —
-  // 넘침은 글자 상자가 아니라 리본 상자(h1)에서 잰다.
-  const overflows = () => title.scrollWidth > title.clientWidth + 1;
+  if (title.clientWidth < 2) return;
+  const overflows = () => text.scrollWidth > text.clientWidth + 1;
   let size = parseFloat(getComputedStyle(text).fontSize);
   while (overflows() && size > TITLE_MIN_FONT_PX) {
     size = Math.max(TITLE_MIN_FONT_PX, size - 1);
     text.style.fontSize = `${size}px`;
   }
-  // 하한 글자로도 안 들어가는 아주 좁은 창은 세로 400px 이하와 같은 방식으로 접는다(잘라 보이거나 버튼을 덮지 않게).
-  if (overflows()) title.classList.add('is-clipped');
 }
 
 function watchTopBarTitle(bar: HTMLElement): void {
   if (typeof ResizeObserver === 'undefined') return;
   // 상단바 폭(=화면 폭)이 바뀔 때만 다시 잰다. 글자 크기 변경은 상단바 크기를 바꾸지 않아 되먹임이 없다.
-  new ResizeObserver(() => fitTopBarTitle(bar)).observe(bar);
-  // 웹폰트가 늦게 오면 대체 글꼴 폭으로 잰 값이 남는다 — 폰트가 준비되면 한 번 더 잰다.
-  void document.fonts?.ready.then(() => fitTopBarTitle(bar));
+  // 웹폰트(Jua)는 이 제목이 처음 그려질 때 비로소 내려받기 시작하므로, 삽입 직후 잰 값은 대체 글꼴 폭이다 —
+  // 그 시점의 fonts.ready(내려받기가 끝나야 풀린다)를 기다렸다가 한 번 더 잰다.
+  new ResizeObserver(() => {
+    fitTopBarTitle(bar);
+    void document.fonts?.ready.then(() => { if (bar.isConnected) fitTopBarTitle(bar); });
+  }).observe(bar);
 }
 
 /** 모든 페이지 공통 상단 바: 왼쪽 뒤로·홈, 오른쪽 소리·설정 */

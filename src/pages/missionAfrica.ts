@@ -179,21 +179,22 @@ const CSS = `
 .council-speech{align-self:stretch;min-height:0;overflow:auto;padding:14px;gap:8px}.council-speech h2{font-size:22px}.council-speech p{font-size:17px;line-height:1.45}
 .person-button{width:clamp(84px,min(12vw,22vh),158px);height:clamp(84px,min(12vw,22vh),158px);padding:6px}.person-button .p-name{font-size:16px}.person-button .p-role{font-size:13px;line-height:1.25}
 }
-/* 폰 가로(높이 ≤460px) — 위 규칙에서 한 번 더 줄인다. 지도·신호·회의·인사는 한 화면에 맞추고, 정말 안 들어가는 지역·악기 화면만 패널이 내용만큼 자라 page-body가 스크롤한다(내용을 숨기거나 자르지 않는다) */
+/* 폰 가로(높이 ≤460px) — 위 규칙에서 한 번 더 줄인다. 지도·신호·회의·인사는 한 화면에 맞추고, 정말 안 들어가는 지역·악기 화면은 패널 높이를 그대로 두고 각 칸(지도+도구, 나라 설명, 악기 사진 묶음)이 자기 안에서 스크롤한다 — 페이지가 통째로 밀려 '다음' 버튼띠가 화면 밖으로 나가지 않게 */
 @media(max-width:1050px) and (orientation:landscape) and (max-height:460px){
 #app:has(.africa-mission) .toast-wrap{top:calc(var(--top-bar-h) + var(--sp-2));bottom:auto} /* 폰 가로에선 아래쪽 토스트가 지도 표식·도구 버튼을 2.6초 덮는다 — 버튼이 없는 머리띠 쪽으로 올린다(완주 화면과 같은 방식) */
-.africa-shell:has(.region-layout),.africa-shell:has(.lab-layout){height:auto;min-height:calc(100dvh - var(--top-bar-h) - 16px)}.region-layout,.lab-layout{height:auto} /* 지역·악기: 412px 높이엔 정말 안 들어간다 — 패널이 내용만큼 자라고 page-body가 스크롤한다(안쪽 이중 스크롤 없이). 환경·회의는 지도·원이 높이에 맞고 옆 글 상자만 안에서 스크롤 */
-.region-visual{align-self:start}.region-mapstage{min-height:180px}
+.region-visual,.country-detail,.instrument-gallery{overflow-y:auto;overscroll-behavior:contain}
+.region-visual{grid-template-rows:minmax(110px,1fr) auto;gap:4px;padding:4px}.region-mapstage{min-height:110px} /* 지도 + 도구(나라 버튼)가 스크롤 없이 한 칸에 — 도구 이름표는 접고 설명은 글이 있을 때만 높이를 쓴다 */
+.region-tool{padding:5px 8px;gap:3px}.region-tool label{display:none}.region-tool-copy{min-height:0}.region-tool-copy:empty{display:none}.region-tool input[type=range]{height:32px}.tool-buttons button{min-height:38px;font-size:15px}
 .country-detail{container-type:normal} /* 글 패널이 사진+제목+설명+생활·문화를 다 담을 높이로 자란다 — 사진 폭을 컨테이너 높이로 정하지 않고 고정 */
-.country-detail .detail-photo{width:min(100%,280px);min-width:0}
+.country-detail .detail-photo{width:min(100%,200px);min-width:0}
 .detail-pager{min-height:40px}.detail-pager h3{font-size:19px}.detail-pager .sub{font-size:15px}
 .detail-caption{padding:7px 10px;font-size:16px;line-height:1.35}.detail-facts{flex:0 0 auto;max-height:none;overflow:visible}
 .africa-head{padding:5px 12px}.africa-head h1,.africa-head h2{font-size:20px}.africa-head p{font-size:15px}
 .region-pin{min-width:56px;min-height:56px;padding:4px;border-width:3px;font-size:15px}.region-pin::after{font-size:12px}.map-controls{left:8px;bottom:8px}.map-controls button{width:44px;height:44px;font-size:22px}.map-plane{width:52px}
 .lens{width:90px;height:90px}
 .region-tool{padding:6px 10px;gap:4px}.region-tool label,.region-tool-copy,.tool-buttons button{font-size:16px}.region-tool input[type=range]{height:36px}.region-tool-copy{min-height:2.2em}.tool-buttons button{min-height:40px}
-.instrument-gallery{grid-template-rows:auto minmax(0,1fr) auto}.instrument-thumbs{order:-1} /* 폰 가로: 누를 썸네일 5개를 스크롤 없이 바로 보이게 사진 위로 올린다 */
-.instrument-photo img{min-height:150px}
+.instrument-gallery{grid-template-rows:auto auto auto}.instrument-thumbs{order:-1} /* 폰 가로: 누를 썸네일 5개를 스크롤 없이 바로 보이게 사진 위로 올린다 */
+.instrument-gallery{padding:6px;gap:5px}.instrument-thumbs button{min-height:52px;padding:2px;font-size:14px}.instrument-thumbs img{height:26px}.instrument-controls .btn{min-height:40px;font-size:17px}.instrument-photo{height:76px;flex:none}.instrument-photo img{height:100%;min-height:0} /* 묶음이 안에서 스크롤하므로 1fr 행이 0으로 접혀 사진이 띠처럼 납작해지던 것 — 고정 높이 */
 .signal-pin{min-width:58px;min-height:58px}.signal-pin .sp-num{font-size:22px}.signal-pin .sp-tag{font-size:12px}
 .person-button{width:clamp(76px,min(12vw,22vh),158px);height:clamp(76px,min(12vw,22vh),158px);padding:5px}.person-button .p-name{font-size:15px}.person-button .p-role{font-size:12px}
 }

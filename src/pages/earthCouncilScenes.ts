@@ -118,7 +118,7 @@ export const EARTH_CSS = `
 
 /* 장면 1 — 사진: 그림을 크게 보고, 설명은 클릭 뒤 바로 아래에서 읽는다. */
 .ec-photo-row { flex:1;min-height:0;display:grid;grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px; }
-.ec-photo { position:relative;min-height:160px;height:100%;border-radius:var(--radius-l);overflow:hidden;background:#0d2238;box-shadow:var(--shadow-pop);cursor:crosshair;touch-action:manipulation; }
+.ec-photo { position:relative;container-type:size;min-height:160px;height:100%;border-radius:var(--radius-l);overflow:hidden;background:#0d2238;box-shadow:var(--shadow-pop);cursor:crosshair;touch-action:manipulation; }
 .ec-photo img { width:100%;height:100%;object-fit:cover;display:block; }
 .ec-spot { position:absolute;transform:translate(-50%,-50%);width:max(64px,6vw);height:max(64px,6vw);border-radius:50%;border:0;background:transparent;cursor:pointer;padding:0; }
 .ec-spot:focus-visible { outline:4px solid var(--c-gold);outline-offset:2px; }
@@ -128,7 +128,7 @@ export const EARTH_CSS = `
 .ec-spot.is-found::before { content:'✓';position:absolute;inset:0;border-radius:50%;border:5px solid var(--c-gold);background:rgba(20,99,78,.25);box-shadow:0 0 0 4px rgba(0,0,0,.28),inset 0 0 0 3px rgba(255,255,255,.6);display:grid;place-items:center;color:#fff;font:900 30px/1 var(--font-body);text-shadow:0 2px 5px rgba(0,0,0,.6); }
 @keyframes ec-click-glow { 0%,100%{transform:scale(.9);opacity:.72} 50%{transform:scale(1.12);opacity:1} }
 @keyframes ec-spark { to{transform:scale(1.35) rotate(18deg);opacity:.65} }
-.ec-lens { position:absolute;width:min(34%,260px);aspect-ratio:1;border-radius:50%;border:6px solid #fff;box-shadow:var(--shadow-pop);background-repeat:no-repeat;pointer-events:none;right:3%;top:5%;transition:opacity 220ms; }
+.ec-lens { position:absolute;width:min(34%,260px,72cqh);aspect-ratio:1;border-radius:50%;border:6px solid #fff;box-shadow:var(--shadow-pop);background-repeat:no-repeat;pointer-events:none;right:3%;top:5%;transition:opacity 220ms; }
 .ec-ripple { position:absolute;width:40px;height:40px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);pointer-events:none;animation:ec-ripple .5s ease-out forwards; }
 @keyframes ec-ripple { to { transform:translate(-50%,-50%) scale(2.4);opacity:0; } }
 .ec-photo-side { min-height:72px;display:flex;align-items:center;justify-content:center;padding:10px 18px;text-align:center;overflow:hidden; }
@@ -330,7 +330,7 @@ export const EARTH_CSS = `
   .ec-issue-title { font-size:clamp(17px,1.25vw,23px); }
   .ec-act { min-height:64px; }
 }
-@media (max-width:900px) {
+@media (max-width:900px) and (orientation:portrait) { /* 세로 폰만 — 폴드 가로는 아래 가로 블록 */
   .ec-photo-row,.ec-connect,.ec-actions { grid-template-columns:1fr;grid-template-rows:minmax(220px,1fr) auto;overflow-y:auto; }
   .ec-orbit { grid-template-columns:1fr;overflow-y:auto; }
   .ec-orbit .ec-globe { display:none; }
@@ -338,10 +338,61 @@ export const EARTH_CSS = `
   .ec-issue,.ec-issues > .ec-issue:only-child { height:auto;min-height:160px; }
   .ec-choices { grid-template-columns:1fr; }
 }
+/* 좁고 낮은 가로(폴드 830×515): 세로 폰용 한 열 쌓기(사진 최소 220px)가 걸려 사진이 하단 띠 밑으로 이어지던 문제.
+   두 열을 유지하고, 150px 가이드(DIALOGUE_CSS 같은 조건)만큼 무대를 오른쪽으로 비켜 카드가 캐릭터에 가려지지 않게 한다. */
+@media (max-width:900px) and (max-height:620px) {
+  .dialogue-scene:has(> .guide-wrap) .ec { width:calc(100% - var(--guide-size) * .68); margin-left:auto; margin-right:0; }
+  .ec { gap:6px; }
+  .ec-progress { font-size:16px; }
+  .ec-friend img { width:32px;height:32px; }
+  .ec-friend { padding:2px 6px;font-size:14px;min-width:48px; }
+  .ec-friend .ec-mark { width:20px;height:20px;top:-5px;right:-5px; }
+  .ec-photo,.ec-map { min-height:120px; }
+  .ec-photo-row,.ec-connect { gap:6px; }
+  .ec-photo-side { min-height:0;padding:5px 12px; }
+  .ec-click-copy { font-size:16px;line-height:1.3; }
+  .ec-map-copy { min-height:0;padding:6px 12px; }
+  .ec-issue-title { font-size:clamp(15px,1.2vw,20px);bottom:8px; }
+  /* 원탁(무대 약 686×276): 친구를 줄이고 말풍선을 위·아래 줄 이름표 사이(가로 33~67%)에 두어 이름표를 덮지 않게 */
+  .ec-council-friend img { height:clamp(52px,11vh,90px);max-width:clamp(70px,10vw,120px); }
+  .ec-council-friend span { font-size:13px;padding:2px 8px; }
+  .ec-council-core { width:min(400px,34%); }
+  .ec-council-core.is-player { width:min(460px,40%);transform:translate(-50%,-45%); }
+  .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="top"]) .ec-council-core { transform:translate(-50%,-12%); }
+  .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="bottom"]) .ec-council-core { transform:translate(-50%,-88%); }
+  .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="side"]) .ec-council-core { left:50%!important; } /* 옆자리 옆에 두면 위·아래 줄 이름표와 겹친다 */
+  .ec-council-bubble { padding:8px 12px; }
+  .ec-council-bubble h2 { font-size:18px;margin:3px 0 4px; }
+  .ec-council-bubble p { font-size:15px; }
+  .ec-player-bubble .ec-council-phase { display:none; }
+  .ec-player-bubble label { font-size:16px;margin-bottom:4px; }
+  .ec-player-bubble .ec-input { min-height:44px;font-size:15px;padding:6px 8px; }
+  .ec-player-hint { font-size:13px!important;margin-top:4px!important; }
+  /* 해결안: 아이콘을 접고 글만 — 무대가 좁아도 12장이 세 줄에 */
+  .ec-actions { grid-template-columns:minmax(0,1.7fr) minmax(220px,.8fr);gap:8px; }
+  .ec-rings { gap:4px;justify-content:safe center;overflow-y:auto; }
+  .ec-ring { grid-template-columns:minmax(84px,.6fr) repeat(4,minmax(0,1fr));gap:4px;padding:3px 5px; }
+  .ec-ring-name { font-size:14px;padding-left:3px; }
+  .ec-act { min-height:44px;padding:4px;font-size:14px;line-height:1.15;gap:0; }
+  .ec-act .ec-act-ico { display:none; }
+  .ec-side { gap:6px; }
+  .ec-side .ec-copy { font-size:15px;line-height:1.35; }
+  .ec-side > .ec-copy:first-child, .ec-side .ec-scope { display:none; }
+  .ec-side .ec-click-copy { min-height:0; }
+  .ec-gauges { gap:4px; }
+  .ec-gauge { font-size:14px;gap:4px; }
+  .ec-gauge .ec-bar { width:20px;height:12px; }
+  /* 약속: 두 열 — 한 열이면 일곱 줄+입력칸이 안쪽 스크롤 */
+  .ec-pledge { width:100%;margin:0;grid-template-columns:1fr 1fr;gap:6px;align-content:start; }
+  .ec-pledge > .ec-line:first-child, .ec-pledge > div.ec-line { grid-column:1/-1; }
+  .ec-line { padding:5px 10px;font-size:15px;line-height:1.35;border-left-width:5px; }
+  .ec-pledge .ec-input { min-height:40px;padding:5px 8px;font-size:15px; }
+}
 /* 모바일 가로(915×412) — 공용 CSS가 캐릭터 가이드를 숨기는 높이. 빈 레인·하단바 캐릭터 자리를 본문에 돌려주고 장면마다 접는다. */
 @media (max-height:460px) {
   .dialogue-scene:has(.ec) { --guide-lane-h:0px; --bottom-bar-h:48px; }
   .dialogue-scene:has(.ec) .page-body { padding:6px clamp(10px,2vw,20px) 4px; }
+  .dialogue-scene .ec { width:100%;margin:0 auto; } /* 가이드가 숨는 높이에선 비켜 세우지 않는다 */
   .ec { gap:4px; } /* 리본 34px 축소는 DIALOGUE_CSS의 같은 미디어 블록이 맡는다 */
   .ec-progress { font-size:16px; }
   /* 장면 1: 리본과 친구 띠를 한 줄에 — 사진이 120px 아래로 눌리지 않게 */
@@ -369,7 +420,8 @@ export const EARTH_CSS = `
   .ec-council-bubble p { font-size:15px; }
   /* 말풍선이 위·아래 줄 친구 이름표를 덮거나 무대 밖으로 나가지 않게 — 좁히고, 말하는 친구 줄 반대쪽으로 민다 */
   .ec-council-core { width:min(400px,36%); }
-  .ec-council-core.is-player { width:min(460px,46%); }
+  .ec-council-core.is-player { width:min(460px,36%); } /* 46%면 위 줄 두 친구 이름표를 덮는다 */
+  .ec-player-bubble .ec-council-phase { display:none; }
   .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="top"]) .ec-council-core { transform:translate(-50%,-12%); }
   .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="bottom"]) .ec-council-core { transform:translate(-50%,-88%); }
   .ec-player-bubble label { font-size:17px;margin-bottom:4px; }

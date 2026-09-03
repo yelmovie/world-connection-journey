@@ -527,6 +527,12 @@ const PASSPORT_CSS = `
   .passport-preview-close { width:40px;height:40px;font-size:22px; }
   .passport-stamp-name { font-size:11px; }
 }
+/* 폴드 가로(폭 ≤900): 무대 두 칸 최소폭(260+320)이 무대 폭을 넘어 이름(h2)이 오른쪽 화살표 위로 삐져나가
+   '다음 탐험가' 탭을 삼키던 문제 — 최소폭을 풀고 화살표를 위 층에 둔다 */
+@media (min-width:601px) and (max-width:900px) {
+  .passport-feature { grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:clamp(12px,3vw,40px);padding-inline:12px; }
+  .passport-arrow { position:relative;z-index:1; }
+}
 /* 폰 가로(높이 ≤460): 제목 줄을 접고 경로·발판을 낮춰 무대 + 썸네일 줄이 한 화면에 들어가게 */
 @media (min-width:601px) and (max-height:460px) {
   .passport-page { --passport-footer-h:60px;--passport-route-h:48px; }
