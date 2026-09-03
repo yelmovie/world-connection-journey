@@ -15,6 +15,7 @@ import {
 import { burstConfetti, popBounce } from '../ui/fx';
 import type { GuideController, GuideSpeaker } from '../ui/guide';
 import { showFeedback } from '../ui/feedback';
+import { keepFitted } from '../ui/fitText';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
 
 export interface EarthSceneHost {
@@ -912,6 +913,8 @@ function renderActions(host: EarthSceneHost): void {
     </div>`;
   const rings = body.querySelector<HTMLElement>('#ec-rings')!;
   const gauges = body.querySelector<HTMLElement>('#ec-gauges')!;
+  const resultPanel = body.querySelector<HTMLElement>('#ec-result');
+  if (resultPanel) keepFitted(resultPanel, () => Array.from(resultPanel.querySelectorAll<HTMLElement>('p,span,small,b')), 13);
   const fb = body.querySelector<HTMLElement>('#ec-fb')!;
   let lastRun: string | null = null;
 
@@ -1020,6 +1023,8 @@ function renderPledge(host: EarthSceneHost): void {
     </div>`;
   const input = body.querySelector<HTMLTextAreaElement>('#ec-personal')!;
   const fb = body.querySelector<HTMLElement>('#ec-fb')!;
+  const pledgeBox = body.querySelector<HTMLElement>('#ec-pledge');
+  if (pledgeBox) keepFitted(pledgeBox, () => Array.from(pledgeBox.querySelectorAll<HTMLElement>('p,label,em,textarea')), 13);
   input.addEventListener('input', () => { p.personalActionDraft = input.value.slice(0, 120); host.save(); renderBottom(); });
 
   const renderBottom = () => {
