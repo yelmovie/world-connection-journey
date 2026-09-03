@@ -34,7 +34,7 @@ interface StudentDef {
   dialogue?: Array<{ role: 'player' | 'student'; label: string; text: string }>;
 }
 
-interface PostcardDef { countryId: string; studentId: string; hint: string; extraHint: string }
+interface PostcardDef { countryId: string; studentId: string; hint: string }
 interface LensPointDef {
   id: string;
   x: number;
@@ -243,7 +243,6 @@ const PAGE_CSS = `
 .postcard.is-locked { opacity:.55; pointer-events:none; }
 .postcard.is-done { opacity:.4; pointer-events:none; border-color:var(--c-success); }
 @keyframes cardShake { 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
-.postcard .pc-extra { display:block; margin-top:6px; color:#8a5a00; font-weight:900; }
 
 /* 아메리카 전 화면: 가이드의 빈 행을 접고 비행기 왼쪽 안전 영역 + 확장 본문을 공유한다. */
 @media (min-width:1360px) {
@@ -264,7 +263,6 @@ const PAGE_CSS = `
 #scene-root .am-scene[data-screen=landing] .exp-cards.panel { align-self:stretch; max-height:none; }
 .am-scene[data-screen=landing] .exp-cards__title { font-size:clamp(28px,2vw,40px); line-height:1; margin-bottom:2px; }
 .am-scene[data-screen=landing] .postcard { min-height:44px; height:100%; padding-block:clamp(6px,.75vh,10px); font-size:clamp(16px,1.03vw,20px); line-height:1.3; overflow:hidden; }
-.am-scene[data-screen=landing] .postcard .pc-extra { margin-top:3px; }
 .am-scene > .guide-wrap { z-index:calc(var(--z-panel) + 2); }
 .am-scene > .guide-wrap .guide-bubble { left:var(--scene-safe); bottom:calc(var(--guide-size) - 18px); width:min(300px,calc(100vw - (var(--scene-safe) * 2))); max-width:300px; border-color:#f2c14e; background:rgba(255,253,241,.97); }
 .am-scene > .guide-wrap .guide-bubble::after { left:72px; right:auto; bottom:-13px; border:13px solid transparent; border-top-color:rgba(255,253,241,.97); border-bottom:0; filter:drop-shadow(0 2px 0 #f2c14e); }
@@ -723,8 +721,6 @@ export function createPage(): Page {
           const card = el(`<button type="button" class="postcard" data-item-id="${pc.countryId}">
             <img src="${assetUrl(avatarAsset(content, pc.studentId))}" alt="">
             <strong>${student?.name ?? ''}</strong> · ${pc.hint}
-            <span class="pc-extra" hidden>힌트: ${pc.extraHint}</span>
-            
           </button>`);
           card.setAttribute('aria-describedby', 'americas-dnd-guide');
           if (S.placed.includes(pc.countryId)) card.classList.add('is-done');
@@ -776,7 +772,6 @@ export function createPage(): Page {
             } else {
               void audio.playSfx('partial');
               card.classList.add('is-wrong', 'is-locked');
-              card.querySelector<HTMLElement>('.pc-extra')?.removeAttribute('hidden');
               later(() => card.classList.remove('is-wrong', 'is-locked'), 1200);
               announceGuide('조금 다른 곳이야. 대화창의 힌트를 다시 읽어 볼까?');
             }
