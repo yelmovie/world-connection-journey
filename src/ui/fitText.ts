@@ -19,6 +19,6 @@ export function fitToBox(box: HTMLElement, targets: HTMLElement[], minPx = 13): 
 export function keepFitted(box: HTMLElement, targets: () => HTMLElement[], minPx = 13): () => void {
   const run = () => fitToBox(box, targets(), minPx);
   requestAnimationFrame(run);
-  new ResizeObserver(run).observe(box);
+  new ResizeObserver(() => requestAnimationFrame(run)).observe(box); // 같은 프레임 재진입이 'ResizeObserver loop' 경고를 내지 않게 한 프레임 미룬다
   return run;
 }
