@@ -7,15 +7,19 @@
 - 검증 도구: `node scripts/qa-sweep.cjs`(45화면×4해상도, `--only=이름`, `--vp=WxH`), `_unused/scripts/probe-touch-*.cjs`(터치), `node scripts/audit-source-assets.mjs`(자산 누락).
 - 최종점검 성적표: docs/reviews/FINAL-CHECK-20260903.md (216/253, 도장 개편 전 기준) — **재채점 필요**.
 
-## 남은 일 (우선순위 순)
-1. **최종점검 재실행** — `final-check` 스킬. 사진 8장 감점(5번)은 해소됐고, 12번(권역 카드 글자 하한 12~13px→14px 권장)·9번(아메리카 이모지 👆🚤👣 → SVG, docs/icon-prompts.md)은 사용자 승인 후 수정.
-2. **아메리카 로컬 `.is-pressed` 핸들러 정리** — `src/pages/missionAmericas.ts` 616~621줄 근처, 전역 `src/ui/touch.ts`가 같은 일을 하므로 제거 가능(선택).
-3. **아프리카 지역 상세 사진 크기 점프** — 개요 페이지(613×345)와 나라 페이지(360×202) 사이에서 사진·화살표가 튐(T2 보고). `missionAfrica.ts` `.country-detail .detail-photo` 폭 계산을 페이지 종류와 무관하게 고정하는 방향.
-4. **지구회의 약속 화면 도움 칩** — `.ec-starters .chip`이 span이라 못 누름. 누르면 글상자에 넣게 할지 사용자 결정.
-5. **`dnd.ts enablePickPlace`** — 터치에도 `setPointerCapture`를 걸어 "같은 카드 다시 탭해 선택 해제"가 안 먹을 수 있음(T2 지적). 증상 보고 오면 `pointerType !== 'touch'` 가드 한 줄.
-6. **배경음 20MB(public/sound)** — 비트레이트 낮춰 절반으로(선택).
-7. `feedback.ts`의 안 쓰는 `learningLines` 표 제거(무해).
-8. 안티그라비티가 그림을 더 만들면: `docs/IMAGE_PROMPTS_UK_USA.md` 규격대로 같은 파일명 덮어쓰기 → `node scripts/convert-uk-usa.cjs` 방식으로 webp 변환·매니페스트 연결 → `node scripts/audit-source-assets.mjs` → 스윕.
+## 남은 일 (2026-09-03 저녁 갱신)
+1. **최종점검 점수 재채점** — final-check 스킬이 이 컴퓨터에 없음(다른 컴퓨터에 있음). 자동 점검(qa-sweep 45화면×4해상도)은 전 화면 통과. 수동 채점표(253점)만 다른 컴에서 재실행 필요.
+2. **배경음 20MB** — 압축 보류. 확인 결과 BGM이 이미 64kbps이고 프리캐시에 없음(미션 시작 때 스트리밍) → 절반이면 32kbps로 음질 크게 저하, 첫 로딩 이득 없음. 그래도 줄일 거면 다른 결정 필요(트랙 길이 단축 등).
+3. 안티그라비티가 그림을 더 만들면: docs/IMAGE_PROMPTS_UK_USA.md 규격대로 같은 파일명 덮어쓰기 → node scripts/convert-uk-usa.cjs 방식으로 webp 변환·매니페스트 연결 → node scripts/audit-source-assets.mjs → 스윕.
+
+## 끝낸 일 (2026-09-03)
+- 아프리카 지역 상세 사진 점프 해결: 개요·나라 페이지 같은 폭 + 개요에 조작 안내 문구. 3해상도 픽셀 단위 고정 확인.
+- 아메리카 이모지 → SVG: 🚤/👣ᆯ 흰 선 SVG로 직접 그려 교체, 👆는 문서 권고대로 제거(문구만). 스크린샷 확인.
+- 지구회의 약속 화면 도움 칩: 사용자 결정 '삭제' — 장식 칩 제거(경청 피드백 문구에서는 계속 인용됨).
+- 아메리카 로컬 is-pressed 핸들러 제거(전역 touch.ts가 담당), feedback.ts 안 쓰는 learningLines 제거.
+- qa-sweep에서 폐지된 완주(#/completion) 화면 제거(의도된 지도 리다이렉트).
+- 권역 카드 글자 하한 12~13px: 사용자 결정 '유지'.
+- dnd.ts enablePickPlace 터치 캡처(5번): 증상 보고 없어 보류(원문대로 조건부).
 
 ## 함정 메모
 - 같은 파일을 안티그라비티와 동시에 고치지 말 것(먼저 `find src -newermt "-10 minutes"`).

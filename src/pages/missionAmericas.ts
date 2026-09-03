@@ -367,7 +367,7 @@ const PAGE_CSS = `
 .stop-node.is-locked { opacity:.62; filter:saturate(.55); }
 .stop-node.is-next { z-index:6; animation:routeNext 1.45s ease-in-out infinite; background:#e27823; border-color:#fff8d7; }
 .stop-node.is-next .stop-step { background:#fff; color:#b95d14; }
-.stop-node.is-next::after { content:'👆 여기를 눌러!'; position:absolute; left:50%; top:calc(100% + 7px); transform:translateX(-50%); padding:5px 12px; border-radius:999px; background:#fff9dd; border:2px solid #e6ad32; color:#754500; font:900 clamp(15px,.9vw,18px)/1.1 var(--font-head); box-shadow:0 6px 14px rgba(3,29,52,.2); white-space:nowrap; }
+.stop-node.is-next::after { content:'여기를 눌러!'; position:absolute; left:50%; top:calc(100% + 7px); transform:translateX(-50%); padding:5px 12px; border-radius:999px; background:#fff9dd; border:2px solid #e6ad32; color:#754500; font:900 clamp(15px,.9vw,18px)/1.1 var(--font-head); box-shadow:0 6px 14px rgba(3,29,52,.2); white-space:nowrap; }
 .country-scene.route-complete .country-route-line { opacity:.12; }
 .country-scene.route-complete .stop-node { opacity:0; transform:translate(-50%,-50%) scale(.9); pointer-events:none; }
 .country-scene.route-complete .friend-meet { right:28px; bottom:24px; }
@@ -1020,7 +1020,7 @@ export function createPage(): Page {
             <polyline points="${positions.map((p) => `${p.x},${p.y}`).join(' ')}"></polyline>
           </svg>`);
           const routeGuide = el(`<div class="country-route-guide" role="status" aria-live="polite">
-            <span class="country-route-guide__icon">${c.mode === 'river' ? '🚤' : '👣'}</span>
+            <span class="country-route-guide__icon" aria-hidden="true">${c.mode === 'river' ? '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h18l-3 4.5H6Z"/><path d="M8 14v-4h5l3 4"/><path d="M10.5 10V6.5"/></svg>' : '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="currentColor"><ellipse cx="7" cy="14" rx="3" ry="4.2"/><circle cx="4.6" cy="8.8" r="1.1"/><circle cx="7" cy="8.2" r="1.1"/><circle cx="9.4" cy="8.8" r="1.1"/><ellipse cx="17" cy="9.5" rx="3" ry="4.2"/><circle cx="14.6" cy="4.3" r="1.1"/><circle cx="17" cy="3.7" r="1.1"/><circle cx="19.4" cy="4.3" r="1.1"/></svg>'}</span>
             <span class="country-route-guide__copy"><small>탐험 순서</small><strong></strong></span>
             <span class="country-route-guide__steps">${c.stops.map((_, i) => `<i>${i + 1}</i>`).join('')}</span>
           </div>`);

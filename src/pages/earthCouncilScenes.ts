@@ -211,8 +211,6 @@ export const EARTH_CSS = `
 .ec-pick2 { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px; }
 .ec-input { width:100%;min-height:56px;font:700 max(18px,var(--fs-small))/1.4 var(--font-body);padding:10px 12px;border:2px solid var(--c-line);border-radius:var(--radius-m);resize:none; }
 .ec-input:focus-visible { outline:3px solid var(--c-gold);outline-offset:2px; }
-.ec-starters { display:flex;flex-wrap:wrap;gap:6px; }
-.ec-starters .btn { min-height:44px;font-size:max(16px,var(--fs-small)); }
 
 /* 새 공동회의 — 여섯 친구가 한 원을 만들고 문제·해결책·약속을 차례로 말한다. */
 .ec.ec-council-screen { padding:0;border:0;box-shadow:none;background:transparent;overflow:hidden; } /* 남색 테두리 창이 겹쳐 보이던 문제 — 무대 하나만 남긴다 */
@@ -1016,7 +1014,6 @@ function renderPledge(host: EarthSceneHost): void {
         <div class="ec-line" style="border-left-color:var(--c-coral)">
           <label for="ec-personal" style="display:block;margin-bottom:6px">내가 먼저 시작할 일은 …</label>
           <textarea class="ec-input" id="ec-personal" rows="2" maxlength="120" ${done ? 'disabled' : ''} placeholder="예: 매주 월요일 등굣길에 물병을 챙기고, 한 달 뒤 우리 반 일회용 컵 수를 세어 본다">${esc(p.personalActionDraft)}</textarea>
-          <div class="ec-starters" style="margin-top:6px">${content.pledge.helperQuestions.map((q) => `<span class="chip">${esc(q)}</span>`).join('')}</div>
           <div id="ec-fb" style="margin-top:6px"></div>
         </div>
       </div>
