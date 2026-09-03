@@ -4,6 +4,8 @@
  * 상태·판정은 core/earthCouncil.ts, 저장은 host.save()가 맡는다.
  */
 import { assetUrl, hasAsset } from '../core/assets';
+import { reducedMotion } from '../ui/fx';
+import { escapeHtml } from '../ui/escape';
 import { audio } from '../core/AudioManager';
 import { saveRepo } from '../core/SaveRepository';
 import {
@@ -53,14 +55,14 @@ export function signalImageId(content: EarthContent, s: EnvironmentalSignal): st
   return CONTINENT_BG[friend?.continent ?? ''] ?? 'bg.map';
 }
 
-const esc = (s: string): string => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] ?? c));
+const esc = escapeHtml;
 
 /** 음성 대신 화면에서 한 글자씩 보여 주는 짧은 안내. */
 function typeText(target: HTMLElement, text: string, speed = 24): void {
   const runId = `${Date.now()}-${Math.random()}`;
   target.dataset.typeRun = runId;
   target.setAttribute('aria-label', text);
-  const reduced = saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = reducedMotion();
   if (reduced || !text) { target.textContent = text; return; }
   target.textContent = '';
   let index = 0;
@@ -1061,7 +1063,7 @@ function highlight(line: string): string {
 /* ===== 완료 연출 — 조각 모으기 → 연결선 → 핵심 문장 → (호출자) 기존 여권 도장 ===== */
 function playFinale(host: EarthSceneHost, onDone: () => void): void {
   const { content, progress: p, body } = host;
-  const reduced = saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = reducedMotion();
   const issue = content.issues.find((i) => i.id === p.selectedIssueId);
   const lines = buildPledge(content, p);
   const completedGlobalCouncil = p.inspectedIssueIds.length >= content.issues.length && Boolean(p.personalActionDraft.trim());

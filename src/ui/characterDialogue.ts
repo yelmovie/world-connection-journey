@@ -1,4 +1,5 @@
 import { assetUrl, hasAsset } from '../core/assets';
+import { reducedMotion } from './fx';
 import { audio } from '../core/AudioManager';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
@@ -49,10 +50,7 @@ function fillPlayerName(text: string): string {
   return text.replaceAll('{player}', player || '나');
 }
 
-function reducedMotion(): boolean {
-  return saveRepo.get().settings.reducedMotion
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+
 
 /** 긴 설명을 대화 한 차례씩 읽기 좋은 문장 단위로 나눈다. */
 export function splitDialogueSentences(text: string): string[] {

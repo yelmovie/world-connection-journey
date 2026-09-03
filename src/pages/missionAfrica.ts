@@ -1,4 +1,5 @@
 import type { Page } from '../router';
+import { createTimerPool } from '../ui/timerPool';
 import type { AfricaMissionProgress } from '../types';
 import { assetUrl, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
@@ -159,12 +160,10 @@ function button(label: string, className = 'btn btn-primary'): HTMLButtonElement
 
 export function createPage(): Page {
   let disposed = false;
-  const timers = new Set<number>();
   let stopInstrument: (() => void) | null = null;
   let stopMapFit: (() => void) | null = null;
   let stopMapZoom: (() => void) | null = null;
-  const later = (fn: () => void, ms: number): number => { const id = window.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, ms); timers.add(id); return id; };
-  const clearTimers = (): void => { timers.forEach((id) => window.clearTimeout(id)); timers.clear(); };
+  const { later, clear: clearTimers } = createTimerPool(() => disposed);
 
   return {
     async mount(root: HTMLElement) {

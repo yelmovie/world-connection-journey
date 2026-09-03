@@ -1,4 +1,5 @@
 import type { Page } from '../router';
+import { enableSwipeNav } from '../ui/swipe';
 import { navigate } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
@@ -924,20 +925,11 @@ export function createPage(): Page {
       page.querySelectorAll<HTMLButtonElement>('[data-select-next]').forEach((button) => button.addEventListener('click', () => selectRelative(button.dataset.selectNext === 'plane' ? 'plane' : 'avatar', 1)));
 
       page.querySelectorAll<HTMLElement>('[data-swipe-kind]').forEach((surface) => {
-        let startX: number | null = null;
-        surface.addEventListener('pointerdown', (event) => {
-          if (event.pointerType === 'mouse' || (event.target as HTMLElement).closest('button')) return;
-          startX = event.clientX;
-          if (event.pointerType !== 'touch') { try { surface.setPointerCapture(event.pointerId); } catch { /* 이미 사라진 포인터 무시 */ } } // 터치는 암시적 캡처라 불필요 — 명시 캡처는 크롬이 다음 탭 click을 삼킨다
+        enableSwipeNav(surface, {
+          threshold: 48,
+          ignore: (event) => event.pointerType === 'mouse' || Boolean((event.target as HTMLElement).closest('button')),
+          onSwipe: (dir) => selectRelative(surface.dataset.swipeKind === 'plane' ? 'plane' : 'avatar', dir)
         });
-        surface.addEventListener('pointerup', (event) => {
-          if (startX === null) return;
-          const delta = event.clientX - startX;
-          startX = null;
-          if (Math.abs(delta) < 48) return;
-          selectRelative(surface.dataset.swipeKind === 'plane' ? 'plane' : 'avatar', delta > 0 ? -1 : 1);
-        });
-        surface.addEventListener('pointercancel', () => { startX = null; });
       });
 
       input?.addEventListener('compositionstart', () => { composingNickname = true; });

@@ -1,4 +1,5 @@
 import type { Page } from '../router';
+import { reducedMotion } from '../ui/fx';
 import { navigate } from '../router';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
@@ -660,7 +661,4 @@ export function createPage(): Page {
   };
 }
 
-function isReducedMotion(): boolean {
-  return saveRepo.get().settings.reducedMotion
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+const isReducedMotion = reducedMotion;

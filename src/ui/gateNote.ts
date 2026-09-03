@@ -1,3 +1,4 @@
+import { escapeHtml } from './escape';
 /**
  * 다음 화면으로 넘어가는 조건을 버튼 옆에 항상 보여 준다.
  * 비활성 버튼은 눌러도 아무 일이 없어 아이가 이유를 알 수 없다 —
@@ -9,8 +10,7 @@ export interface GateRequirement {
   need: number;
 }
 
-const esc = (value: string): string =>
-  value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] ?? char));
+const esc = escapeHtml;
 
 export function createGateNote(): HTMLElement {
   const note = document.createElement('p');

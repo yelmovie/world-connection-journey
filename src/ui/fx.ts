@@ -2,7 +2,7 @@ import { saveRepo } from '../core/SaveRepository';
 
 /** 연출(주스) 유틸 — 성공/배치/보상 순간에 화면이 반응하게 한다. 모션 감소 설정 시 자동 생략. */
 
-function reducedMotion(): boolean {
+export function reducedMotion(): boolean {
   return saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 

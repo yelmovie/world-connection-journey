@@ -1,4 +1,5 @@
 import type { Page } from '../router';
+import { createTimerPool } from '../ui/timerPool';
 import { assetUrl, hasAsset, preloadImages } from '../core/assets';
 import { audio } from '../core/AudioManager';
 import { loadContent } from '../core/ContentRepository';
@@ -552,12 +553,7 @@ export function createPage(): Page {
   let dnd: PickPlaceController | null = null;
   const mapFits = new Set<() => void>();
   const clearMapFits = (): void => { mapFits.forEach((stop) => stop()); mapFits.clear(); };
-  const timers = new Set<number>();
-  const later = (fn: () => void, ms: number): number => {
-    const id = window.setTimeout(() => { timers.delete(id); if (!disposed) fn(); }, ms);
-    timers.add(id);
-    return id;
-  };
+  const { later, clear: clearTimers } = createTimerPool(() => disposed);
 
   return {
     async mount(root: HTMLElement) {
@@ -1382,8 +1378,7 @@ export function createPage(): Page {
     unmount() {
       disposed = true;
       clearMapFits();
-      timers.forEach((id) => window.clearTimeout(id));
-      timers.clear();
+      clearTimers();
       dnd?.dispose();
       dnd = null;
       guide?.dispose?.();

@@ -1,4 +1,6 @@
 import { assetUrl, hasAsset } from '../core/assets';
+import { reducedMotion } from './fx';
+import { escapeHtml } from './escape';
 import { saveRepo } from '../core/SaveRepository';
 import { STAMP_ASSETS, STAMP_LABELS, STAMP_SLOTS } from '../core/stamps';
 import type { MissionId } from '../types';
@@ -45,10 +47,7 @@ export function cancelJourneyTransition(): void {
   activeCancel = null;
 }
 
-function reducedMotion(): boolean {
-  return saveRepo.get().settings.reducedMotion
-    || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+
 
 /** 비행·도장처럼 페이지 사이에 필요한 짧은 연출. 모든 timer와 DOM을 handle이 소유한다. */
 export function playJourneyTransition(opts: {
@@ -132,8 +131,4 @@ export function playJourneyTransition(opts: {
   return { finished, cancel: finish };
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[char] ?? char);
-}
+

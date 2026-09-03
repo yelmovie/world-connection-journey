@@ -1,4 +1,5 @@
 import { audio } from '../core/AudioManager';
+import { escapeHtml } from './escape';
 import { assetUrl, hasAsset } from '../core/assets';
 import { matchesTeacherPassword, saveRepo } from '../core/SaveRepository';
 import { isStampId } from '../core/stamps';
@@ -58,9 +59,8 @@ async function fillSourceList(host: HTMLElement | null): Promise<void> {
   host.innerHTML = blocks.join('') || '<p class="settings-copy">표시할 출처가 없어요.</p>';
 }
 
-const escapeText = (value: string): string =>
-  value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] ?? char));
-const escapeAttr = escapeText;
+const escapeText = escapeHtml;
+const escapeAttr = escapeHtml;
 
 /** 설정 모달 — 모든 페이지 공용 */
 export function openSettings(): void {
@@ -392,11 +392,7 @@ export function describeSavedRoute(route: string): string {
   return routeLabels[route] ?? '세계 지도부터 이어하기';
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  })[char] ?? char);
-}
+
 
 /** 진행 점 갱신 */
 export function updateSteps(bar: HTMLElement, total: number, done: number, now: number): void {

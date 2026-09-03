@@ -1,4 +1,5 @@
 import { assetUrl, hasAsset } from '../core/assets';
+import { reducedMotion } from './fx';
 import { saveRepo } from '../core/SaveRepository';
 
 /**
@@ -46,9 +47,7 @@ export interface GuideSayOptions {
 const TYPE_MS = 28;
 const GUIDE_TEXT_WARN_LENGTH = 54;
 
-function reducedMotion(): boolean {
-  return saveRepo.get().settings.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+
 
 export function createGuide(opts: { assetId?: string; side?: 'left' | 'right'; speakerName?: string } = {}): GuideController {
   const assetId = opts.assetId ?? 'plane.main';

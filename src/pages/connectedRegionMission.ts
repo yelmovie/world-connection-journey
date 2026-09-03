@@ -1,4 +1,6 @@
 import type { Page } from '../router';
+import { enableSwipeNav } from '../ui/swipe';
+import { escapeHtml } from '../ui/escape';
 import type { MissionId } from '../types';
 import { assetUrl, hasAsset } from '../core/assets';
 import { audio } from '../core/AudioManager';
@@ -324,9 +326,7 @@ const PAGE_CSS = `
 @media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{font-size:14px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:16px}}
 `;
 
-function esc(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
-}
+const esc = escapeHtml;
 
 function uniqueValid(value: unknown, valid: ReadonlySet<string>, max = 60): string[] {
   if (!Array.isArray(value)) return [];
@@ -655,21 +655,10 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
         // 사진을 옆으로 밀어도 화살표와 같게 넘어간다 — 화살표 위에서 시작한 건 그 버튼 몫.
         const sceneVisual = modalBody.querySelector<HTMLElement>('[data-scene-visual]');
         if (sceneVisual && sceneNavigation && previousScene && nextScene) {
-          let swipeFrom: { id: number; x: number; y: number } | null = null;
-          sceneVisual.addEventListener('pointerdown', (ev) => {
-            if ((ev.target as HTMLElement).closest('button')) return;
-            swipeFrom = { id: ev.pointerId, x: ev.clientX, y: ev.clientY };
-            if (ev.pointerType !== 'touch') { try { sceneVisual.setPointerCapture(ev.pointerId); } catch { /* 이미 사라진 포인터 */ } }
+          enableSwipeNav(sceneVisual, {
+            ignore: (ev) => Boolean((ev.target as HTMLElement).closest('button')),
+            onSwipe: (dir) => openScene(dir === 1 ? nextScene : previousScene)
           });
-          const endSwipe = (ev: PointerEvent): void => {
-            if (!swipeFrom || swipeFrom.id !== ev.pointerId) return;
-            const dx = ev.clientX - swipeFrom.x;
-            const dy = ev.clientY - swipeFrom.y;
-            swipeFrom = null;
-            if (Math.abs(dx) >= 36 && Math.abs(dx) > Math.abs(dy)) openScene(dx < 0 ? nextScene : previousScene);
-          };
-          sceneVisual.addEventListener('pointerup', endSwipe);
-          sceneVisual.addEventListener('pointercancel', () => { swipeFrom = null; });
         }
         closeModal?.();
         closeModal = openModal({ id: `${model.id}-scene`, title: `${example ? `${example.country} · ` : ''}${scene.title}`, bodyEl: modalBody, actions: [] });
