@@ -55,12 +55,15 @@ export function playJourneyTransition(opts: {
   label: string;
   assetId?: string;
   companionAssetId?: string;
+  /** 도장 연출의 확인 버튼 문구 — 기본 '확인' */
+  confirmLabel?: string;
 }): JourneyTransitionHandle {
   cancelJourneyTransition();
 
   const reduced = reducedMotion();
-  // 도장 연출은 아이들이 '쾅' 찍히는 순간과 찍힌 여권을 충분히 볼 수 있게 길게 유지한다.
-  const duration = reduced ? 120 : opts.kind === 'flight' ? 650 : 4500;
+  // 비행 연출은 짧게 자동 진행. 도장(여권) 연출은 자동으로 넘기지 않고 사용자가 확인 버튼을 눌러 넘어간다.
+  const hold = opts.kind === 'stamp';
+  const duration = reduced ? 120 : hold ? 360 : 650;
   const assetId = opts.assetId
     ?? (opts.kind === 'flight' ? selectedAirplanePortraitAssetId(saveRepo.get().profile?.airplaneId) : 'prop.stamp');
   const companionAssetId = opts.companionAssetId !== assetId
@@ -90,7 +93,7 @@ export function playJourneyTransition(opts: {
     ? '여행을 시작해 여섯 도장을 완성해 줘!'
     : opts.label;
   const overlay = document.createElement('div');
-  overlay.className = `journey-transition journey-transition--${opts.kind}`;
+  overlay.className = `journey-transition journey-transition--${opts.kind}${hold ? ' journey-transition--hold' : ''}`;
   overlay.style.setProperty('--journey-duration', `${duration}ms`);
   overlay.setAttribute('role', 'status');
   overlay.setAttribute('aria-live', 'polite');
@@ -105,15 +108,28 @@ export function playJourneyTransition(opts: {
           ${hasAsset(passportAssetId) ? `<img class="journey-transition__passport" src="${assetUrl(passportAssetId)}" data-asset-id="${passportAssetId}" alt="">` : ''}
           <div class="journey-transition__stamp-grid">${stampSlots}</div>
         </div>`}
-    <p class="journey-transition__label">${escapeHtml(transitionLabel)}</p>`;
+    ${hold
+      ? `<div class="journey-transition__footer">
+          <p class="journey-transition__label">${escapeHtml(transitionLabel)}</p>
+          <button type="button" class="btn btn-primary btn-big journey-transition__confirm" data-act="confirm">${escapeHtml(opts.confirmLabel ?? '확인')}</button>
+        </div>`
+      : `<p class="journey-transition__label">${escapeHtml(transitionLabel)}</p>`}`;
   (document.getElementById('overlay-root') ?? document.body).appendChild(overlay);
 
   let settled = false;
   let resolveFinished: () => void = () => undefined;
   const finished = new Promise<void>((resolve) => { resolveFinished = resolve; });
-  let timer: number | null = window.setTimeout(() => finish(), duration);
-  // 기다리기 싫으면 화면을 탭해서 바로 넘어갈 수 있다 (도장 연출만)
-  if (opts.kind === 'stamp') overlay.addEventListener('pointerdown', () => finish(), { once: true });
+  // 여권 연출은 타이머 없음 — 확인 버튼으로만 닫힌다(라우터 취소는 finish 직접 호출)
+  let timer: number | null = hold ? null : window.setTimeout(() => finish(), duration);
+  if (hold) {
+    const confirm = overlay.querySelector<HTMLButtonElement>('[data-act="confirm"]');
+    confirm?.addEventListener('click', () => {
+      if (settled || overlay.classList.contains('is-leaving')) return;
+      overlay.classList.add('is-leaving');
+      timer = window.setTimeout(() => finish(), reduced ? 0 : 220);
+    });
+    window.setTimeout(() => confirm?.focus({ preventScroll: true }), 50);
+  }
 
   const finish = () => {
     if (settled) return;

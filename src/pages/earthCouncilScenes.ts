@@ -310,7 +310,11 @@ export const EARTH_CSS = `
   .ec-photo-side .ec-portrait { display:none; }
   .ec-sub { min-height:0; }
   .ec-note { font-size:16px; }
-  .ec-rings { gap:4px; } .ec-ring { padding:4px 6px; } .ec-act { min-height:60px;font-size:max(16px,var(--fs-small)); }
+  /* 해결안 12장이 세 줄로 다 보이게 — 18px·아이콘 30px이면 셋째 줄이 본문 아래로 17px 잘렸다 */
+  .ec-rings { gap:4px; } .ec-ring { padding:4px 6px;gap:5px; } .ec-ring-name { font-size:16px; }
+  .ec-act { min-height:60px;font-size:16px;line-height:1.1;gap:2px;padding:5px 4px; }
+  .ec-act .ec-act-ico svg { width:22px;height:22px; }
+  .ec-pledge { gap:6px; } .ec-line { padding:7px 12px; } /* 여섯 줄+입력칸이 5px 넘쳐 안쪽 스크롤이 생기던 것 */
 }
 @media (max-height:760px) {
   .ec-head .ribbon-sub { display:none; }
@@ -333,6 +337,64 @@ export const EARTH_CSS = `
   .ec-issues { overflow:visible;grid-auto-rows:auto; }
   .ec-issue,.ec-issues > .ec-issue:only-child { height:auto;min-height:160px; }
   .ec-choices { grid-template-columns:1fr; }
+}
+/* 모바일 가로(915×412) — 공용 CSS가 캐릭터 가이드를 숨기는 높이. 빈 레인·하단바 캐릭터 자리를 본문에 돌려주고 장면마다 접는다. */
+@media (max-height:460px) {
+  .dialogue-scene:has(.ec) { --guide-lane-h:0px; --bottom-bar-h:48px; }
+  .dialogue-scene:has(.ec) .page-body { padding:6px clamp(10px,2vw,20px) 4px; }
+  .ec { gap:4px; } /* 리본 34px 축소는 DIALOGUE_CSS의 같은 미디어 블록이 맡는다 */
+  .ec-progress { font-size:16px; }
+  /* 장면 1: 리본과 친구 띠를 한 줄에 — 사진이 120px 아래로 눌리지 않게 */
+  .ec:has(> .ec-friends) { display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:10px;align-items:center; }
+  .ec:has(> .ec-friends) .ec-head { grid-column:1;grid-row:1; }
+  .ec:has(> .ec-friends) .ec-friends { grid-column:2;grid-row:1;justify-content:flex-end;flex-wrap:nowrap;gap:6px; }
+  .ec:has(> .ec-friends) .ec-photo-row { grid-column:1/-1;grid-row:2; }
+  .ec-friend img { width:30px;height:30px; }
+  .ec-friend { padding:2px 6px;font-size:14px;min-width:48px; }
+  .ec-friend .ec-mark { width:20px;height:20px;top:-5px;right:-5px; }
+  .ec-photo,.ec-map { min-height:120px; }
+  .ec-photo-row,.ec-connect { gap:6px; }
+  .ec-photo-side { min-height:0;padding:5px 12px; }
+  .ec-click-copy { font-size:16px;line-height:1.3; }
+  .ec-map-copy { min-height:0;padding:6px 12px; }
+  /* 장면 3 */
+  .ec-orbit .ec-globe { width:min(22vh,160px); }
+  .ec-issue-title { font-size:clamp(15px,1.2vw,20px);bottom:8px; }
+  /* 장면 4 원탁: 위·아래 줄 친구가 무대 밖으로 나가지 않게 */
+  .ec-head-compact strong { font-size:19px; } .ec-head-compact span { font-size:14px; }
+  .ec-council-friend img { height:clamp(56px,15vh,110px);max-width:clamp(70px,10vw,140px); }
+  .ec-council-friend span { font-size:13px;padding:2px 8px; }
+  .ec-council-bubble { padding:8px 12px; }
+  .ec-council-bubble h2 { font-size:18px;margin:3px 0 4px; }
+  .ec-council-bubble p { font-size:15px; }
+  /* 말풍선이 위·아래 줄 친구 이름표를 덮거나 무대 밖으로 나가지 않게 — 좁히고, 말하는 친구 줄 반대쪽으로 민다 */
+  .ec-council-core { width:min(400px,36%); }
+  .ec-council-core.is-player { width:min(460px,46%); }
+  .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="top"]) .ec-council-core { transform:translate(-50%,-12%); }
+  .ec-council-stage:has(.ec-council-friend.is-speaking[data-row="bottom"]) .ec-council-core { transform:translate(-50%,-88%); }
+  .ec-player-bubble label { font-size:17px;margin-bottom:4px; }
+  .ec-player-bubble .ec-input { min-height:56px; }
+  .ec-player-hint { font-size:13px!important; }
+  .ec-seat img { width:clamp(48px,11vh,80px);height:clamp(48px,11vh,80px); }
+  /* 장면 5 해결안: 아이콘을 접고 글만 — 12장 세 줄이 한 화면에 */
+  .ec-actions { grid-template-columns:minmax(0,1.7fr) minmax(240px,1fr);gap:8px; }
+  .ec-rings { gap:4px; }
+  .ec-ring { grid-template-columns:minmax(84px,.6fr) repeat(4,minmax(0,1fr));gap:4px;padding:3px 5px; }
+  .ec-ring-name { font-size:14px;padding-left:3px; }
+  .ec-act { min-height:44px;padding:4px;font-size:14px;line-height:1.15;gap:0; }
+  .ec-act .ec-act-ico { display:none; }
+  .ec-side { gap:6px; }
+  .ec-side .ec-copy { font-size:15px;line-height:1.35; }
+  .ec-side > .ec-copy:first-child, .ec-side .ec-scope { display:none; } /* 관점 요약·학습용 모형 안내는 이 높이에서 접는다 */
+  .ec-side .ec-click-copy { min-height:0; }
+  .ec-gauges { gap:4px; }
+  .ec-gauge { font-size:14px;gap:4px; }
+  .ec-gauge .ec-bar { width:20px;height:12px; }
+  /* 장면 6 약속: 두 열로 — 한 열이면 여섯 줄+입력칸이 248px에 안 들어간다 */
+  .ec-pledge { width:100%;margin:0;grid-template-columns:1fr 1fr;gap:6px;align-content:start; }
+  .ec-pledge > .ec-line:first-child, .ec-pledge > div.ec-line { grid-column:1/-1; }
+  .ec-line { padding:5px 10px;font-size:15px;line-height:1.35;border-left-width:5px; }
+  .ec-pledge .ec-input { min-height:40px;padding:5px 8px;font-size:15px; }
 }
 `;
 

@@ -321,9 +321,118 @@ const PAGE_CSS = `
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
 .modal:has(.regional-modal){width:min(1320px,96vw);border-radius:28px;overflow:hidden}
 @media(min-width:941px){.regional-side{overflow:hidden;padding:13px 14px;gap:7px}.regional-side p{font-size:max(16px,var(--fs-small));line-height:1.35}.regional-photo-grid{flex:1 1 auto;min-height:0;gap:9px;grid-auto-rows:minmax(clamp(132px,18vh,210px),1fr)}.regional-photo img{height:100%;min-height:clamp(90px,13vh,154px);aspect-ratio:auto}}
-@media(max-width:940px){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px)}.regional-map{height:auto;min-height:clamp(190px,44vh,520px)}}
-@media(max-height:460px){.regional-map{min-height:clamp(150px,52vh,300px)}.regional-pin{min-height:38px;padding:3px 8px;font-size:13px}.regional-pin small{display:none}.regional-photo-grid{grid-template-columns:repeat(2,1fr);grid-auto-rows:auto}.regional-photo{height:auto}.regional-photo img{height:auto;aspect-ratio:4/3}.regional-connections{grid-column:1}.regional-modal{grid-template-columns:1fr}.regional-modal-visual{aspect-ratio:16/9;max-height:46vh}}
+/* 세로 파지(좁은 세로창)에서만 지도·패널을 위아래로 쌓는다 — 가로 폰은 아래 (orientation:landscape) 규칙 */
+@media(max-width:940px) and (orientation:portrait){.regional-shell,.regional-connection-layout{grid-template-columns:1fr}.regional-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px)}.regional-map{height:auto;min-height:clamp(190px,44vh,520px)}}
 @media(max-width:620px){.regional-shell{min-height:0}.regional-map{min-height:470px}.regional-pin{font-size:14px}.regional-signal-grid,.regional-choice-grid,.regional-action-grid{grid-template-columns:1fr}.regional-photo strong{font-size:16px}}
+/* 태블릿 가로(≤1300): 설명 줄만 살짝 촘촘히 + 좌우 여백 2px — 유럽 독일×영국이 1px 겹치던 것 */
+@media(max-width:1300px){
+  .regional-pin{padding:5px 10px 5px 8px}
+  .regional-country-shortcut{padding:5px 9px}
+  .regional-pin small,.regional-country-shortcut small{font-size:10.5px;letter-spacing:-.02em}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-back{padding:clamp(4px,8cqh,10px) 12px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-line{font-size:clamp(12px,19cqh,16px);line-height:1.25}
+}
+/* 좁은 지도(≤1100): 이름만 남긴 작은 표식 — 좌표는 그대로 */
+@media(max-width:1100px){
+  .regional-pin,.regional-country-shortcut{min-height:36px;padding:3px 8px 3px 6px;border-radius:11px;font-size:13px;column-gap:5px}
+  .regional-country-shortcut{display:grid;align-items:center}
+  .regional-pin::before{width:8px;height:8px}
+  .regional-pin small,.regional-country-shortcut small{display:none}
+  .regional-pin.is-visited::after{width:18px;height:18px;right:-6px;top:-7px;font-size:11px}
+}
+/* 가로 폰/작은 창: 지도와 패널을 나란히 유지(세로로 쌓으면 패널이 눌린다) */
+@media(max-width:940px) and (orientation:landscape){
+  .regional-shell{grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 28px);min-height:0}
+  .regional-map{height:100%;min-height:0}
+}
+@media(max-height:460px){
+  .regional-mission .regional-body{padding:8px 12px}
+  .regional-shell{height:calc(100dvh - var(--top-bar-h) - var(--bottom-bar-h) - 16px);gap:10px}
+  .regional-map{min-height:0;border-radius:20px}
+  .regional-map-note{display:none}
+  /* +/- 줌 버튼: 왼쪽 아래는 스페인 핀(18%,82%)과 겹친다 → 오른쪽 아래 세로로, 작게 */
+  .regional-map .map-zoom-controls{left:auto;right:6px;bottom:6px;flex-direction:column;gap:6px}
+  .regional-map .map-zoom-controls .btn{width:38px;height:38px;min-height:38px;font-size:20px}
+  /* 핀: 터치 상자 36px, 보이는 상자 30px(위아래 투명 테두리) — 핀 사이 세로 간격이 31px뿐인 좌표도 겹치지 않게 */
+  .regional-pin,.regional-country-shortcut{min-height:36px;padding:0 7px 0 6px;border:3px solid transparent;border-left-width:1.5px;border-right-width:1.5px;background-clip:padding-box;backdrop-filter:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.72),0 4px 10px rgba(5,30,50,.25);font-size:12px;line-height:1}
+  .regional-pin{background-color:rgba(9,32,56,.58)}
+  .regional-country-shortcut{background-color:rgba(255,248,217,.8);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.9),0 4px 10px rgba(5,30,50,.22)}
+  .regional-pin.is-active{background-color:rgba(255,203,67,.5);box-shadow:inset 0 0 0 1.5px #ffd54a,0 4px 10px rgba(5,30,50,.25);outline-offset:-3px}
+  .regional-country-shortcut.is-active{background-color:rgba(255,236,170,.92);outline-offset:-3px}
+  /* 사이드: 글머리를 줄이고 사진 격자는 자기 높이 + 필요하면 그 열이 스크롤 */
+  .regional-side{padding:8px 11px;gap:5px;border-radius:20px}
+  .regional-side>.chip{min-height:26px;padding:2px 9px;font-size:12px}
+  .regional-side h2{font-size:17px;line-height:1.15}
+  .regional-side p{font-size:12.5px;line-height:1.3}
+  .regional-side>h3{font-size:13.5px}
+  .regional-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:max-content;gap:6px;align-content:start}
+  .regional-photo{height:auto;grid-template-rows:auto auto;border-radius:12px}
+  .regional-photo img{height:clamp(60px,15vh,90px);min-height:0;aspect-ratio:auto}
+  .regional-photo strong{padding:4px 6px;font-size:12.5px;line-height:1.15}
+  .regional-photo.is-viewed::after{width:20px;height:20px;font-size:12px;right:5px;top:5px}
+  .regional-area-picks{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:5px}
+  .regional-area-pick{min-height:38px;padding:4px 9px;border-radius:11px;font-size:13.5px}
+  .regional-area-pick span{margin-top:0;font-size:11.5px;line-height:1.15}
+  .regional-info{min-height:36px;padding:3px 11px;font-size:12.5px}
+  /* 연결: 한 열로 쌓고 패널이 스크롤 — 카드는 최소 44px 터치 높이 */
+  .regional-connections{overflow:auto;overscroll-behavior:contain;padding:0 10px 10px;border-radius:20px}
+  .regional-progress-strip{margin:0 -10px 8px;padding:5px 10px;gap:6px}
+  .regional-progress-strip.is-gauge-only{padding-block:6px}
+  .regional-progress-strip.is-gauge-only .regional-gauge strong{font-size:14px}
+  .regional-progress-strip.is-gauge-only .regional-gauge .bar{height:16px}
+  .regional-progress-strip.is-gauge-only .regional-gauge b{font-size:14px}
+  .regional-connection-layout{grid-template-columns:1fr;flex:none;min-height:auto;gap:8px}
+  .regional-section{flex:none;overflow:visible;padding:8px 9px;gap:5px;border-radius:14px}
+  .regional-section>.chip{min-height:26px;padding:2px 9px;font-size:12px}
+  .regional-section>h2{font-size:16px}
+  .regional-section>p{font-size:12.5px}
+  .regional-signal-grid,.regional-oceania .regional-signal-grid{flex:none;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));grid-auto-rows:minmax(44px,auto);gap:6px}
+  .regional-signal,.regional-asia .regional-signal,.regional-oceania .regional-signal{min-height:44px;padding:5px 10px;border-radius:11px}
+  .regional-signal strong,.regional-asia .regional-signal strong,.regional-oceania .regional-signal strong{font-size:13.5px}
+  .regional-signal[aria-pressed="true"]{padding-left:36px}
+  .regional-signal[aria-pressed="true"]::before{left:8px;width:22px;height:22px;font-size:13px}
+  .regional-choice-grid{flex:none;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:64px;gap:6px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-face{padding:5px 10px;border-radius:10px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-front{grid-template-columns:44px minmax(0,1fr);gap:8px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-back{padding:4px 8px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-line{font-size:12.5px;line-height:1.2}
+  .regional-voice-dots{width:22px;height:22px;font-size:13px;right:6px;top:4px}
+  .regional-discovery{padding:6px 9px;font-size:12.5px;border-left-width:4px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-action-notebook{flex:none;overflow:visible;padding:8px 8px 8px 20px;gap:6px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-action-notebook::before{left:12px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-note-list,.regional-asia .regional-note-group:first-child .regional-note-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 6px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-note-item{min-height:44px;font-size:12.5px;padding:3px 4px}
+  /* 장면·신호 팝업: 가로 폰에서는 그림 왼쪽·글 오른쪽 */
+  .regional-modal{grid-template-columns:minmax(0,1.15fr) minmax(230px,.85fr);gap:12px}
+  .regional-modal-visual{aspect-ratio:16/9;max-height:calc(100dvh - 140px);border-radius:14px}
+  .regional-modal-copy{gap:7px;max-height:calc(100dvh - 140px);font-size:14px;line-height:1.35}
+  .regional-modal-copy.is-culture{max-height:calc(100dvh - 140px)}
+  .regional-modal-copy>.chip{min-height:28px;padding:3px 10px;font-size:13px}
+  .regional-modal-copy h3{font-size:17px;line-height:1.2}
+  .regional-spot-detail{padding:9px 11px;gap:6px;border-width:2px;border-radius:12px}
+  .regional-spot-detail p{font-size:14.5px;line-height:1.4}
+  .regional-spot-discovery{margin-top:4px;padding:7px 9px;font-size:13.5px}
+  .regional-discovery{padding:7px 10px;font-size:13.5px}
+  .regional-scene-nav{width:44px;height:52px;font-size:30px}
+  .regional-scene-position{padding:3px 10px;font-size:14px;bottom:8px}
+  .regional-wipe-tag{padding:3px 10px;font-size:13px;top:8px}
+  .regional-wipe{height:36px;bottom:4px}
+}
+/* 낮은 창(≤620px 높이, 폰 제외): 연결 화면 글머리를 줄여 목소리 카드에 높이를 주고, 뒷면 인용문은 카드 높이에 맞춘다 */
+@media(max-height:620px) and (min-height:461px){
+  .regional-photo-grid{grid-auto-rows:minmax(clamp(104px,18vh,210px),1fr)}
+  .regional-photo img{min-height:clamp(70px,11vh,154px)}
+  .regional-section{padding:9px;gap:5px}
+  .regional-section>.chip{min-height:28px;padding:3px 9px;font-size:13px}
+  .regional-section>h2{font-size:17px}
+  .regional-section>p{font-size:13px;line-height:1.25}
+  .regional-discovery{padding:6px 9px;font-size:12.5px;line-height:1.3;border-left-width:4px}
+  .regional-signal strong,.regional-asia .regional-signal strong{font-size:15px}
+  .regional-choice-grid{grid-auto-rows:minmax(48px,1fr)}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-back{padding:3px 8px}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-choice-line{font-size:clamp(12px,22cqh,15px);line-height:1.18}
+  :is(.regional-oceania,.regional-asia,.regional-europe) .regional-note-item{min-height:44px;font-size:13px}
+}
 `;
 
 const esc = escapeHtml;

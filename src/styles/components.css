@@ -379,8 +379,9 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
 }
 
 /* 200% 확대처럼 세로가 아주 짧은 화면에서도 조작 버튼이 제목과 겹치지 않게 한다.
-   제목은 화면에서만 접고, 접근성 트리에는 남겨 현재 위치를 계속 알린다. */
-@media (max-height: 420px) {
+   제목은 화면에서만 접고, 접근성 트리에는 남겨 현재 위치를 계속 알린다.
+   폰 가로(412px 높이)는 상단바가 601px 높이와 같은 56px 이라 한 줄 리본이 그대로 들어가므로 접지 않는다. */
+@media (max-height: 400px) {
   #scene-root .page .top-bar-title {
     position: absolute !important;
     width: 1px !important;
@@ -391,6 +392,16 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
     clip-path: inset(50%) !important;
     white-space: nowrap !important;
   }
+}
+/* 같은 접기 — chrome.ts 의 fitTopBarTitle 이 하한 글자(18px)로도 한 줄에 못 넣는 아주 좁은 창에서 붙인다. */
+#scene-root .page .top-bar-title.is-clipped {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
 }
 
 @media (max-width: 600px) {
@@ -525,6 +536,16 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
 @media (max-width: 1100px) {
   .guide-wrap { max-width:min(680px,84vw); }
   .guide-mascot-button { width:var(--guide-size); }
+}
+/* 세로가 짧은 화면(태블릿 가로·폴드 가로): 말풍선을 납작하게 — 이름을 문장 앞 같은 줄에 두고
+   안쪽 여백·줄 간격을 줄여 두 줄 안내까지 가이드 레인 안에 들어가게 한다.
+   본문 카드·버튼을 덮는 높이를 줄이는 목적이며 글자 크기(18px 하한)·색·재질은 그대로다. */
+@media (max-height: 620px) {
+  .page > .guide-wrap .guide-bubble { padding-block: 0; line-height: 1.35; }
+  .guide-bubble-copy {
+    grid-template-columns: max-content minmax(0, 1fr); align-items: baseline;
+    gap: 0 var(--sp-2); padding: var(--sp-2) var(--sp-3);
+  }
 }
 
 /* ===== "여기를 눌러요" 탭 큐 ===== */
@@ -789,8 +810,18 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   color:#fff7d8;background:rgba(18,49,72,.8);border:2px solid rgba(255,224,126,.62);
   font-size:clamp(22px,2.8vw,38px);line-height:1.2;text-align:center;
 }
+/* 확인 버튼 방식(hold): 자동으로 사라지지 않고 서서히 나타난 뒤 버튼으로 닫힌다 */
+.journey-transition--hold { animation:journey-fade-in var(--journey-duration,360ms) ease both; }
+.journey-transition--hold.is-leaving { animation:journey-fade-out 220ms ease both; }
+.journey-transition__footer {
+  position:absolute;left:50%;bottom:3%;z-index:6;transform:translateX(-50%);width:min(96vw,1100px);
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 14px;
+}
+.journey-transition__footer .journey-transition__label { position:static;bottom:auto;flex:0 1 auto; }
+.journey-transition__confirm { flex:0 0 auto;min-height:56px;padding-inline:28px;box-shadow:0 8px 20px rgba(4,20,40,.4); }
+.journey-transition--hold .journey-transition__passport-stage { pointer-events:none; }
 .journey-transition__passport-stage {
-  position:relative;width:min(860px,72vw,calc((100dvh - 128px) * 1.5));max-width:calc(100vw - 24px);
+  position:relative;width:min(860px,72vw,calc((100dvh - 160px) * 1.5));max-width:calc(100vw - 24px);
   aspect-ratio:3/2;display:grid;place-items:center;animation:passport-open 360ms cubic-bezier(.2,.86,.35,1.15) both;
 }
 .journey-transition__passport-owner {
@@ -847,6 +878,8 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
 }
 @keyframes passport-open { from { transform:translateY(14px) scale(.9) rotate(-2deg);opacity:0; } to { transform:none;opacity:1; } }
 @keyframes journey-fade { 0% { opacity: 0; } 15%, 82% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes journey-fade-in { from { opacity:0; } to { opacity:1; } }
+@keyframes journey-fade-out { from { opacity:1; } to { opacity:0; } }
 @keyframes journey-flight { 0% { transform: translate(-55vw, 18vh) rotate(-7deg) scale(.72); } 70% { transform: translate(4vw, -3vh) rotate(2deg) scale(1.05); } 100% { transform: translate(58vw, -18vh) rotate(6deg) scale(.84); } }
 @keyframes journey-wingmate { 0%,100% { transform:translateY(-22%) rotate(3deg) scale(.88); } 55% { transform:translateY(-38%) rotate(-2deg) scale(1); } }
 
@@ -856,7 +889,11 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   .top-bar .btn-icon { width:48px;height:48px;padding:0; }
   .top-bar-nav,.top-bar-actions { gap:6px; }
   .top-bar .quest-ribbon { min-height: 48px; padding: 3px 16px; }
-  .top-bar .quest-ribbon .ribbon-main { font-size:30px; }
+  /* 긴 제목은 두 줄로 꺾여 상단바 아래 본문을 덮는 대신 한 줄을 유지하며 글자를 줄인다(폭 비례, 하한 20px).
+     min-width:0 으로 리본이 진행 점·소리·설정 버튼을 밀어내지 못하게 하고,
+     그래도 한 줄에 안 들어가는 제목은 chrome.ts 의 fitTopBarTitle 이 실제 폭을 재어 더 줄인다(하한 18px). */
+  .top-bar-title { min-width: 0; white-space: nowrap; }
+  .top-bar .quest-ribbon .ribbon-main { font-size: clamp(20px, 2.6vw, 30px); }
   .top-bar .journey-ticket { display:none; }
   .mission-brief { padding: 10px; gap: 7px; }
   .mission-brief__hero { aspect-ratio: 16 / 6; }
@@ -878,7 +915,8 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
 }
 
 @media (max-width: 760px) {
-  .journey-transition__passport-stage { width:min(calc(100vw - 20px),calc((100dvh - 116px) * 1.5)); }
+  .journey-transition__passport-stage { width:min(calc(100vw - 20px),calc((100dvh - 140px) * 1.5)); }
+  .journey-transition__confirm { min-height:48px;padding-inline:18px; }
   .journey-transition__passport-owner { top:-7%;padding:4px 12px;font-size:clamp(18px,5vw,25px); }
   .journey-transition--stamp .journey-transition__label { bottom:3%;font-size:clamp(19px,5vw,25px); }
   .journey-ticket__meta { display: none; }

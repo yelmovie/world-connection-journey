@@ -278,7 +278,8 @@ const MAP_CSS = `
   .map-brief__actions { margin-top:0; }
   .map-brief .btn-primary { width:100%;min-width:0; }
 }
-@media (max-width:600px), (max-height:460px) {
+/* 목록 모드는 폭이 좁을 때만(세로 폰·200% 확대). 짧은 가로 화면은 아래 전용 규칙이 지도를 그대로 둔다 */
+@media (max-width:600px) {
   .map-layout { display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;gap:6px;padding:6px 10px;overflow-y:auto; }
   .map-world { position:relative;inset:auto;width:100%;height:auto;min-height:300px;aspect-ratio:auto;background-position:center;background-size:cover;border:2px solid rgba(255,255,255,.72);border-radius:var(--radius-m); }
   .map-canvas,.map-route-layer,.map-world-deco,.map-home { display:none; }
@@ -294,6 +295,42 @@ const MAP_CSS = `
   .map-teacher-mode { grid-column:1/-1; }
   .map-brief__objective { font-size:18px; }
   .map-brief .btn-primary { min-width:168px; }
+}
+/* 폴드·태블릿 가로(높이 461~620, 폭 601~1100): 지도 아래 안내판을 한 줄 띠로 — 설명 왼쪽, 버튼은 오른쪽에 가로로 */
+@media (min-width:601px) and (max-width:1100px) and (min-height:461px) and (max-height:620px) {
+  .map-brief { grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;margin:0 8px 6px;padding:8px 12px; }
+  .map-brief__objective { font-size:18px;line-height:1.28; }
+  .map-brief__actions { display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px; }
+  .map-brief__actions .btn { width:auto;min-width:0;min-height:46px;padding:6px 14px;font-size:18px;white-space:nowrap; }
+  .map-brief__locked,.map-brief__replay { grid-column:1/-1;margin:0;padding:5px 9px;font-size:16px; }
+  .map-teacher-mode { padding:5px 10px;font-size:16px; }
+}
+/* 폰 가로(높이 ≤460, 폭 601 이상): 안내판을 오른쪽 세로 칸으로 세우고 지도가 나머지를 다 쓴다 */
+@media (min-width:601px) and (max-height:460px) {
+  .map-page .top-bar { padding-block:4px; }
+  .map-layout { display:grid;grid-template-columns:minmax(0,1fr) 232px;grid-template-rows:minmax(0,1fr);gap:0;padding:0;overflow:hidden; }
+  .map-world { position:relative;inset:auto;width:100%;height:100%;min-height:0; }
+  .map-brief {
+    position:relative;inset:auto;width:auto;height:auto;max-height:none;min-height:0;margin:6px 6px 6px 0;
+    display:grid;grid-template-columns:1fr;align-content:start;gap:6px;padding:8px;overflow-y:auto;overflow-x:hidden;
+  }
+  .map-brief__head { display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px; }
+  .map-brief__head .mission-brief__hero { width:44px;height:44px;border-width:3px; }
+  .map-brief__head h2 { font-size:20px;line-height:1.1; }
+  .map-brief__topic { margin-top:3px;padding:1px 8px;font-size:15px;line-height:1.25;white-space:normal; }
+  .map-brief__status,.map-brief .mission-brief__objective { display:none; }
+  .map-brief__actions { display:grid;gap:6px;margin-top:0; }
+  .map-brief .btn { width:100%;min-width:0;min-height:44px;padding:6px 10px;font-size:17px; }
+  .map-brief .btn-primary { min-height:46px; }
+  .map-brief__locked,.map-brief__replay,.map-teacher-mode { grid-column:auto;margin:0;padding:5px 8px;font-size:15px;line-height:1.3; }
+  /* 교사 해금 띠 + 배움 카드 재탐험 안내가 같이 뜨면 세 버튼이 밀려 내려간다 — 이 높이에선 재탐험 안내를 우선한다 */
+  .map-brief:has(.map-brief__replay) .map-teacher-mode { display:none; }
+  .map-hotspot { --node-size:64px; }
+  .map-hotspot .node-badge { width:28px;height:28px;font-size:16px; }
+  .map-node-check,.map-node-lock { width:32px;height:32px;font-size:19px; }
+  .map-node-lock svg { width:18px;height:18px; }
+  /* 출발점 이름표는 점 오른쪽에 — 아래에 두면 4번(아시아) 노드 배지와 겹친다 */
+  .map-home::after { top:-4px;left:14px;transform:none;font-size:14px; }
 }
 @media (prefers-reduced-motion:reduce) { .map-route-focus.is-lit { animation:none; } }
 :root[data-reduced-motion="true"] .map-route-focus.is-lit { animation:none; }

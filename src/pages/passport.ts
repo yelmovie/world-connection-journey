@@ -500,6 +500,64 @@ const PASSPORT_CSS = `
   .passport-choice-item .passport-avatar img { height:62px; }
   .passport-choice-name { font-size:15px; }
 }
+/* 폴드·태블릿 가로: 무대 그림의 height:100%가 auto로 풀려(칸 높이가 미정) max-height까지 커져 썸네일 줄을 덮던 문제 —
+   무대 칸을 기준 상자로 삼아 그림을 칸 안에 가둔다 */
+@media (max-width:1100px), (max-height:620px) {
+  /* 옛 규칙(auto auto 1fr)이 살아 있어 선택 영역이 빈 3행 위 auto 행에 놓여 남는 높이를 못 쓰던 것 — 2행으로 되돌려 무대가 남는 높이를 다 쓰게 */
+  .passport-section[data-passport-step="2"],.passport-section[data-passport-step="3"] { grid-template-rows:auto minmax(0,1fr); }
+  /* 무대(feature)의 height:100%도 같은 이유로 auto가 되므로 격자 stretch로 행 높이를 꽉 채운다 */
+  .passport-selector-stage { align-items:stretch; }
+  .passport-arrow { align-self:center; }
+  .passport-feature { height:auto;min-height:0; }
+  .passport-stage-art { position:relative;min-height:0; }
+  .passport-stage-art::before { width:auto;height:min(100%,340px);max-width:100%; }
+  .passport-plane-stage .passport-stage-art::before { width:min(500px,92%);height:auto;max-height:100%; }
+  .passport-avatar-stage-img,.passport-plane-stage-img { position:absolute;inset:0;width:100%;height:100%;max-height:none;margin:auto; }
+  /* 여권 미리보기: 책을 왼쪽에, 제목·도장을 오른쪽에 두어 낮은 창에서도 한눈에 */
+  .passport-preview {
+    top:8px;right:12px;width:min(820px,calc(100% - 24px));max-height:calc(100% - 16px);overflow:auto;padding:12px 14px;
+    grid-template-columns:minmax(220px,280px) minmax(0,1fr);grid-template-rows:auto auto auto;gap:6px 14px;align-items:start;justify-items:stretch;
+  }
+  .passport-preview-heading { grid-column:2;grid-row:1; }
+  .passport-preview .passport-book { grid-column:1;grid-row:1/4;width:100%;align-self:center; }
+  .passport-preview .passport-selected-label { grid-column:2;grid-row:2;text-align:left;font-size:16px; }
+  .passport-stamps { grid-column:2;grid-row:3;width:100%;justify-items:start; }
+  .passport-preview__title { font-size:22px; }
+  .passport-maker-kicker { min-height:24px;font-size:14px; }
+  .passport-preview-close { width:40px;height:40px;font-size:22px; }
+  .passport-stamp-name { font-size:11px; }
+}
+/* 폰 가로(높이 ≤460): 제목 줄을 접고 경로·발판을 낮춰 무대 + 썸네일 줄이 한 화면에 들어가게 */
+@media (min-width:601px) and (max-height:460px) {
+  .passport-page { --passport-footer-h:60px;--passport-route-h:48px; }
+  .passport-page .top-bar { padding-block:4px; }
+  .passport-body { padding-block:4px; }
+  .passport-shell { height:100%; }
+  .passport-step-chip { min-height:40px;padding:4px 12px;font-size:16px; }
+  .passport-peek { top:4px;right:14px;width:auto;min-height:40px;padding:2px 10px;grid-template-columns:32px auto;gap:6px;font-size:14px; }
+  .passport-peek img { width:32px;height:34px; }
+  .passport-section { padding:4px clamp(12px,2vw,24px);gap:0; }
+  .passport-scene-heading { display:none; }
+  .passport-section[data-passport-step="2"],.passport-section[data-passport-step="3"] { grid-template-rows:minmax(0,1fr); }
+  .passport-selection-layout { grid-template-rows:minmax(0,1fr) 78px;gap:4px; }
+  .passport-selector-stage { grid-template-columns:52px minmax(0,1fr) 52px;gap:8px; }
+  .passport-arrow { width:48px;height:48px; }
+  .passport-feature { height:100%;min-height:0;grid-template-columns:minmax(150px,.7fr) minmax(240px,1fr);gap:14px;padding:2px 10px; }
+  .passport-plane-feature { grid-template-columns:minmax(200px,1fr) minmax(220px,.9fr); }
+  .passport-stage-role { font-size:15px; }
+  .passport-stage-name { margin:1px 0 5px;font-size:26px; }
+  .passport-stage-line { padding:7px 12px;border-radius:14px 14px 14px 4px;font-size:15px;line-height:1.3; }
+  .passport-choice-row { padding:2px 6px;gap:6px; }
+  .passport-choice { flex-basis:60px;width:60px;min-width:60px;min-height:60px;height:60px;padding:3px; }
+  .passport-choice img,.passport-avatar img,.passport-plane img { height:36px; }
+  .passport-choice .label,.passport-plane .label { min-height:16px;font-size:13px; }
+  .passport-choice-item { flex-basis:62px;width:62px;grid-template-rows:56px auto;gap:1px; }
+  .passport-choice-item .passport-avatar { height:56px;min-height:56px; }
+  .passport-choice-item .passport-avatar img { height:50px; }
+  .passport-choice-name { font-size:13px; }
+  .passport-actions { padding-block:6px; }
+  .passport-actions .btn { min-height:46px;font-size:17px; }
+}
 @media (prefers-reduced-motion:reduce) {
   .passport-section,.passport-choice,.passport-avatar-stage-img,.passport-plane-stage-img { animation:none!important;transition:none!important; }
 }
@@ -846,7 +904,7 @@ export function createPage(): Page {
         const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
         const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
         showToast(`${withJosa(avatar.name, '과', '와')} ${plane.name}, 여행 준비 완료!`, 'success');
-        const transition = playJourneyTransition({ kind: 'stamp', label: '여행을 시작해 여섯 도장을 완성해 줘!', assetId: 'prop.stamp' });
+        const transition = playJourneyTransition({ kind: 'stamp', label: '여행을 시작해 여섯 도장을 완성해 줘!', assetId: 'prop.stamp', confirmLabel: '확인하고 출발하기' });
         void transition.finished.then(() => { if (!disposed) navigate('#/map'); });
       };
 

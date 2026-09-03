@@ -118,7 +118,8 @@ const CSS = `
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
 .country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(11px,1.2vw,16px);display:flex;flex-direction:column;gap:8px;overflow:hidden;container-type:size}
 /* 사진은 16:9를 지킨다 — 글 아래 남는 높이에 맞춰 폭을 정하고 가운데 둔다. 개요·나라 페이지가 같은 폭을 쓰게 해 사진·화살표가 튀지 않는다 */
-.country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - 300px) * 16 / 9));min-width:min(100%,360px);aspect-ratio:16/9;min-height:0}
+.country-detail{--detail-reserve:300px;--photo-min:360px} /* 사진 아래 글에 남겨 둘 높이·사진 최소 폭 — 낮은 가로 화면에서 미디어쿼리로 줄인다 */
+.country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - var(--detail-reserve)) * 16 / 9));min-width:min(100%,var(--photo-min));aspect-ratio:16/9;min-height:0}
 .detail-photo{position:relative;flex:1 1 auto;width:100%;min-height:clamp(150px,20vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;overflow:hidden;touch-action:none;user-select:none;cursor:grab} /* pan-y로 두면 빠른 스와이프가 fling으로 잡혀 바로 다음 탭을 크롬이 삼킨다 */
 .detail-photo:active{cursor:grabbing}
 .detail-photo:focus-visible{outline:5px solid #ffe052;outline-offset:3px}
@@ -149,7 +150,53 @@ const CSS = `
 @keyframes sig-halo{0%{transform:scale(.72);opacity:.9}100%{transform:scale(1.28);opacity:0}}:root[data-reduced-motion="true"] .signal-pin::before{animation:none}.signal-detail{background:#fff;border-radius:20px;padding:18px;overflow:auto;display:grid;align-content:start;gap:12px}.signal-detail h2{font:900 var(--section-title)/1.15 var(--font-head);margin:0;color:#173b53}.signal-detail p{font-size:var(--body-text);line-height:1.45;margin:0}.signal-detail{display:flex;flex-direction:column;gap:12px}.signal-detail .detail-photo{flex:none;aspect-ratio:16/9;min-height:0;height:auto} /* 그리드 행이 사진 비율 높이를 못 따라와 글을 덮던 문제 */
 .council-layout{height:100%;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.7fr);gap:18px}.council-ring{position:relative;border-radius:50%;background:radial-gradient(circle,#fff8d6 0 28%,#a5dfe7 29% 58%,#eaf6f1 59%);min-height:0} /* 고정 최소 높이(470px)가 낮은 창에서 세로 스크롤을 만들던 원인 */
 .council-ring::before{content:'';position:absolute;left:50%;top:50%;width:clamp(120px,14vw,180px);height:clamp(120px,14vw,180px);transform:translate(-50%,-50%);background:url('${assetUrl('africa.host')}') center/contain no-repeat;filter:drop-shadow(0 8px 14px #0a304d55);pointer-events:none}.person-button{position:absolute;transform:translate(-50%,-50%);width:clamp(96px,min(12vw,22vh),158px);height:clamp(96px,min(12vw,22vh),158px);border-radius:50%;border:4px solid white;background:#173e5ee8;color:white;padding:10px;display:grid;place-items:center;text-align:center}.person-button .p-name{display:block;font:900 clamp(17px,1.3vw,21px)/1.15 var(--font-head)}.person-button .p-role{display:block;margin-top:3px;font:800 clamp(14px,1.1vw,16px)/1.3 var(--font-body);color:#cfe8ff;word-break:keep-all}.person-button.is-heard{background:#157c64}.council-speech{align-self:center;background:white;border:3px solid #e5ba45;border-radius:22px;padding:22px;min-height:250px;display:grid;align-content:center;gap:12px}.council-speech h2{font:900 var(--section-title) var(--font-head);margin:0;color:#173b53}.council-speech p{font-size:var(--body-text);line-height:1.5;margin:0}
-@media(max-width:1050px){.africa-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - 16px)}.region-layout,.lab-layout,.env-layout,.council-layout{grid-template-columns:1fr}.region-visual,.env-map,.council-ring{min-height:430px}.country-detail,.instrument-copy,.signal-detail{max-height:none}.africa-mission .page-body{place-items:start center}}
+/* 세로로 긴 창(세로 태블릿·폰 세로)에서만 한 열로 쌓는다 — 가로 폰·가로 태블릿(≤1050px 가로 방향)은 아래 가로 규칙이 두 열을 지킨다 */
+@media(max-width:1050px) and (orientation:portrait){.africa-shell{height:auto;min-height:calc(100dvh - var(--top-bar-h) - 16px)}.region-layout,.lab-layout,.env-layout,.council-layout{grid-template-columns:1fr}.region-visual,.env-map,.council-ring{min-height:430px}.country-detail,.instrument-copy,.signal-detail{max-height:none}.africa-mission .page-body{place-items:start center}}
+/* 가로 폰(915×412)·폴드 가로(974×601)·가로 태블릿(1024×600) — 두 열은 그대로 두고 머리띠·버튼띠·안쪽 여백과 글자만 줄여 한 화면에 넣는다. 1051px 이상(데스크톱)은 건드리지 않는다 */
+@media(max-width:1050px) and (orientation:landscape){
+.africa-mission .page-body{padding:8px 12px;place-items:start center}
+.africa-shell{height:calc(100dvh - var(--top-bar-h) - 16px)}
+.africa-mission .top-bar .quest-ribbon .ribbon-main{font-size:clamp(20px,2.3vw,24px)} /* 제목이 두 줄로 접혀 상단바 위로 삐져나오던 문제 — 한 줄에 들어가는 크기 */
+.africa-head{padding:7px 14px;gap:10px}.africa-head>div{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px}.africa-head h1,.africa-head h2{font-size:clamp(20px,2.4vw,24px)}.africa-head p{margin:0;font-size:16px;line-height:1.3}
+.africa-main{padding:8px}
+.africa-actions{padding:6px 10px;gap:8px}.africa-actions .btn{min-height:44px;font-size:18px}.africa-actions .gate-note{padding:3px 10px}
+.region-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:10px}
+.region-visual{padding:6px;gap:6px}.region-mapstage{min-height:clamp(140px,28vh,420px)}.region-mapstage .country-pin{min-height:42px;padding:5px 11px;font-size:17px}.lens{width:110px;height:110px}
+.region-tool{padding:8px 12px;gap:5px}.region-tool label,.region-tool-copy,.tool-buttons button{font-size:17px}.region-tool input[type=range]{height:38px}.region-tool-copy{min-height:2.4em;line-height:1.35}.tool-buttons button{min-height:46px;padding:4px 6px}
+.country-detail{--detail-reserve:250px;--photo-min:220px;padding:10px;gap:6px} /* 생활·문화 두 항목(각 2줄)이 스크롤 없이 다 보이는 몫 */
+.detail-photo-nav{width:44px;height:clamp(64px,14vh,90px);font-size:28px} /* 사진이 작아진 만큼 화살표도 좁혀 그림이 보이게 */
+.detail-pager{min-height:44px}.detail-pager h3{font-size:21px}.detail-pager .sub{font-size:16px}
+.detail-caption{padding:8px 12px;font-size:17px;line-height:1.4}.detail-facts{font-size:16px;gap:6px}
+.lab-layout{grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr);gap:10px}
+.instrument-gallery{padding:8px;gap:6px}.instrument-photo img{min-height:120px}
+.instrument-thumbs{gap:6px}.instrument-thumbs button{min-height:62px;padding:3px;font-size:15px}.instrument-thumbs img{height:34px}
+.instrument-controls .btn{min-height:44px;font-size:18px}
+.instrument-copy{padding:12px 14px;gap:8px}.instrument-copy h2{font-size:24px}.instrument-intro{font-size:17px;line-height:1.4}.instrument-meta{font-size:16px;line-height:1.4;gap:6px 12px}.instrument-hint{padding:8px 12px;font-size:16px}
+.env-layout{grid-template-columns:minmax(0,1.3fr) minmax(280px,.8fr);gap:10px}
+.signal-pin{min-width:72px;min-height:72px}.signal-pin .sp-num{font-size:24px}
+.signal-detail{padding:10px 12px;gap:8px}.signal-detail h2{font-size:22px}.signal-detail p{font-size:17px;line-height:1.4}.signal-detail .detail-photo{width:min(100%,40vh);align-self:center}
+.council-layout{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:10px}
+.council-speech{align-self:stretch;min-height:0;overflow:auto;padding:14px;gap:8px}.council-speech h2{font-size:22px}.council-speech p{font-size:17px;line-height:1.45}
+.person-button{width:clamp(84px,min(12vw,22vh),158px);height:clamp(84px,min(12vw,22vh),158px);padding:6px}.person-button .p-name{font-size:16px}.person-button .p-role{font-size:13px;line-height:1.25}
+}
+/* 폰 가로(높이 ≤460px) — 위 규칙에서 한 번 더 줄인다. 지도·신호·회의·인사는 한 화면에 맞추고, 정말 안 들어가는 지역·악기 화면만 패널이 내용만큼 자라 page-body가 스크롤한다(내용을 숨기거나 자르지 않는다) */
+@media(max-width:1050px) and (orientation:landscape) and (max-height:460px){
+#app:has(.africa-mission) .toast-wrap{top:calc(var(--top-bar-h) + var(--sp-2));bottom:auto} /* 폰 가로에선 아래쪽 토스트가 지도 표식·도구 버튼을 2.6초 덮는다 — 버튼이 없는 머리띠 쪽으로 올린다(완주 화면과 같은 방식) */
+.africa-shell:has(.region-layout),.africa-shell:has(.lab-layout){height:auto;min-height:calc(100dvh - var(--top-bar-h) - 16px)}.region-layout,.lab-layout{height:auto} /* 지역·악기: 412px 높이엔 정말 안 들어간다 — 패널이 내용만큼 자라고 page-body가 스크롤한다(안쪽 이중 스크롤 없이). 환경·회의는 지도·원이 높이에 맞고 옆 글 상자만 안에서 스크롤 */
+.region-visual{align-self:start}.region-mapstage{min-height:180px}
+.country-detail{container-type:normal} /* 글 패널이 사진+제목+설명+생활·문화를 다 담을 높이로 자란다 — 사진 폭을 컨테이너 높이로 정하지 않고 고정 */
+.country-detail .detail-photo{width:min(100%,280px);min-width:0}
+.detail-pager{min-height:40px}.detail-pager h3{font-size:19px}.detail-pager .sub{font-size:15px}
+.detail-caption{padding:7px 10px;font-size:16px;line-height:1.35}.detail-facts{flex:0 0 auto;max-height:none;overflow:visible}
+.africa-head{padding:5px 12px}.africa-head h1,.africa-head h2{font-size:20px}.africa-head p{font-size:15px}
+.region-pin{min-width:56px;min-height:56px;padding:4px;border-width:3px;font-size:15px}.region-pin::after{font-size:12px}.map-controls{left:8px;bottom:8px}.map-controls button{width:44px;height:44px;font-size:22px}.map-plane{width:52px}
+.lens{width:90px;height:90px}
+.region-tool{padding:6px 10px;gap:4px}.region-tool label,.region-tool-copy,.tool-buttons button{font-size:16px}.region-tool input[type=range]{height:36px}.region-tool-copy{min-height:2.2em}.tool-buttons button{min-height:40px}
+.instrument-gallery{grid-template-rows:auto minmax(0,1fr) auto}.instrument-thumbs{order:-1} /* 폰 가로: 누를 썸네일 5개를 스크롤 없이 바로 보이게 사진 위로 올린다 */
+.instrument-photo img{min-height:150px}
+.signal-pin{min-width:58px;min-height:58px}.signal-pin .sp-num{font-size:22px}.signal-pin .sp-tag{font-size:12px}
+.person-button{width:clamp(76px,min(12vw,22vh),158px);height:clamp(76px,min(12vw,22vh),158px);padding:5px}.person-button .p-name{font-size:15px}.person-button .p-role{font-size:12px}
+}
 @media(max-height:700px) and (min-width:1051px){.africa-shell{height:calc(100dvh - var(--top-bar-h) - 14px)}.africa-main{padding:10px}.africa-map,.region-visual,.env-map,.council-ring{min-height:380px}.instrument-photo img{min-height:220px}.africa-head{padding:8px 18px}.africa-actions{padding:7px 12px}}
 @media(prefers-reduced-motion:reduce){.intro-card,.signal-wave,.connection-node.is-on,.instrument-photo.is-playing .wave i{animation:none!important}.map-plane{transition:none}}
 `;

@@ -203,7 +203,7 @@ const DIALOGUE_CSS = `
 /* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
 .dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,.85fr);gap:14px;align-items:center} /* 설명이 들어갈 옆 패널을 넓힌다 */
 .dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
-.dl-compare-photo{position:relative;flex:0 0 auto;align-self:center;aspect-ratio:16/9;width:min(100%,calc((100dvh - 400px) * 16 / 9));min-height:0;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
+.dl-compare-photo{position:relative;flex:0 0 auto;align-self:center;aspect-ratio:16/9;width:min(100%,calc((100dvh - var(--dl-photo-reserve,400px)) * 16 / 9));min-height:0;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
 .dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .dl-compare-after{clip-path:inset(0 0 0 50%)}
 .dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none} /* 드래그는 사진 전체가 받는다 */
@@ -313,42 +313,108 @@ const DIALOGUE_CSS = `
 .dl-listen.is-tight .dl-scenario { grid-template-columns: minmax(0,1fr); }
 .dl-listen.is-tight .dl-opt { min-height: 44px; padding: 8px 12px; }
 .dl-listen.is-tight .card { padding: 8px 12px; }
+/* 낮은 화면(1024×600·974×601 폴드 가로·1024×576): 무대를 남는 높이에 정확히 맞춘다.
+   예전 min-height:430px 고정은 본문(≈370px)보다 커서 네 화면 모두 60px씩 스크롤이 생기던 원인. */
 @media (max-height: 620px) {
-  .dialogue-scene .page-body { padding:6px clamp(10px,2.5vw,28px) 44px;overflow-y:auto; }
-  .dl-stage { flex:none;min-height:430px;gap:var(--sp-2); }
+  .dialogue-scene { --dl-photo-reserve:356px; } /* 상단바56+레인56+하단바69+본문여백30+리본56+패널여백24+간격10+손잡이52 */
+  .dialogue-scene .page-body { padding:6px clamp(10px,2.5vw,28px) 24px;overflow-y:auto; } /* 아래 24px: 캐릭터 말풍선이 레인 위로 솟아도 본문을 안 덮게 */
+  .dl-stage { flex:1;min-height:0;gap:var(--sp-2); }
   .dialogue-scene .panel { padding: var(--sp-3); }
   .dialogue-scene .card { padding: 8px 10px; }
   .ribbon-title .ribbon-sub { display: none; }
-  /* 낮은 화면(1024×576): 사진 6장을 한 줄로 올리고 질문 패널을 아래로 */
-  .dl-greet-row { grid-template-columns: 1fr; grid-template-rows: auto minmax(0,1fr); }
-  .dl-greet-grid { grid-template-columns: repeat(6, minmax(0,1fr)); overflow: visible; }
-  .dl-greet-card { min-height:98px;padding:3px; }
-  .dl-greet-card img { height:clamp(64px,18vh,82px); }
-  .dl-task { min-height:108px;overflow:visible; }
+  /* 1단계: 사진 3×2 왼쪽, 질문 패널 오른쪽 — 세로로 쌓으면 확인 질문+피드백이 본문을 넘긴다 */
+  .dl-greet-row { grid-template-columns: minmax(0,1.25fr) minmax(320px,.75fr); grid-template-rows: minmax(0,1fr); gap: var(--sp-3); }
+  .dl-greet-grid { grid-template-columns: repeat(3, minmax(0,1fr)); grid-auto-rows: minmax(0,1fr); align-self: stretch; align-content: stretch; overflow: hidden; }
+  .dl-greet-card { min-height:0;padding:4px;gap:3px; }
+  .dl-greet-card img { height:clamp(44px,12vh,82px); }
+  .dl-task { min-height:0; }
   .dl-opt { padding: 8px 11px; min-height: 52px; }
   .npc-bubble { padding: 8px 12px; }
-  /* 3단계: 왼쪽 칸이 넘치지 않게 상황 카드를 버튼+모달로 */
+  /* 경청: 상황 카드 왼쪽, 이야기·반응·피드백 오른쪽 — 한 줄로 쌓으면 반응 3개+피드백이 들어가지 않는다 */
+  .dl-listen { display:grid; grid-template-columns: minmax(240px,.72fr) minmax(0,1.28fr); align-content:start; gap: var(--sp-2) var(--sp-3); }
+  .dl-listen > .dl-scenario { grid-column:1; grid-row:1 / span 3; align-self:start; }
+  .dl-listen > :not(.dl-scenario) { grid-column:2; }
+  .dl-cues { grid-template-columns: 1fr; gap: 6px; }
+  /* 3단계: 왼쪽 칸이 넘치지 않게 상황 카드를 버튼+모달로, 말풍선 선택지는 패널 높이에 맞춰 낮게 */
   .dl-who .dl-side-card { display: none; }
   .dl-side-btn { display: inline-flex; }
   .dl-compass .c-dial { width: 48px; height: 48px; }
+  .dl-portrait { width: clamp(96px, 22vh, 200px); height: clamp(96px, 22vh, 200px); }
+  /* 사진 비교 설명 패널: flex 축소가 넘침을 숨겨 글자 축소(keepFitted)가 안 돌던 문제 — 축소 대신 실제로 넘치게 해 글자가 줄어들게 */
+  .dl-compare-side { gap: 8px; }
+  .dl-compare-side > * { flex-shrink: 0; }
+  .dl-compare-person { padding: 6px 10px; }
+  .dl-compare-mission { padding: 10px; }
+  .dl-compare-result { padding: 10px 12px; }
 }
 @media (min-height:621px) and (max-height:760px) {
   .dl-greet-card { min-height:146px; }
   .dl-greet-card img { height:clamp(98px,15vh,118px); }
 }
-/* 모바일 가로 — 여섯 인사 카드가 화면을 넘기지 않게 낮춘다 */
+/* 모바일 가로(915×412) — 공용 CSS가 이 높이에서 캐릭터 가이드를 숨기므로
+   빈 가이드 레인(56px)·하단바의 캐릭터 자리(200px)를 본문에 돌려주고, 리본·바·글자를 낮춘다. */
 @media (max-height: 460px) {
-  .dialogue-scene .page-body { padding:4px 8px 34px; }
+  .dialogue-scene { --guide-lane-h:0px; --bottom-bar-h:48px; --dl-photo-reserve:232px; } /* 상단바56+하단바56+본문여백8+리본34+간격6+패널여백·테두리19+간격6+손잡이36+여유 */
+  .dialogue-scene .page-body { padding:4px 10px 4px; }
+  .dialogue-scene:not(:has(.ec)) .dl-stage { width:100%; }
   .dl-stage { gap:6px; }
-  .dl-greet-row { grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);gap:6px; }
-  .dl-greet-grid { grid-template-columns:repeat(6,minmax(0,1fr));overflow:visible; }
-  .dl-greet-card { min-height:64px;padding:2px; }
-  .dl-greet-card img { height:clamp(34px,9vh,48px); }
+  /* 리본 제목 54px→34px — 여행 테마(#scene-root .page .ribbon-title)가 54px 최소 높이를 걸어 두므로 같은 무게로 덮는다 */
+  #scene-root .page.dialogue-scene .ribbon-title { min-height:34px; padding:2px 24px; } /* 양옆 점선(12px 안쪽)과 글자가 닿지 않게 24px */
+  .dialogue-scene .ribbon-title .ribbon-main { font-size:22px; }
+  .dialogue-scene .panel { padding:8px; }
+  .dialogue-scene .card { padding:6px 8px; }
+  .page.dialogue-scene:has(> .guide-wrap) > .bottom-bar { padding-left:var(--scene-safe); }
+  .dialogue-scene > .bottom-bar { padding-top:4px; gap:8px; }
+  .dialogue-scene > .bottom-bar .btn { min-height:44px; padding:6px 14px; font-size:18px; }
+  .dialogue-scene > .bottom-bar .btn-big { font-size:18px; padding:6px 16px; }
+  .dialogue-scene .feedback { padding:6px 10px; gap:8px; font-size:15px; }
+  /* 1단계 */
+  .dl-greet-row { gap:6px; }
+  .dl-greet-grid { gap:6px; }
+  .dl-greet-card { padding:2px; }
+  .dl-greet-card img { height:clamp(34px,11vh,52px); }
   .dl-greet-card .g-name { font-size:16px; }
   .dl-greet-card .g-location { display:none; }
-  .dl-task { min-height:0; }
   .dl-opt { min-height:44px;padding:6px 10px; }
-  .dl-ox .btn { min-height:44px; }
+  .dl-ox .btn { min-height:44px; font-size:18px; }
+  /* 2단계 사진 비교: 사진 왼쪽·설명 오른쪽(940px 이하 세로 쌓기 규칙을 되돌린다), 설명 패널은 2열 */
+  .dl-visual-compare { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+  .dl-compare-card { padding:8px!important; gap:6px; }
+  .dl-compare-range { height:36px; }
+  .dl-compare-range::-webkit-slider-thumb { width:32px; height:32px; border-width:3px; }
+  .dl-compare-tag { top:8px; padding:3px 10px; font-size:15px; }
+  .dl-compare-divider::after { width:40px; height:40px; font-size:20px; border-width:3px; }
+  .dl-change-hotspot { width:52px; height:52px; border-width:4px; }
+  .dl-compare-side { display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 8px; align-items:center; }
+  .dl-compare-person { grid-template-columns:40px 1fr; padding:4px 8px; gap:6px; }
+  .dl-compare-person span:first-child { width:40px; height:40px; font-size:20px; }
+  .dl-compare-person strong { font-size:18px; }
+  .dl-compare-person small { font-size:13px; }
+  .dl-compare-mission { padding:6px 10px; font-size:16px; border-width:2px; }
+  .dl-compare-result, .dl-photo-progress { grid-column:1/-1; }
+  .dl-compare-result { min-height:0; padding:8px 10px; gap:4px; }
+  .dl-compare-result b { font-size:16px; }
+  .dl-compare-result span { font-size:14px; line-height:1.35; }
+  .dl-photo-progress { margin-top:0; }
+  .dl-photo-progress span { height:8px; }
+  /* 경청 */
+  .dl-listen { gap:6px 8px; }
+  .dl-listen.is-tight { padding:6px; }
+  .dl-listen.is-tight .dl-opt { min-height:40px; padding:5px 10px; }
+  .dl-listen .dl-scenario .btn { min-height:40px; padding:6px 12px; font-size:16px; }
+  .dl-option-head img { width:32px; height:32px; }
+  /* 3단계: 초상화 왼쪽, 이름·나침반·상황 버튼 오른쪽 — 세로로 쌓으면 초상화만으로 칸이 찬다 */
+  .dl-talk { gap:8px; }
+  .dl-who { display:grid; grid-template-columns:auto minmax(0,1fr); grid-auto-rows:min-content; align-content:center; justify-items:start; column-gap:12px; row-gap:6px; }
+  .dl-portrait { grid-row:1/4; align-self:center; width:88px; height:88px; border-width:3px; }
+  .dl-compass .c-dial { width:44px; height:44px; }
+  .dl-compass .c-num { font-size:20px; }
+  .dl-side-btn { min-height:40px; font-size:16px; }
+  .dl-chat { gap:8px; }
+  .dl-chat #dlg-area { gap:6px !important; }
+  .dl-chat .dl-opt { min-height:44px; padding:6px 12px; font-size:clamp(15px,4cqh,18px); }
+  .dl-chat .npc-bubble { font-size:16px; padding:8px 12px; }
+  .dl-chat #stage3-fb .feedback { font-size:15px; }
 }
 @media (max-width: 900px) {
   .dl-greet-row, .dl-talk { grid-template-columns: 1fr; }

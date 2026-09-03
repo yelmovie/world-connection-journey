@@ -72,6 +72,26 @@ const STYLE = `
 .cert-side-stamps { display:flex; gap:6px; }
 .cert-side-stamps img, .cert-side-stamps span { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid rgba(201,162,74,.7); background:#fff; box-shadow:0 3px 8px rgba(4,20,40,.18); }
 @media (max-width:1000px) { .cert-wrap { grid-template-columns:1fr; } .cert-side { width:100%; } .cert-zoom-btn { right:2px; bottom:2px; } }
+/* 낮은 창(≤620px, 폭 720px 이상 — 폰·폴드·태블릿 가로): 시트 최소폭을 360px로 낮춰 스크롤을 줄이고,
+   안내 패널은 옆에 세워 위부터 정렬 — 잘리는 요소 없이 모자란 만큼만 page-body가 스크롤한다 */
+@media (max-height:620px) and (min-width:720px) {
+  .cert-page .page-body { padding:8px clamp(12px,2vw,24px); place-items:start center; }
+  .cert-wrap { grid-template-columns:minmax(0,1fr) minmax(250px,320px); align-items:start; gap:clamp(12px,2vw,28px); }
+  .cert-sheet { width:min(100%, max(360px, calc((100dvh - var(--top-bar-h) - 32px) * 0.7071))); }
+  .cert-side { align-content:start; }
+  .cert-side .panel { padding:10px 12px; gap:6px; }
+  .cert-side-head { gap:8px; }
+  .cert-side-head img { width:44px; height:44px; }
+  .cert-side h2 { font-size:19px; }
+  .cert-side p { font-size:16px; line-height:1.4; }
+  .cert-side-stamps img, .cert-side-stamps span { width:32px; height:32px; }
+  .cert-side .btn { min-height:44px; }
+  .cert-side .btn-primary { min-height:48px; }
+  .cert-zoom-btn { right:2px; bottom:2px; width:52px; height:52px; }
+  /* 확대 보기는 폭 기준으로 키우고 넘치는 만큼 스크롤 — 낮은 창에서 "크게 보기"가 더 작아지지 않게 */
+  .cert-zoom { place-items:start center; overflow:auto; }
+  .cert-zoom .cert-sheet { width:min(94vw, 640px); }
+}
 @media print {
   @page { size:A4 portrait; margin:0; }
   html, body { background:#fff !important; }

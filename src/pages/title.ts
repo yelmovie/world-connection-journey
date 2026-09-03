@@ -186,10 +186,11 @@ const TITLE_CSS = `
   .title-logo { width:min(60vw,700px);max-height:27vh; }
   .title-subtitle { font-size:clamp(27px,3.3vw,38px); }
   #scene-root .title-page > .bottom-bar { min-height:170px; }
-  .title-character { width:min(45vw,495px,55vh);max-height:55vh;bottom:4px; }
+  /* 비행기 폭은 가운데 CTA(44vw)와 겹치지 않는 한도(50vw - 215px)까지만 */
+  .title-character { width:min(45vw,495px,55vh,calc(50vw - 215px));max-height:55vh;bottom:4px; }
   .title-character--left { left:4px; }
   .title-character--right { right:4px; }
-  .title-speech { left:14px;width:min(330px,33vw);bottom:calc(55vh + 10px);min-height:104px;padding:13px 44px 11px 16px;border-radius:20px; }
+  .title-speech { left:14px;width:min(330px,33vw);bottom:calc(min(55vh,50vw - 215px) + 10px);min-height:104px;padding:13px 44px 11px 16px;border-radius:20px; }
   .title-speech[data-side="right"] { right:14px; }
   .title-speech__name { font-size:18px; }
   .title-speech__text { min-height:2.6em;font-size:17px;line-height:1.3; }

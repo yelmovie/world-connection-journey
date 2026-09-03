@@ -494,12 +494,154 @@ const PAGE_CSS = `
   .exp-wrap { grid-template-columns:minmax(0,1.2fr) minmax(258px,.8fr); gap:var(--sp-2); }
   .postcard { padding:8px 56px 8px 54px; min-height:66px; font-size:max(15px,var(--fs-small)); }
   .postcard img { left:8px; width:38px; height:38px; }
-  .day-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .day-cards { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .day-card { grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto; align-items:center; justify-items:start; text-align:left; column-gap:12px; row-gap:2px; padding:10px 14px; }
+  .day-card img { grid-row:1 / 3; width:clamp(64px,9vh,88px); height:clamp(64px,9vh,88px); border-width:3px; }
+  .day-card strong { font-size:clamp(20px,2.2vh,26px); }
+  .day-card span { font-size:clamp(16px,1.8vh,20px); line-height:1.3; text-wrap:pretty; }
+  .day-common { min-height:0; padding:8px 14px; font-size:clamp(17px,1.4vw,21px); }
+  .am-task { padding:8px 18px; font-size:clamp(18px,1.6vw,24px); }
 }
 @media (max-width:900px) {
   .exp-wrap, .country-stage { grid-template-columns:1fr; }
   .country-scene { min-height:420px; }
   .country-side { display:flex; overflow:auto; }
+}
+/* ===== 좁은 화면 대응 — 태블릿 가로(≤1100px) · 낮은 창(≤620px) · 폰 가로(≤460px 높이) =====
+   데스크톱(1366×768 이상)은 아래 미디어쿼리에 하나도 걸리지 않는다. */
+@media (max-width:1100px) {
+  /* 가이드 자리(왼쪽 여백)는 말풍선 폭만큼만 — 300px 고정 여백이 좁은 창에서 본문의 1/3을 먹던 원인 */
+  .am-scene { --am-gutter:calc(230px + var(--scene-safe) * 2); }
+  .am-scene > .guide-wrap .guide-bubble { width:230px; max-width:230px; }
+  .country-stage { grid-template-columns:minmax(0,1.6fr) minmax(270px,.7fr); }
+  .stop-node { min-width:clamp(118px,11vw,150px); max-width:172px; min-height:54px; padding:6px 10px 6px 6px; gap:6px; font-size:clamp(15px,1.3vw,17px); }
+  .stop-node .stop-step { width:34px; height:34px; font-size:19px; }
+  .stop-node.is-seen .stop-step::after { font-size:18px; }
+  .stop-node.is-next::after { top:calc(100% + 3px); padding:3px 9px; font-size:13px; }
+  .country-route-guide { min-height:44px; top:8px; padding:4px 12px 4px 6px; gap:8px; }
+  .country-route-guide__icon { width:34px; height:34px; }
+  .country-route-guide__icon svg { width:20px; height:20px; }
+  .country-route-guide__copy small { display:none; }
+  .country-route-guide__copy strong { font-size:15px; }
+  .country-route-guide__steps i { width:22px; height:22px; font-size:13px; }
+  /* 허브 핀 — 지도가 작아 위아래 핀이 겹치므로 이름표를 얼굴 옆으로(캐나다 이름표가 미국 얼굴 뒤에 숨던 것) */
+  .hub-pin { width:clamp(50px,5.4vw,66px); gap:0; }
+  .hub-pin img { width:clamp(50px,5.4vw,66px); height:clamp(50px,5.4vw,66px); border-width:3px; }
+  .hub-pin span { position:absolute; left:calc(100% + 3px); top:50%; translate:0 -50%; padding:3px 10px; font-size:15px; }
+  /* 지구 신호 — 토큰이 남은 폭 안에 들어가고, 넘칠 땐 위가 아니라 아래로 */
+  .signal-final { grid-template-columns:minmax(0,1fr); align-content:safe center; }
+  .signal-token { width:min(920px,100%); }
+}
+/* 폰 가로(≤900px 폭 + 낮은 창): 지도·대화창 / 장면·지점 패널을 세로로 쌓지 않고 나란히 둔다 —
+   쌓으면 지도가 카드 밑에 납작하게 눌린다(세로 태블릿의 스택 규칙은 그대로) */
+@media (max-width:900px) and (max-height:620px) {
+  .exp-wrap { grid-template-columns:minmax(0,1.1fr) minmax(230px,.9fr); }
+  .country-stage { grid-template-columns:minmax(0,1.5fr) minmax(230px,.7fr); }
+  .country-scene { min-height:0; }
+  .country-side { display:grid; overflow:hidden; }
+}
+/* 폰 가로(≤460px 높이) — 가이드가 통째로 숨는 높이. 가이드 여백을 없애고 모든 화면을 촘촘하게 */
+@media (max-height:460px) {
+  .am-scene { --am-gutter:0px; }
+  .am-scene:not([data-screen=landing]) > .page-body > .bag-stage { margin-left:0; width:100%; }
+  .am-scene > .page-body { padding:6px 8px; }
+  .am-stage { gap:8px; }
+  .am-actions .btn { min-height:44px; padding-block:6px; font-size:17px; }
+  .am-scene > .bottom-bar > .chip { font-size:15px; }
+  /* 지도는 fitAspect가 16:9로 맞춘다 — 따로 높이를 자르면 좌표가 그림과 어긋난다 */
+  .am-scene .exp-map, .am-scene .country-scene { max-height:none; }
+  /* 착륙: 지도 옆에 대화창 다섯 장이 다 보이게 — 카드는 내용 높이만큼, 그래도 넘치면 카드 열만 스크롤 */
+  .am-scene[data-screen=landing] .exp-wrap { grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr); gap:8px; }
+  .am-scene[data-screen=landing] .exp-cards { grid-auto-rows:auto; overflow:auto; gap:4px; }
+  .am-scene[data-screen=landing] .exp-cards__title { font-size:20px; margin-bottom:0; }
+  .am-scene[data-screen=landing] .exp-dnd-guide { margin-bottom:0; padding:3px 8px; gap:4px; font-size:13px; }
+  .am-scene[data-screen=landing] .exp-dnd-guide b { width:20px; height:20px; font-size:12px; }
+  .am-scene[data-screen=landing] .postcard { height:auto; min-height:40px; padding:4px 34px 4px 44px; font-size:13px; line-height:1.25; overflow:visible; }
+  .am-scene[data-screen=landing] .postcard img { left:6px; width:32px; height:32px; }
+  .exp-slot { width:clamp(64px,8vw,84px); height:clamp(64px,8vw,84px); border-width:3px; font-size:13px; }
+  .exp-slot .slot-name { bottom:-24px; padding:2px 8px; font-size:12px; }
+  .exp-drop-hint { top:8px; padding:5px 12px; font-size:14px; }
+  .exp-map__ocean { padding:3px 8px; font-size:12px; }
+  .exp-map__equator span { padding:2px 7px; font-size:12px; }
+  /* 렌즈: 탭·설명을 왼쪽 열에 세우고 지도·장면은 오른쪽에 크게 */
+  .lens-stage { display:grid; grid-template-columns:minmax(190px,230px) minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); gap:8px; }
+  .lens-stage > .lens-tabs { grid-column:1; flex-direction:column; gap:6px; }
+  .lens-stage > .lens-focus { grid-column:1; flex-direction:column; align-self:start; min-height:0; padding:8px 10px; gap:4px; border-radius:14px; }
+  .lens-focus strong { font-size:16px; }
+  .lens-focus span { font-size:13px; }
+  .lens-stage > .lens-visual { grid-column:2; grid-row:1 / 3; }
+  .lens-tabs .btn { min-height:42px; padding:6px 12px; font-size:16px; }
+  .lens-scene-grid { gap:8px; }
+  .lens-scene-card { border-width:3px; border-radius:16px; }
+  .lens-scene-media img { min-height:0; }
+  .lens-scene-copy { min-height:0; padding:6px 10px 8px; gap:2px; }
+  .lens-scene-copy strong { font-size:16px; }
+  .lens-scene-copy span { font-size:13px; }
+  .lens-scene-badge { left:8px; top:8px; padding:4px 10px; font-size:14px; }
+  .lens-point { min-width:64px; min-height:44px; padding:6px 12px; font-size:15px; }
+  /* 나라 허브 핀 — 작은 지도에서 핀끼리 겹쳐 위쪽 나라(캐나다)를 못 누르던 것 */
+  .hub-pin { width:44px; gap:0; }
+  .hub-pin img { width:44px; height:44px; border-width:3px; }
+  .hub-pin span { position:absolute; left:calc(100% + 2px); top:50%; translate:0 -50%; padding:2px 8px; font-size:13px; }
+  /* 나라 탐험 */
+  .country-stage { grid-template-columns:minmax(0,1.6fr) minmax(250px,.65fr); gap:8px; }
+  .country-side { gap:4px; }
+  .country-head { padding:5px 12px; }
+  .country-head h2 { font-size:22px; }
+  .stop-card { padding:4px 10px; border-radius:12px; border-left-width:5px; font-size:14px; line-height:1.25; }
+  .stop-card strong { margin-bottom:1px; font-size:16px; }
+  .stop-card.route-card strong { gap:6px; margin-bottom:1px; }
+  .stop-card-step { width:26px; height:26px; font-size:15px; }
+  .route-card.is-seen .stop-card-step::after { font-size:14px; }
+  .stop-node { min-width:104px; max-width:150px; min-height:42px; padding:4px 8px 4px 4px; gap:5px; border-width:3px; border-radius:18px; font-size:13px; }
+  .stop-node .stop-step { width:28px; height:28px; font-size:15px; }
+  .stop-node.is-seen .stop-step::after { font-size:14px; }
+  .stop-node.is-next::after { top:calc(100% + 2px); padding:2px 7px; font-size:11px; }
+  .country-route-guide { min-height:36px; top:6px; padding:3px 10px 3px 4px; gap:6px; }
+  .country-route-guide__icon { width:28px; height:28px; }
+  .country-route-guide__icon svg { width:17px; height:17px; }
+  .country-route-guide__copy { display:none; }
+  .country-route-guide__steps i { width:20px; height:20px; font-size:12px; }
+  .voyage-rail { bottom:8px; padding:4px 10px; gap:6px; }
+  .voyage-rail span { font-size:14px; }
+  .voyage-rail input { height:48px; }
+  .voyage-rail::after { top:-26px; padding:2px 10px; font-size:13px; }
+  .am-rail::-webkit-slider-thumb { width:48px; height:48px; margin-top:-14px; border-width:3px; }
+  .am-rail::-moz-range-thumb { width:48px; height:48px; border-width:3px; }
+  .alt-slider { right:10px; top:6%; bottom:6%; padding:4px; gap:4px; }
+  .alt-slider input { width:56px; }
+  .alt-slider .am-rail::-webkit-slider-thumb { margin-left:-14px; }
+  .alt-slider span { padding:2px 8px; font-size:13px; }
+  .friend-meet { right:10px; bottom:8px; gap:2px; }
+  .friend-meet img { width:84px; }
+  .friend-meet span { padding:3px 10px; font-size:14px; }
+  .country-scene:has(.friend-meet) .voyage-rail { right:calc(84px + 24px); }
+  /* 문화 가방 */
+  .bag-stage { padding:6px 8px; gap:6px; border-radius:18px; }
+  .bag-head { padding:4px 12px; border-radius:14px; }
+  .bag-head h2 { font-size:22px; }
+  .bag-head p { margin-top:1px; font-size:14px; }
+  .bag-grid { gap:6px; }
+  .bag-item { padding:6px 10px; border-width:2px; border-radius:14px; font-size:17px; }
+  .bag-item.is-open { font-size:14px; line-height:1.3; }
+  .bag-item.is-open strong { margin-bottom:2px; font-size:16px; }
+  .bag-pick-hint { padding:5px 10px; font-size:14px; }
+  /* 하루 비교 — 한 줄에 네 장(그림 왼쪽·글 오른쪽) */
+  .am-task { padding:5px 14px; font-size:16px; line-height:1.25; }
+  .am-task::before { padding:2px 9px; }
+  .day-slot { gap:6px; }
+  .day-cards { grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+  .day-card { grid-template-columns:auto minmax(0,1fr); grid-template-rows:auto auto; align-items:center; justify-items:start; text-align:left; column-gap:8px; row-gap:2px; padding:6px 8px; border-width:2px; border-radius:14px; }
+  .day-card img { grid-row:1 / 3; width:52px; height:52px; border-width:2px; }
+  .day-card strong { font-size:17px; }
+  .day-card span { font-size:14px; line-height:1.28; }
+  .day-common { min-height:0; padding:5px 10px; border-radius:10px; font-size:14px; }
+  /* 지구 신호 */
+  .signal-final { gap:6px; }
+  .signal-title { font-size:22px; }
+  .signal-token { min-height:52px; padding:6px 12px; gap:10px; border-width:2px; border-radius:14px; font-size:14px; line-height:1.3; }
+  .signal-token::before { width:38px; height:38px; }
+  .signal-token strong { margin-bottom:1px; font-size:16px; }
 }
 @media (prefers-reduced-motion:reduce) {
   .lens-point, .stop-node.is-next, .friend-meet, .postcard.is-wrong, .voyage-rail::after, .exp-slot { animation:none !important; }
@@ -1207,7 +1349,7 @@ export function createPage(): Page {
 
       /* ===== 화면 4 — 같은 대륙, 서로 다른 하루 ===== */
       const renderDay = (): void => {
-        const wrap = el('<div class="am-stage" style="gap:12px"></div>');
+        const wrap = el('<div class="am-stage"></div>');
         const tabs = el('<div class="lens-tabs"></div>');
         const task = el('<p class="am-task" role="status"></p>');
         const board = el('<div class="day-board"></div>');
