@@ -11,7 +11,7 @@ export type EarthScene = 'signals' | 'connect' | 'issue' | 'roundtable' | 'actio
 
 export interface EarthFriend { id: string; name: string; country: string; continent: string; imageId: string; mapX: number; mapY: number }
 export interface EarthLens { id: ConnectionType; name: string; hint: string }
-export interface SignalHotspot { id: string; x: number; y: number; label: string }
+export interface SignalHotspot { id: string; x: number; y: number; label: string; zoomAssetId?: string }
 export interface EnvironmentalSignal {
   id: string;
   friendId: string;

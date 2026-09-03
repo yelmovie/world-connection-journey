@@ -2965,6 +2965,150 @@
       "license": "AI-generated (project original)",
       "note": "쿡제도 라로통가의 바람·파도·별 항해 수업 일러스트"
     },
+    "earth.signal.zoom.nepal_glacier": {
+      "type": "image",
+      "src": "assets/stage6-lenses/nepal-glacier.webp",
+      "original": "generated_images/exec-c3196b6f-be10-4933-aa79-72685964e6f7.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 네팔 신호 원형 확대 — 빙하 끝과 녹은 물"
+    },
+    "earth.signal.zoom.nepal_stream": {
+      "type": "image",
+      "src": "assets/stage6-lenses/nepal-stream.webp",
+      "original": "generated_images/exec-53f5a92b-68b2-4e83-b899-ecd6aaf7d393.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 네팔 신호 원형 확대 — 계곡물과 계단식 밭 수로"
+    },
+    "earth.signal.zoom.japan_shade": {
+      "type": "image",
+      "src": "assets/stage6-lenses/japan-shade.webp",
+      "original": "generated_images/exec-fd09f562-5363-4b40-b502-38b218a92847.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 일본 신호 원형 확대 — 나무 그늘에서 물과 휴식"
+    },
+    "earth.signal.zoom.japan_sea": {
+      "type": "image",
+      "src": "assets/stage6-lenses/japan-sea.webp",
+      "original": "generated_images/exec-6829cd04-1383-48e2-9378-5c6624bff734.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 일본 신호 원형 확대 — 연안 수온 관측 부이와 센서"
+    },
+    "earth.signal.zoom.morocco_soil": {
+      "type": "image",
+      "src": "assets/stage6-lenses/morocco-soil.webp",
+      "original": "generated_images/exec-205502b3-fb2c-4996-943b-f209ffeff56e.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 모로코 신호 원형 확대 — 갈라진 밭과 올리브 뿌리"
+    },
+    "earth.signal.zoom.morocco_tank": {
+      "type": "image",
+      "src": "assets/stage6-lenses/morocco-tank.webp",
+      "original": "generated_images/exec-e973ca59-2c6b-4b54-880d-6a4d7d5c5e6c.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 모로코 신호 원형 확대 — 지붕 홈통과 빗물 저장 통"
+    },
+    "earth.signal.zoom.colombia_debris": {
+      "type": "image",
+      "src": "assets/stage6-lenses/colombia-debris.webp",
+      "original": "generated_images/exec-e0f42279-84a8-4f9d-9245-0d64fac343ef.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 콜롬비아 신호 원형 확대 — 파도에 밀려온 병과 밧줄"
+    },
+    "earth.signal.zoom.colombia_horizon": {
+      "type": "image",
+      "src": "assets/stage6-lenses/colombia-horizon.webp",
+      "original": "generated_images/exec-b00bee15-62d4-40f5-a25c-1864bb68b1bb.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 콜롬비아 신호 원형 확대 — 바닷물 흐름을 따라 이동하는 플라스틱"
+    },
+    "earth.signal.zoom.australia_coral": {
+      "type": "image",
+      "src": "assets/stage6-lenses/australia-coral.webp",
+      "original": "generated_images/exec-97baf978-3004-4e08-bba3-babcfe35bfe4.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 호주 신호 원형 확대 — 건강한 산호와 백화 산호 비교"
+    },
+    "earth.signal.zoom.australia_turtle": {
+      "type": "image",
+      "src": "assets/stage6-lenses/australia-turtle.webp",
+      "original": "generated_images/exec-12bfbd9d-cd10-4821-834d-88381a92c60d.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 호주 신호 원형 확대 — 산호 생태계의 바다거북"
+    },
+    "earth.signal.zoom.tanzania_pond": {
+      "type": "image",
+      "src": "assets/stage6-lenses/tanzania-pond.webp",
+      "original": "generated_images/exec-8087c15a-3562-4422-ac1b-e2749ce634ac.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 탄자니아 신호 원형 확대 — 줄어든 물과 갈라진 물선"
+    },
+    "earth.signal.zoom.tanzania_herd": {
+      "type": "image",
+      "src": "assets/stage6-lenses/tanzania-herd.webp",
+      "original": "generated_images/exec-d6e71229-ff14-4586-9faf-8966545c948c.png",
+      "pages": [
+        "p09"
+      ],
+      "preload": "page",
+      "alpha": false,
+      "license": "AI-generated (project original)",
+      "note": "6스테이지 탄자니아 신호 원형 확대 — 물을 찾아 한 방향으로 이동하는 동물"
+    },
     "earth.signal.nepal_glacier": {
       "type": "image",
       "src": "assets/earth_signal_nepal_glacier.webp",

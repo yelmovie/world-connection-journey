@@ -38,6 +38,7 @@ export function earthPreloadIds(content: EarthContent): string[] {
     'prop.globe3d', 'prop.globe', 'reward.globe_puzzle',
     ...content.friends.map((f) => f.imageId),
     ...content.signals.map((s) => signalImageId(content, s)),
+    ...content.signals.flatMap((s) => s.hotspots.map((h) => h.zoomAssetId ?? '')),
     ...content.issues.map((issue) => issue.imageAssetId ?? '').filter(hasAsset)
   ].filter(hasAsset);
 }
@@ -446,11 +447,12 @@ function renderSignals(host: EarthSceneHost): void {
 
     const spots = Array.from(photo.querySelectorAll<HTMLButtonElement>('.ec-spot'));
     const lens = photo.querySelector<HTMLElement>('#ec-lens')!;
-    const showLens = (h: { x: number; y: number }) => {
+    const showLens = (h: { x: number; y: number; zoomAssetId?: string }) => {
       if (!hasAsset(imageId)) return;
-      lens.style.backgroundImage = `url('${assetUrl(imageId)}')`;
-      lens.style.backgroundSize = '300% 300%';
-      lens.style.backgroundPosition = `${h.x * 100}% ${h.y * 100}%`;
+      const zoomImageId = h.zoomAssetId && hasAsset(h.zoomAssetId) ? h.zoomAssetId : imageId;
+      lens.style.backgroundImage = `url('${assetUrl(zoomImageId)}')`;
+      lens.style.backgroundSize = zoomImageId === imageId ? '300% 300%' : 'cover';
+      lens.style.backgroundPosition = zoomImageId === imageId ? `${h.x * 100}% ${h.y * 100}%` : 'center';
       lens.style.opacity = '1';
       // 확대경이 관찰 지점을 가리지 않게 반대편에 둔다
       lens.style.right = h.x > 0.5 ? 'auto' : '3%';

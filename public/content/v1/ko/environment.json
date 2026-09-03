@@ -174,13 +174,15 @@
           "id": "glacier",
           "x": 0.31,
           "y": 0.42,
-          "label": "산 위의 빙하"
+          "label": "산 위의 빙하",
+          "zoomAssetId": "earth.signal.zoom.nepal_glacier"
         },
         {
           "id": "stream",
           "x": 0.59,
           "y": 0.68,
-          "label": "계곡의 물길"
+          "label": "계곡의 물길",
+          "zoomAssetId": "earth.signal.zoom.nepal_stream"
         }
       ],
       "connectionTypes": [
@@ -208,13 +210,15 @@
           "id": "shade",
           "x": 0.22,
           "y": 0.6,
-          "label": "더위를 피하는 사람들"
+          "label": "더위를 피하는 사람들",
+          "zoomAssetId": "earth.signal.zoom.japan_shade"
         },
         {
           "id": "sea",
           "x": 0.78,
           "y": 0.55,
-          "label": "따뜻해진 바다"
+          "label": "따뜻해진 바다",
+          "zoomAssetId": "earth.signal.zoom.japan_sea"
         }
       ],
       "connectionTypes": [
@@ -242,13 +246,15 @@
           "id": "soil",
           "x": 0.27,
           "y": 0.7,
-          "label": "마른 땅"
+          "label": "마른 땅",
+          "zoomAssetId": "earth.signal.zoom.morocco_soil"
         },
         {
           "id": "tank",
           "x": 0.68,
           "y": 0.62,
-          "label": "빗물 모으는 통"
+          "label": "빗물 모으는 통",
+          "zoomAssetId": "earth.signal.zoom.morocco_tank"
         }
       ],
       "connectionTypes": [
@@ -276,13 +282,15 @@
           "id": "debris",
           "x": 0.28,
           "y": 0.66,
-          "label": "밀려온 플라스틱"
+          "label": "밀려온 플라스틱",
+          "zoomAssetId": "earth.signal.zoom.colombia_debris"
         },
         {
           "id": "horizon",
           "x": 0.8,
           "y": 0.32,
-          "label": "먼 바다"
+          "label": "먼 바다",
+          "zoomAssetId": "earth.signal.zoom.colombia_horizon"
         }
       ],
       "connectionTypes": [
@@ -310,13 +318,15 @@
           "id": "coral",
           "x": 0.36,
           "y": 0.52,
-          "label": "하얗게 변한 산호"
+          "label": "하얗게 변한 산호",
+          "zoomAssetId": "earth.signal.zoom.australia_coral"
         },
         {
           "id": "turtle",
           "x": 0.76,
           "y": 0.3,
-          "label": "바다거북"
+          "label": "바다거북",
+          "zoomAssetId": "earth.signal.zoom.australia_turtle"
         }
       ],
       "connectionTypes": [
@@ -345,13 +355,15 @@
           "id": "pond",
           "x": 0.27,
           "y": 0.6,
-          "label": "작아진 물웅덩이"
+          "label": "작아진 물웅덩이",
+          "zoomAssetId": "earth.signal.zoom.tanzania_pond"
         },
         {
           "id": "herd",
           "x": 0.7,
           "y": 0.18,
-          "label": "이동하는 동물"
+          "label": "이동하는 동물",
+          "zoomAssetId": "earth.signal.zoom.tanzania_herd"
         }
       ],
       "connectionTypes": [
