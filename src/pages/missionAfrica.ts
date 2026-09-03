@@ -116,9 +116,8 @@ const CSS = `
 .region-tool{position:relative;z-index:6;padding:11px 14px;border-radius:15px;background:#102f48;color:white;display:grid;gap:7px}.region-tool label{font-size:clamp(18px,1.3vw,22px);font-weight:850}.region-tool input[type=range]{width:100%;height:44px;touch-action:none;cursor:pointer}.region-tool{flex:0 0 auto}.region-tool-copy{margin:0;min-height:2.8em;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#eaf7ff;word-break:keep-all}.tool-buttons{display:flex;gap:8px}.tool-buttons button{flex:1;min-height:56px;border-radius:12px;border:2px solid #fff8;background:#fff;color:#173b53;font-weight:900;font-size:clamp(18px,1.3vw,22px)}.tool-buttons button[aria-pressed=true]{background:#ffe071;border-color:#ffc131}.region-tool.is-done{box-shadow:inset 0 0 0 3px #56dfb1}
 .lens{position:absolute;width:130px;height:130px;border:6px solid white;border-radius:50%;box-shadow:0 0 0 9999px #09283b70,0 8px 24px #0018;left:40%;top:48%;z-index:3;pointer-events:none}
 .country-detail{min-height:0;border-radius:20px;background:#fff;padding:clamp(11px,1.2vw,16px);display:flex;flex-direction:column;gap:8px;overflow:hidden;container-type:size}
-/* 사진은 16:9를 지킨다 — 글 아래 남는 높이(약 250px 제외)에 맞춰 폭을 정하고 가운데 둔다 */
+/* 사진은 16:9를 지킨다 — 글 아래 남는 높이에 맞춰 폭을 정하고 가운데 둔다. 개요·나라 페이지가 같은 폭을 쓰게 해 사진·화살표가 튀지 않는다 */
 .country-detail .detail-photo{flex:0 0 auto;align-self:center;width:min(100%,calc((100cqh - 300px) * 16 / 9));min-width:min(100%,360px);aspect-ratio:16/9;min-height:0}
-.country-detail:has(.detail-caption[hidden]) .detail-photo{width:min(100%,calc((100cqh - 70px) * 16 / 9));min-height:0}
 .detail-photo{position:relative;flex:1 1 auto;width:100%;min-height:clamp(150px,20vh,300px);padding:0;border:3px solid #fff;border-radius:16px;background:#d9eef0 center/cover no-repeat;box-shadow:0 8px 20px #0a304d33;overflow:hidden;touch-action:none;user-select:none;cursor:grab} /* pan-y로 두면 빠른 스와이프가 fling으로 잡혀 바로 다음 탭을 크롬이 삼킨다 */
 .detail-photo:active{cursor:grabbing}
 .detail-photo:focus-visible{outline:5px solid #ffe052;outline-offset:3px}
@@ -131,7 +130,6 @@ const CSS = `
 .detail-pager .sub{display:block;margin-top:3px;font:800 clamp(17px,1.25vw,21px)/1.2 var(--font-body);color:#3f7f6d}
 .detail-caption[hidden]{display:none}
 .detail-caption{flex:0 0 auto}
-.country-detail:has(.detail-caption[hidden]) .detail-photo{min-height:clamp(200px,30vh,520px)}
 .detail-caption{flex:0 0 auto;margin:0;padding:12px 15px;border-radius:14px;background:#eff7f4;border-left:7px solid #1b9a7a;font-size:clamp(19px,1.4vw,24px);line-height:1.45;color:#123f3a;word-break:keep-all}
 .detail-facts{flex:0 1 auto;min-height:0;max-height:30vh;overflow:auto;margin:0;display:grid;gap:8px;align-content:start;font-size:clamp(18px,1.3vw,22px);line-height:1.4;color:#1d3b4a}
 .detail-facts p{margin:0;word-break:keep-all}.detail-facts b{color:#155b4c;margin-right:6px}
@@ -285,7 +283,7 @@ export function createPage(): Page {
         // 0번은 권역 전체 그림, 1번부터 나라별 대표 장소 그림. 화살표나 지도 표식으로 넘긴다.
         interface DetailPage{assetId:string;alt:string;title:string;sub:string;caption:string;facts:Array<[string,string]>;caseId?:string}
         const pages:DetailPage[]=[
-          {assetId:region.sceneAssetId,alt:region.sceneAlt,title:region.name,sub:'',caption:'',facts:[]},
+          {assetId:region.sceneAssetId,alt:region.sceneAlt,title:region.name,sub:'',caption:'지도의 나라 단추를 누르거나 사진을 옆으로 넘기면 나라별 대표 장소를 볼 수 있어요.',facts:[]},
           ...cases.map((item)=>{
             const landmark=content.landmarks.find((entry)=>entry.countryCaseId===item.id);
             return {

@@ -1,5 +1,4 @@
 import { audio } from '../core/AudioManager';
-import { loadContent } from '../core/ContentRepository';
 import { bus } from '../core/EventBus';
 import { saveRepo } from '../core/SaveRepository';
 import { navigate } from '../router';
@@ -25,29 +24,6 @@ export function showFeedback(
   container.appendChild(el);
   void audio.playSfx(kind === 'success' ? 'success' : 'partial');
   if (missionId) bus.emit('MISSION_FEEDBACK', { missionId, kind, message });
-}
-
-const FALLBACK_LEARNING_LINES: Record<MissionId, string> = {
-  asia: '사실과 해석을 나누면 더 정확히 볼 수 있어요.',
-  europe: '장면을 자세히 보고, 관심을 질문으로 이어 봐요.',
-  africa: '서로 다른 지역의 삶을 살피고, 연결된 문제는 책임을 나눠 함께 풀 수 있어.',
-  americas: '같은 대륙 안에서도 자연과 생활이 달라요. 그래도 하루에는 닮은 점이 있어요.',
-  oceania: '한 선택도 사람과 자연에 다르게 닿아요.',
-  dialogue: '보고 묻고 생각을 고치면 존중이 돼요.'
-};
-
-// 문구 교체가 코드 수정 없이 되도록 common.json에서 덮어쓴다. 실패하면 폴백 유지.
-let learningLines: Record<MissionId, string> = { ...FALLBACK_LEARNING_LINES };
-
-export async function preloadCommonText(): Promise<void> {
-  try {
-    const common = await loadContent<{ learningLines?: Partial<Record<MissionId, string>> }>('common');
-    if (common.learningLines) {
-      learningLines = { ...FALLBACK_LEARNING_LINES, ...common.learningLines };
-    }
-  } catch {
-    // 로드 실패 — TS 폴백 문구 그대로 쓴다.
-  }
 }
 
 /** 미션 완료 공통 처리: 점수 경쟁 없이 완료·도장·핵심 배움만 남긴다. */
@@ -83,6 +59,3 @@ export function completeMissionFlow(
   });
   void transition.finished.then(goHome);
 }
-
-// 모듈 로드 시점에 미리 받아 둔다 — 실패해도 폴백 문구가 있어 안전.
-void preloadCommonText();

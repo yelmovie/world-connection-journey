@@ -613,16 +613,6 @@ export function createPage(): Page {
       guide = createGuide({ assetId: plane.assetId, speakerName: plane.name });
       page.insertBefore(guide.el, bottom);
 
-      // 터치 :active는 Chrome이 150ms쯤 늦게 준다 — pointerdown 즉시 is-pressed를 붙여 손끝 반응이 바로 보이게
-      page.addEventListener('pointerdown', (ev) => {
-        const target = (ev.target as HTMLElement).closest?.('.postcard,.day-card,.bag-item,.signal-token,.stop-node,.hub-pin,.lens-point,.lens-scene-card,.exp-slot,.route-card');
-        if (!target) return;
-        target.classList.add('is-pressed');
-        const release = (): void => { target.classList.remove('is-pressed'); window.removeEventListener('pointerup', release); window.removeEventListener('pointercancel', release); };
-        window.addEventListener('pointerup', release);
-        window.addEventListener('pointercancel', release);
-      });
-
       const announceGuide = (text: string, cue: HTMLElement | null = null): void => {
         guide?.say(text, { cue, autoStart: true, persist: true });
       };
