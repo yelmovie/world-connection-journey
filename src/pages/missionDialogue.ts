@@ -201,9 +201,9 @@ const DIALOGUE_CSS = `
 .dl-option-head img { width: 64px; height: 64px; object-fit: contain; }
 
 /* 새 2단계 — 긴 말 선택 대신 전·후 사진을 직접 밀고 변화 지점을 찾는다. */
-.dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,.85fr);gap:14px} /* 설명이 들어갈 옆 패널을 넓힌다 */
-.dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important;container-type:size}
-.dl-compare-photo{position:relative;flex:0 0 auto;align-self:center;aspect-ratio:16/9;width:min(100%,calc((100cqh - 86px) * 16 / 9));min-height:0;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
+.dl-visual-compare{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(340px,.85fr);gap:14px;align-items:center} /* 설명이 들어갈 옆 패널을 넓힌다 */
+.dl-compare-card{min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px!important}
+.dl-compare-photo{position:relative;flex:0 0 auto;align-self:center;aspect-ratio:16/9;width:min(100%,calc((100dvh - 400px) * 16 / 9));min-height:0;overflow:hidden;border-radius:24px;background:#cde8ee;box-shadow:inset 0 0 0 3px rgba(255,255,255,.82),var(--shadow-card)}
 .dl-compare-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
 .dl-compare-after{clip-path:inset(0 0 0 50%)}
 .dl-compare-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:5px;transform:translateX(-50%);background:#fff;box-shadow:0 0 9px rgba(4,31,51,.65);pointer-events:none} /* 드래그는 사진 전체가 받는다 */
@@ -219,7 +219,7 @@ const DIALOGUE_CSS = `
 .dl-change-hotspot.is-found{background:var(--c-success);animation:none}
 .dl-change-hotspot.is-found::after{content:'✓';display:grid;place-items:center;color:#fff;font:950 32px/1 var(--font-head)}
 @keyframes dl-hotspot-pulse{0%{box-shadow:0 0 0 0 rgba(255,207,62,.82),0 8px 20px rgba(4,30,50,.4)}100%{box-shadow:0 0 0 18px rgba(255,207,62,0),0 8px 20px rgba(4,30,50,.4)}}
-.dl-compare-side{align-self:start;max-height:100%;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
+.dl-compare-side{align-self:center;max-height:100%;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center}
 .dl-compare-person{display:grid;grid-template-columns:58px 1fr;align-items:center;gap:10px;padding:10px 13px;border-radius:18px;background:#eef8fb;text-align:left}
 .dl-compare-person span:first-child{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:var(--c-navy);color:#fff;font:950 28px/1 var(--font-head)}
 .dl-compare-person strong{display:block;font:950 clamp(22px,1.8vw,29px)/1.15 var(--font-head)}
