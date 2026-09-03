@@ -928,7 +928,7 @@ export function createPage(): Page {
         surface.addEventListener('pointerdown', (event) => {
           if (event.pointerType === 'mouse' || (event.target as HTMLElement).closest('button')) return;
           startX = event.clientX;
-          surface.setPointerCapture(event.pointerId); // 손가락이 무대 밖으로 나가도 pointerup을 받는다
+          if (event.pointerType !== 'touch') { try { surface.setPointerCapture(event.pointerId); } catch { /* 이미 사라진 포인터 무시 */ } } // 터치는 암시적 캡처라 불필요 — 명시 캡처는 크롬이 다음 탭 click을 삼킨다
         });
         surface.addEventListener('pointerup', (event) => {
           if (startX === null) return;

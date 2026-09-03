@@ -459,12 +459,6 @@ export function createPage(): Page {
         closeActiveModal = openModal(opts);
       };
 
-      const rememberCompletionModal = (): void => {
-        const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('#overlay-root .modal-actions button'));
-        const reviewButton = buttons.find((button) => button.textContent?.includes('한 번 더 보기'));
-        if (reviewButton) closeActiveModal = () => reviewButton.click();
-      };
-
       /* ===== 체크포인트 복원 ===== */
       const saved = saveRepo.get().missions.dialogue;
       if (saved.checkpointId) {
@@ -777,7 +771,7 @@ export function createPage(): Page {
             if ((event.target as HTMLElement).closest('[data-change]')) return; // 반짝이는 점은 그대로 누른다
             if (event.pointerType === 'mouse' && event.button !== 0) return;
             rect = photo.getBoundingClientRect();
-            photo.setPointerCapture(event.pointerId);
+            if (event.pointerType !== 'touch') { try { photo.setPointerCapture(event.pointerId); } catch { /* 이미 사라진 포인터 무시 */ } } // 터치는 암시적 캡처 — 명시 캡처는 다음 탭을 삼킨다
             setFromPointer(event);
           });
           photo.addEventListener('pointermove', setFromPointer);
@@ -1285,7 +1279,6 @@ export function createPage(): Page {
           earthProgress.stampAwarded = true;
           checkpoint('stage4');
           completeMissionFlow('dialogue', earth.titles.council);
-          rememberCompletionModal();
         };
         if (learn) showLearningWrap('dialogue', learn, conclude);
         else conclude();
