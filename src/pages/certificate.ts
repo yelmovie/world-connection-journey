@@ -5,6 +5,7 @@ import { saveRepo } from '../core/SaveRepository';
 import { buildTopBar } from '../ui/chrome';
 import { avatarChoice } from '../ui/avatarRoster';
 import { STAMP_ASSETS, STAMP_LABELS, STAMP_SLOTS } from '../core/stamps';
+import { showToast } from '../ui/toast';
 
 /** 인증서 한 장 — 세로 A4. 학교·학년반·번호·이름은 인쇄해서 손으로 쓰도록 빈칸으로 둔다. */
 const STYLE = `
@@ -94,6 +95,10 @@ const STYLE = `
   .cert-zoom { place-items:start center; overflow:auto; }
   .cert-zoom .cert-sheet { width:min(94vw, 640px); }
 }
+/* 이미지 저장용 렌더 자리 — 화면 밖 A4 폭(794px)에 같은 시트를 한 장 더 그려 캔버스로 굽는다 */
+.cert-export-host { position:absolute; left:-20000px; top:0; width:794px; pointer-events:none; }
+.cert-export-host .cert-sheet { width:794px; height:1123px; aspect-ratio:auto; box-shadow:none; margin:0; cursor:default; }
+.cert-export-host .cert-stamp-name { display:block; }
 @media print {
   @page { size:A4 portrait; margin:0; }
   html, body { background:#fff !important; }
@@ -101,7 +106,7 @@ const STYLE = `
   body.printing-certificate #app > :not(#scene-root), body.printing-certificate #scene-root > :not(.cert-page) { display:none !important; }
   body.printing-certificate #app, body.printing-certificate #scene-root { display:block !important; position:static !important; width:auto; height:auto; overflow:visible !important; }
   body.printing-certificate #overlay-root, body.printing-certificate .top-bar, body.printing-certificate .cert-side, body.printing-certificate .guide-wrap,
-  body.printing-certificate .cert-zoom, body.printing-certificate .cert-zoom-btn { display:none !important; }
+  body.printing-certificate .cert-zoom, body.printing-certificate .cert-zoom-btn, body.printing-certificate .cert-export-host { display:none !important; }
   body.printing-certificate::after { content:none !important; display:none !important; } /* 세로 안내 오버레이(A4 세로 판정) 숨김 */
   body.printing-certificate #scene-root > .cert-page { display:block !important; position:static; width:210mm; height:297mm; overflow:visible; background:#fff !important; }
   body.printing-certificate .cert-page .page-body { display:block; padding:0; overflow:visible; }
@@ -113,6 +118,8 @@ const STYLE = `
 }`;
 
 const BODY_TEXT = '위 학생은 <b>여섯 대륙</b>의 친구를 만나 서로 다른 생활과 문화를 <b>있는 그대로 존중</b>하고, 여러 지역의 <b>환경 신호</b>를 하나로 이어 세계 친구 지구회의에서 <b>함께 지킬 약속</b>을 만들었기에 세계 다문화 이해 &amp; 지구 지킴이 협력가로 인증합니다.';
+
+const isTouchDevice = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
 
 const formatDate = (d: Date): string => `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
 
@@ -201,8 +208,9 @@ export function createPage(): Page {
                 </div>
               </div>
               <div class="cert-side-stamps" aria-label="모은 여행 도장">${sideStamps}</div>
-              <p>인쇄해서 학교·학년반·번호·이름을 직접 쓰면 나만의 인증서가 완성돼요. A4 세로로 한 장에 나와요.</p>
+              <p>인쇄하거나 이미지로 저장해서 학교·학년반·번호·이름을 직접 쓰면 나만의 인증서가 완성돼요. A4 세로로 한 장에 나와요.</p>
               <button type="button" class="btn btn-primary btn-big" data-act="print">인증서 인쇄하기</button>
+              <button type="button" class="btn btn-primary" data-act="save">이미지로 저장하기</button>
               <button type="button" class="btn btn-ghost" data-act="zoom2">크게 보기</button>
               <button type="button" class="btn btn-ghost" data-act="map">지도로 돌아가기</button>
             </section>
@@ -235,8 +243,70 @@ export function createPage(): Page {
         closeZoom();
         document.body.classList.add('printing-certificate');
         window.addEventListener('afterprint', onAfterPrint, { once: true });
-        window.print();
+        let printed = false;
+        window.addEventListener('afterprint', () => { printed = true; }, { once: true });
+        try { window.print(); } catch { /* 아래 안내로 */ }
         window.setTimeout(onAfterPrint, 1500); // afterprint가 안 오는 브라우저 대비
+        // 설치형(standalone) iOS 등 인쇄 창이 안 뜨는 환경 — 이미지 저장 쪽으로 안내
+        if (isTouchDevice) window.setTimeout(() => { if (!printed && document.hasFocus()) showToast('인쇄 창이 안 뜨면 "이미지로 저장하기"로 갤러리에 담아 인쇄해 보세요.', 'info', 4200); }, 2200);
+      });
+
+      // ---- 이미지로 저장 ----
+      // 저장 버튼을 누르기 전에 미리 구워 둔다 — 폰의 공유 시트(navigator.share)는 터치 직후에만 열리므로
+      // 누른 뒤 1~2초 걸리는 렌더를 기다리면 열리지 않는다.
+      const fileName = `세계를잇는여행-인증서-${new Date().toISOString().slice(0, 10)}.png`;
+      let blobPromise: Promise<Blob | null> | null = null;
+      const renderBlob = (): Promise<Blob | null> => {
+        if (!blobPromise) {
+          // 렌더용 시트는 굽는 동안만 화면 밖에 붙였다가 뗀다(인쇄·점검 도구에 남지 않게)
+          const exportHost = document.createElement('div');
+          exportHost.className = 'cert-export-host';
+          exportHost.setAttribute('aria-hidden', 'true');
+          exportHost.innerHTML = sheetHTML;
+          blobPromise = (async () => {
+            page?.appendChild(exportHost);
+            const sheet = exportHost.querySelector<HTMLElement>('.cert-sheet');
+            if (!sheet) return null;
+            await Promise.all([document.fonts?.ready, ...Array.from(sheet.querySelectorAll('img')).map((img) => img.complete ? null : new Promise<void>((r) => { img.onload = img.onerror = () => r(); }))]);
+            const { default: html2canvas } = await import('html2canvas');
+            const canvas = await html2canvas(sheet, { scale: 2, useCORS: true, backgroundColor: '#fffdf6', logging: false, width: 794, height: 1123, windowWidth: 794 });
+            return await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'));
+          })().catch((err) => { console.warn('[cert] 이미지 렌더 실패', err); blobPromise = null; return null; })
+            .finally(() => exportHost.remove());
+        }
+        return blobPromise;
+      };
+      const warm = () => { void renderBlob(); };
+      const ric = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+      if (ric) ric.call(window, warm); else window.setTimeout(warm, 600);
+
+      const downloadBlob = (blob: Blob): void => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      };
+      const shareBlob = async (blob: Blob): Promise<boolean> => {
+        const file = new File([blob], fileName, { type: 'image/png' });
+        const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
+        if (!isTouchDevice || typeof nav.share !== 'function' || !nav.canShare?.({ files: [file] })) return false;
+        try { await nav.share({ files: [file], title: '세계를 잇는 여행 인증서' }); return true; }
+        catch (err) { return (err as { name?: string })?.name === 'AbortError'; } // 사용자가 닫은 건 성공으로 본다(다운로드로 또 띄우지 않음)
+      };
+      const saveBtn = body.querySelector<HTMLButtonElement>('[data-act="save"]');
+      saveBtn?.addEventListener('click', async () => {
+        closeZoom();
+        saveBtn.disabled = true;
+        const label = saveBtn.textContent;
+        saveBtn.textContent = '이미지 만드는 중…';
+        try {
+          const blob = await renderBlob();
+          if (!blob) { showToast('이미지를 만들지 못했어요. "인증서 인쇄하기"에서 PDF로 저장해 보세요.', 'warn', 4200); return; }
+          if (await shareBlob(blob)) return; // 폰: 공유 시트에서 갤러리 저장·카톡 전송
+          downloadBlob(blob);
+          showToast('인증서 이미지를 저장했어요. 다운로드 폴더를 확인해 보세요.', 'success', 3200);
+        } finally { saveBtn.disabled = false; saveBtn.textContent = label; }
       });
       body.querySelector('[data-act="map"]')?.addEventListener('click', () => navigate('#/map'));
     },
