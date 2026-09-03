@@ -15,10 +15,6 @@ import { enableMapZoom } from '../ui/mapZoom';
 import { enableRangeDrag } from '../ui/dnd';
 import { showToast } from '../ui/toast';
 
-type Hotspot = { id: string; x: number; y: number; label: string };
-/** 사진 속 점(핫스팟)은 지형·건물을 짚어 주는 '자연·명소' 장면에만 둔다 — 생활·문화 장면은 점 없이 설명과 발견 문장을 바로 보여 준다(클릭 피로 방지). */
-const HOTSPOT_CATEGORIES = new Set(['nature', 'landmark']);
-const keepHotspots = <T,>(category: string, spots: T[]): T[] => (HOTSPOT_CATEGORIES.has(category) ? spots : []);
 type Area = { id: string; name: string; short: string; description: string; x: number; y: number; color: string };
 type Example = {
   id: string;
@@ -40,7 +36,6 @@ type Scene = {
   summary: string;
   detail: string;
   discovery: string;
-  hotspots: Hotspot[];
   sourceTitle?: string;
   sourceUrl?: string;
 };
@@ -98,7 +93,7 @@ interface AsiaSource {
   requirements: { minRegions: number; minExamples: number; minDiscoveries: number; minSignals: number };
   regions: Array<{ id: string; nameKo: string; silhouette: string; mapPosition: { xPercent: number; yPercent: number } }>;
   countryExamples: Array<{ id: string; regionId: string; countryNameKo: string; placeNameKo: string; scopeNoteKo: string; sourceTitle: string; sourceUrl: string; sceneIds: string[] }>;
-  scenes: Array<{ id: string; exampleId: string; category: string; titleKo: string; imageAssetId: string; summaryKo: string; detailKo: string; discoveryKo: string; hotspots: Array<{ id: string; x: number; y: number; labelKo: string }>; sourceTitle?: string; sourceUrl?: string }>;
+  scenes: Array<{ id: string; exampleId: string; category: string; titleKo: string; imageAssetId: string; summaryKo: string; detailKo: string; discoveryKo: string; sourceTitle?: string; sourceUrl?: string }>;
   signals: Array<{ id: string; titleKo: string; promptKo: string; connectionTypes: string[]; beforeAssetId: string; afterAssetId: string; sourceTitle: string; sourceUrl: string }>;
   perspectives: Array<{ id: string; nameKo: string; labelKo: string; lineKo: string; worryKo: string; assetId: string }>;
   actions: Array<{ id: string; tier: string; nameKo: string; detailKo: string }>;
@@ -109,7 +104,7 @@ interface OceaniaSource {
   requirements: { minZones: number; minExamples: number; minDiscoveries: number; minSignals: number };
   zones: Array<{ id: string; name: string; short: string; x: number; y: number; color: string; description: string }>;
   countryExamples: Array<{ id: string; zoneId: string; country: string; place: string; scopeNote: string; sourceTitle: string; sourceUrl: string }>;
-  scenes: Array<{ id: string; zoneId: string; exampleId: string; category: string; categoryLabel: string; title: string; assetId: string; summary: string; detail: string; discovery: string; hotspots: Hotspot[]; sourceTitle?: string; sourceUrl?: string }>;
+  scenes: Array<{ id: string; zoneId: string; exampleId: string; category: string; categoryLabel: string; title: string; assetId: string; summary: string; detail: string; discovery: string; sourceTitle?: string; sourceUrl?: string }>;
   signals: Array<{ id: string; title: string; prompt: string; connectionType: string; connectionNote: string; beforeAssetId: string; afterAssetId: string; sourceTitle: string; sourceUrl: string }>;
   perspectives: Array<{ id: string; name: string; role: string; line: string; imageId: string }>;
   actions: Array<{ id: string; tier: string; label: string; metrics: Record<string, number> }>;
@@ -294,22 +289,12 @@ const PAGE_CSS = `
 .regional-wipe-tag.is-after{right:10px}
 .regional-wipe{position:absolute;left:0;right:0;bottom:8px;width:calc(100% - 20px);margin:0 10px;height:44px;opacity:.92;accent-color:#f2c14e}
 /* 노란 원판이 그림을 가려서 속은 비우고 흰 테두리 + 퍼지는 물결만 남긴다 */
-.regional-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:56px;height:56px;padding:0;border-radius:50%;border:3px solid rgba(255,255,255,.98);background:rgba(13,53,76,.08);box-shadow:0 0 10px rgba(6,28,45,.5),inset 0 0 10px rgba(6,28,45,.35);cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
-.regional-hotspot::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:3px solid rgba(255,255,255,.8);opacity:0;pointer-events:none}
-.regional-hotspot:not(.is-found)::after{animation:regional-ping 1.6s ease-out infinite}
-@keyframes regional-ping{0%{transform:scale(.8);opacity:.95}100%{transform:scale(1.7);opacity:0}}
-.regional-hotspot:hover,.regional-hotspot:focus-visible{transform:translate(-50%,-50%) scale(1.1);outline:none;border-color:#ffe077;background:rgba(255,224,119,.18)}
-.regional-hotspot.is-found{border-color:var(--c-success);background:rgba(36,151,100,.35);box-shadow:0 0 10px rgba(6,28,45,.45),inset 0 0 0 3px rgba(255,255,255,.68)}
-.regional-hotspot.is-found::before{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font:950 25px/1 var(--font-head);text-shadow:0 2px 4px rgba(3,35,28,.75)}
-.regional-hotspot.is-active{transform:translate(-50%,-50%) scale(1.12);border-color:#ffd34f;background:rgba(255,199,54,.5);box-shadow:0 0 0 5px rgba(255,211,79,.32),0 8px 18px rgba(6,28,45,.5)}
-@media(prefers-reduced-motion:reduce){.regional-hotspot::after{animation:none!important;opacity:.6}}
 /* 터치 응답 — 끌기 면은 브라우저 스크롤에 뺏기지 않게, 누르는 것은 100ms 안에 눌린 티가 나게 */
 .regional-modal-visual[data-scene-visual]{touch-action:none;user-select:none;-webkit-user-select:none} /* pan-y면 빠른 스와이프가 fling으로 잡혀 다음 탭을 삼킨다 */
 .regional-modal-visual.is-wipe{touch-action:none;cursor:ew-resize;user-select:none;-webkit-user-select:none}
 .regional-pin:active{transform:translate(-50%,-50%) scale(.95);box-shadow:0 3px 10px rgba(5,30,50,.28)}
 .regional-pin.is-active:active{transform:translate(-50%,-52%) scale(1)}
 .regional-country-shortcut:active{transform:translate(-50%,-50%) scale(.95);box-shadow:0 3px 10px rgba(5,30,50,.25)}
-.regional-hotspot:active{transform:translate(-50%,-50%) scale(.9)}
 .regional-photo:active{transform:scale(.98)}
 .regional-choice:active,.regional-signal:active,.regional-action:active{transform:scale(.975)}
 :is(.regional-oceania,.regional-asia,.regional-europe) .regional-note-item:active{transform:scale(.985);background:rgba(255,255,255,.85)}
@@ -328,15 +313,9 @@ const PAGE_CSS = `
 .regional-modal-copy p{margin:0;max-width:100%}
 .regional-modal-copy.is-culture{align-self:stretch;height:100%;max-height:72vh;padding-right:0;grid-template-rows:auto auto 1fr;overflow:visible}
 .regional-modal-copy.is-culture .regional-spot-detail{align-content:center}
-.regional-scene-guide{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:11px 13px;border:2px solid #e8bf4e;border-radius:14px;background:#fff3cf;color:#5b430a}
-.regional-scene-guide strong{font-size:clamp(17px,1.25vw,21px);line-height:1.25}
-.regional-scene-count{min-width:64px;padding:5px 10px;border-radius:999px;background:#173b53;color:#fff;text-align:center;font:900 clamp(16px,1.1vw,19px)/1.2 var(--font-head)}
 .regional-spot-detail{min-height:0;padding:14px 16px;display:grid;align-content:start;gap:8px;border:3px solid #b9d9dc;border-radius:18px;background:rgba(255,255,255,.96);box-shadow:0 8px 20px rgba(18,60,81,.1);transition:border-color .2s ease,box-shadow .2s ease}
-.regional-spot-detail.is-empty{justify-items:center;text-align:center;border-style:dashed;background:rgba(246,251,250,.84);color:var(--c-ink-soft)}
-.regional-spot-detail.is-revealed{border-color:var(--c-turquoise);box-shadow:0 12px 28px rgba(18,128,123,.18);animation:regional-detail-in .28s ease-out}
 .regional-spot-detail h4{font-family:var(--font-head);font-size:clamp(24px,1.9vw,31px);line-height:1.2;color:var(--c-navy)}
 .regional-spot-detail p{font-size:clamp(18px,1.35vw,23px);line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
-@keyframes regional-detail-in{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .regional-discovery{padding:12px 14px;border-left:5px solid var(--c-turquoise);border-radius:14px;background:#eefaf7;font-weight:800}
 .modal:has(.regional-modal){width:min(1320px,96vw);border-radius:28px;overflow:hidden}
 @media(min-width:941px){.regional-side{overflow:hidden;padding:13px 14px;gap:7px}.regional-side p{font-size:max(16px,var(--fs-small));line-height:1.35}.regional-photo-grid{flex:1 1 auto;min-height:0;gap:9px;grid-auto-rows:minmax(clamp(132px,18vh,210px),1fr)}.regional-photo img{height:100%;min-height:clamp(90px,13vh,154px);aspect-ratio:auto}}
@@ -476,7 +455,7 @@ function asiaModel(content: AsiaSource): RegionalModel {
     requirements: { minAreas: content.requirements.minRegions, minExamples: content.requirements.minExamples, minDiscoveries: content.requirements.minDiscoveries, minSignals: content.requirements.minSignals },
     areas: content.regions.map((item, index) => ({ id: item.id, name: item.nameKo, short: item.silhouette, description: `${item.nameKo}의 자연과 생활 사례를 살펴봐.`, x: item.mapPosition.xPercent, y: item.mapPosition.yPercent, color: COLORS[index % COLORS.length] ?? COLORS[0]! })),
     examples: content.countryExamples.map((item) => ({ id: item.id, areaId: item.regionId, country: item.countryNameKo, place: item.placeNameKo, scope: item.scopeNoteKo, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: item.sceneIds })),
-    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.category === 'nature' ? '자연과 공간' : item.category === 'daily' ? '오늘날의 생활' : item.category === 'landmark' ? '대표 장소 관찰' : '이어 온 생활과 지혜', title: item.titleKo, assetId: item.imageAssetId, summary: item.summaryKo, detail: item.detailKo, discovery: item.discoveryKo, hotspots: keepHotspots(item.category, item.hotspots.map((spot) => ({ id: spot.id, x: spot.x * 100, y: spot.y * 100, label: spot.labelKo }))), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.category === 'nature' ? '자연과 공간' : item.category === 'daily' ? '오늘날의 생활' : item.category === 'landmark' ? '대표 장소 관찰' : '이어 온 생활과 지혜', title: item.titleKo, assetId: item.imageAssetId, summary: item.summaryKo, detail: item.detailKo, discovery: item.discoveryKo, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     signals: content.signals.map((item) => {
       const visual = signalVisuals[item.id];
       const lesson = signalLessons[item.id];
@@ -507,7 +486,7 @@ function oceaniaModel(content: OceaniaSource): RegionalModel {
       const landmarkIds = content.scenes.filter((scene) => scene.category === 'landmark' && sameCountryIds.has(scene.exampleId)).map((scene) => scene.id);
       return { id: item.id, areaId: item.zoneId, country: item.country, place: item.place, scope: item.scopeNote, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl, sceneIds: [...(scenesByZone.get(item.zoneId) ?? []), ...landmarkIds] };
     }),
-    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.categoryLabel, title: item.title, assetId: item.assetId, summary: item.summary, detail: item.detail, discovery: item.discovery, hotspots: keepHotspots(item.category, item.hotspots), sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
+    scenes: content.scenes.map((item) => ({ id: item.id, exampleId: item.exampleId, category: item.category, categoryLabel: item.categoryLabel, title: item.title, assetId: item.assetId, summary: item.summary, detail: item.detail, discovery: item.discovery, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl })),
     signals: content.signals.filter((item) => item.id !== 'water_energy').map((item) => {
       const visual = signalVisuals[item.id];
       return { id: item.id, title: item.title, prompt: item.prompt, connection: `${item.connectionType} · ${item.connectionNote}`, issueId: issueFromConnections([item.connectionType]), beforeAssetId: visual?.before ?? item.beforeAssetId, afterAssetId: visual?.after ?? item.afterAssetId, sourceTitle: item.sourceTitle, sourceUrl: item.sourceUrl };
@@ -563,7 +542,6 @@ function europeModel(content: EuropeSource): RegionalModel {
       summary: visual.caption,
       detail: `사진에서 ${visual.lookFor}을 찾아봐.`,
       discovery: `${country.name}의 한 장면을 다른 나라의 모습과 비교해 봐.`,
-      hotspots: [],
       sourceTitle: visual.sourceTitle,
       sourceUrl: visual.sourceUrl
     }))),
@@ -644,8 +622,6 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
           add(state.viewedSceneIds, scene.id);
           syncAreaCompletion();
           void audio.playSfx('success');
-          const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
-          if (hint) hint.textContent = '✓ 다 살펴봤어!';
           modalBody.querySelector<HTMLElement>('.regional-discovery')?.classList.add('is-lit');
           persist();
           render();
@@ -656,66 +632,27 @@ function createRegionalPage(load: () => Promise<RegionalModel>): Page {
             showToast(`${galleryExample.country} 사진을 모두 살펴봤어! 다른 나라도 둘러볼까?`, 'success');
           }
         };
-        if (scene.hotspots.length === 0) markViewed();
-        const viewed = state.viewedSceneIds.includes(scene.id);
-        const foundHotspotIds = new Set<string>(viewed ? scene.hotspots.map((spot) => spot.id) : []);
+        markViewed();
         // "한 모습으로 설명하지 않는다"류의 범위 안내(scope)는 팝업마다 반복하지 않는다.
         // 설정 > 학생용 가이드에 한 번만 두고, 여기서는 관찰한 내용만 보여 준다.
-        const spotCopy = (index: number): string => index === 0
-          ? [scene.summary, scene.detail].filter(Boolean).join(' ')
-          : scene.discovery;
         modalBody.innerHTML = `
           <div class="regional-modal-visual" data-scene-visual>
             <img src="${imageFor(model, scene.assetId)}" alt="${esc(scene.title)} 학습용 재현 이미지">
-            ${scene.hotspots.map((spot) => `<button type="button" class="regional-hotspot${viewed ? ' is-found' : ''}" style="--x:${spot.x}%;--y:${spot.y}%" data-hotspot="${spot.id}" aria-label="${esc(spot.label)} 설명 보기" aria-pressed="false"></button>`).join('')}
             ${sceneNavigation}
           </div>
           <div class="regional-modal-copy${scene.category === 'culture' ? ' is-culture' : ''}">
             <span class="chip">${esc(scene.categoryLabel)}</span>
             ${scene.category === 'culture' ? '' : `<h3>${esc(scene.title)}</h3>`}
-            ${scene.hotspots.length ? `<div class="regional-scene-guide"><strong data-scene-hint>${viewed ? '점을 누르면 설명을 다시 볼 수 있어!' : '사진 속 반짝이는 점을 눌러 자세히 살펴봐!'}</strong><span class="regional-scene-count" data-scene-count>${foundHotspotIds.size} / ${scene.hotspots.length}</span></div>` : ''}
-            <section class="regional-spot-detail" data-spot-detail aria-live="polite">
-              ${scene.category === 'culture' ? '' : `<h4 data-spot-title>${esc(scene.title)}</h4>`}
-              <p data-spot-copy>${esc([scene.summary, scene.detail].filter(Boolean).join(' '))}</p>
-              ${scene.hotspots.length === 0 && scene.discovery ? `<p class="regional-spot-discovery">${esc(scene.discovery)}</p>` : ''}
+            <section class="regional-spot-detail">
+              <p>${esc([scene.summary, scene.detail].filter(Boolean).join(' '))}</p>
+              ${scene.discovery ? `<p class="regional-spot-discovery">${esc(scene.discovery)}</p>` : ''}
             </section>
           </div>`;
-        modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((button) => button.addEventListener('click', () => {
-          const hotspot = scene.hotspots.find((item) => item.id === button.dataset.hotspot);
-          if (!hotspot) return;
-          const index = scene.hotspots.indexOf(hotspot);
-          const wasFound = foundHotspotIds.has(hotspot.id);
-          foundHotspotIds.add(hotspot.id);
-          modalBody.querySelectorAll<HTMLButtonElement>('[data-hotspot]').forEach((item) => {
-            const active = item === button;
-            item.classList.toggle('is-active', active);
-            item.setAttribute('aria-pressed', String(active));
-          });
-          button.classList.add('is-found');
-          const detail = modalBody.querySelector<HTMLElement>('[data-spot-detail]');
-          const title = modalBody.querySelector<HTMLElement>('[data-spot-title]');
-          const copy = modalBody.querySelector<HTMLElement>('[data-spot-copy]');
-          const count = modalBody.querySelector<HTMLElement>('[data-scene-count]');
-          const hint = modalBody.querySelector<HTMLElement>('[data-scene-hint]');
-          if (detail) {
-            detail.classList.remove('is-empty', 'is-revealed');
-            void detail.offsetWidth;
-            detail.classList.add('is-revealed');
-          }
-          if (title) title.textContent = hotspot.label;
-          if (copy) copy.textContent = spotCopy(index);
-          if (count) count.textContent = `${foundHotspotIds.size} / ${scene.hotspots.length}`;
-          if (hint) hint.textContent = foundHotspotIds.size >= scene.hotspots.length
-            ? '✓ 두 점을 다 살펴봤어!'
-            : '좋아! 이제 다른 반짝이는 점도 눌러 봐.';
-          if (!wasFound) void audio.playSfx('pickup');
-          if (foundHotspotIds.size >= scene.hotspots.length) markViewed();
-        }));
         modalBody.querySelectorAll<HTMLButtonElement>('[data-scene-nav]').forEach((button) => button.addEventListener('click', () => {
           const target = model.scenes.find((item) => item.id === button.dataset.sceneNav);
           if (target) openScene(target);
         }));
-        // 사진을 옆으로 밀어도 화살표와 같게 넘어간다 — 점(hotspot)·화살표 위에서 시작한 건 그 버튼 몫.
+        // 사진을 옆으로 밀어도 화살표와 같게 넘어간다 — 화살표 위에서 시작한 건 그 버튼 몫.
         const sceneVisual = modalBody.querySelector<HTMLElement>('[data-scene-visual]');
         if (sceneVisual && sceneNavigation && previousScene && nextScene) {
           let swipeFrom: { id: number; x: number; y: number } | null = null;
