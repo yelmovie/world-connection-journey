@@ -111,11 +111,12 @@ describe('공동약속', () => {
     expect(lines[0]).toContain('바다와 플라스틱 쓰레기');
     expect(lines[2]).toContain('다회용 물병');
     expect(lines[5]).toContain('월요일 아침');
-    expect(personalActionIssue(content, '환경 보호')).not.toBeNull();
+    expect(personalActionIssue(content, '환경')).not.toBeNull();
     expect(personalActionIssue(content, p.personalActionDraft)).toBeNull();
-    // 도배 글자와 육하 단서 없는 문장은 통과하지 못한다 (P1-11)
+    // 도배 글자는 통과하지 못하지만, 다섯 글자 이상이면 육하 단서 없이도 통과한다(실기기 점검 2026-09-04: 길이 제한 완화)
     expect(personalActionIssue(content, 'ㅋㅋㅋㅋㅋㅋㅋㅋ')).not.toBeNull();
-    expect(personalActionIssue(content, '물병을 챙겨서 아껴 쓰겠다')).not.toBeNull();
+    expect(personalActionIssue(content, '물병을 챙겨서 아껴 쓰겠다')).toBeNull();
+    expect(personalActionIssue(content, '물을 끝까지 먹을래')).toBeNull();
     expect(personalActionIssue(content, '매일 아침 물병을 챙겨서 아껴 쓰겠다')).toBeNull();
   });
 

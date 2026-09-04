@@ -243,27 +243,13 @@ export function canRunSimulation(content: EarthContent, actionIds: string[]): bo
   return content.actionTiers.every((t) => tiers.has(t.id));
 }
 
-/** 언제(시간)·어디서(장소)·누구와(사람) 단서 — 하나라도 있으면 실천이 구체적이라고 본다. */
-const CONCRETE_CUES = [
-  /아침|점심|저녁|매일|매주|매달|주말|요일|등굣길|하굣길|방과|급식|쉬는 시간|[0-9]+시|때마다|마다|뒤에|전에|끝나면/, // 언제
-  /학교|교실|우리 반|집|동네|마을|공원|운동장|도서관|급식실|시장|바닷가|물가|에서/, // 어디서
-  /친구|가족|엄마|아빠|부모님|동생|언니|오빠|형|누나|선생님|우리 반|함께|같이|끼리/ // 누구와
-];
-
-/** 학생 실천 문장 검사: 짧거나 뭉뚱그린 표현, 반복 문자 도배, 육하 단서 없는 문장이면 도움 질문을 돌려준다. */
-export function personalActionIssue(content: EarthContent, draft: string): string | null {
+/** 학생 실천 문장 검사: 5글자 미만이거나 같은 글자 도배면 도움 문구를 돌려준다. 그 외(육하 단서 유무 등)는 묻지 않고 통과시킨다. */
+export function personalActionIssue(_content: EarthContent, draft: string): string | null {
   const t = draft.trim();
-  if (t.length < 8) return '언제·어디서·무엇을 할지 조금 더 구체적으로 써 봐요.';
+  if (t.length < 5) return '내가 할 일을 다섯 글자 이상으로 써 봐요.';
   // "ㅋㅋㅋㅋㅋㅋㅋㅋ"처럼 같은 글자 도배로는 통과할 수 없다
   if (/(.)\1{4,}/.test(t) || new Set(t.replace(/\s/g, '')).size < 3) {
     return '장난 글자 말고, 진짜 해 볼 일을 문장으로 써 봐요.';
-  }
-  if (content.pledge.vagueWords.some((w) => t.includes(w)) && t.length < 20) {
-    return `"${t}"만으로는 무엇을 할지 알기 어려워요. ${content.pledge.helperQuestions[0]}`;
-  }
-  if (!CONCRETE_CUES.some((cue) => cue.test(t))) {
-    const asks = content.pledge.helperQuestions.slice(0, 3).join(' ');
-    return `좋아! 여기에 하나만 더 — ${asks} 중 한 가지를 문장에 넣어 봐요.`;
   }
   return null;
 }

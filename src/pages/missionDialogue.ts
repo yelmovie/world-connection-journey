@@ -230,10 +230,7 @@ const DIALOGUE_CSS = `
 .dl-compare-result b{font:950 clamp(20px,1.5vw,25px)/1.25 var(--font-head)}
 .dl-compare-result span{font:700 clamp(16px,1.15vw,20px)/1.45 var(--font-body);color:#1f4d42;word-break:keep-all}
 .dl-compare-photo{cursor:ew-resize;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.dl-photo-progress{margin-top:4px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.dl-photo-progress span{height:12px;border-radius:999px;background:#c8d6dc;box-shadow:inset 0 2px 4px rgba(0,0,0,.12)}
-.dl-photo-progress span.is-done{background:var(--c-success)}.dl-photo-progress span.is-now{background:var(--c-gold)}
-@media(max-width:940px) and (orientation:portrait){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-photo-progress{grid-column:1/-1}.dl-compare-result{min-height:100px}}
+@media(max-width:940px) and (orientation:portrait){.dl-visual-compare{grid-template-columns:1fr}.dl-compare-side{display:grid;grid-template-columns:1fr 1fr}.dl-compare-result{min-height:100px}}
 @media(max-height:720px) and (min-width:941px){.dl-compare-person span:first-child{width:48px;height:48px}.dl-compare-person{grid-template-columns:48px 1fr}.dl-compare-result{min-height:96px}}
 
 /* 3단계 — 왼쪽 인물·나침반 / 오른쪽 대화 */
@@ -381,8 +378,6 @@ const DIALOGUE_CSS = `
   .dl-compare-result { min-height:0; padding:8px 10px; gap:4px; }
   .dl-compare-result b { font-size:17px; }
   .dl-compare-result span { font-size:14px; line-height:1.35; }
-  .dl-photo-progress { margin-top:0; }
-  .dl-photo-progress span { height:8px; }
   /* 3단계: 초상화 왼쪽·이름·나침반·상황 버튼 오른쪽으로 접어 왼쪽 칸이 넘치지 않게, 대화는 오른쪽 칸 안에 */
   .dl-talk { grid-template-columns:minmax(250px,.6fr) minmax(0,1.4fr); gap:8px; }
   .dl-who .chip, .dl-compass .c-num { white-space:nowrap; }
@@ -440,12 +435,10 @@ const DIALOGUE_CSS = `
   .dl-compare-person strong { font-size:18px; }
   .dl-compare-person small { font-size:13px; }
   .dl-compare-mission { padding:6px 10px; font-size:16px; border-width:2px; }
-  .dl-compare-result, .dl-photo-progress { grid-column:1/-1; }
+  .dl-compare-result { grid-column:1/-1; }
   .dl-compare-result { min-height:0; padding:8px 10px; gap:4px; }
   .dl-compare-result b { font-size:16px; }
   .dl-compare-result span { font-size:14px; line-height:1.35; }
-  .dl-photo-progress { margin-top:0; }
-  .dl-photo-progress span { height:8px; }
   /* 경청 */
   .dl-listen { gap:6px 8px; }
   .dl-listen.is-tight { padding:6px; }
@@ -826,11 +819,6 @@ export function createPage(): Page {
         let ready = false;
         let resolved = false;
 
-        const progress = VISUAL_COMPARE_SCENES.map((item, itemIndex) => {
-          const state = visualCompareDone.has(item.id) ? 'is-done' : itemIndex === index ? 'is-now' : '';
-          return `<span class="${state}" aria-hidden="true"></span>`;
-        }).join('');
-
         body.innerHTML = `
           <div class="dl-stage">
             <div class="dl-head">
@@ -857,7 +845,6 @@ export function createPage(): Page {
                 </div>
                 <div class="dl-compare-mission" data-mission>${scene.mission}</div>
                 <div class="dl-compare-result" data-result hidden></div>
-                <div class="dl-photo-progress" aria-label="사진 ${index + 1} / ${VISUAL_COMPARE_SCENES.length}">${progress}</div>
               </aside>
             </section>
           </div>`;

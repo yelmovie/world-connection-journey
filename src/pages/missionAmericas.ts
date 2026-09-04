@@ -532,6 +532,14 @@ const PAGE_CSS = `
   .signal-final { grid-template-columns:minmax(0,1fr); align-content:safe center; }
   .signal-token { width:min(920px,100%); }
 }
+/* 태블릿·노트북 가로(1101px 이상 폭, 창 높이 ≤1060px — 1280×800·1366×768·1536×864·1680×1050·1920×950): 지도 높이가 510~730px라
+   캐나다(y13%)·미국(y30%) 핀 간격이 87~124px뿐인데 기본 핀(얼굴 79~94px+이름표 32px)이 그보다 커서 캐나다 이름표가 미국 얼굴 뒤에 숨었다
+   (실기기 2026-09-04). ≤1100px 규칙처럼 얼굴을 줄이고 이름표를 옆으로. 1920×1080 전체화면(지도 862px)은 기본 그대로 */
+@media (min-width:1101px) and (max-height:1060px) {
+  .hub-pin { width:clamp(60px,5.6vw,84px); gap:0; }
+  .hub-pin img { width:clamp(60px,5.6vw,84px); height:clamp(60px,5.6vw,84px); border-width:3px; }
+  .hub-pin span { position:absolute; left:calc(100% + 4px); top:50%; translate:0 -50%; padding:4px 11px; }
+}
 /* 폰 가로(≤900px 폭 + 낮은 창): 지도·대화창 / 장면·지점 패널을 세로로 쌓지 않고 나란히 둔다 —
    쌓으면 지도가 카드 밑에 납작하게 눌린다(세로 태블릿의 스택 규칙은 그대로) */
 @media (max-width:900px) and (max-height:620px) {

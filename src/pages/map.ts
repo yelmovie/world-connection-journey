@@ -8,6 +8,7 @@ import { createPhaserHost, GAME_H, GAME_W, type PhaserHost } from '../core/phase
 import { buildTopBar } from '../ui/chrome';
 import { createGuide, type GuideController } from '../ui/guide';
 import { burstConfetti } from '../ui/fx';
+import { withJosa } from '../core/josa';
 import {
   cancelJourneyTransition,
   consumeMissionReturn,
@@ -456,7 +457,7 @@ export function createPage(): Page {
           ${isLocked ? `<p class="map-brief__locked">${lockMessage}</p>` : ''}
           ${mission.status === 'completed' && spot.id !== 'dialogue' && !hasLearnCardFor(spot.id) ? '<p class="map-brief__replay">아직 이 여행의 배움 카드를 받지 못했어. 다시 탐험하면 받을 수 있어!</p>' : ''}
           <div class="map-brief__actions">
-            <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${spot.name}로 출발하기`}</button>
+            <button class="btn btn-primary btn-big" data-act="depart" ${isLocked ? 'disabled' : ''}>${isLocked ? '1~5번 완료 후 시작하기' : photosArrived ? '환경 신호 확인하기' : mission.status === 'completed' ? (spot.id === 'dialogue' ? '지구회의 다시 열기' : `${spot.name} 다시 탐험하기`) : spot.id === 'dialogue' ? '세계 친구 만나러 가기' : `${withJosa(spot.name, '으로', '로')} 출발하기`}</button>
             ${currentSave.completion.unlocked ? '<button class="btn btn-ghost" data-act="completion">엔딩 영상 보기</button><button class="btn btn-ghost" data-act="certificate">인증서 보기</button>' : ''}
           </div>`;
         const depart = brief.querySelector<HTMLButtonElement>('[data-act="depart"]');
@@ -471,7 +472,7 @@ export function createPage(): Page {
           try {
             const transition = playJourneyTransition({
               kind: 'flight',
-              label: `${spot.name}로 날아가요!`,
+              label: `${withJosa(spot.name, '으로', '로')} 날아가요!`,
               assetId: selectedPlanePortrait,
               companionAssetId: missionCompanionAssetId(spot.id, selectedPlaneFlight)
             });
