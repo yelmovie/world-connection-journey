@@ -1,0 +1,24 @@
+# Runtime assets are already optimized under public/. Keep local source art,
+# review captures, and generated work files out of Vercel uploads.
+/assets/
+/_unused/
+/background/
+/final/
+/intro/
+/3d assets/
+/sound/
+/title/
+/samplepages/
+/docs/
+/data/
+
+# Local build, dependency, browser QA, and temporary output.
+/.git/
+/.vercel/
+/node_modules/
+/dist/
+/coverage/
+/.tmp/
+/.qa-chrome-*/
+/qa-*.png
+/*.log

@@ -27,3 +27,5 @@ qa-*.png
 final/
 intro/
 docs/reviews/shots/
+
+.vercel
