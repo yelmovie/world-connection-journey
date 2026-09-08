@@ -200,8 +200,8 @@
       "id": "china_beijing",
       "regionId": "east",
       "countryNameKo": "중국",
-      "placeNameKo": "베이징·상하이·장자제",
-      "scopeNoteKo": "이 장면들은 베이징·상하이·장자제에서 볼 수 있는 서로 다른 모습이에요. 중국의 모든 도시와 자연을 한 모습으로 대표하지 않아요.",
+      "placeNameKo": "베이징·상하이·장가계",
+      "scopeNoteKo": "이 장면들은 베이징·상하이·장가계에서 볼 수 있는 서로 다른 모습이에요. 중국의 모든 도시와 자연을 한 모습으로 대표하지 않아요.",
       "sourceTitle": "UNESCO 우링위안 풍경명승지역",
       "sourceUrl": "https://whc.unesco.org/en/list/640/",
       "lastVerifiedAt": "2026-09-08",
@@ -393,10 +393,10 @@
       "id": "china_nature",
       "exampleId": "china_beijing",
       "category": "nature",
-      "titleKo": "장자제의 돌기둥 숲",
+      "titleKo": "장가계의 돌기둥 숲",
       "imageAssetId": "asia.china.3",
       "summaryKo": "높고 가느다란 돌기둥이 안개 속에 숲처럼 이어져 있어.",
-      "detailKo": "장자제 일대의 우링위안에는 아주 오랜 시간 비와 바람, 흐르는 물의 영향을 받은 사암 돌기둥과 깊은 골짜기가 이어져.",
+      "detailKo": "장가계 일대의 우링위안에는 아주 오랜 시간 비와 바람, 흐르는 물의 영향을 받은 사암 돌기둥과 깊은 골짜기가 이어져.",
       "discoveryKo": "비와 바람, 흐르는 물은 오랜 시간에 걸쳐 땅의 모습을 바꿔.",
       "hotspots": [
         {

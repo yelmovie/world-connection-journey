@@ -3,7 +3,7 @@
  * VERSION은 package.json의 version과 맞춘다. 배포 버전을 올릴 때 여기도 함께 수정하면
  * activate 단계에서 구버전 캐시가 통째로 삭제된다.
  */
-const VERSION = '0.1.11';
+const VERSION = '0.1.12';
 const PRECACHE = `wcj-precache-v${VERSION}`;
 const RUNTIME = `wcj-runtime-v${VERSION}`;
 

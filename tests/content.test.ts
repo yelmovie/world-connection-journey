@@ -210,7 +210,7 @@ describe('콘텐츠 공통 스키마', () => {
     }
     expect(JSON.stringify(americas)).not.toContain('halal_meal');
     expect(JSON.stringify(americas)).toContain('pork_free_option');
-    expect(asia.scenes.find((scene) => scene.id === 'china_nature')?.titleKo).toBe('장자제의 돌기둥 숲');
+    expect(asia.scenes.find((scene) => scene.id === 'china_nature')?.titleKo).toBe('장가계의 돌기둥 숲');
     expect(asia.scenes.find((scene) => scene.id === 'china_daily')?.titleKo).toBe('동방명주와 상하이 강변');
     expect(asia.scenes.find((scene) => scene.id === 'china_culture')?.titleKo).toBe('천안문과 넓은 광장');
     expect(asia.scenes.find((scene) => scene.id === 'china_landmark')?.titleKo).toBe('베이징 천단');

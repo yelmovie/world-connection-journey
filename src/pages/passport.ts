@@ -326,13 +326,20 @@ const PASSPORT_CSS = `
   display:grid;grid-template-rows:auto auto auto;gap:8px;justify-items:center;
 }
 .passport-preview[hidden] { display:none!important; }
-.passport-stamps { width:min(480px,100%);display:grid;gap:6px;justify-items:center; }
+.passport-stamps {
+  width:min(480px,100%);display:grid;gap:8px;justify-items:center;
+  padding-top:10px;border-top:1px solid rgba(29,74,111,.18);
+}
 .passport-stamps__title { margin:0;font:800 max(15px,var(--fs-small)) var(--font-body);color:#3d5a72;letter-spacing:.02em; }
 .passport-stamps__title b { color:var(--c-navy);font-size:1.15em; }
-.passport-stamps__row { display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%; }
-.passport-stamp { display:grid;gap:4px;min-width:0; }
-.passport-stamp-name { text-align:center;font:800 12px/1.2 var(--font-body);color:#3d5a72;white-space:nowrap; }
-.passport-stamp-slot { aspect-ratio:1;display:grid;place-items:center;border:2px dashed rgba(29,74,111,.35);border-radius:14px;background:rgba(255,255,255,.55);color:#8aa0b2;font:900 18px var(--font-head);overflow:hidden; }
+.passport-stamps__row { display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;width:100%;padding-inline:3px; }
+.passport-stamp { min-width:0;display:grid;grid-template-rows:auto minmax(32px,auto);gap:5px;justify-items:center;align-items:start; }
+#scene-root .passport-page .passport-stamp-name {
+  width:100%;min-height:32px;display:grid;place-items:start center;margin:0;
+  color:#3d5a72;text-align:center;font:800 13px/1.22 var(--font-body);letter-spacing:-.025em;
+  white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
+}
+.passport-stamp-slot { width:min(60px,100%);aspect-ratio:1;display:grid;place-items:center;border:2px dashed rgba(29,74,111,.35);border-radius:14px;background:rgba(255,255,255,.55);color:#8aa0b2;font:900 18px var(--font-head);overflow:hidden; }
 .passport-stamp-slot.is-earned { border:2px solid var(--c-gold);background:#fff;box-shadow:var(--shadow-card); }
 .passport-stamp-slot img { width:100%;height:100%;object-fit:cover; }
 .passport-preview-heading { width:100%;display:grid;grid-template-columns:1fr auto;align-items:center; }
