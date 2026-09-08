@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { splitDialogueSentences } from '../src/ui/characterDialogue';
+import { getDialogueSpeed, scaledDialogueDelay, setDialogueSpeed } from '../src/ui/dialogueSpeed';
 
 describe('캐릭터 타이핑 대화 문장 분리', () => {
   it('친구 설명을 마침표 단위의 대화 차례로 나눈다', () => {
@@ -18,5 +19,16 @@ describe('캐릭터 타이핑 대화 문장 분리', () => {
       '다음 상황이에요!'
     ]);
     expect(splitDialogueSentences('   ')).toEqual([]);
+  });
+
+  it('마지막 미션 대화 속도를 1배부터 3배까지 유지하고 시간에 반영한다', () => {
+    expect(setDialogueSpeed(1.5)).toBe(1.5);
+    expect(getDialogueSpeed()).toBe(1.5);
+    expect(scaledDialogueDelay(1200)).toBe(800);
+    expect(setDialogueSpeed(2)).toBe(2);
+    expect(scaledDialogueDelay(1200)).toBe(600);
+    expect(setDialogueSpeed(3)).toBe(3);
+    expect(scaledDialogueDelay(1200)).toBe(400);
+    setDialogueSpeed(1);
   });
 });

@@ -33,7 +33,8 @@ export function completeMissionFlow(
 ): void {
   // 저장 형식의 하위 호환을 위해 0점/빈 차원을 넘기되 학생 UI와 보상에는 점수를 쓰지 않는다.
   saveRepo.completeMission(missionId, 0, {});
-  void audio.playSfx('complete');
+  // 지구회의 뒤에는 곧바로 엔딩 영상이 이어진다. 영상 위로 완료 팡파르가 겹치지 않게 한다.
+  if (missionId !== 'dialogue') void audio.playSfx('complete');
   // 여섯 미션을 모두 실제로 끝낸 순간만 완주 — 지도로 돌아가기 전에 엔딩 영상을 보여 준다.
   // completion.unlocked는 교사용 전체 해금으로도 켜지므로 여기서는 쓰지 않는다.
   const goHome = (): void => {
@@ -50,7 +51,7 @@ export function completeMissionFlow(
   }
   // 결과 모달 없이 바로 "도장 쾅" 전환. 아메리카는 미션 도중 북·남 도장을 이미 받았으니 완료 연출만.
   const stamp = stampForMission(missionId);
-  void audio.playSfx('stamp');
+  void audio.playStageCompleteStamp();
   const transition = playJourneyTransition({
     kind: 'stamp',
     label: stamp ? `${missionTitle} 여행 완료! 여행 도장이 여권에 쾅!` : '북·남아메리카 여행 완료!',

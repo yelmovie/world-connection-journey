@@ -906,7 +906,7 @@ export function createPage(): Page {
         const stamp = page.querySelector<HTMLElement>('.passport-hero') ?? actionButton;
         if (!stamp) return;
         burstConfetti(stamp, 8);
-        void audio.playSfx('stamp');
+        void audio.playSfx('success');
         const avatar = AVATARS.find((item) => item.saveId === avatarId) ?? AVATARS[0];
         const plane = PLANES.find((item) => item.saveId === airplaneId) ?? PLANES[0];
         showToast(`${withJosa(avatar.name, '과', '와')} ${plane.name}, 여행 준비 완료!`, 'success');

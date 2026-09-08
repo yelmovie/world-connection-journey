@@ -826,7 +826,6 @@ export function createPage(): Page {
       const awardContinentStamps = (): void => {
         for (const stamp of ['americas_north', 'americas_south'] as const) {
           if (!americasGroupDone(saveRepo.get(), stamp) || !saveRepo.awardStamp(stamp)) continue;
-          void audio.playSfx('stamp');
           playJourneyTransition({
             kind: 'stamp',
             label: `${STAMP_LABELS[stamp]} 여행 도장이 여권에 쾅!`,
@@ -1346,7 +1345,7 @@ export function createPage(): Page {
           if (!newlyCompleted && !P.done) return;
           P.done = true;
           persist();
-          void audio.playSfx('stamp');
+          void audio.playSfx('success');
           if (newlyCompleted) awardContinentStamps();
           renderCountries();
           if (newlyCompleted) later(() => announceGuide(`${c.name}의 사진과 이야기를 모두 살펴봤어! 다른 나라도 둘러볼까?`), 120);
@@ -1503,7 +1502,7 @@ export function createPage(): Page {
             lit.add(sig.id);
             token.classList.add('is-lit');
             popBounce(token);
-            void audio.playSfx('stamp');
+            void audio.playSfx('tap');
             refresh();
           });
           wrap.appendChild(token);

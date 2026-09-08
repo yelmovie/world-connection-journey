@@ -19,6 +19,7 @@ import type { GuideController, GuideSpeaker } from '../ui/guide';
 import { showFeedback } from '../ui/feedback';
 import { keepFitted } from '../ui/fitText';
 import { collectedEarthSignals, continentLabel } from '../core/earthSignals';
+import { bindDialogueSpeedControl, dialogueSpeedControlHtml, scaledDialogueDelay } from '../ui/dialogueSpeed';
 
 export interface EarthSceneHost {
   body: HTMLElement;
@@ -58,19 +59,24 @@ export function signalImageId(content: EarthContent, s: EnvironmentalSignal): st
 const esc = escapeHtml;
 
 /** 음성 대신 화면에서 한 글자씩 보여 주는 짧은 안내. */
-function typeText(target: HTMLElement, text: string, speed = 24): void {
+function typeText(target: HTMLElement, text: string, speed: number | (() => number) = 24, onDone?: () => void): void {
   const runId = `${Date.now()}-${Math.random()}`;
   target.dataset.typeRun = runId;
   target.setAttribute('aria-label', text);
   const reduced = reducedMotion();
-  if (reduced || !text) { target.textContent = text; return; }
+  if (reduced || !text) {
+    target.textContent = text;
+    if (onDone) queueMicrotask(onDone);
+    return;
+  }
   target.textContent = '';
   let index = 0;
   const tick = () => {
     if (!target.isConnected || target.dataset.typeRun !== runId) return;
     index += 1;
     target.textContent = text.slice(0, index);
-    if (index < text.length) window.setTimeout(tick, speed);
+    if (index < text.length) window.setTimeout(tick, typeof speed === 'function' ? speed() : speed);
+    else onDone?.();
   };
   tick();
 }
@@ -859,7 +865,7 @@ function renderIssue(host: EarthSceneHost): void {
       drawLinks();
       if (inspectedCount() >= content.issues.length) {
         burstConfetti(globe, 12);
-        void audio.playSfx('complete');
+        // 지구회의 흐름은 차분하게 이어지도록 별도의 완료 팡파르를 재생하지 않는다.
         window.setTimeout(openCouncil, 950);
       }
     });
@@ -990,13 +996,18 @@ function renderRoundtable(host: EarthSceneHost): void {
         <h2>${esc(friend.name)} · ${esc(friend.country)}</h2>
         <p id="ec-turn-copy"></p>
       </div>`;
-    typeText(core.querySelector<HTMLElement>('#ec-turn-copy')!, turn.line);
     renderDots(index);
     bottom.innerHTML = `
       <button class="btn btn-ghost" data-act="back">문제 다시 보기</button>
-      <button class="btn btn-primary btn-big" data-act="next">${index + 1 < turns.length ? '다음 이야기' : '내 약속 쓰기'}</button>`;
+      ${dialogueSpeedControlHtml()}
+      <button class="btn btn-primary btn-big" data-act="next" disabled>${index + 1 < turns.length ? '다음 이야기' : '내 약속 쓰기'}</button>`;
+    const nextButton = bottom.querySelector<HTMLButtonElement>('[data-act="next"]');
+    bindDialogueSpeedControl(bottom, () => { void audio.playSfx('tap'); });
+    typeText(core.querySelector<HTMLElement>('#ec-turn-copy')!, turn.line, () => scaledDialogueDelay(20), () => {
+      if (!host.isDisposed() && core.isConnected && nextButton) nextButton.disabled = false;
+    });
     bottom.querySelector('[data-act="back"]')?.addEventListener('click', () => goto(host, 'issue'));
-    bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
+    nextButton?.addEventListener('click', () => {
       if (index + 1 < turns.length) showTurn(index + 1);
       else showPlayerTurn();
     });
@@ -1214,7 +1225,7 @@ function playFinale(host: EarthSceneHost, onDone: () => void): void {
     const note = overlay.querySelector<HTMLElement>('#ec-finale-note');
     if (note) typeText(note, finaleNote, 22);
   }, reduced ? 0 : Math.min(1600, finalePledge.length * 28 + 180));
-  void audio.playSfx('complete');
+  // 이 화면은 약속을 차분히 읽는 장면이다. 별도의 팡파르 효과음은 재생하지 않는다.
   const celebrationAnchor = overlay.querySelector<HTMLElement>('.ec-f-globe') ?? overlay.querySelector<HTMLElement>('.ec-f-copy');
   if (celebrationAnchor) burstConfetti(celebrationAnchor, 10);
   const total = reduced ? 300 : 2600;

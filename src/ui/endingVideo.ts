@@ -1,3 +1,4 @@
+import { audio } from '../core/AudioManager';
 import { playVideoOverlay } from './videoOverlay';
 
 /** 엔딩 자막 — 장면 순서: 지구 위 비행 → 도시·자연 → 원탁 지구본 → 해변 청소·나무 심기 → 마무리 */
@@ -11,6 +12,8 @@ const FINAL_CUES = [
 
 /** 완주 엔딩 영상(final/final.mp4 원본 → public/video/final.mp4). 로드 실패·건너뛰기여도 onDone으로 이어진다. */
 export function playEndingVideo(onDone: () => void): void {
+  // 다른 완료 흐름에서 시작된 팡파르가 영상 위로 이어지지 않게 진입 시점에도 확실히 끊는다.
+  audio.stopSfx('complete');
   playVideoOverlay({
     id: 'final',
     src: 'video/final.mp4',

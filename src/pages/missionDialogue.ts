@@ -274,9 +274,22 @@ const DIALOGUE_CSS = `
 .dl-compass .c-dial { position: relative; width: 78px; height: 78px; flex-shrink: 0; }
 .dl-compass .c-num { font-family: var(--font-head); font-size: var(--fs-title); }
 .dl-side-btn { display: inline-flex; min-height: 52px; font-size: var(--dl-label); }
-.dl-bag-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
-.dl-bag-list li { display: flex; gap: 9px; align-items: baseline; font-size: var(--dl-copy); font-weight: 800; }
-.dl-bag-list em { flex: 0 0 auto; padding: 2px 10px; border-radius: 999px; background: #e8f2fb; color: #1c5a8c; font-style: normal; font-size: 15px; font-weight: 900; }
+.modal-backdrop .modal:has(.dl-bag-groups) { width:min(1180px,95vw);max-height:calc(100dvh - 28px); }
+.modal:has(.dl-bag-groups) .modal-title { padding:clamp(14px,2vh,24px) clamp(22px,3vw,38px);font-size:clamp(28px,2.3vw,42px); }
+.modal:has(.dl-bag-groups) .modal-body { padding:clamp(10px,1.5vh,18px) clamp(18px,2.5vw,32px);overflow:hidden; }
+.modal:has(.dl-bag-groups) .modal-actions { padding:10px 24px 16px; }
+.dl-bag-groups { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,1vw,14px);align-items:stretch; }
+.dl-bag-group { min-width:0;padding:12px;border:2px solid #dceaf3;border-radius:18px;background:#f8fbfd; }
+.dl-bag-group h3 { margin:0 0 8px;padding:7px 10px;border-radius:12px;background:#e8f2fb;color:#1c5a8c;font:950 clamp(17px,1.25vw,22px)/1.15 var(--font-head);text-align:center; }
+.dl-bag-group ul { margin:0;padding:0;list-style:none;display:grid;gap:6px; }
+.dl-bag-group li { position:relative;padding-left:13px;font-size:clamp(14px,1vw,18px);font-weight:800;line-height:1.3;word-break:keep-all; }
+.dl-bag-group li::before { content:'•';position:absolute;left:0;color:var(--c-turquoise); }
+.dl-bag-note { grid-column:1/-1;margin:0;padding-top:2px;text-align:center;font-size:clamp(15px,1vw,18px);font-weight:800;color:var(--c-ink-soft); }
+.dl-story-ready { width:100%;margin:0;padding:12px 16px;border-radius:16px;background:#eef8f4;color:#176249;font-weight:800;text-align:center; }
+.dl-auto-status { display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 16px;border-radius:999px;background:#eef8f4;color:#176249;font-weight:900;text-align:center; }
+@media(max-width:900px){
+  .dl-bag-groups{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.dl-bag-group{padding:8px}.dl-bag-group ul{gap:3px}.dl-bag-note{display:none}
+}
 
 /* 안내선·진행 띠보다 캐릭터와 활동이 먼저 보이게 한다. */
 .dialogue-scene > .bottom-bar {
@@ -476,25 +489,34 @@ export function createPage(): Page {
   let closeActiveModal: (() => void) | null = null;
   let guide: GuideController | null = null;
   let disposed = false;
+  const flowTimers = new Set<number>();
 
   return {
     async mount(root: HTMLElement) {
       disposed = false;
+      flowTimers.forEach((timerId) => window.clearTimeout(timerId));
+      flowTimers.clear();
       const content = await loadContent<DialogueContent>('dialogue');
       const earth = await loadContent<EarthContent>('environment');
       // 배움 루프(친구 소개 → 예상 → 활동 → 배움 확인). learn 없으면 기존 흐름 그대로.
       const learn = getLearn(content);
       const hostSpeaker = selectedAvatarSpeaker(saveRepo.get().profile);
-      const npcSpeaker = (npc: Npc) => ({ assetId: NPC_IMG[npc.id] ?? hostSpeaker.assetId, name: npc.name });
       const firstSentence = (text: string): string => text.split(/(?<=[.!?])\s+/)[0]?.trim() || text.trim();
+      const scheduleFlow = (callback: () => void, delayMs = 1800): void => {
+        const timerId = window.setTimeout(() => {
+          flowTimers.delete(timerId);
+          if (!disposed) callback();
+        }, delayMs);
+        flowTimers.add(timerId);
+      };
       const openGreetingDialogue = (greeting: Greeting, onComplete?: () => void): void => {
         closeActiveModal = openCharacterDialogue({
           id: `greet-story-${greeting.id}`,
           title: `${greeting.country} 친구와 이야기하기`,
-          name: `${greeting.country} 사례 친구`,
+          name: `${greeting.country} 친구`,
           meta: `학습용 가상 인물 · ${greeting.continent} · ${greeting.country}`,
           assetId: greetingImg(greeting),
-          imageAlt: `${greeting.country}에서 만난 학생 캐릭터`,
+          imageAlt: `${greeting.country} 친구 캐릭터`,
           partner: {
             name: hostSpeaker.name,
             meta: '나의 탐험가',
@@ -509,20 +531,33 @@ export function createPage(): Page {
             { role: 'character', label: '인사 이야기', text: greeting.example },
             { role: 'character', label: '기억할 점', text: greeting.caution }
           ],
+          autoAdvance: true,
+          speedControl: true,
+          dismissible: false,
           onComplete
         });
       };
-      const openListeningSituation = (scenario: Scenario, index: number): void => {
+      const openListeningSituation = (scenario: Scenario, index: number, onComplete: () => void): void => {
         closeActiveModal = openCharacterDialogue({
           id: `listening-situation-${scenario.id}`,
           name: hostSpeaker.name,
           meta: `상황 ${index + 1} 안내`,
           assetId: hostSpeaker.assetId,
           imageAlt: '경청 상황을 안내하는 대화 탐험가',
-          lines: splitDialogueSentences(scenario.situation).map((text, lineIndex) => ({
-            label: lineIndex === 0 ? '상황 시작' : '상황 이어보기',
-            text
-          }))
+          lines: [
+            ...splitDialogueSentences(scenario.situation).map((text, lineIndex) => ({
+              label: lineIndex === 0 ? '상황 시작' : '상황 이어보기',
+              text
+            })),
+            ...scenario.cues.map((text, cueIndex) => ({
+              label: `살펴본 단서 ${cueIndex + 1}`,
+              text
+            }))
+          ],
+          autoAdvance: true,
+          speedControl: true,
+          dismissible: false,
+          onComplete
         });
       };
       await preloadImages([
@@ -690,12 +725,21 @@ export function createPage(): Page {
         // renderStage1은 친구를 만날 때마다 다시 불리므로, 14줄 목록은 첫 입장(연결 0개)에서 딱 한 번만 연다.
         const bag = collectedEarthSignals();
         if (bag.length > 0 && matched.size === 0 && !oxDone) {
+          const bagGroups = [...new Set(bag.map((item) => item.missionId))].map((missionId) => ({
+            missionId,
+            label: continentLabel(missionId),
+            items: bag.filter((item) => item.missionId === missionId)
+          }));
           openModal({
             id: 'dialogue-bag',
             title: '여섯 대륙에서 모아 온 이야기',
-            bodyHtml: `<ul class="dl-bag-list">${bag
-              .map((item) => `<li><em>${continentLabel(item.missionId)}</em>${item.label}</li>`)
-              .join('')}</ul><p style="margin-top:12px;font-weight:800">이제 이 이야기들을 들고 세계 친구들을 만나러 가자.</p>`,
+            bodyHtml: `<div class="dl-bag-groups">${bagGroups.map((group) => `
+              <section class="dl-bag-group">
+                <h3>${group.label}에서 본 여러 나라</h3>
+                <ul>${group.items.map((item) => `<li>${item.label}</li>`).join('')}</ul>
+              </section>`).join('')}
+              <p class="dl-bag-note">대륙마다 여러 나라에서 발견한 이야기를 모았어. 이제 세계 친구들을 만나러 가자.</p>
+            </div>`,
             dismissible: false,
             actions: [{ label: '가방 챙겼어!', kind: 'primary', autofocus: true, onClick: (close) => close() }]
           });
@@ -708,11 +752,12 @@ export function createPage(): Page {
             const card = document.createElement('button');
             card.type = 'button';
             card.className = 'card card-pick dl-greet-card';
+            card.dataset.matched = String(isMatched);
             card.innerHTML = `
-              ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" data-asset-id="${greetingImg(g)}" alt="${g.country}에서 만난 학생의 인사 사례"${isMatched ? ' style="opacity:0.85"' : ''}>` : `<span style="font-size:var(--fs-title)" aria-hidden="true">?</span>`}
+              ${hasAsset(greetingImg(g)) ? `<img src="${assetUrl(greetingImg(g))}" data-asset-id="${greetingImg(g)}" alt="${g.country} 친구 캐릭터"${isMatched ? ' style="opacity:0.85"' : ''}>` : `<span style="font-size:var(--fs-title)" aria-hidden="true">?</span>`}
               <span class="g-name" style="color:${isMatched ? 'var(--c-success-ink)' : 'var(--c-ink-soft)'}">${isMatched ? '✓ ' : ''}${g.country}</span>
               <span class="g-location">${g.continent}</span>`;
-            card.setAttribute('aria-label', isMatched ? `${g.country}의 인사 사례 — 살펴봄, 다시 보기` : `${g.country}의 인사 사례 살펴보기`);
+            card.setAttribute('aria-label', isMatched ? `${g.country} 친구 — 이야기 들음, 다시 보기` : `${g.country} 친구와 이야기하기`);
             card.addEventListener('click', () => {
               if (busy || disposed) return;
               void audio.playSfx('tap');
@@ -727,6 +772,10 @@ export function createPage(): Page {
                 checkpoint('stage1');
                 popBounce(card);
                 renderStage1();
+                window.requestAnimationFrame(() => {
+                  (body.querySelector<HTMLButtonElement>('.dl-greet-card[data-matched="false"]')
+                    ?? body.querySelector<HTMLButtonElement>('.dl-ox button'))?.focus();
+                });
               });
             });
             grid.appendChild(card);
@@ -964,7 +1013,7 @@ export function createPage(): Page {
                 <div>
                   <strong>상황 ${scenarioIndex + 1}</strong>
                   <p>${firstSentence(sc.situation)}</p>
-                  <button type="button" class="btn btn-ghost" data-act="scenario-story" style="margin-top:var(--sp-2)">상황을 대화로 보기</button>
+                  <button type="button" class="btn btn-primary" data-act="scenario-story" style="margin-top:var(--sp-2)">대화 시작하기</button>
                 </div>
               </div>
               <div id="cue-row" class="dl-cues"></div>
@@ -995,9 +1044,21 @@ export function createPage(): Page {
         };
         const cueRow = body.querySelector<HTMLElement>('#cue-row');
         const cueSummary = body.querySelector<HTMLElement>('#cue-summary');
-        body.querySelector<HTMLButtonElement>('[data-act="scenario-story"]')?.addEventListener('click', () => {
+        if (cueRow) cueRow.innerHTML = '<p class="dl-story-ready">버튼을 한 번 누르면 상황과 단서가 자동으로 이어져요.</p>';
+        let storyStarted = false;
+        const storyButton = body.querySelector<HTMLButtonElement>('[data-act="scenario-story"]');
+        storyButton?.addEventListener('click', () => {
           if (disposed) return;
-          openListeningSituation(sc, scenarioIndex);
+          if (storyStarted) return;
+          storyStarted = true;
+          if (storyButton) {
+            storyButton.disabled = true;
+            storyButton.textContent = '대화가 이어지는 중…';
+          }
+          openListeningSituation(sc, scenarioIndex, () => {
+            sc.cues.forEach((_, cueIndex) => revealed.add(cueIndex));
+            syncOptions();
+          });
         });
 
         const optionButtons: HTMLButtonElement[] = [];
@@ -1012,35 +1073,12 @@ export function createPage(): Page {
             if (optCol) optCol.hidden = false;
             guide?.say('친구의 말과 표정을 생각하며 존중하는 반응을 골라요.', { cue: optCol, speaker: hostSpeaker });
             refit();
+            window.requestAnimationFrame(() => optionButtons.find((button) => !button.disabled)?.focus());
           } else if (!open) {
             if (optCol) optCol.hidden = true;
             guide?.setCue((cueRow?.querySelector<HTMLElement>('button:not(:disabled)')) ?? null);
           }
         };
-
-        if (cueRow) {
-          sc.cues.forEach((cue, i) => {
-            const card = document.createElement('button');
-            card.type = 'button';
-            card.className = 'card card-pick dl-opt';
-            card.style.textAlign = 'center';
-            card.style.fontWeight = '700';
-            card.textContent = `이야기 ${i + 1}`;
-            card.addEventListener('click', () => {
-              if (revealed.has(i) || resolved || disposed) return;
-              void audio.playSfx('pickup');
-              revealed.add(i);
-              card.classList.remove('card-pick');
-              card.style.textAlign = 'left';
-              card.style.fontWeight = '400';
-              card.innerHTML = `<span aria-hidden="true" style="font-weight:900;color:var(--c-turquoise)">✓</span> ${cue}`;
-              card.disabled = true;
-              syncOptions();
-              refit();
-            });
-            cueRow.appendChild(card);
-          });
-        }
 
         if (optCol) {
           for (const opt of sc.options) {
@@ -1065,12 +1103,13 @@ export function createPage(): Page {
                 // 다음 상황 위치까지 즉시 체크포인트로 확정한다.
                 scenarioIndex += 1;
                 checkpoint('stage2');
-                const nextBtn = bottom.querySelector<HTMLButtonElement>('[data-act="next"]');
-                if (nextBtn) {
-                  nextBtn.disabled = false;
-                  nextBtn.textContent = scenarioIndex >= scenarios.length ? '공감 대화 시작' : '다음 상황 보기';
-                  guide?.say(firstSentence(opt.why), { cue: nextBtn, speaker: hostSpeaker });
-                }
+                busy = true;
+                guide?.say(firstSentence(opt.why), { speaker: hostSpeaker });
+                scheduleFlow(() => {
+                  busy = false;
+                  if (scenarioIndex >= scenarios.length) goStage3();
+                  else renderListening();
+                }, Math.max(1500, Math.min(3500, opt.why.length * 46)));
               } else {
                 scenarioMistakes.add(sc.id);
                 checkpoint('stage2');
@@ -1086,19 +1125,9 @@ export function createPage(): Page {
           }
         }
 
-        bottom.innerHTML = `<button class="btn btn-primary btn-big" data-act="next" disabled>다음 상황 보기</button>`;
-        bottom.querySelector('[data-act="next"]')?.addEventListener('click', () => {
-          if (!resolved || busy || disposed) return;
-          busy = true;
-          if (scenarioIndex >= scenarios.length) {
-            goStage3();
-          } else {
-            renderListening();
-          }
-          busy = false;
-        });
+        bottom.innerHTML = '<span class="dl-auto-status" role="status">대화를 본 뒤 반응을 고르면 다음 상황이 자동으로 이어져요.</span>';
 
-        guide?.say('친구 이야기를 모두 확인한 뒤 반응을 골라요.', { speaker: hostSpeaker, cue: cueRow });
+        guide?.say('대화 시작을 한 번 누르고, 이야기가 끝나면 알맞은 반응을 골라요.', { speaker: hostSpeaker, cue: storyButton });
         syncOptions();
       }
 
@@ -1198,12 +1227,15 @@ export function createPage(): Page {
               speaker: npcPhase === 'revision' ? hostSpeaker.name : npc.name,
               role: npcPhase === 'revision' ? 'partner' as const : 'character' as const,
               text
-            }))
+            })),
+            autoAdvance: true,
+            speedControl: true,
+            dismissible: false,
+            onComplete: () => window.requestAnimationFrame(() => area?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus())
           });
         });
 
-        bottom.innerHTML = `<button class="btn btn-primary btn-big" data-act="next" disabled>대화 이어가기</button>`;
-        const nextBtn = bottom.querySelector<HTMLButtonElement>('[data-act="next"]');
+        bottom.innerHTML = '<span class="dl-auto-status" role="status">알맞은 말을 고르면 친구의 답을 듣고 다음 대화가 자동으로 이어져요.</span>';
 
         if (npcPhase === 'turn') {
           const turn = npc.turns[npcTurnIndex];
@@ -1224,7 +1256,9 @@ export function createPage(): Page {
               btn.addEventListener('click', () => {
                 if (answered || busy || disposed) return;
                 answered = true;
+                busy = true;
                 void audio.playSfx('tap');
+                const responseId = `npc-reply-${npc.id}-${npcTurnIndex}`;
                 const prevSum = empathySum;
                 empathySum = Math.min(empathyMax, empathySum + Math.max(0, opt.empathy));
                 btns.forEach((b) => (b.disabled = true));
@@ -1244,23 +1278,30 @@ export function createPage(): Page {
                   npcTurnIndex = opt.leadsTo;
                 }
                 checkpoint('stage3');
-                if (nextBtn) {
-                  nextBtn.disabled = false;
-                  nextBtn.textContent = '대화 이어가기';
-                  guide?.say(firstSentence(opt.reply), { cue: nextBtn, speaker: npcSpeaker(npc) });
-                }
+                closeActiveModal = openCharacterDialogue({
+                  id: responseId,
+                  name: npc.name,
+                  meta: npc.from,
+                  assetId: imgId,
+                  imageAlt: `${npc.name} 학생 캐릭터`,
+                  lines: splitDialogueSentences(opt.reply).map((text, lineIndex) => ({
+                    label: lineIndex === 0 ? '친구의 답' : '대화 계속',
+                    text
+                  })),
+                  autoAdvance: true,
+                  speedControl: true,
+                  dismissible: false,
+                  onComplete: () => {
+                    busy = false;
+                    if (!disposed) renderStage3();
+                  }
+                });
               });
               btns.push(btn);
               area.appendChild(btn);
             }
             guide?.say(firstSentence(turn.prompt), { cue: area, speaker: hostSpeaker });
           }
-          nextBtn?.addEventListener('click', () => {
-            if (!answered || busy || disposed) return;
-            busy = true;
-            renderStage3();
-            busy = false;
-          });
         } else {
           // 첫인상 수정 질문
           let answered = false;
@@ -1274,6 +1315,7 @@ export function createPage(): Page {
               btn.addEventListener('click', () => {
                 if (answered || busy || disposed) return;
                 answered = true;
+                busy = true;
                 const isLastNpc = npcIndex + 1 >= content.compass.npcs.length;
                 void audio.playSfx('tap');
                 if (opt.better) betterCount += 1;
@@ -1284,27 +1326,32 @@ export function createPage(): Page {
                 npcTurnIndex = 0;
                 npcPhase = 'turn';
                 checkpoint('stage3');
-                if (nextBtn) {
-                  nextBtn.disabled = false;
-                  nextBtn.textContent = isLastNpc ? '대화 마치기' : '다음 친구에게';
-                  guide?.say(firstSentence(opt.why), { cue: nextBtn, speaker: hostSpeaker });
-                }
+                closeActiveModal = openCharacterDialogue({
+                  id: `npc-reflection-${npc.id}`,
+                  name: hostSpeaker.name,
+                  meta: '대화를 돌아보기',
+                  assetId: hostSpeaker.assetId,
+                  imageAlt: `${hostSpeaker.name} 탐험가`,
+                  lines: splitDialogueSentences(opt.why).map((text, lineIndex) => ({
+                    label: lineIndex === 0 ? '되돌아보기' : '생각 이어보기',
+                    text
+                  })),
+                  autoAdvance: true,
+                  speedControl: true,
+                  dismissible: false,
+                  onComplete: () => {
+                    busy = false;
+                    if (disposed) return;
+                    if (isLastNpc) goStage4();
+                    else renderStage3();
+                  }
+                });
               });
               btns.push(btn);
               area.appendChild(btn);
             }
             guide?.say(npc.revision.question, { cue: area, speaker: hostSpeaker });
           }
-          nextBtn?.addEventListener('click', () => {
-            if (!answered || busy || disposed) return;
-            busy = true;
-            if (npcIndex >= content.compass.npcs.length) {
-              goStage4();
-            } else {
-              renderStage3();
-            }
-            busy = false;
-          });
         }
       }
 
@@ -1418,6 +1465,8 @@ export function createPage(): Page {
     },
     unmount() {
       disposed = true;
+      flowTimers.forEach((timerId) => window.clearTimeout(timerId));
+      flowTimers.clear();
       closeActiveModal?.();
       closeActiveModal = null;
       guide?.dispose();

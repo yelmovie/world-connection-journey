@@ -24,7 +24,7 @@ export const AFRICA_INSTRUMENTS: AfricaInstrument[] = [
     material: '나무 몸통과 동물 가죽 등',
     how: '두 손으로 북면을 쳐. 치는 자리에 따라 낮은 소리와 높은 소리가 나.',
     clip: 'sound/instrument/djembe.mp3', source: 'Wikimedia Commons · CC BY 3.0',
-    alt: '여러 젬베가 놓인 실물 사진'
+    alt: '전체 모습이 보이는 젬베 교육 일러스트'
   },
   {
     id: 'africa.instrument2', photoId: 'africa.photo.talkingdrum', name: '토킹드럼',
@@ -33,7 +33,7 @@ export const AFRICA_INSTRUMENTS: AfricaInstrument[] = [
     material: '나무 몸통, 가죽, 장력 줄',
     how: '팔에 끼우고 줄의 장력을 바꾸며 굽은 채로 북면을 쳐.',
     clip: 'sound/instrument/talkingdrum.mp3', source: 'Wikimedia Commons · CC BY-SA 4.0',
-    alt: '나이지리아의 토킹드럼 실물 사진'
+    alt: '굽은 채와 전체 모습이 보이는 토킹드럼 교육 일러스트'
   },
   {
     id: 'africa.instrument3', photoId: 'africa.photo.shekere', name: '셰케레',
@@ -42,7 +42,7 @@ export const AFRICA_INSTRUMENTS: AfricaInstrument[] = [
     material: '말린 박과 구슬 그물',
     how: '박을 흔들거나 손으로 쳐서 구슬이 표면을 스치게 해.',
     clip: 'sound/instrument/shekere.mp3', source: 'Wikimedia Commons · Public domain',
-    alt: '구슬 그물을 두른 셰케레 실물 사진'
+    alt: '구슬 그물과 전체 모습이 보이는 셰케레 교육 일러스트'
   },
   {
     id: 'africa.instrument4', photoId: 'africa.photo.kalimba', name: '칼림바',
@@ -51,7 +51,7 @@ export const AFRICA_INSTRUMENTS: AfricaInstrument[] = [
     material: '나무 울림통과 금속 건반',
     how: '두 손으로 들고 엄지손가락으로 금속 건반을 튕겨.',
     clip: 'sound/instrument/kalimba.mp3', source: 'Wikimedia Commons · CC0',
-    alt: '금속 건반이 달린 칼림바 실물 사진'
+    alt: '금속 건반과 전체 모습이 보이는 칼림바 교육 일러스트'
   },
   {
     id: 'africa.instrument5', photoId: 'africa.photo.kora', name: '코라',
@@ -60,6 +60,6 @@ export const AFRICA_INSTRUMENTS: AfricaInstrument[] = [
     material: '큰 박 울림통, 가죽, 여러 줄',
     how: '양손의 엄지와 집게손가락으로 줄을 뜯어 연주해.',
     clip: 'sound/instrument/kora.mp3', source: 'Wikimedia Commons · 재사용 가능 자료',
-    alt: '세네갈 연주자가 코라를 연주하는 실물 사진'
+    alt: '울림통과 긴 목 전체가 보이는 코라 교육 일러스트'
   }
 ];

@@ -4,9 +4,11 @@ import { saveRepo } from './SaveRepository';
 export type BgmId = 'main' | 'asia' | 'europe' | 'africa' | 'americas' | 'oceania';
 export type SfxId =
   | 'tap' | 'pickup' | 'drop' | 'success' | 'partial'
-  | 'stamp' | 'complete' | 'whoosh'
+  | 'complete' | 'whoosh'
   /* 아메리카 탐험의 환경 단서 효과음 (Pixabay — assets/CREDITS.md) */
   | 'beat_low';
+
+type AudioAssetId = SfxId | 'stamp';
 
 const BGM_SRC: Record<BgmId, string> = {
   main: 'sound/bgm/maintheme.mp3',
@@ -29,10 +31,11 @@ class AudioManager {
   private current: HTMLAudioElement | null = null;
   private currentId: BgmId | null = null;
   private pendingBgm: BgmId | null = null;
-  private sfxBuffers = new Map<SfxId, AudioBuffer | null>();
-  private sfxLoads = new Map<SfxId, Promise<AudioBuffer | null>>();
-  private activeSfx = new Map<SfxId, AudioBufferSourceNode>();
-  private lastSfxAt = new Map<SfxId, number>();
+  private sfxBuffers = new Map<AudioAssetId, AudioBuffer | null>();
+  private sfxLoads = new Map<AudioAssetId, Promise<AudioBuffer | null>>();
+  private activeSfx = new Map<AudioAssetId, AudioBufferSourceNode>();
+  private sfxGeneration = new Map<AudioAssetId, number>();
+  private lastSfxAt = new Map<AudioAssetId, number>();
   private fadeTimer: number | null = null;
   private bgmSuspended = false;
   private fadingFrom: HTMLAudioElement | null = null;
@@ -219,8 +222,27 @@ class AudioManager {
   }
 
   async playSfx(id: SfxId): Promise<void> {
+    await this.playSfxAsset(id);
+  }
+
+  /** 특정 효과음이 재생 중이거나 로딩 중이어도 이후 재생되지 않게 멈춘다. */
+  stopSfx(id: SfxId): void {
+    this.sfxGeneration.set(id, (this.sfxGeneration.get(id) ?? 0) + 1);
+    const source = this.activeSfx.get(id);
+    if (!source) return;
+    this.activeSfx.delete(id);
+    try { source.stop(); } catch { /* 이미 종료됨 */ }
+  }
+
+  /** 미션 상태를 완료로 저장한 뒤 도장 보상을 보여 줄 때만 호출한다. */
+  async playStageCompleteStamp(): Promise<void> {
+    await this.playSfxAsset('stamp');
+  }
+
+  private async playSfxAsset(id: AudioAssetId): Promise<void> {
     if (!this.unlocked || !this.ctx || !this.settings.sfx) return;
     if (this.clip) return; // 악기 소리를 듣는 동안에는 효과음을 겹치지 않는다
+    const generation = this.sfxGeneration.get(id) ?? 0;
     const now = performance.now();
     const last = this.lastSfxAt.get(id) ?? 0;
     if (now - last < 80) return; // 빠른 연속 클릭 중첩 방지
@@ -237,7 +259,7 @@ class AudioManager {
       this.sfxLoads.delete(id);
       this.sfxBuffers.set(id, buffer);
     }
-    if (!buffer || !this.ctx) return;
+    if (!buffer || !this.ctx || generation !== (this.sfxGeneration.get(id) ?? 0)) return;
     const previous = this.activeSfx.get(id);
     if (previous) {
       try { previous.stop(); } catch { /* 이미 종료됨 */ }
@@ -257,7 +279,7 @@ class AudioManager {
     src.start();
   }
 
-  private async loadSfx(id: SfxId): Promise<AudioBuffer | null> {
+  private async loadSfx(id: AudioAssetId): Promise<AudioBuffer | null> {
     if (!this.ctx) return null;
     try {
       const res = await fetch(`sound/sfx/sfx_${id}.mp3`);

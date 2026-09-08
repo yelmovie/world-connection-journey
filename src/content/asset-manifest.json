@@ -1458,74 +1458,74 @@
     "africa.photo.djembe": {
       "type": "image",
       "src": "assets/africa_photo_djembe.webp",
-      "original": "Wikimedia Commons: Djembe_drums.jpg",
+      "original": "assets/generated/refresh-2026-09-08/africa_djembe.png",
       "pages": [
         "p06"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "CC BY 3.0",
-      "note": "가나 공예 마을의 실제 젬베 사진"
+      "license": "AI-generated (project original)",
+      "note": "전체 형태가 잘리지 않는 부드러운 젬베 교육 일러스트"
     },
     "africa.photo.talkingdrum": {
       "type": "image",
       "src": "assets/africa_photo_talkingdrum.webp",
-      "original": "Wikimedia Commons: Talking_drum._Offa_Kwara_State.jpg",
+      "original": "assets/generated/refresh-2026-09-08/africa_talking_drum.png",
       "pages": [
         "p06"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "CC BY-SA 4.0",
-      "note": "나이지리아 콰라주의 실제 토킹드럼 사진"
+      "license": "AI-generated (project original)",
+      "note": "전체 형태와 굽은 채가 보이는 토킹드럼 교육 일러스트"
     },
     "africa.photo.shekere": {
       "type": "image",
       "src": "assets/africa_photo_shekere.webp",
-      "original": "Wikimedia Commons: Shekere.jpg",
+      "original": "assets/generated/refresh-2026-09-08/africa_shekere.png",
       "pages": [
         "p06"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "Public domain",
-      "note": "실제 셰케레 사진"
+      "license": "AI-generated (project original)",
+      "note": "구슬 그물이 선명하고 잘리지 않는 셰케레 교육 일러스트"
     },
     "africa.photo.kalimba": {
       "type": "image",
       "src": "assets/africa_photo_kalimba.webp",
-      "original": "Wikimedia Commons: Kalimba_-_Royal_Museum_for_Central_Africa_-_DSC07087.JPG",
+      "original": "assets/generated/refresh-2026-09-08/africa_kalimba.png",
       "pages": [
         "p06"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "CC0 1.0",
-      "note": "중앙아프리카 왕립박물관의 실제 칼림바 사진"
+      "license": "AI-generated (project original)",
+      "note": "금속 건반과 울림통 전체가 보이는 칼림바 교육 일러스트"
     },
     "africa.photo.kora": {
       "type": "image",
       "src": "assets/africa_photo_kora.webp",
-      "original": "Wikimedia Commons: Kora-Player2.jpg",
+      "original": "assets/generated/refresh-2026-09-08/africa_kora.png",
       "pages": [
         "p06"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "CC BY 2.0",
-      "note": "세네갈 만딩카 코라 연주자 실제 사진"
+      "license": "AI-generated (project original)",
+      "note": "공명통·긴 목·현 전체가 잘리지 않는 코라 교육 일러스트"
     },
     "europe.prague.charles_bridge": {
       "type": "image",
       "src": "assets/europe_prague_charles_bridge.webp",
-      "original": "Unsplash: 1ak3Z7ZmtQA",
+      "original": "assets/generated/refresh-2026-09-08/europe_prague_charles_bridge.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "Unsplash License",
-      "note": "프라하 카를교 실제 사진"
+      "license": "AI-generated (project original)",
+      "note": "차분한 부드러운 그림체의 프라하 카를교"
     },
     "europe.prague.castle": {
       "type": "image",
@@ -1554,14 +1554,14 @@
     "europe.prague.old_town": {
       "type": "image",
       "src": "assets/europe_prague_old_town.webp",
-      "original": "Unsplash: zNbNkIYboFY",
+      "original": "assets/generated/refresh-2026-09-08/europe_prague_old_town.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "Unsplash License",
-      "note": "프라하 구시가 광장 실제 사진"
+      "license": "AI-generated (project original)",
+      "note": "차분한 부드러운 그림체의 프라하 구시가 광장"
     },
     "europe.prague.lennon_wall": {
       "type": "image",
@@ -1578,14 +1578,14 @@
     "europe.prague.tram": {
       "type": "image",
       "src": "assets/europe_prague_tram.webp",
-      "original": "Unsplash: c1uN4ly-YUY",
+      "original": "assets/generated/refresh-2026-09-08/europe_prague_tram.png",
       "pages": [
         "p05"
       ],
       "preload": "page",
       "alpha": false,
-      "license": "Unsplash License",
-      "note": "프라하 트램 거리 실제 사진"
+      "license": "AI-generated (project original)",
+      "note": "차분한 부드러운 그림체의 프라하 트램 거리"
     },
     "oceania.resident.youth": {
       "type": "image",
@@ -1649,7 +1649,7 @@
     "europe.france.market": {
       "type": "image",
       "src": "assets/europe_france_market.webp",
-      "original": "project generated original 2026-08-30",
+      "original": "assets/generated/refresh-2026-09-08/europe_france_market.png",
       "pages": [
         "p05"
       ],
@@ -1693,7 +1693,7 @@
     "europe.italy.bologna": {
       "type": "image",
       "src": "assets/europe_italy_bologna.webp",
-      "original": "project generated original 2026-08-30",
+      "original": "assets/generated/refresh-2026-09-08/europe_italy_bologna.png",
       "pages": [
         "p05"
       ],
@@ -1726,7 +1726,7 @@
     "europe.spain.madrid_market": {
       "type": "image",
       "src": "assets/europe_spain_madrid_market.webp",
-      "original": "project generated original 2026-08-30",
+      "original": "assets/generated/refresh-2026-09-08/europe_spain_madrid_market.png",
       "pages": [
         "p05"
       ],
@@ -2476,38 +2476,38 @@
     "asia.china.1": {
       "type": "image",
       "src": "assets/asia_china_1.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/refresh-2026-09-08/china_shanghai_oriental_pearl.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "중국 골목 생활 관찰 장면"
+      "note": "동방명주와 황푸강 강변의 오늘날 생활 일러스트"
     },
     "asia.china.2": {
       "type": "image",
       "src": "assets/asia_china_2.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/refresh-2026-09-08/china_tiananmen.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "중국 지역 먹거리 시장 관찰 장면"
+      "note": "천안문과 넓은 광장의 역사 공간 일러스트"
     },
     "asia.china.3": {
       "type": "image",
       "src": "assets/asia_china_3.webp",
-      "original": "assets/asia_culture_contact_sheet.png",
+      "original": "assets/generated/refresh-2026-09-08/china_zhangjiajie.png",
       "pages": [
         "p04"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "중국 강변의 더위와 낮은 수위 관찰 장면"
+      "note": "장자제 우링위안 사암 돌기둥 숲 일러스트"
     },
     "asia.japan.1": {
       "type": "image",
@@ -2548,7 +2548,7 @@
     "asia.korea.1": {
       "type": "image",
       "src": "assets/asia_korea_1.webp",
-      "original": "generated_images/exec-af8e7c71-7080-43dd-9f28-4e27efabdb2c.png",
+      "original": "assets/generated/refresh-2026-09-08/asia_korea_hanok_city.png",
       "pages": [
         "p04"
       ],
@@ -2692,7 +2692,7 @@
     "asia.vietnam.3": {
       "type": "image",
       "src": "assets/asia_vietnam_3_v2.webp",
-      "original": "generated_images/exec-30982a12-523a-42e5-8bac-85e398c5ba14.png",
+      "original": "assets/generated/refresh-2026-09-08/asia_vietnam_family_meal.png",
       "pages": [
         "p04"
       ],
@@ -2836,7 +2836,7 @@
     "oceania.newzealand.daily": {
       "type": "image",
       "src": "assets/oceania_newzealand_daily_v2.webp",
-      "original": "generated_images/exec-71d807f0-b775-48fe-bf6d-a285ffb507fa.png",
+      "original": "assets/generated/refresh-2026-09-08/oceania_auckland_daily.png",
       "pages": [
         "p08"
       ],
@@ -2848,7 +2848,7 @@
     "oceania.newzealand.culture": {
       "type": "image",
       "src": "assets/oceania_newzealand_culture_v3.webp",
-      "original": "assets/generated/oceania_newzealand_culture_v3_source.png",
+      "original": "assets/generated/refresh-2026-09-08/oceania_maori_navigation.png",
       "pages": [
         "p08"
       ],
@@ -3564,26 +3564,26 @@
     "stage6.amara.before": {
       "type": "image",
       "src": "assets/stage6_amara_before.webp",
-      "original": "assets/stage6/stage6_amara_before.png",
+      "original": "assets/generated/refresh-2026-09-08/stage6_amara_before.png",
       "pages": [
         "p09"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "6단계 사진 비교 — 아마라, 발표가 멈춘 순간"
+      "note": "6단계 사진 비교 — 또래 아마라가 발표하지만 친구들이 듣지 않는 전 장면"
     },
     "stage6.amara.after": {
       "type": "image",
       "src": "assets/stage6_amara_after.webp",
-      "original": "assets/stage6/stage6_amara_after.png",
+      "original": "assets/generated/refresh-2026-09-08/stage6_amara_after.png",
       "pages": [
         "p09"
       ],
       "preload": "page",
       "alpha": false,
       "license": "AI-generated (project original)",
-      "note": "6단계 사진 비교 — 아마라, 경청과 응원을 받은 뒤"
+      "note": "6단계 사진 비교 — 같은 또래 아마라가 경청과 응원을 받은 후 장면"
     },
     "earth.council.globe": {
       "type": "image",
@@ -3744,7 +3744,7 @@
     "asia.signal.japan.before": {
       "type": "image",
       "src": "assets/asia-signals/japan-before-v1.webp",
-      "original": "generated_images/exec-9e35c1e6-c58c-4de9-a7f5-616713303a39.png",
+      "original": "assets/generated/refresh-2026-09-08/asia_japan_heat_before.png",
       "pages": [
         "p07"
       ],
@@ -3756,7 +3756,7 @@
     "asia.signal.japan.after": {
       "type": "image",
       "src": "assets/asia-signals/japan-after-v3.webp",
-      "original": "generated_images/exec-3b288a4b-10e8-4815-b867-d5c8b015a3a7.png",
+      "original": "assets/generated/refresh-2026-09-08/asia_japan_heat_after.png",
       "pages": [
         "p07"
       ],
@@ -3900,7 +3900,7 @@
     "europe.signal.greece_heat.after": {
       "type": "image",
       "src": "assets/europe-signals/greece-heat-after-v2.webp",
-      "original": "assets/generated/europe_greece_heat_after_v2_source.png",
+      "original": "assets/generated/refresh-2026-09-08/europe_greece_heat_after.png",
       "pages": [
         "p05"
       ],

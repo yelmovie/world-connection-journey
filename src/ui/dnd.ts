@@ -77,6 +77,10 @@ export function enablePickPlace(opts: {
 
   const onPointerDown = (item: HTMLElement) => (e: PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // 카드 조작은 앱이 전부 맡는다. 브라우저의 이미지/텍스트 끌기가 함께 시작되면
+    // Chromium에서 반투명 카드의 backdrop 레이어가 화면 캡처처럼 따라오는 경우가 있다.
+    e.preventDefault();
+    e.stopPropagation();
     activeDragCleanup?.();
     dragging = item;
     const startX = e.clientX;
@@ -101,7 +105,14 @@ export function enablePickPlace(opts: {
         zones.forEach((z) => z.classList.add('is-dnd-ready'));
         opts.onDragStateChange?.(true, item.dataset.itemId ?? null);
         ghost = item.cloneNode(true) as HTMLElement;
-        ghost.style.cssText = `position:fixed;left:0;top:0;width:${item.offsetWidth}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.9;margin:0;`;
+        ghost.classList.remove('is-selected', 'is-pressed', 'is-dragging');
+        ghost.classList.add('dnd-drag-ghost');
+        ghost.removeAttribute('id');
+        ghost.querySelectorAll<HTMLElement>('[id]').forEach((el) => el.removeAttribute('id'));
+        ghost.setAttribute('aria-hidden', 'true');
+        ghost.setAttribute('role', 'presentation');
+        ghost.removeAttribute('aria-describedby');
+        ghost.style.cssText += `position:fixed;left:0;top:0;width:${itemRect.width}px;height:${itemRect.height}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.96;margin:0;box-sizing:border-box;contain:layout paint style;isolation:isolate;will-change:transform;transition:none;animation:none;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none;`;
         document.body.appendChild(ghost);
       }
       if (ghost) {
@@ -166,8 +177,11 @@ export function enablePickPlace(opts: {
     item.setAttribute('tabindex', '0');
     item.setAttribute('aria-pressed', 'false');
     item.setAttribute('aria-grabbed', 'false');
+    item.setAttribute('draggable', 'false');
     const down = onPointerDown(item);
+    const preventNativeDrag = (e: DragEvent) => e.preventDefault();
     item.addEventListener('pointerdown', down);
+    item.addEventListener('dragstart', preventNativeDrag);
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -178,6 +192,7 @@ export function enablePickPlace(opts: {
     item.addEventListener('keydown', key);
     cleanups.push(() => {
       item.removeEventListener('pointerdown', down);
+      item.removeEventListener('dragstart', preventNativeDrag);
       item.removeEventListener('keydown', key);
       item.classList.remove('dnd-item');
     });

@@ -15,8 +15,16 @@
         "url": "https://unstats.un.org/unsd/methodology/m49/"
       },
       {
-        "title": "UNESCO 중국 대운하",
-        "url": "https://whc.unesco.org/en/list/1443/"
+        "title": "UNESCO 우링위안 풍경명승지역",
+        "url": "https://whc.unesco.org/en/list/640/"
+      },
+      {
+        "title": "상하이시 동방명주 안내",
+        "url": "https://english.shanghai.gov.cn/en-ScenicSpots/20231205/19a5f5184eca45728fd57a4d4c8efc61.html"
+      },
+      {
+        "title": "베이징시 천안문광장 안내",
+        "url": "https://english.beijing.gov.cn/travellinginbeijing/attractions/202603/t20260325_4566110.html"
       },
       {
         "title": "UNESCO 남부 베트남 던까따이뜨",
@@ -192,12 +200,12 @@
       "id": "china_beijing",
       "regionId": "east",
       "countryNameKo": "중국",
-      "placeNameKo": "베이징",
-      "scopeNoteKo": "이 장면은 베이징의 여러 도시 생활 모습 중 하나예요. 중국의 모든 도시와 농촌을 대표하지 않아요.",
-      "sourceTitle": "UNESCO 중국 대운하",
-      "sourceUrl": "https://whc.unesco.org/en/list/1443/",
-      "lastVerifiedAt": "2026-08-31",
-      "needsReview": false,
+      "placeNameKo": "베이징·상하이·장자제",
+      "scopeNoteKo": "이 장면들은 베이징·상하이·장자제에서 볼 수 있는 서로 다른 모습이에요. 중국의 모든 도시와 자연을 한 모습으로 대표하지 않아요.",
+      "sourceTitle": "UNESCO 우링위안 풍경명승지역",
+      "sourceUrl": "https://whc.unesco.org/en/list/640/",
+      "lastVerifiedAt": "2026-09-08",
+      "needsReview": true,
       "sceneIds": [
         "china_nature",
         "china_daily",
@@ -385,73 +393,79 @@
       "id": "china_nature",
       "exampleId": "china_beijing",
       "category": "nature",
-      "titleKo": "대운하와 큰 도시",
+      "titleKo": "장자제의 돌기둥 숲",
       "imageAssetId": "asia.china.3",
-      "summaryKo": "베이징에서 남쪽 저장성까지 이어지는 대운하의 물길을 살펴봐.",
-      "detailKo": "대운하는 여러 자연 하천 유역을 잇도록 만든 인공 수로 체계야. 오랫동안 사람과 물자의 이동에 쓰였고 일부 구간은 오늘날에도 이어져.",
-      "discoveryKo": "도시의 물길에는 자연 하천뿐 아니라 사람이 만든 운하도 있어.",
+      "summaryKo": "높고 가느다란 돌기둥이 안개 속에 숲처럼 이어져 있어.",
+      "detailKo": "장자제 일대의 우링위안에는 아주 오랜 시간 비와 바람, 흐르는 물의 영향을 받은 사암 돌기둥과 깊은 골짜기가 이어져.",
+      "discoveryKo": "비와 바람, 흐르는 물은 오랜 시간에 걸쳐 땅의 모습을 바꿔.",
       "hotspots": [
         {
-          "id": "canal",
-          "x": 0.43,
-          "y": 0.65,
-          "labelKo": "도시를 지나는 운하"
+          "id": "pillars",
+          "x": 0.62,
+          "y": 0.38,
+          "labelKo": "숲처럼 솟은 사암 돌기둥"
         },
         {
-          "id": "city",
-          "x": 0.74,
-          "y": 0.3,
-          "labelKo": "운하 주변 도시 공간"
+          "id": "mist_forest",
+          "x": 0.7,
+          "y": 0.58,
+          "labelKo": "안개와 숲이 이어진 골짜기"
         }
-      ]
+      ],
+      "sourceTitle": "UNESCO 우링위안 풍경명승지역",
+      "sourceUrl": "https://whc.unesco.org/en/list/640/"
     },
     {
       "id": "china_daily",
       "exampleId": "china_beijing",
       "category": "daily",
-      "titleKo": "후퉁 골목의 이동",
+      "titleKo": "동방명주와 상하이 강변",
       "imageAssetId": "asia.china.1",
-      "summaryKo": "좁은 골목에서 걷기와 자전거 이동이 보여.",
-      "detailKo": "오래된 골목도 사람들이 살고 이동하는 오늘날의 동네 공간으로 이어져.",
-      "discoveryKo": "길의 넓이와 건물 모습이 이동 방법에 영향을 줘.",
+      "summaryKo": "동방명주가 보이는 강변에서 배와 자전거, 산책길을 찾아봐.",
+      "detailKo": "상하이의 황푸강 양쪽에는 서로 다른 시대의 건물과 높은 빌딩이 마주 보고 있어. 사람들은 강변을 걷고 배로 이동하며 도시의 여러 공간을 이어.",
+      "discoveryKo": "큰 도시에서도 강은 이동과 생활을 이어 주는 공간이야.",
       "hotspots": [
         {
-          "id": "bike",
-          "x": 0.54,
-          "y": 0.63,
-          "labelKo": "자전거"
+          "id": "oriental_pearl",
+          "x": 0.61,
+          "y": 0.31,
+          "labelKo": "둥근 전망대가 이어진 동방명주"
         },
         {
-          "id": "courtyard",
-          "x": 0.25,
-          "y": 0.42,
-          "labelKo": "골목집 입구"
+          "id": "river_life",
+          "x": 0.52,
+          "y": 0.63,
+          "labelKo": "배와 산책길로 이어지는 강변 생활"
         }
-      ]
+      ],
+      "sourceTitle": "상하이시 동방명주 안내",
+      "sourceUrl": "https://english.shanghai.gov.cn/en-ScenicSpots/20231205/19a5f5184eca45728fd57a4d4c8efc61.html"
     },
     {
       "id": "china_culture",
       "exampleId": "china_beijing",
       "category": "culture",
-      "titleKo": "시장 한곳에 모인 여러 지역의 맛",
+      "titleKo": "천안문과 넓은 광장",
       "imageAssetId": "asia.china.2",
-      "summaryKo": "여러 지역에서 온 채소, 향신료, 면과 만두가 한 시장에 모여 있어.",
-      "detailKo": "중국은 지역마다 날씨와 재료가 달라 음식 맛과 만드는 방법도 다양해.",
-      "discoveryKo": "음식에는 그 지역의 자연환경과 가족의 생활이 담겨 있어.",
+      "summaryKo": "붉은 성문과 넓게 열린 광장에 사람들이 모여 있어.",
+      "detailKo": "천안문은 베이징 중심부의 오랜 성문이고, 앞의 넓은 광장과 함께 많은 사람이 찾는 역사 공간이야. 건물의 지붕과 문, 광장의 크기를 비교해 봐.",
+      "discoveryKo": "오래된 건축과 오늘날의 방문이 한 도시 공간에서 이어지기도 해.",
       "hotspots": [
         {
-          "id": "ingredients",
-          "x": 0.46,
-          "y": 0.5,
-          "labelKo": "여러 지역에서 온 재료"
+          "id": "gate",
+          "x": 0.5,
+          "y": 0.32,
+          "labelKo": "붉은 성벽과 전통 지붕"
         },
         {
-          "id": "steam",
-          "x": 0.72,
-          "y": 0.34,
-          "labelKo": "가족과 지역마다 다른 요리법"
+          "id": "square",
+          "x": 0.55,
+          "y": 0.72,
+          "labelKo": "사람들이 함께 찾는 넓은 광장"
         }
-      ]
+      ],
+      "sourceTitle": "베이징시 천안문광장 안내",
+      "sourceUrl": "https://english.beijing.gov.cn/travellinginbeijing/attractions/202603/t20260325_4566110.html"
     },
     {
       "id": "japan_nature",
