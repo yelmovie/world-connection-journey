@@ -78,6 +78,29 @@ button:disabled:is(:active, .is-pressed) { scale: none; }
   animation: none !important;
   transition: none !important;
 }
+.dnd-drag-ghost--image-only {
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  padding: 6px !important;
+  border: 4px solid #ffe276 !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, #fffdf4, #e9f8ff) !important;
+  box-shadow: 0 10px 24px rgba(3, 29, 52, 0.34), 0 0 0 4px rgba(255, 226, 118, 0.24) !important;
+}
+.dnd-drag-ghost--image-only > img {
+  position: static !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: none !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  object-fit: contain !important;
+  box-shadow: none !important;
+}
 
 /* ===== 상단 바 ===== */
 .top-bar {

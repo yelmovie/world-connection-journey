@@ -930,6 +930,7 @@ export function createPage(): Page {
 
         dnd = enablePickPlace({
           items, zones,
+          imageOnlyDragPreview: true,
           onSelectionChange: (itemId) => {
             wrap.classList.toggle('has-pick', itemId !== null);
             if (itemId) {

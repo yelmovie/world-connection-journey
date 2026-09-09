@@ -20,7 +20,7 @@ const FALLBACK_CONTENTS: Record<string, unknown> = {
 
 /** 콘텐츠 JSON 로더 — public/content/v1/ko/*.json, 페이지별 lazy + 캐시 */
 const cache = new Map<string, unknown>();
-const CONTENT_CACHE_VERSION = '0.1.12';
+const CONTENT_CACHE_VERSION = '0.1.13';
 
 export interface ContentEnvelope {
   schemaVersion: 1 | 2;

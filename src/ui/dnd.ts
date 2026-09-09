@@ -16,6 +16,7 @@ export function enablePickPlace(opts: {
   canPlace?: (itemId: string, zoneId: string) => boolean;
   touchDragThreshold?: number;
   dropHitSlop?: number;
+  imageOnlyDragPreview?: boolean;
   onSelectionChange?: (itemId: string | null) => void;
   onDragStateChange?: (dragging: boolean, itemId: string | null) => void;
   onDropMiss?: (itemId: string) => void;
@@ -91,6 +92,8 @@ export function enablePickPlace(opts: {
     const moveThreshold = e.pointerType === 'touch' ? (opts.touchDragThreshold ?? 10) : 6;
     const dropSlop = opts.dropHitSlop ?? (e.pointerType === 'touch' ? 44 : e.pointerType === 'pen' ? 28 : 18);
     let moved = false;
+    let ghostWidth = itemRect.width;
+    let ghostHeight = itemRect.height;
     try { item.setPointerCapture(e.pointerId); } catch { /* 오래된 브라우저는 window 이벤트로 계속 추적한다. */ }
 
     const onMove = (ev: PointerEvent) => {
@@ -104,20 +107,37 @@ export function enablePickPlace(opts: {
         item.setAttribute('aria-grabbed', 'true');
         zones.forEach((z) => z.classList.add('is-dnd-ready'));
         opts.onDragStateChange?.(true, item.dataset.itemId ?? null);
-        ghost = item.cloneNode(true) as HTMLElement;
-        ghost.classList.remove('is-selected', 'is-pressed', 'is-dragging');
-        ghost.classList.add('dnd-drag-ghost');
+        const previewImage = opts.imageOnlyDragPreview ? item.querySelector<HTMLImageElement>('img') : null;
+        if (previewImage) {
+          ghost = document.createElement('div');
+          ghost.className = 'dnd-drag-ghost dnd-drag-ghost--image-only';
+          const image = previewImage.cloneNode(true) as HTMLImageElement;
+          image.alt = '';
+          ghost.appendChild(image);
+          const compactSize = Math.round(Math.max(64, Math.min(96, window.innerWidth * 0.075, window.innerHeight * 0.14)));
+          ghostWidth = compactSize;
+          ghostHeight = compactSize;
+        } else {
+          ghost = item.cloneNode(true) as HTMLElement;
+          ghost.classList.remove('is-selected', 'is-pressed', 'is-dragging');
+          ghost.classList.add('dnd-drag-ghost');
+        }
         ghost.removeAttribute('id');
         ghost.querySelectorAll<HTMLElement>('[id]').forEach((el) => el.removeAttribute('id'));
         ghost.setAttribute('aria-hidden', 'true');
         ghost.setAttribute('role', 'presentation');
         ghost.removeAttribute('aria-describedby');
-        ghost.style.cssText += `position:fixed;left:0;top:0;width:${itemRect.width}px;height:${itemRect.height}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.96;margin:0;box-sizing:border-box;contain:layout paint style;isolation:isolate;will-change:transform;transition:none;animation:none;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none;`;
+        ghost.style.cssText += `position:fixed;left:0;top:0;width:${ghostWidth}px;height:${ghostHeight}px;pointer-events:none;z-index:calc(var(--z-modal) + 10);opacity:0.96;margin:0;box-sizing:border-box;contain:layout paint style;isolation:isolate;will-change:transform;transition:none;animation:none;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none;`;
         document.body.appendChild(ghost);
       }
       if (ghost) {
-        const ghostX = e.pointerType === 'touch' ? ev.clientX - item.offsetWidth / 2 : ev.clientX - grabX;
-        const ghostY = e.pointerType === 'touch' ? ev.clientY - item.offsetHeight - 18 : ev.clientY - grabY;
+        const desiredX = opts.imageOnlyDragPreview ? ev.clientX - ghostWidth / 2
+          : e.pointerType === 'touch' ? ev.clientX - item.offsetWidth / 2 : ev.clientX - grabX;
+        const desiredY = opts.imageOnlyDragPreview
+          ? (e.pointerType === 'touch' ? ev.clientY - ghostHeight - 18 : ev.clientY - ghostHeight / 2)
+          : e.pointerType === 'touch' ? ev.clientY - item.offsetHeight - 18 : ev.clientY - grabY;
+        const ghostX = Math.max(8, Math.min(window.innerWidth - ghostWidth - 8, desiredX));
+        const ghostY = Math.max(8, Math.min(window.innerHeight - ghostHeight - 8, desiredY));
         ghost.style.transform = `translate(${ghostX}px, ${ghostY}px)`;
       }
       const hoveredZone = zoneAt(ev.clientX, ev.clientY, dropSlop);
